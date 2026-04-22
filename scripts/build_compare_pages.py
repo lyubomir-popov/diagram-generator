@@ -7,11 +7,28 @@ import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DIAGRAMS_DIR = ROOT / "diagrams"
-BEFORE_DIR = DIAGRAMS_DIR / "1. input"
-AFTER_DIR = DIAGRAMS_DIR / "2.output"
+BEFORE_DIR = DIAGRAMS_DIR / "1.input"
+AFTER_DIR = DIAGRAMS_DIR / "2.output" / "svg"
+REFINED_DIR = DIAGRAMS_DIR / "2.output" / "draw.io" / "manually-edited" / "raster"
+REFINED_EXTS = (".jpg", ".jpeg", ".png", ".svg", ".webp")
 COMPARE_DIR = DIAGRAMS_DIR / "3.compare"
 HTML_DIR = COMPARE_DIR / "html"
 JPG_DIR = COMPARE_DIR / "jpg"
+
+
+def find_refined(slug: str) -> pathlib.Path:
+    """Return the first manually refined raster for the slug, or a non-existent .jpg path."""
+    for ext in REFINED_EXTS:
+        candidate = REFINED_DIR / f"{slug}-onbrand{ext}"
+        if candidate.exists():
+            return candidate
+        candidate = REFINED_DIR / f"{slug}-onbrand.drawio{ext}"
+        if candidate.exists():
+            return candidate
+        candidate = REFINED_DIR / f"{slug}{ext}"
+        if candidate.exists():
+            return candidate
+    return REFINED_DIR / f"{slug}-onbrand.jpg"
 
 
 PAIRS = [
@@ -57,6 +74,18 @@ PAIRS = [
         "before": "image 7.png",
         "after": "inference-snaps-onbrand.svg",
     },
+    {
+        "slug": "aws-hld",
+        "title": "AWS High Level Design",
+        "before": "complex-tests/1.jpg",
+        "after": "aws-hld-onbrand.svg",
+    },
+    {
+        "slug": "layer3-mpls",
+        "title": "Layer 3 IP/MPLS",
+        "before": "complex-tests/2.jpg",
+        "after": "layer3-mpls-onbrand.svg",
+    },
 ]
 
 
@@ -88,10 +117,17 @@ def build_page(pair: dict[str, str]) -> str:
     html_path = HTML_DIR / f"{pair['slug']}.html"
     before_path = BEFORE_DIR / pair["before"]
     after_path = AFTER_DIR / pair["after"]
+    refined_path = find_refined(pair["slug"])
     before_url = rel_url(html_path, before_path)
     after_url = rel_url(html_path, after_path)
-    before_text = f"Expected: diagrams/1. input/{pair['before']}"
-    after_text = f"Expected: diagrams/2.output/{pair['after']}"
+    refined_url = rel_url(html_path, refined_path)
+    before_text = f"Expected: diagrams/1.input/{pair['before']}"
+    after_text = f"Expected: diagrams/2.output/svg/{pair['after']}"
+    refined_text = (
+        "Drop a manually refined raster into "
+        "diagrams/2.output/draw.io/manually-edited/raster/ "
+        f"named {pair['slug']}-onbrand.<jpg|png|svg>"
+    )
 
     return f"""<!DOCTYPE html>
 <html lang=\"en\">
@@ -122,7 +158,7 @@ def build_page(pair: dict[str, str]) -> str:
     }}
 
     .page {{
-      width: 1800px;
+      width: 2400px;
       min-height: 1080px;
       padding: 32px;
     }}
@@ -150,7 +186,7 @@ def build_page(pair: dict[str, str]) -> str:
 
     .grid {{
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 24px;
       align-items: stretch;
     }}
@@ -224,11 +260,12 @@ def build_page(pair: dict[str, str]) -> str:
   <main class=\"page\">
     <header class=\"header\">
       <h1>{html.escape(pair['title'])}</h1>
-      <div class=\"meta\">Before on the left, redraw on the right</div>
+      <div class=\"meta\">Before • Agent-generated • Manually refined</div>
     </header>
     <section class=\"grid\">
       {build_panel('Before', before_path, before_url, before_text)}
-      {build_panel('After', after_path, after_url, after_text)}
+      {build_panel('Agent-generated', after_path, after_url, after_text)}
+      {build_panel('Manually refined', refined_path, refined_url, refined_text)}
     </section>
   </main>
 </body>

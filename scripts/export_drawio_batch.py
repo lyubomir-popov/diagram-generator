@@ -6,12 +6,68 @@ import re
 import urllib.parse
 import xml.etree.ElementTree as ET
 
-import generate_remaining_diagrams as svg
+import diagram_shared as svg
+import drawio_style_tokens as dg_tokens
 
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-DRAWIO_DIR = ROOT / "draw.io"
 FONT_SOURCE = "https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans"
+
+
+def infer_vertex_metadata(style: str) -> dg_tokens.CellMetadata:
+    props = dg_tokens.style_lookup(style)
+    if props.get("shape") == "image":
+        return dg_tokens.CellMetadata(role="image", style_tokens=("image-generic",))
+    if style.startswith("ellipse") or props.get("shape") == "ellipse":
+        return dg_tokens.CellMetadata(role="marker", style_tokens=("marker-circle",))
+    if props.get("fillColor") == "none" and props.get("strokeColor") == "none":
+        if "Mono" in props.get("fontFamily", ""):
+            return dg_tokens.CellMetadata(role="label", style_tokens=("label-terminal",))
+        return dg_tokens.CellMetadata(role="label", style_tokens=("label-free",))
+    return dg_tokens.CellMetadata(role="vertex", style_tokens=("vertex-generic",))
+
+
+def infer_edge_metadata(style: str) -> dg_tokens.CellMetadata:
+    props = dg_tokens.style_lookup(style)
+    stroke = props.get("strokeColor", "")
+    dashed = props.get("dashed") == "1"
+
+    style_tokens: list[str] = []
+    if stroke == svg.ORANGE:
+        style_tokens.append("edge-orange")
+    elif dashed:
+        style_tokens.append("edge-dashed")
+    else:
+        style_tokens.append("edge-neutral")
+
+    if props.get("endArrow") == "blockThin":
+        style_tokens.append("edge-arrow")
+    return dg_tokens.CellMetadata(role="edge", style_tokens=tuple(style_tokens))
+
+
+def box_style_token(fill: str) -> str:
+    if fill == svg.WHITE:
+        return "box-default"
+    if fill == svg.GREY:
+        return "box-accent"
+    if fill == svg.BLACK:
+        return "box-highlight"
+    return "box-custom"
+
+
+def rect_style_token(fill: str, *, stroke: str, dashed: bool, width: float, height: float) -> str:
+    if dashed:
+        return "panel-dashed"
+    if stroke == "none" or width == 1 or height == 1:
+        return "divider-line"
+    if fill == "none":
+        return "panel-outline"
+    if fill == svg.WHITE:
+        return "panel-default"
+    if fill == svg.GREY:
+        return "panel-accent"
+    if fill == svg.BLACK:
+        return "panel-highlight"
+    return "panel-custom"
 
 
 def compact_svg(svg_text: str) -> str:
@@ -125,6 +181,7 @@ class DrawioBuilder:
         value: str = "",
         parent: str = "1",
         connectable: bool | None = None,
+        metadata: dg_tokens.CellMetadata | None = None,
     ) -> str:
         attrs = {
             "id": self.new_id(),
@@ -133,6 +190,7 @@ class DrawioBuilder:
             "value": value,
             "vertex": "1",
         }
+        attrs.update(dg_tokens.metadata_attrs(metadata or infer_vertex_metadata(style)))
         if connectable is not None:
             attrs["connectable"] = "1" if connectable else "0"
         cell = ET.SubElement(self.root, "mxCell", attrs)
@@ -160,6 +218,7 @@ class DrawioBuilder:
         waypoints: list[tuple[float, float]] | None = None,
         value: str = "",
         parent: str = "1",
+        metadata: dg_tokens.CellMetadata | None = None,
     ) -> str:
         attrs = {
             "id": self.new_id(),
@@ -168,6 +227,7 @@ class DrawioBuilder:
             "value": value,
             "edge": "1",
         }
+        attrs.update(dg_tokens.metadata_attrs(metadata or infer_edge_metadata(style)))
         if source is not None:
             attrs["source"] = source
         if target is not None:
@@ -221,12 +281,15 @@ def label_style(
     font_color: str = svg.BLACK,
     align: str = "left",
     vertical_align: str = "top",
+    font_family: str = "Ubuntu Sans",
+    font_source: str | None = FONT_SOURCE,
 ) -> str:
+    font_source_part = f";fontSource={font_source}" if font_source else ""
     return (
         f"rounded=0;whiteSpace=wrap;html=1;align={align};verticalAlign={vertical_align};"
         "spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;"
         "fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;"
-        f"fontFamily=Ubuntu Sans;fontSource={FONT_SOURCE};fontSize={font_size};fontColor={font_color};"
+        f"fontFamily={font_family}{font_source_part};fontSize={font_size};fontColor={font_color};"
     )
 
 
@@ -330,7 +393,9 @@ def add_image(
     image_uri: str,
     parent: str = "1",
     connectable: bool = False,
+    style_tokens: tuple[str, ...] | None = None,
 ) -> str:
+    resolved_tokens = style_tokens or (("icon-image",) if abs(width - 48) < 1e-6 and abs(height - 48) < 1e-6 else ("image-generic",))
     return builder.add_vertex(
         x=x,
         y=y,
@@ -339,6 +404,7 @@ def add_image(
         style=image_style(image_uri),
         parent=parent,
         connectable=connectable,
+        metadata=dg_tokens.CellMetadata(role="image", style_tokens=resolved_tokens),
     )
 
 
@@ -354,6 +420,9 @@ def add_label(
     connectable: bool = False,
     align: str = "left",
     vertical_align: str = "top",
+    font_family: str = "Ubuntu Sans",
+    font_source: str | None = FONT_SOURCE,
+    style_tokens: tuple[str, ...] | None = None,
 ) -> str:
     resolved_height = height if height is not None else text_height(lines)
     return builder.add_vertex(
@@ -361,10 +430,16 @@ def add_label(
         y=y,
         width=width,
         height=resolved_height,
-        style=label_style(align=align, vertical_align=vertical_align),
+        style=label_style(
+            align=align,
+            vertical_align=vertical_align,
+            font_family=font_family,
+            font_source=font_source,
+        ),
         value=rich_text(lines),
         parent=parent,
         connectable=connectable,
+        metadata=dg_tokens.CellMetadata(role="label", style_tokens=style_tokens or ("label-free",)),
     )
 
 
@@ -382,6 +457,7 @@ def add_box(
     parent: str = "1",
     connectable: bool = True,
 ) -> str:
+    box_token = box_style_token(fill)
     box_id = builder.add_vertex(
         x=x,
         y=y,
@@ -390,6 +466,7 @@ def add_box(
         style=rect_style(fill),
         parent=parent,
         connectable=connectable,
+        metadata=dg_tokens.CellMetadata(role="box", style_tokens=(box_token,)),
     )
     text_width = width - 16 - (64 if icon_name else 0)
     add_label(
@@ -400,6 +477,7 @@ def add_box(
         height=height - 16,
         lines=lines,
         parent=box_id,
+        style_tokens=("label-box",),
     )
     if icon_name:
         add_image(
@@ -410,6 +488,7 @@ def add_box(
             height=48,
             image_uri=icon_uri(icon_name, icon_fill or svg.BLACK),
             parent=box_id,
+            style_tokens=("icon-image",),
         )
     return box_id
 
@@ -426,6 +505,7 @@ def add_plain_rect(
     dashed: bool = False,
     parent: str = "1",
     connectable: bool = False,
+    style_tokens: tuple[str, ...] | None = None,
 ) -> str:
     return builder.add_vertex(
         x=x,
@@ -435,6 +515,10 @@ def add_plain_rect(
         style=rect_style(fill, stroke=stroke, dashed=dashed),
         parent=parent,
         connectable=connectable,
+        metadata=dg_tokens.CellMetadata(
+            role="rect",
+            style_tokens=style_tokens or (rect_style_token(fill, stroke=stroke, dashed=dashed, width=width, height=height),),
+        ),
     )
 
 
@@ -455,6 +539,7 @@ def add_circle_marker(
         style=ellipse_style(fill),
         parent=parent,
         connectable=False,
+        metadata=dg_tokens.CellMetadata(role="marker", style_tokens=("legend-marker",)),
     )
 
 
@@ -463,33 +548,45 @@ def add_matrix(builder: DrawioBuilder, *, x: float, y: float, label: str, connec
         builder,
         x=x,
         y=y,
-        width=48,
-        height=48,
+        width=svg.MATRIX_SIZE,
+        height=svg.MATRIX_SIZE,
         fill=svg.GREY,
         connectable=connectable,
+        style_tokens=("matrix-widget",),
     )
-    add_plain_rect(builder, x=0, y=18, width=48, height=1, fill=svg.BLACK, stroke="none", parent=matrix)
-    for divider_x in (16, 32):
-        add_plain_rect(builder, x=divider_x, y=18, width=1, height=30, fill=svg.BLACK, stroke="none", parent=matrix)
-    for divider_y in (28, 38):
-        add_plain_rect(builder, x=0, y=divider_y, width=48, height=1, fill=svg.BLACK, stroke="none", parent=matrix)
+    add_plain_rect(builder, x=0, y=svg.MATRIX_HEADER_HEIGHT, width=svg.MATRIX_SIZE, height=1, fill=svg.BLACK, stroke="none", parent=matrix, style_tokens=("matrix-divider",))
+    for divider_x in svg.MATRIX_COLUMN_DIVIDERS:
+        add_plain_rect(
+            builder,
+            x=divider_x,
+            y=svg.MATRIX_HEADER_HEIGHT,
+            width=1,
+            height=svg.MATRIX_SIZE - svg.MATRIX_HEADER_HEIGHT,
+            fill=svg.BLACK,
+            stroke="none",
+            parent=matrix,
+            style_tokens=("matrix-divider",),
+        )
+    for divider_y in svg.MATRIX_ROW_DIVIDERS:
+        add_plain_rect(builder, x=0, y=divider_y, width=svg.MATRIX_SIZE, height=1, fill=svg.BLACK, stroke="none", parent=matrix, style_tokens=("matrix-divider",))
     add_label(
         builder,
         x=0,
-        y=1,
-        width=48,
-        height=16,
-        lines=[svg.make_line(label, size="12", weight="700", line_step=12)],
+        y=2,
+        width=svg.MATRIX_SIZE,
+        height=svg.MATRIX_HEADER_HEIGHT - 4,
+        lines=[svg.make_line(label, size=svg.MATRIX_LABEL_SIZE, weight="700", line_step=12)],
         parent=matrix,
         align="center",
         vertical_align="middle",
+        style_tokens=("label-matrix",),
     )
     return matrix
 
 
 def add_request_cluster(builder: DrawioBuilder, *, x: float, y: float) -> None:
     for offset, name in ((0, "Document.svg"), (56, "Photography.svg"), (112, "Globe.svg")):
-        add_image(builder, x=x + offset, y=y, width=48, height=48, image_uri=icon_uri(name))
+        add_image(builder, x=x + offset, y=y, width=48, height=48, image_uri=icon_uri(name), style_tokens=("request-cluster-icon",))
 
 
 def add_command_bar(builder: DrawioBuilder, *, x: float, y: float, width: float, text_value: str) -> str:
@@ -500,25 +597,41 @@ def add_command_bar(builder: DrawioBuilder, *, x: float, y: float, width: float,
         height=64,
         style=rect_style(svg.GREY),
         connectable=True,
+        metadata=dg_tokens.CellMetadata(role="terminal-bar", style_tokens=("terminal-bar",)),
+    )
+    add_plain_rect(
+        builder,
+        x=0,
+        y=svg.TERMINAL_CHROME_HEIGHT,
+        width=width,
+        height=1,
+        fill=svg.BLACK,
+        stroke="none",
+        parent=bar,
+        style_tokens=("terminal-separator",),
     )
     for cx in (20, 36, 52):
         builder.add_vertex(
-            x=cx - 4,
-            y=28,
-            width=8,
-            height=8,
+            x=cx - svg.TERMINAL_DOT_RADIUS,
+            y=(svg.TERMINAL_CHROME_HEIGHT / 2) - svg.TERMINAL_DOT_RADIUS,
+            width=svg.TERMINAL_DOT_RADIUS * 2,
+            height=svg.TERMINAL_DOT_RADIUS * 2,
             style=ellipse_style(svg.WHITE),
             parent=bar,
             connectable=False,
+            metadata=dg_tokens.CellMetadata(role="marker", style_tokens=("terminal-dot",)),
         )
     add_label(
         builder,
-        x=68,
-        y=8,
-        width=width - 76,
-        height=48,
+        x=24,
+        y=28,
+        width=width - 32,
+        height=28,
         lines=[svg.make_line(text_value)],
         parent=bar,
+        font_family=svg.TERMINAL_FONT_FAMILY,
+        font_source=None,
+        style_tokens=("label-terminal",),
     )
     return bar
 
@@ -630,8 +743,8 @@ def export_memory_wall() -> None:
         target_point=(192, 464),
     )
 
-    memory_panel = add_image(builder, x=96, y=552, width=192, height=80, image_uri=memory_panel_uri(), connectable=True)
-    add_label(builder, x=8, y=8, width=120, height=24, lines=[svg.make_line("Memory wall")], parent=memory_panel)
+    memory_panel = add_image(builder, x=96, y=552, width=192, height=80, image_uri=memory_panel_uri(), connectable=True, style_tokens=("memory-panel",))
+    add_label(builder, x=8, y=8, width=120, height=24, lines=[svg.make_line("Memory wall")], parent=memory_panel, style_tokens=("label-box",))
     add_image(builder, x=136, y=8, width=48, height=48, image_uri=icon_uri("Memory.svg"), parent=memory_panel)
     builder.add_edge(
         style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0),
@@ -641,7 +754,7 @@ def export_memory_wall() -> None:
         target_point=(192, 552),
     )
 
-    builder.write(DRAWIO_DIR / "memory-wall-onbrand.drawio")
+    builder.write(svg.DRAWIO_DIR / "memory-wall-onbrand.drawio")
 
 
 def export_request_to_hardware_stack() -> None:
@@ -696,7 +809,7 @@ def export_request_to_hardware_stack() -> None:
             target_point=(center_x, target_y),
         )
 
-    builder.write(DRAWIO_DIR / "request-to-hardware-stack-onbrand.drawio")
+    builder.write(svg.DRAWIO_DIR / "request-to-hardware-stack-onbrand.drawio")
 
 
 def export_inference_snaps() -> None:
@@ -751,7 +864,7 @@ def export_inference_snaps() -> None:
             target_point=(center, hardware_y),
         )
 
-    builder.write(DRAWIO_DIR / "inference-snaps-onbrand.drawio")
+    builder.write(svg.DRAWIO_DIR / "inference-snaps-onbrand.drawio")
 
 
 def export_rise_of_inference() -> None:
@@ -779,7 +892,7 @@ def export_rise_of_inference() -> None:
     builder.add_edge(style=edge_style(svg.ORANGE, exit_x=1, exit_y=0.5, entry_x=0, entry_y=0.5), source=costly, target=constant, source_point=(440, 240), target_point=(472, 240))
     builder.add_edge(style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0), source=summary, target=final, source_point=(456, 672), target_point=(456, 696))
 
-    builder.write(DRAWIO_DIR / "rise-of-inference-economy-onbrand.drawio")
+    builder.write(svg.DRAWIO_DIR / "rise-of-inference-economy-onbrand.drawio")
 
 
 def export_gpu_waiting() -> None:
@@ -810,7 +923,7 @@ def export_gpu_waiting() -> None:
         waypoints=[(304, 264), (304, 68)],
     )
 
-    builder.write(DRAWIO_DIR / "gpu-waiting-scheduler-onbrand.drawio")
+    builder.write(svg.DRAWIO_DIR / "gpu-waiting-scheduler-onbrand.drawio")
 
 
 def export_logic_data_vram() -> None:
@@ -875,7 +988,7 @@ def export_logic_data_vram() -> None:
     offset_y = (616 - 504) / 208
     builder.add_edge(style=edge_style(svg.ORANGE, exit_x=1, exit_y=offset_y, entry_x=0, entry_y=offset_y), source=frag, target=packed, source_point=(432, 616), target_point=(480, 616))
 
-    builder.write(DRAWIO_DIR / "logic-data-vram-onbrand.drawio")
+    builder.write(svg.DRAWIO_DIR / "logic-data-vram-onbrand.drawio")
 
 
 def export_attention_qkv() -> None:
@@ -961,11 +1074,11 @@ def export_attention_qkv() -> None:
     builder.add_edge(style=edge_style(svg.ORANGE, exit_x=1, exit_y=0.5, entry_x=0, entry_y=0.5), source=ubuntu_value, target=linux_value, source_point=(1104, 776), target_point=(1136, 776))
     builder.add_edge(style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0), source=linux_value, target=value_transfer, source_point=(1232, 808), target_point=(1232, 848))
 
-    builder.write(DRAWIO_DIR / "attention-qkv-onbrand.drawio")
+    builder.write(svg.DRAWIO_DIR / "attention-qkv-onbrand.drawio")
 
 
 def main() -> None:
-    DRAWIO_DIR.mkdir(parents=True, exist_ok=True)
+    svg.DRAWIO_DIR.mkdir(parents=True, exist_ok=True)
     export_memory_wall()
     export_request_to_hardware_stack()
     export_inference_snaps()

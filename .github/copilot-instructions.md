@@ -1,77 +1,183 @@
 # Workspace Instructions
 
-## Documentation structure — 5 files, strict roles
+## Documentation structure
 
 | File | Role | Who writes |
 |------|------|-----------|
-| `docs/AGENT-INBOX.md` | **Inbox.** User drops notes to avoid interrupting agent. | User writes, agent drains |
-| `llm-handoff-context.md` | **Cold start.** Repo orientation, current state, key files, critical invariants. | Agent updates when state changes |
-| `docs/TODO.md` | **Active plan.** Principles, architecture, short-term tasks. | Agent updates every session |
-| `docs/product-roadmap.md` | **Long-term.** Stages, backlog shape, future directions. | Agent updates rarely |
-| `docs/history.md` | **Archive.** Completed work log. | Agent appends when tasks complete |
+| `.github/copilot-instructions.md` | Rules. Workflow rules, source precedence, diagram invariants. | Agent maintains |
+| `.github/agents/agent.md` | Optional resume-agent prompt for repo-specific continuation. | Agent maintains |
+| `README.md` | Overview. Repo summary and workflow map. | User + agent maintain |
+| `ROADMAP.md` | Long-term. Product direction, stages, future ideas. | Agent updates rarely |
+| `TODO.md` | Active plan. Current execution queue, principles, architecture notes. | Agent updates every session |
+| `INBOX.md` | User inbox. Async user notes that should stay easy to scan. | User writes, agent drains |
+| `AGENT-INBOX.md` | Agent inbox. Long machine-generated handoffs, cross-repo notes, and diagnostics awaiting triage. | Agents and automation write, agent drains |
+| `STATUS.md` | Cold start. Repo orientation, current state, key files, invariants. | Agent updates when state changes |
+| `HISTORY.md` | Archive. Completed work log. | Agent appends when tasks complete |
+| `docs/specs.md` | Specs. Governing references, local source assets, sibling repos. | Agent updates when source paths change |
 
-**No other files should carry TODO lists or duplicated status.** Session-scoped scratch in Copilot memory is fine, but it must not become a parallel tracking system.
+No other files should carry duplicate TODO lists, handoff notes, or parallel status tracking.
+
+## Instruction file scope
+
+Use the two `.github` files for different layers of guidance:
+
+- `.github/copilot-instructions.md` is the stable repo-wide contract. Put workflow rules, planning thresholds, validation expectations, precedence rules, repo boundaries, and instructions that should apply to every future session here.
+- `.github/agents/agent.md` is optional and should stay short. Put only repo-specific resume guidance here: what to read first, which code or docs matter most, and any narrow continuation hints that help a fresh agent start quickly.
+- If a detail stops being a short resume hint and becomes durable project state, move it into the canonical workflow files instead of expanding `.github/agents/agent.md`.
+
+When deciding where extra detail belongs, use this map:
+
+- Current state or cold-start notes: `STATUS.md`
+- Active tasks or architecture notes: `TODO.md`
+- Long-term direction: `ROADMAP.md`
+- Completed work: `HISTORY.md`
+- Source-of-truth references: `docs/specs.md`
+- Human-readable overview: `README.md`
+- Async user notes: `INBOX.md`
+- Agent-to-agent handoffs or long diagnostics: `AGENT-INBOX.md`
+
+## Source-of-truth precedence
+
+When sources disagree, use this order unless a higher-priority source explicitly narrows it further:
+
+1. Source sketches, reference assets, or explicitly referenced source material listed in `docs/specs.md`
+2. `ROADMAP.md`
+3. `.github/copilot-instructions.md`
+4. `STATUS.md` and `HISTORY.md`
+5. `README.md` and `docs/specs.md`
+6. `INBOX.md`
+7. `AGENT-INBOX.md`
+8. Local implementation details that are not clearly intentional or documented
+
+Do not rewrite higher-priority docs to match lower-priority implementation drift.
+
+## Planning threshold
+
+- Small task: act directly.
+- Medium task: write a short plan in `STATUS.md` before execution.
+- Large, architectural, or cross-repo task: create or update a dedicated plan section before broad changes.
+
+## History rules
+
+- Record completed short-term items under a short-term section.
+- Record completed long-term items under a long-term section.
+- Move items to history only when actually complete.
+- Do not use history as a backlog or scratchpad.
+- When `HISTORY.md` exceeds roughly 200 lines, archive older entries under `docs/archive/` and keep the root file focused on recent work.
 
 ### The inbox pattern
 
-`docs/AGENT-INBOX.md` is the user's write-only channel. At session start, the agent must:
+`INBOX.md` is the user write-only channel. `AGENT-INBOX.md` is the machine-generated handoff channel for long agent notes, automation diagnostics, and cross-repo follow-ups. At session start, the agent must:
 
-1. Read the inbox.
-2. Triage each item into `docs/TODO.md` (near-term) or `docs/product-roadmap.md` (longer-term).
-3. Empty the file back to its header template.
+1. Read `INBOX.md` and triage each item into `TODO.md` (near-term) or `ROADMAP.md` (longer-term).
+2. Read `AGENT-INBOX.md` and triage durable facts into `TODO.md`, `ROADMAP.md`, `STATUS.md`, `HISTORY.md`, or `docs/specs.md`.
+3. Empty both files back to their header templates.
 
 ### What goes where
 
 | Information | Goes in |
 |-------------|---------|
-| "What should the next chat do?" | `docs/TODO.md` → Active TODO |
-| "Why did we make this stylistic decision?" | `docs/TODO.md` → Principles or Architecture |
-| "What does the repo become long-term?" | `docs/product-roadmap.md` |
-| "What's been done?" | `docs/history.md` |
-| "Quick scratch notes for this session only" | `/memories/session/` |
-| "Key file paths and resume pointers" | `/memories/repo/` |
+| What should the next chat do? | `TODO.md` |
+| Why was a stylistic or architectural decision made? | `TODO.md` |
+| What does the repo become long-term? | `ROADMAP.md` |
+| What source docs or reference assets govern this repo? | `docs/specs.md` |
+| What has been completed? | `HISTORY.md` |
+| Cold-start orientation and resume notes | `STATUS.md` |
+| Async user notes | `INBOX.md` |
+| Agent-generated handoffs or diagnostics | `AGENT-INBOX.md` |
 
 ## Agent workflow
 
 ### Session start
 
-1. Read `llm-handoff-context.md` for orientation.
-2. Check `docs/AGENT-INBOX.md` and triage items into plan or roadmap, then empty it.
-3. Read `docs/TODO.md` for current tasks.
+1. Read `STATUS.md` for orientation. If it looks stale or references work that is clearly finished, update it before proceeding.
+2. Check `INBOX.md`, triage user items into plan or roadmap, then empty it.
+3. Check `AGENT-INBOX.md`, triage machine notes into canonical files, then empty it.
+4. Read `TODO.md` for current tasks.
+5. Read `docs/specs.md` before changing spec-governed behavior.
 
 ### During work
 
-- Mark tasks done in `docs/TODO.md` as you complete them.
-- Move completed items to `docs/history.md`.
+- Mark tasks done in `TODO.md` as you complete them.
+- Move completed items to `HISTORY.md`.
 
 ### Session end
 
-1. Update `llm-handoff-context.md` if the current-state paragraph is stale.
-2. Update `docs/TODO.md` with any new tasks that emerged.
-3. Ensure `docs/AGENT-INBOX.md` is empty.
-4. **Do not** create extra markdown files to document changes unless explicitly requested.
+1. Update `STATUS.md` if the current-state section is stale.
+2. Update `TODO.md` with any new tasks that emerged.
+3. Ensure `INBOX.md` is empty.
+4. Ensure `AGENT-INBOX.md` is empty.
+5. Do not create new markdown files to document status unless explicitly requested.
+
+## Validation
+
+There is no repo-wide automated test suite yet. Before committing, run the checks that match the files you touched:
+
+- If you changed workflow docs only, verify links, file names, and canonical ownership stay consistent.
+- If you changed renderer or exporter code, rebuild the batch with `python scripts/build_outputs.py`.
+- If you changed deliverable SVGs, run `python scripts/svg_illustrator_sanitize.py --write <svg>` and validate the edited SVGs for syntax issues.
+- If you changed compare-page generation, regenerate the affected compare outputs when practical.
+
+## Manual draw.io safety workflow
+
+When asked to modify a manually edited draw.io file:
+
+- Treat the current manually edited file as protected until the user approves promotion.
+- Create or refresh a review copy under `diagrams/2.output/draw.io/review/`, mirroring the original relative path inside `diagrams/2.output/draw.io/`.
+- Prefer using `python scripts/drawio_review_workflow.py prepare <source>` to create that review copy.
+- Make edits only to the review copy on the first pass so the original remains intact for comparison and easy rollback.
+- Before overwriting the original, create a timestamped checkpoint under `diagrams/2.output/draw.io/checkpoints/` and then promote the reviewed copy back to the original.
+- Prefer using `python scripts/drawio_review_workflow.py promote <source>` for promotion, because it checkpoints the original before replacing it.
+- If generator output is needed as input to a manual update, compare or import it into the review copy; do not regenerate directly over the protected manually edited file.
+- Do not skip the review-copy step unless the user explicitly asks for a direct in-place update.
+
+## Agent environment rules
+
+- Use VS Code integrated terminals the user can monitor, not background shells or external terminal windows.
+- Prefer reusing a small number of foreground integrated terminals the user can actually inspect.
+- Keep track of the terminals you start. If one hangs, times out, or is no longer needed, close it before finishing the task.
+- When using Playwright or browser automation, use Chrome, not Edge.
 
 ## Repo boundary
 
 - Work in this repo unless the user explicitly redirects elsewhere.
-- `baseline-foundry` is an allowed read-only workflow/style reference when the user asks to mirror its conventions.
+- `repo-workflow-boilerplate` is an allowed read-only workflow reference when mirroring the centralized process.
+- `baseline-foundry` is an allowed read-only workflow or style reference when the user asks to mirror its conventions.
 - The local reference assets in this repo are the primary source of truth for redesign work.
 
 ## Commit message discipline
 
-Prefix with the area touched: `svg:`, `icons:`, `docs:`, `workflow:`, `assets:`. First line under 72 chars.
+Prefix with the area touched: `svg:`, `drawio:`, `workflow:`, `docs:`, `scripts:`, `icons:`, or `assets:`. Keep the first line under 72 characters.
 
 ## Autonomous continuation rule
 
-If the user explicitly says to proceed autonomously, treat that as standing approval to keep executing the plan without stopping for small confirmations.
+If the user explicitly says to proceed autonomously, treat that as standing approval to keep executing the best available plan without pausing for small confirmations.
 
 In that mode:
 
 1. Work through the current plan until you hit a real blocker, not a minor ambiguity.
-2. Make small validated checkpoint commits after substantive chunks.
-3. Re-read `docs/TODO.md` after major chunks and periodically re-audit alignment.
+2. Make small validated checkpoint commits after substantive chunks if commits are allowed.
+3. Re-read `TODO.md` after major chunks and periodically re-audit alignment.
 4. Update the canonical docs as work lands so the next chat can continue cold.
 5. Do not stop just to ask whether to continue unless the next best move is genuinely unclear or risky.
+
+### Maximising autonomous run length
+
+Current LLM agents lose coherence after extended autonomous runs because context fills up. To get the longest useful runs:
+
+- Narrow the scope per burst. "Complete all items in TODO section X" works better than an open-ended roadmap sweep.
+- Checkpoint and resume. After each substantive chunk, update `STATUS.md`, `TODO.md`, and `HISTORY.md` so a fresh session can continue cold.
+- Keep TODO items small enough to complete in one focused burst.
+- Prefer sequential single-repo sessions over multi-repo autonomous runs.
+
+## Cross-repo coordination
+
+When work in this repo creates a dependency or follow-up in another repo:
+
+1. Drop a machine-generated note in the target repo's `AGENT-INBOX.md` describing what changed and what the target repo needs to do.
+2. Do not attempt the cross-repo change in the same session unless the user explicitly redirects there.
+3. Use one agent per repo for feature work. Use one agent across repos only for mirroring convention changes or other small coordinated edits.
+4. For larger features, prefer sequential single-repo sessions with inbox handoffs over one agent trying to hold multi-repo context.
 
 ## Non-negotiable diagram rules
 
@@ -84,7 +190,7 @@ In that mode:
 - Treat `diagrams/0.reference/sample.svg` and `diagrams/0.reference/sample.png` as the current canonical single-box building block for box width, live-text proportion, arrow treatment, and overall proportion.
 - Treat `diagrams/0.reference/onbrand-svg-starter.svg` as the reusable copy source for the canonical block proportions, inset rhythm, and literal orange arrow geometry.
 - Run `scripts/svg_illustrator_sanitize.py --write <svg>` before finalizing a deliverable so Illustrator sees inline geometry rather than internal SVG references.
-- Treat `diagrams/2.output/memory-wall-onbrand.svg` as the canonical current implementation checkpoint for palette, alignment, icon placement, and scale.
+- Treat `diagrams/2.output/svg/memory-wall-onbrand.svg` as the canonical current implementation checkpoint for palette, alignment, icon placement, and scale.
 - Box and arrow outlines are `1px`, square corners, `stroke-miterlimit: 10` unless a reference explicitly contradicts that.
 - Default non-highlight fill is white; standard accent fill is `#F3F3F3`; at most one black-filled box with white text is allowed when a true highlight is needed.
 - Do not use orange-filled boxes. Orange is reserved for arrows and arrowheads.
@@ -102,7 +208,7 @@ In that mode:
 - The current box-height rule is icon height plus `2 * 8px` internal padding, with the border on the outside; for the current icon set that means `64px`-tall boxes, and three-line boxes should expand to `72px` rather than shrinking the text.
 - Keep growing taller boxes in `8px` steps when copy runs longer than three lines; do not trade away inset, helper-text size, or icon size to force a box to stay short.
 - Orange connectors use `#E95420` and should behave like draw.io `blockThin` arrows: explicit `1px` shaft + filled head, tip touching the destination edge, no shaft visibly protruding through the arrowhead, and no overlap that breaks black box outlines.
-- Reuse the exact arrow proportions from `diagrams/0.reference/sample.svg`, `diagrams/0.reference/onbrand-svg-starter.svg`, or `diagrams/2.output/memory-wall-onbrand.svg`; do not freehand a larger or smaller variant for a one-off diagram.
+- Reuse the exact arrow proportions from `diagrams/0.reference/sample.svg`, `diagrams/0.reference/onbrand-svg-starter.svg`, or `diagrams/2.output/svg/memory-wall-onbrand.svg`; do not freehand a larger or smaller variant for a one-off diagram.
 - Draw orange connectors behind the boxes they connect to so the destination box edge remains visually continuous.
 - Embed arrowheads directly as paths in the document rather than through reusable SVG symbols or markers.
 - Orange connectors should resolve from box edge to box edge; do not aim them into loose helper text.
@@ -116,7 +222,7 @@ In that mode:
 - Before finalizing a diagram, run an explicit icon-coverage pass across every major node and repeated semantic tile; do not stop after placing only one or two obvious icons if the local library has reasonable additional matches.
 - Transfer all source text from the sketch, including small labels; missing icons are acceptable when the local library has no good match, but dropped text is not.
 - Preserve a grid feel in grouped layouts by aligning enclosing widths and stacked boxes rather than centering unrelated widths arbitrarily.
-- Draw.io XML export is now an active secondary target: anchor it to the local `draw.io/*.drawio` samples and emit raw `mxfile` / `mxGraphModel` XML with native editable `mxCell` boxes, labels, groups, and edges for every text-bearing box or panel.
+- Draw.io XML export is now the primary editable output target: anchor it to the local `diagrams/2.output/draw.io/*.drawio` samples and emit raw `mxfile` / `mxGraphModel` XML with native editable `mxCell` boxes, labels, groups, and edges for every text-bearing box or panel.
 - Inline `data:image/svg+xml,...` image cells are still allowed for icons and genuinely special non-text shapes, but never as a shortcut for a visible box or text panel.
 - In draw.io exports, connect arrows to their owning cells with `source` / `target` ids and explicit `entry` / `exit` anchors instead of relying only on absolute source/target points.
 - In draw.io exports, explicitly disable theme adaptation with `adaptiveColors="none"` and write explicit `fontColor` / `fillColor` values so dark mode does not flip the diagram to black.
@@ -126,22 +232,19 @@ In that mode:
 - The `Memory wall` node is the current canonical semantic exception and should keep jagged top and bottom edges.
 - Keep outputs sentence-case and concise unless the source/reference clearly establishes another casing system.
 
-## First checks
+## Diagram-first checks
 
 There is no repo-wide automated test suite yet. First checks for diagram work are:
 
-1. Inspect `llm-handoff-context.md`.
-2. Compare the current target SVG against `diagrams/2.output/memory-wall-onbrand.svg`, `diagrams/0.reference/_BRND-3284.drawio.svg`, `diagrams/0.reference/onbrand-reference.png`, and the local icon set in `assets/icons/`.
+1. Inspect `STATUS.md`.
+2. Compare the current target SVG against `diagrams/2.output/svg/memory-wall-onbrand.svg`, `diagrams/0.reference/_BRND-3284.drawio.svg`, `diagrams/0.reference/onbrand-reference.png`, and the local icon set in `assets/icons/`.
 3. Validate edited SVGs for syntax errors.
 
-## How to port this convention to another project
+The key rule: every piece of status information should live in exactly one place.
 
-1. Copy this file as `.github/copilot-instructions.md` in the new repo.
-2. Create `llm-handoff-context.md` at root with: orientation, current state, key files, invariants.
-3. Create `docs/TODO.md` with: principles, architecture, active TODO.
-4. Create `docs/product-roadmap.md` with: stages and longer-term backlog shape.
-5. Create `docs/history.md` with a completed-work log.
-6. Create `docs/AGENT-INBOX.md` as an empty inbox.
-7. Add `.github/agents/agent.md` for the resume agent.
+## Agent file roles
 
-The key insight: every piece of status information lives in exactly one place.
+- `.github/copilot-instructions.md` is the single repo-wide instruction file.
+- `.github/agents/agent.md` is optional and should contain only repo-specific resume or subagent guidance.
+- `.github/agents/agent.md` should not become a second `STATUS.md`, `TODO.md`, or `README.md`; when details grow beyond a short resume prompt, move them into the canonical file for that kind of information.
+- Do not duplicate the full workflow rules in both places.

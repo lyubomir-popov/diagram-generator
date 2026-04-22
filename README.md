@@ -2,37 +2,89 @@
 
 An LLM-based diagramming workflow that turns rough sketches and brand/layout rules into on-brand SVG and draw.io diagrams.
 
-## What This Repo Does
+## Quick start: file convention
 
-This repo is for rebuilding rough, hand-drawn, or inconsistent diagrams into a strict reusable design system with:
+Agent instructions live under `.github`, not the repo root:
+
+- **`.github/copilot-instructions.md`** — the single repo-wide instruction file
+- **`.github/agents/agent.md`** — optional repo-specific resume prompt
+
+Everything else lives at the repo root as operational workflow files:
+
+```
+README.md        — human-readable overview
+ROADMAP.md       — long-term direction
+TODO.md          — active execution queue
+INBOX.md         — async user notes (agent drains these)
+AGENT-INBOX.md   — agent-only handoffs and diagnostics
+STATUS.md        — cold-start orientation
+HISTORY.md       — completed work archive
+docs/specs.md    — source docs, reference assets, sibling repos
+```
+
+The rule: every important piece of project state lives in exactly one place.
+
+## What this repo does
+
+This repo rebuilds rough, hand-drawn, or inconsistent diagrams into a strict reusable design system with:
 
 - editable SVG outputs
 - editable draw.io XML outputs
 - consistent typography, spacing, icon placement, and arrow geometry
-- cold-start-safe documentation so a new chat can continue without re-deriving the system
+- cold-start-safe workflow files so a new chat can continue without re-deriving the system
 
 ## Workflow
 
+### Before generating any diagram
+
+**Read the playbook first.** The diagram style rules are non-negotiable:
+
+1. Read the "Current diagram style playbook" section in [`TODO.md`](TODO.md)
+2. Review the invariants in [`.github/copilot-instructions.md`](.github/copilot-instructions.md) under "Non-negotiable diagram rules"
+
+Key rules you must not violate:
+
+- Colors: white, `#F3F3F3` grey, or one black emphasis box only — **no other fills**
+- Orange `#E95420` is **reserved for arrows only** — never use it for boxes
+- Icons come from [`assets/icons/`](assets/icons) only — do not invent or source new ones
+- Text is always top-left aligned with `8px` insets
+
+### After adding new diagrams
+
+Update the comparison pages so reviewers can see before/after:
+
+1. Add entries to the `PAIRS` list in [`scripts/build_compare_pages.py`](scripts/build_compare_pages.py)
+2. Run `python scripts/build_compare_pages.py`
+3. Verify the new HTML appears in [`diagrams/3.compare/html/`](diagrams/3.compare/html)
+
+### Input/output structure
+
 Input:
 
-- rough sketches or screenshot references in [`diagrams/1. input/`](diagrams/1.%20input)
-- brand and layout invariants documented in [`docs/TODO.md`](docs/TODO.md) and [`llm-handoff-context.md`](llm-handoff-context.md)
+- rough sketches or screenshot references in [`diagrams/1.input/`](diagrams/1.input)
+- brand and layout invariants documented in [`TODO.md`](TODO.md), [`STATUS.md`](STATUS.md), and [`docs/specs.md`](docs/specs.md)
 - local icons from [`assets/icons/`](assets/icons)
 
 Output:
 
-- final SVGs in [`diagrams/2.output/`](diagrams/2.output)
-- draw.io exports in [`draw.io/`](draw.io)
+- primary editable draw.io exports in [`diagrams/2.output/draw.io/`](diagrams/2.output/draw.io)
+- sibling SVG outputs in [`diagrams/2.output/svg/`](diagrams/2.output/svg)
 
-## Canonical References
+Build order:
+
+- run [`build_outputs.py`](scripts/build_outputs.py) for the canonical batch build
+- it generates draw.io first, then regenerates the matching SVG batch
+
+## Canonical references
 
 - Starter block: [`sample.svg`](diagrams/0.reference/sample.svg)
 - Larger visual preview: [`sample.png`](diagrams/0.reference/sample.png)
 - Reusable SVG starter: [`onbrand-svg-starter.svg`](diagrams/0.reference/onbrand-svg-starter.svg)
-- Canonical exemplar: [`memory-wall-onbrand.svg`](diagrams/2.output/memory-wall-onbrand.svg)
+- Canonical exemplar: [`memory-wall-onbrand.svg`](diagrams/2.output/svg/memory-wall-onbrand.svg)
 - Canonical draw.io exporter: [`export_drawio_batch.py`](scripts/export_drawio_batch.py)
+- Shared primitives module: [`diagram_shared.py`](scripts/diagram_shared.py)
 
-## Current Design System
+## Current design system
 
 - Base box width is `192px`
 - Base box height is at least `64px`
@@ -47,7 +99,7 @@ Output:
 - Box and arrow strokes are `1px`
 - Arrows should connect midpoint-to-midpoint from one box edge to another
 
-## Draw.io Export Rules
+## Draw.io export rules
 
 - Text-bearing boxes, panels, and notation widgets must export as native editable `mxCell` geometry
 - Icons may use embedded `data:` image cells
@@ -55,15 +107,59 @@ Output:
 - Direct connectors must use real `source` / `target` references plus explicit `entry` / `exit` anchors
 - Exports should force light rendering with `adaptiveColors="none"` and explicit colors
 
-## Key Files
+## Workflow map
 
-- Rules and invariants: [`docs/TODO.md`](docs/TODO.md)
-- Cold-start handoff: [`llm-handoff-context.md`](llm-handoff-context.md)
-- History log: [`docs/history.md`](docs/history.md)
-- Shared SVG generator: [`generate_remaining_diagrams.py`](scripts/generate_remaining_diagrams.py)
-- Shared draw.io exporter: [`export_drawio_batch.py`](scripts/export_drawio_batch.py)
-- Illustrator sanitizer: [`svg_illustrator_sanitize.py`](scripts/svg_illustrator_sanitize.py)
+| File | Purpose |
+|------|---------|
+| `.github/copilot-instructions.md` | Agent rules, workflow conventions, diagram invariants |
+| `.github/agents/agent.md` | Repo-specific resume-agent prompt |
+| `README.md` | Human-readable overview and workflow reminder |
+| `ROADMAP.md` | Long-term direction and future stages |
+| `TODO.md` | Active queue, principles, architecture notes |
+| `INBOX.md` | Quick user notes to be triaged later |
+| `AGENT-INBOX.md` | Machine-generated handoffs and diagnostics awaiting triage |
+| `STATUS.md` | Cold-start orientation for the next session |
+| `HISTORY.md` | Archive of completed work |
+| `docs/specs.md` | Governing references, local assets, sibling repos |
+
+`INBOX.md` and `AGENT-INBOX.md` have different jobs. User notes stay in `INBOX.md` so they remain easy to scan. Long agent-to-agent handoffs, cross-repo follow-ups, and automation diagnostics go in `AGENT-INBOX.md` instead.
+
+## How to work in this repo
+
+### If you are the user
+
+1. Put interrupting ideas, reminders, and loose notes in `INBOX.md`.
+2. Keep machine-generated handoff text out of `INBOX.md`; that belongs in `AGENT-INBOX.md`.
+3. Use `TODO.md` for the next real work items only.
+4. Use `ROADMAP.md` for longer-term direction, not the active queue.
+5. Read `README.md` and `STATUS.md` when returning after time away.
+
+### If you are the agent
+
+1. Start with `STATUS.md`.
+2. Drain `INBOX.md` into `TODO.md` or `ROADMAP.md`.
+3. Drain `AGENT-INBOX.md` into canonical files.
+4. Read `TODO.md`.
+5. Read `docs/specs.md` before changing spec-governed behavior.
+6. Update `STATUS.md`, `TODO.md`, and `HISTORY.md` as work lands.
+
+## LLM efficiency notes
+
+These habits matter more than prompt cleverness when you are using a coding or diagramming LLM in this repo.
+
+- Pick one model per task. Model switches often invalidate caches and force the tool to reprocess the same context.
+- Keep permanent instructions short. Durable rules belong in `.github/copilot-instructions.md`; one-off task detail belongs in the active prompt, `TODO.md`, or `STATUS.md`.
+- Keep project memory in the repo, not only in chat. `STATUS.md`, `TODO.md`, `HISTORY.md`, and `docs/specs.md` are the cheap recovery path for a fresh session.
+- Prefer markdown, plain text, and direct asset paths over screenshots of text, dense tables, or loosely paraphrased descriptions.
+- Search in smaller verified passes, then confirm against the governing reference asset or output file.
+- Checkpoint and restart freely when context gets noisy instead of dragging a bloated conversation forward.
+
+Educational notes:
+
+- Good repo state beats long chat history. If a new session can recover by reading a few files, the workflow scales.
+- Durable rules should stay stable. Temporary context should be disposable. Mixing them is a common source of token waste.
+- Verification is part of efficient prompting. A fast wrong answer that is never checked is more expensive than a slower answer with a narrow validation step.
 
 ## Status
 
-The main SVG redraw batch and the first native draw.io export batch are in place. The main remaining manual review step is import/render validation in draw.io and Illustrator against the canonical SVG outputs.
+The main editable draw.io batch and matching SVG batch are in place. The current renderer split uses shared diagram primitives in [`diagram_shared.py`](scripts/diagram_shared.py), with [`build_outputs.py`](scripts/build_outputs.py) generating draw.io first into [`diagrams/2.output/draw.io/`](diagrams/2.output/draw.io) and SVG second into [`diagrams/2.output/svg/`](diagrams/2.output/svg). The repo now follows the centralized root workflow used by the new boilerplate repo, and the main remaining manual review step is import and render validation in draw.io and Illustrator.

@@ -1,4 +1,8 @@
-# Diagram Redesign Plan
+# TODO
+
+## Purpose
+
+This is the active execution queue for `diagram-generator`.
 
 ## Goal
 
@@ -21,22 +25,37 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 7. Orange is reserved for arrows and arrowheads; boxes do not get orange fills.
 8. Geometry stays tight and reference-scaled; do not casually upscale diagrams.
 9. Use local icons only, and omit the icon entirely when no suitable icon exists in `assets/icons/`.
-10. The current canonical output exemplar is `diagrams/2.output/memory-wall-onbrand.svg`; inspect it before treating any other output as precedent.
-11. Canonical status lives only in the five workflow files.
+10. The current canonical output exemplar is `diagrams/2.output/svg/memory-wall-onbrand.svg`; inspect it before treating any other output as precedent.
+11. Canonical project state lives only in `STATUS.md`, `TODO.md`, `ROADMAP.md`, `HISTORY.md`, `INBOX.md`, `AGENT-INBOX.md`, and `docs/specs.md`.
 
 ## Architecture
+
+### Safe draw.io evolution lane
+
+- draw.io shape libraries and the scratchpad are copy-based insertion tools: they improve reuse for future additions, but changing a library item later does not retroactively update shapes already placed in diagrams.
+- draw.io default shape and connector styles are editor-scoped convenience settings, useful during a manual edit session but not a durable repo-wide source of truth.
+- For repo-wide style changes such as reducing top padding on text-bearing boxes, the real solution is a tokenized batch-update path over the diagram XML, not relying on manual paste-style passes.
+- draw.io custom stencils are still useful for reusable special shapes because they can define geometry, connection points, and local style overrides while inheriting fill and stroke from the applied style when appropriate.
+- Direct XML editing through draw.io and git-versioned `.drawio` files makes a deterministic merge and revert workflow feasible, provided generator-owned cells carry stable identity and provenance metadata.
+- `assets/drawio/diagram-generator-primitives.mxlibrary` is the tracked reusable library export for the current canonical primitives, and `scripts/export_drawio_library.py` regenerates it during the canonical batch build.
+- Generated draw.io cells now carry `data-dg-source`, `data-dg-role`, `data-dg-style-tokens`, and matching `tags`, so generator-owned cells can be filtered safely before any batch rewrite or merge logic touches them.
+- `scripts/drawio_style_sync.py` is the batch rewrite entrypoint for tokenized style changes such as `spacingTop`, text spacing, connector styles, and dash patterns.
+- Protected manual-edit workflow: when a manually polished draw.io file needs changes, create a mirrored review copy under `diagrams/2.output/draw.io/review/`, edit only that copy first, let the user review it, and promote it back only after checkpointing the original under `diagrams/2.output/draw.io/checkpoints/`.
+- Use `scripts/drawio_review_workflow.py` for the routine copy-review-promote steps so the original manually edited file is never the first place changes land.
 
 ### Current diagram style playbook
 
 - Font source: `assets/UbuntuSans[wdth,wght].ttf`
 - Illustrator-safe font rule: final editable SVGs should use `font-family: 'Ubuntu Sans'` by name only; do not ship a file-path `@font-face` rule in deliverables
 - Canonical new-work block: `192px` wide and at least `64px` tall, with a `1px` outer border and a centered vertical orange arrow built from a literal line plus triangle
-- `diagrams/0.reference/sample.png` is the clearer 3x raster preview of that same block, at `576x345`
+- `diagrams/0.reference/sample.png` is the clearer `3x` raster preview of that same block, at `576x345`
 - Block text alignment: always top-left aligned, even when the label is only one line
 - Block text inset: `x=8`, `y=8` from the visible top of the text, not from the raw baseline; place live text by ascent so the ascenders sit `8px` below the box top
 - Block text size: `16px`, weight `400`, sentence case by default
 - Typography economy rule: prefer hierarchy by weight before hierarchy by size; go from `16px` regular to `16px` bold, then `16px` small-caps with `0.05em` tracking before introducing another size; if a larger step is genuinely needed use `24pt`, then `24pt` bold, then `24pt` small-caps with the same tracking
 - Explanatory/helper copy stays at the body size rather than shrinking; use `16px` regular with `#666666`
+- Terminal command bars should read as literal terminal chrome: a `20px` top strip with three window-control dots, a separator line, and Ubuntu Sans Mono for the command text.
+- Mini-grid notation widgets such as `Q`, `K`, and `V` should reserve an explicit top label band above the grid so the letter sits clear of the first divider rather than hanging into the cells.
 - Local icons are embedded at their natural `48x48` size with no SVG scaling tricks
 - Icon placement: align the icon artboard top-right with an `8px` inset from the box interior; do not center icons vertically within the box
 - Box height rule: use the natural icon height plus `2 * 8px` padding, so the current `48px` icons require a `64px`-tall box; three-line boxes are `72px` tall, and longer boxes should keep rounding up in `8px` steps rather than shrinking text or tightening inset
@@ -57,7 +76,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 - Borderless grouping pads still need `8px` internal padding on every side; do not let the grey substrate or dashed frame end flush with the boxes it contains
 - Arrowheads should be visibly sized at export scale, with enough shaft length before the head that the connector still reads clearly
 - Illustrator-safe structure: do not use `<symbol>`, `<use>`, external `<image href="...">`, or marker refs such as `marker-start="url(#...)"` in deliverable SVGs
-- Embed every arrowhead, icon, and mini-grid directly as literal paths/groups in the document so Illustrator sees real geometry instead of internal references
+- Embed every arrowhead, icon, and mini-grid directly as literal paths or groups in the document so Illustrator sees real geometry instead of internal references
 - For now, treat the older `144x26` / `128x26` / `9px` system as legacy maintenance guidance for already-finished diagrams, not the default for new redraws
 - Right-side icons: use only local icons, embedded directly, in the established natural-size lane
 - If no local icon is semantically appropriate, omit the icon rather than inventing or sourcing a new one
@@ -71,32 +90,38 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 - Separator lines: literal requested pattern, not approximate substitutions
 - If a separator sits between two stacked boxes, keep it centered in the gap and match it to the box width unless the source clearly asks for a wider span
 - `Memory wall` is the current canonical semantic exception: it keeps jagged top and bottom edges rather than a plain rectangle
-- `diagrams/2.output/memory-wall-onbrand.svg` is the current canonical implementation checkpoint for alignment, palette, icon placement, and scale
+- `diagrams/2.output/svg/memory-wall-onbrand.svg` is the current canonical implementation checkpoint for alignment, palette, icon placement, and scale
 - Run `scripts/svg_illustrator_sanitize.py` before treating a deliverable as done; it expands internal symbol reuse, strips external font URLs, and flags linked-image hazards
 - Draw.io XML export is anchored to the local sample set: use raw `<mxfile>` / `<mxGraphModel>` output, native `mxCell` rectangles, text labels, groups, and edges for every text-bearing box, panel, or notation widget so the result stays editable in draw.io
 - Inline `data:image/svg+xml,...` image cells are still allowed for icons and genuinely special non-text shapes such as the jagged memory-wall panel or request-icon cluster, but never as a shortcut for a full text-bearing box, panel, or labeled notation widget
-- `scripts/export_drawio_batch.py` is the current canonical draw.io exporter, `scripts/export_memory_wall_drawio.py` now delegates to it, and `draw.io/*-onbrand.drawio` is the current import-test batch
+- `scripts/build_outputs.py` is the canonical batch entrypoint, `scripts/export_drawio_batch.py` is the primary draw.io renderer writing to `diagrams/2.output/draw.io/`, `scripts/generate_remaining_diagrams.py` is the sibling SVG renderer, and both read shared primitives from `scripts/diagram_shared.py`
 - For draw.io outputs, direct box-to-box connectors should be real attached edges with `source` and `target` cell ids plus explicit `entry` / `exit` anchors, not loose point-only lines
 - If a diagram section is too branched for a perfect one-cell reconstruction, keep the visible boxes and text native and editable first; only the non-text ornament around them may fall back to an image cell
 - For draw.io outputs, force light rendering by writing `adaptiveColors="none"` on the `mxGraphModel` and explicit `fontColor` / `fillColor` values on text-bearing cells
 
 ### Current process for each diagram
 
-1. Inspect the source asset, `diagrams/0.reference/sample.svg`, `diagrams/0.reference/sample.png`, `diagrams/0.reference/onbrand-svg-starter.svg`, and `diagrams/2.output/memory-wall-onbrand.svg` first; use `diagrams/0.reference/_BRND-3284.drawio.svg` as a secondary reference.
+1. Inspect the source asset, `diagrams/0.reference/sample.svg`, `diagrams/0.reference/sample.png`, `diagrams/0.reference/onbrand-svg-starter.svg`, and `diagrams/2.output/svg/memory-wall-onbrand.svg` first; use `diagrams/0.reference/_BRND-3284.drawio.svg` as a secondary reference.
 2. Identify whether a suitable local icon exists in `assets/icons/`; if not, plan for no icon.
 3. Build or adapt an SVG at the established reference scale.
-4. Match text alignment, box fills, strokes, icon placement, and arrow behavior to the documented style playbook, including the exact `8px` text/icon inset and the rule that connectors sit behind the boxes.
+4. Match text alignment, box fills, strokes, icon placement, and arrow behavior to the documented style playbook, including the exact `8px` text and icon inset and the rule that connectors sit behind the boxes.
 5. Do a final typography audit: if more than one main text size appears, verify that weight contrast or small-caps at `16px` was considered first and that any size change uses the current `24pt` step rather than the legacy `14px` one.
 6. Do a final content audit against the source sketch so small labels or technology names were not dropped during cleanup.
 7. Do a final icon audit against `assets/icons/` so major nodes and repeated semantic tiles are not left icon-light without a conscious reason.
 8. Run `scripts/svg_illustrator_sanitize.py --write <svg>` so the file is symbol-free and free of external font URLs.
 9. Validate the SVG for syntax issues.
-10. If the user wants a draw.io output, emit raw mxGraph XML with native editable `mxCell` boxes/text first, use embedded `data:` image cells only for icons or special non-text shapes, then XML-parse the result locally before handing it off.
+10. If the user wants a draw.io output, emit raw `mxGraphModel` XML with native editable `mxCell` boxes and text first, use embedded `data:` image cells only for icons or special non-text shapes, then XML-parse the result locally before handing it off.
 11. Record meaningful new conventions in the canonical docs if they generalize.
 
 ## Active TODO
 
-- [ ] Re-audit the refreshed starter-block batch in Illustrator: `diagrams/2.output/memory-wall-onbrand.svg`, `diagrams/2.output/request-to-hardware-stack-onbrand.svg`, `diagrams/2.output/inference-snaps-onbrand.svg`, `diagrams/2.output/attention-qkv-onbrand.svg`, `diagrams/2.output/logic-data-vram-onbrand.svg`, `diagrams/2.output/rise-of-inference-economy-onbrand.svg`, and `diagrams/2.output/gpu-waiting-scheduler-onbrand.svg`.
-- [ ] Import-test the current `draw.io/*-onbrand.drawio` batch in draw.io and note any renderer mismatches versus the SVG canonicals.
+- [x] Define the three-lane draw.io workflow: generated base file, manually polished working file, and checkpoint snapshots or pages for low-friction revert.
+- [x] Export a repo-owned draw.io library for the canonical primitives: default box, accent box, black highlight box, helper note, orange connector, terminal command bar, matrix widget, memory-wall panel, and common grouped panels.
+- [x] Refactor `scripts/export_drawio_batch.py` to emit style-token metadata and provenance markers on generated cells so future tools can distinguish generator-owned shapes from manual additions.
+- [x] Add a style-sync tool that can batch-rewrite tokenized properties such as `spacingTop`, text spacing, connector styles, dash patterns, and related draw.io style fields across existing diagrams.
+- [ ] Pilot the scripted review-copy workflow on `diagrams/2.output/draw.io/memory-wall-onbrand-edited-in-drawio.drawio` and one file under `diagrams/2.output/draw.io/manually-edited/`, including a documented revert procedure.
+- [x] 3-way compare pages (Before / Agent / Refined): extend `scripts/build_compare_pages.py` so each compare page shows the source input, the agent-generated SVG, and the manually refined raster from `diagrams/2.output/draw.io/manually-edited/raster/` side by side, with a graceful "no manual edit yet" panel when the refined asset is missing.
+- [ ] Re-audit the refreshed starter-block batch in Illustrator: `diagrams/2.output/svg/memory-wall-onbrand.svg`, `diagrams/2.output/svg/request-to-hardware-stack-onbrand.svg`, `diagrams/2.output/svg/inference-snaps-onbrand.svg`, `diagrams/2.output/svg/attention-qkv-onbrand.svg`, `diagrams/2.output/svg/logic-data-vram-onbrand.svg`, `diagrams/2.output/svg/rise-of-inference-economy-onbrand.svg`, and `diagrams/2.output/svg/gpu-waiting-scheduler-onbrand.svg`.
+- [ ] Import-test the current `diagrams/2.output/draw.io/*-onbrand.drawio` batch in draw.io and note any renderer mismatches versus the SVG canonicals.
 - [ ] Keep refining the reusable style playbook as more diagram types appear.
 - [ ] Re-audit the generator helpers whenever the user adjusts the starter block so the output set does not drift back into mixed inset or line-height rules.

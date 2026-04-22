@@ -3,12 +3,10 @@ __pycache__/
 _tail.txt
 
 # Ignore input and output diagrams
-diagrams/1. input/
+diagrams/1.input/
 diagrams/2.output/
 
 # Ignore brand reference files
 diagrams/0.reference/_BRND-3284.drawio.svg
 diagrams/0.reference/onbrand-reference.png
 
-# Ignore draw.io source files
-draw.io/*.drawio
