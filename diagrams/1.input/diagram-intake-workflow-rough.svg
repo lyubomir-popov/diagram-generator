@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560">
+  <rect width="960" height="560" fill="#fffdf7" />
+  <text x="40" y="44" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700" fill="#303030">
+    rough workflow to confirm with PMs
+  </text>
+  <text x="40" y="76" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#5c5c5c">
+    what formats do rough diagrams start in before the brand-team pass?
+  </text>
+
+  <rect x="56" y="112" width="848" height="120" rx="10" fill="#fffefb" stroke="#7a7a7a" stroke-width="2" stroke-dasharray="12 10" />
+  <text x="76" y="146" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="600" fill="#303030">
+    rough inputs we know about today
+  </text>
+
+  <rect x="76" y="168" width="220" height="72" rx="8" fill="#ffffff" stroke="#4f4f4f" stroke-width="2" />
+  <text x="92" y="198" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="600" fill="#303030">
+    ChatGPT
+  </text>
+  <text x="92" y="224" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#4f4f4f">
+    generated diagrams
+  </text>
+
+  <rect x="320" y="168" width="268" height="72" rx="8" fill="#ffffff" stroke="#4f4f4f" stroke-width="2" stroke-dasharray="10 8" />
+  <text x="338" y="198" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#303030">
+    ? additional PM rough formats
+  </text>
+  <text x="338" y="224" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#4f4f4f">
+    need PM input on the full intake mix
+  </text>
+
+  <rect x="612" y="168" width="268" height="72" rx="8" fill="#ffffff" stroke="#4f4f4f" stroke-width="2" stroke-dasharray="10 8" />
+  <text x="630" y="198" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700" fill="#303030">
+    ? more intake patterns
+  </text>
+  <text x="630" y="224" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#4f4f4f">
+    need PM inventory before standardising
+  </text>
+
+  <line x1="480" y1="232" x2="480" y2="278" stroke="#e95420" stroke-width="3" stroke-linecap="round" />
+  <polygon points="470,278 480,294 490,278" fill="#e95420" />
+
+  <rect x="192" y="294" width="576" height="68" rx="8" fill="#ffffff" stroke="#4f4f4f" stroke-width="2" />
+  <text x="212" y="324" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#303030">
+    agent workflow in this repo
+  </text>
+  <text x="212" y="350" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#4f4f4f">
+    take rough sources and rebuild them into on-brand working files
+  </text>
+
+  <line x1="480" y1="362" x2="480" y2="396" stroke="#e95420" stroke-width="3" stroke-linecap="round" />
+  <polygon points="470,396 480,412 490,396" fill="#e95420" />
+
+  <rect x="192" y="412" width="576" height="58" rx="8" fill="#ffffff" stroke="#4f4f4f" stroke-width="2" />
+  <text x="212" y="447" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700" fill="#303030">
+    compare HTML, designer pass in draw.io, render SVGs
+  </text>
+</svg>

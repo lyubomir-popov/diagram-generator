@@ -562,6 +562,100 @@ def build_gpu_waiting() -> None:
     write_svg(SVG_DIR / "gpu-waiting-scheduler-onbrand.svg", parts)
 
 
+def build_diagram_intake_workflow() -> None:
+    width = 752
+    height = 632
+    parts = svg_open(width, height)
+    background: list[str] = []
+    foreground: list[str] = []
+
+    x = 72
+    frame_y = 24
+    frame_width = 608
+    frame_height = 176
+    center_x = x + frame_width / 2
+
+    background.extend(
+        [
+            vertical_arrow(center_x, frame_y + frame_height, 224),
+            vertical_arrow(center_x, 296, 320),
+            vertical_arrow(center_x, 384, 408),
+            vertical_arrow(center_x, 480, 504),
+        ]
+    )
+
+    foreground.append(rect(x, frame_y, frame_width, frame_height, fill="none", stroke=BLACK, dasharray="8 8"))
+    foreground.append(text_block(x + 8, frame_y + 8, [make_line("Rough initial diagram sources", weight="700")]))
+    foreground.append(box(x + 8, frame_y + 48, 192, WHITE, [make_line("ChatGPT-generated"), make_line("diagrams")], icon_name="AI.svg", height=64))
+    foreground.append(
+        box(
+            x + 208,
+            frame_y + 48,
+            392,
+            GREY,
+            [make_line("? Additional rough"), make_line("source formats"), make_line("from PMs")],
+            height=72,
+        )
+    )
+    foreground.append(
+        text_block(
+            x + 8,
+            frame_y + 136,
+            [make_line("Ask PMs: which rough formats reach the brand team before on-brand redraw?", fill=HELPER)],
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            224,
+            frame_width,
+            WHITE,
+            [make_line("Agentic workflow", weight="700"), make_line("in this repo"), make_line("playbook + generators", fill=HELPER)],
+            icon_name="Screen with code.svg",
+            height=72,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            320,
+            frame_width,
+            GREY,
+            [make_line("Compare mode", weight="700"), make_line("HTML before / agent / refined", fill=HELPER)],
+            icon_name="Document with Magnifying glass.svg",
+            height=64,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            408,
+            frame_width,
+            WHITE,
+            [make_line("Designer polish", weight="700"), make_line("manual pass in generated"), make_line("draw.io", fill=HELPER)],
+            icon_name="Design.svg",
+            height=72,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            504,
+            frame_width,
+            BLACK,
+            [make_line("Final SVGs", weight="700", fill=WHITE), make_line("on-brand deliverables", fill=WHITE)],
+            icon_name="Storage image.svg",
+            text_fill=WHITE,
+            icon_fill=WHITE,
+            height=64,
+        )
+    )
+
+    parts.extend(background)
+    parts.extend(foreground)
+    write_svg(SVG_DIR / "diagram-intake-workflow-onbrand.svg", parts)
+
+
 def build_rise_of_inference_economy() -> None:
     width = 912
     height = 792
@@ -921,6 +1015,7 @@ def main() -> None:
     build_inference_snaps()
     build_rise_of_inference_economy()
     build_gpu_waiting()
+    build_diagram_intake_workflow()
     build_logic_data_vram()
 
 

@@ -926,6 +926,125 @@ def export_gpu_waiting() -> None:
     builder.write(svg.DRAWIO_DIR / "gpu-waiting-scheduler-onbrand.drawio")
 
 
+def export_diagram_intake_workflow() -> None:
+    builder = DrawioBuilder(name="Page-1", diagram_id="diagram-intake-workflow", page_width=840, page_height=720)
+
+    frame_x = 72
+    frame_y = 24
+    frame_width = 608
+    frame_height = 176
+    center_x = frame_x + frame_width / 2
+
+    input_frame = add_plain_rect(
+        builder,
+        x=frame_x,
+        y=frame_y,
+        width=frame_width,
+        height=frame_height,
+        fill="none",
+        dashed=True,
+        connectable=True,
+        style_tokens=("group-frame",),
+    )
+    add_label(
+        builder,
+        x=8,
+        y=8,
+        width=280,
+        lines=[svg.make_line("Rough initial diagram sources", weight="700")],
+        parent=input_frame,
+    )
+    add_box(
+        builder,
+        x=8,
+        y=48,
+        width=192,
+        height=64,
+        fill=svg.WHITE,
+        lines=[svg.make_line("ChatGPT-generated"), svg.make_line("diagrams")],
+        icon_name="AI.svg",
+        parent=input_frame,
+        connectable=False,
+    )
+    add_box(
+        builder,
+        x=208,
+        y=48,
+        width=392,
+        height=72,
+        fill=svg.GREY,
+        lines=[svg.make_line("? Additional rough"), svg.make_line("source formats"), svg.make_line("from PMs")],
+        parent=input_frame,
+        connectable=False,
+    )
+    add_label(
+        builder,
+        x=8,
+        y=136,
+        width=592,
+        lines=[svg.make_line("Ask PMs: which rough formats reach the brand team before on-brand redraw?", fill=svg.HELPER)],
+        parent=input_frame,
+    )
+
+    workflow = add_box(
+        builder,
+        x=frame_x,
+        y=224,
+        width=frame_width,
+        height=72,
+        fill=svg.WHITE,
+        lines=[svg.make_line("Agentic workflow", weight="700"), svg.make_line("in this repo"), svg.make_line("playbook + generators", fill=svg.HELPER)],
+        icon_name="Screen with code.svg",
+    )
+    compare = add_box(
+        builder,
+        x=frame_x,
+        y=320,
+        width=frame_width,
+        height=64,
+        fill=svg.GREY,
+        lines=[svg.make_line("Compare mode", weight="700"), svg.make_line("HTML before / agent / refined", fill=svg.HELPER)],
+        icon_name="Document with Magnifying glass.svg",
+    )
+    polish = add_box(
+        builder,
+        x=frame_x,
+        y=408,
+        width=frame_width,
+        height=72,
+        fill=svg.WHITE,
+        lines=[svg.make_line("Designer polish", weight="700"), svg.make_line("manual pass in generated"), svg.make_line("draw.io", fill=svg.HELPER)],
+        icon_name="Design.svg",
+    )
+    final = add_box(
+        builder,
+        x=frame_x,
+        y=504,
+        width=frame_width,
+        height=64,
+        fill=svg.BLACK,
+        lines=[svg.make_line("Final SVGs", weight="700", fill=svg.WHITE), svg.make_line("on-brand deliverables", fill=svg.WHITE)],
+        icon_name="Storage image.svg",
+        icon_fill=svg.WHITE,
+    )
+
+    for source, target, source_y, target_y in (
+        (input_frame, workflow, frame_y + frame_height, 224),
+        (workflow, compare, 296, 320),
+        (compare, polish, 384, 408),
+        (polish, final, 480, 504),
+    ):
+        builder.add_edge(
+            style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0),
+            source=source,
+            target=target,
+            source_point=(center_x, source_y),
+            target_point=(center_x, target_y),
+        )
+
+    builder.write(svg.DRAWIO_DIR / "diagram-intake-workflow-onbrand.drawio")
+
+
 def export_logic_data_vram() -> None:
     builder = DrawioBuilder(name="Page-1", diagram_id="logic-data-vram", page_width=980, page_height=860)
 
@@ -1084,6 +1203,7 @@ def main() -> None:
     export_inference_snaps()
     export_rise_of_inference()
     export_gpu_waiting()
+    export_diagram_intake_workflow()
     export_logic_data_vram()
     export_attention_qkv()
 

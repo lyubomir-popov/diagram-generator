@@ -86,6 +86,12 @@ PAIRS = [
         "before": "complex-tests/2.jpg",
         "after": "layer3-mpls-onbrand.svg",
     },
+    {
+      "slug": "diagram-intake-workflow",
+      "title": "Diagram intake workflow",
+      "before": "diagram-intake-workflow-rough.svg",
+      "after": "diagram-intake-workflow-onbrand.svg",
+    },
 ]
 
 

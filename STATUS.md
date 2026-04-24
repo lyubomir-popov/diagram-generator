@@ -24,6 +24,7 @@ Critical rules:
 - **Draw.io is the primary editable output target.** `scripts/build_outputs.py` generates draw.io first into `diagrams/2.output/draw.io/`, then regenerates the matching SVG batch in `diagrams/2.output/svg/`.
 - **Both renderers now share one primitive layer.** `scripts/diagram_shared.py` carries the shared tokens, icon loading, text metrics, terminal chrome helpers, and matrix helpers used by both renderers.
 - **The current output batch is already rebuilt on the refreshed starter-block system.** `memory-wall-onbrand.svg`, `request-to-hardware-stack-onbrand.svg`, `inference-snaps-onbrand.svg`, `attention-qkv-onbrand.svg`, `logic-data-vram-onbrand.svg`, `rise-of-inference-economy-onbrand.svg`, and `gpu-waiting-scheduler-onbrand.svg` all live under `diagrams/2.output/svg/`, with matching editable draw.io exports under `diagrams/2.output/draw.io/`.
+- **A workflow explainer diagram now documents the intake lane.** `diagram-intake-workflow-onbrand.svg` and `diagram-intake-workflow-onbrand.drawio` show the current ChatGPT input, the open PM intake-question lane, the repo workflow, compare mode, the manual draw.io polish step, and final SVG output; the review lane also includes `diagrams/1.input/diagram-intake-workflow-rough.svg` and `diagrams/3.compare/html/diagram-intake-workflow.html`.
 - **Generated draw.io cells now carry provenance and style tokens.** Exported `mxCell` nodes now include `data-dg-source`, `data-dg-role`, `data-dg-style-tokens`, and matching `tags` metadata so generator-owned cells can be distinguished from manual additions and batch-targeted by future tools.
 - **A tracked reusable draw.io library now exists.** `scripts/export_drawio_library.py` writes `assets/drawio/diagram-generator-primitives.mxlibrary` with the canonical default box, accent box, highlight box, helper note, connector, terminal bar, matrix widget, memory-wall panel, and grouped panel primitives.
 - **Token-aware style sync is now available.** `scripts/drawio_style_sync.py` can batch rewrite tokenized draw.io style fields such as `spacingTop`, connector properties, and dash patterns across generated diagrams.
@@ -66,6 +67,7 @@ Critical rules:
 | Current vertical-stack exemplar | `diagrams/2.output/svg/request-to-hardware-stack-onbrand.svg` |
 | Wide infographic exemplar | `diagrams/2.output/svg/rise-of-inference-economy-onbrand.svg` |
 | Sparse request-flow exemplar | `diagrams/2.output/svg/gpu-waiting-scheduler-onbrand.svg` |
+| Workflow explainer exemplar | `diagrams/2.output/svg/diagram-intake-workflow-onbrand.svg` |
 | Current four-panel attention exemplar | `diagrams/2.output/svg/attention-qkv-onbrand.svg` |
 | Grouped package/layout exemplar | `diagrams/2.output/svg/inference-snaps-onbrand.svg` |
 | SVG output set | `diagrams/2.output/svg/` |

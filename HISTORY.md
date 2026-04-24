@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-24 — Diagram intake workflow explainer
+
+- Added `diagram-intake-workflow-onbrand.drawio` and `diagram-intake-workflow-onbrand.svg` as a generated explainer for the current intake path: known ChatGPT source, open PM input-format questions, repo workflow, compare mode, manual draw.io polish, and final SVG output.
+- Added the rough reference asset `diagrams/1.input/diagram-intake-workflow-rough.svg` plus the matching compare-page entry so the explainer joins the existing before / agent / refined review lane.
+- Rebuilt the output batch, sanitized the new SVG deliverable, and regenerated the compare pages.
+
 ### 2026-04-21 — Draw.io library export and tokenized style sync
 
 - Added `scripts/export_drawio_library.py` and the tracked `assets/drawio/diagram-generator-primitives.mxlibrary` export so the canonical reusable draw.io primitives now live in a versioned library file instead of only in generated diagrams.
