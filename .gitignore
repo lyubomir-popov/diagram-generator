@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 _tail.txt
+diagram-generator.code-workspace
 
 # Ignore input and output diagrams
 diagrams/1.input/
