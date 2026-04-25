@@ -8,7 +8,10 @@ from diagram_shared import (
     ASCENT_RATIO,
     BLACK,
     BLOCK_WIDTH,
+    BODY_LINE_STEP,
     BODY_SIZE,
+    BOX_MIN_HEIGHT,
+    COMPACT_GAP,
     DESCENT_RATIO,
     DIAGRAM_TIER_BODY_SIZE,
     GRID_GUTTER,
@@ -22,6 +25,7 @@ from diagram_shared import (
     MATRIX_ROW_DIVIDERS,
     MATRIX_SIZE,
     ORANGE,
+    OUTER_MARGIN,
     SVG_DIR,
     TERMINAL_CHROME_HEIGHT,
     TERMINAL_DOT_RADIUS,
@@ -35,7 +39,10 @@ from diagram_shared import (
     load_icon,
     make_diagram_line,
     make_line,
+    panel_grid,
+    round_up_to_grid,
     size_to_px,
+    tight_box_height,
 )
 
 
@@ -938,70 +945,179 @@ def build_rise_of_inference_economy() -> None:
 
 
 def build_logic_data_vram() -> None:
-    width = 912
-    height = 784
+    # -- Grid tokens --
+    col_width = BLOCK_WIDTH  # 192
+    col_gap = COMPACT_GAP    # 8
+    inset = INSET             # 8
+    row_gap = COMPACT_GAP     # 8
+
+    # Box heights (inside-out)
+    h_text_1 = tight_box_height([make_line("x")])                           # 36 (1-line, no icon)
+    h_icon_1 = tight_box_height([make_line("x")], has_icon=True)            # 64 (1-line + icon)
+    heading_h = tight_box_height([make_line("x", weight="700")])            # 36
+
+    # -- Top panels: "Logic + data conflict" and "AI inference" --
+    # Left panel: col0 has 1 icon box, col1 has 3 text-only boxes
+    left_grid = panel_grid(
+        cols=2, rows=3,
+        col_width=col_width, col_gap=col_gap, row_gap=row_gap,
+        heading_height=heading_h, heading_gap=row_gap,
+        row_heights=[h_icon_1, h_text_1, h_icon_1],
+    )
+    # Right panel: col0 has 3 icon boxes, col1 has 2 icon boxes (rows 0 and 2)
+    right_grid = panel_grid(
+        cols=2, rows=3,
+        col_width=col_width, col_gap=col_gap, row_gap=row_gap,
+        heading_height=heading_h, heading_gap=row_gap,
+        row_heights=[h_icon_1, h_icon_1, h_icon_1],
+    )
+
+    panel_gap = GRID_GUTTER  # 24
+    outer = OUTER_MARGIN     # 32
+
+    left_x = outer
+    left_y = outer
+    right_x = left_x + left_grid["width"] + panel_gap
+    right_y = outer
+
+    # -- Bottom panel: "VRAM fragmentation" --
+    vram_bar_h = 32
+    vram_rows = 3  # full bar, split bar, fragment bar
+    vram_heading_h = heading_h
+    sub_panel_w = col_width * 2 + col_gap  # 392
+    sub_panel_h = round_up_to_grid(
+        inset + vram_heading_h + row_gap
+        + vram_rows * vram_bar_h + (vram_rows - 1) * row_gap
+        + inset
+    )
+    helper_line_h = BODY_LINE_STEP  # 20
+    vram_outer_h = round_up_to_grid(
+        inset + heading_h + row_gap
+        + sub_panel_h + row_gap
+        + helper_line_h + inset
+    )
+    vram_outer_w = round_up_to_grid(
+        inset + sub_panel_w + panel_gap + sub_panel_w + inset
+    )
+    helper_below_top = max(left_grid["height"], right_grid["height"]) + 2 * helper_line_h + row_gap
+    vram_y = outer + round_up_to_grid(helper_below_top + panel_gap)
+    vram_x = outer
+
+    # Total canvas
+    width = round_up_to_grid(outer + max(
+        left_grid["width"] + panel_gap + right_grid["width"],
+        vram_outer_w,
+    ) + outer)
+    height = round_up_to_grid(vram_y + vram_outer_h + outer)
+
     parts = svg_open(width, height)
     background: list[str] = []
     foreground: list[str] = []
 
-    background.extend(
-        [
-            polyline_arrow([(672, 136), (680, 136), (680, 184), (688, 184)]),
-            vertical_arrow(576, 256, 280),
-            vertical_arrow(784, 216, 312),
-            horizontal_arrow(432, 616, 480),
-        ]
-    )
+    # ── Left panel: Logic + data conflict ──
+    lc = [left_x + cx for cx in left_grid["col_xs"]]
+    lr = [left_y + ry for ry in left_grid["row_ys"]]
 
-    foreground.append(rect(32, 32, 408, 360))
-    foreground.append(text_block(40, 40, [make_line("Logic + data conflict", weight="700")]))
-    foreground.append(box(40, 176, 192, GREY, [make_line("CPU", weight="700")], icon_name="CPU.svg"))
-    foreground.append(box(248, 104, 192, WHITE, [make_line("Logic", weight="700")]))
-    foreground.append(box(248, 192, 192, WHITE, [make_line("Logic", weight="700")]))
-    foreground.append(box(248, 280, 192, GREY, [make_line("Memory", weight="700")], icon_name="Memory.svg"))
-    foreground.append(text_block(40, 272, [make_line("Logic with optional", fill=HELPER), make_line("optional data.", fill=HELPER)]))
-    foreground.append(text_block(248, 368, [make_line("Optional data can stay", fill=HELPER), make_line("separate.", fill=HELPER)]))
+    foreground.append(rect(left_x, left_y, left_grid["width"], left_grid["height"]))
+    foreground.append(text_block(left_x + inset, left_y + inset, [make_line("Logic + data conflict", weight="700")]))
 
-    foreground.append(rect(472, 32, 408, 360))
-    foreground.append(text_block(480, 40, [make_line("AI inference", weight="700")]))
-    foreground.append(box(480, 104, 192, WHITE, [make_line("Logic", weight="700")], icon_name="AI.svg"))
-    foreground.append(box(480, 192, 192, GREY, [make_line("Data", weight="700")], icon_name="Data.svg"))
-    foreground.append(box(480, 280, 192, WHITE, [make_line("CPU", weight="700")], icon_name="CPU.svg"))
-    foreground.append(box(688, 152, 192, WHITE, [make_line("Data", weight="700")], icon_name="Data.svg"))
-    foreground.append(box(688, 312, 192, GREY, [make_line("Memory", weight="700")], icon_name="Memory.svg"))
-    foreground.append(text_block(480, 368, [make_line("Logic inseparable", fill=HELPER), make_line("from data", fill=HELPER)]))
+    foreground.append(box(lc[0], lr[0], col_width, GREY, [make_line("CPU")], icon_name="CPU.svg", height=h_icon_1))
+    foreground.append(box(lc[1], lr[0], col_width, WHITE, [make_line("Logic")], height=h_text_1))
+    foreground.append(box(lc[1], lr[1], col_width, WHITE, [make_line("Logic")], height=h_text_1))
+    foreground.append(box(lc[1], lr[2], col_width, GREY, [make_line("Memory")], icon_name="Memory.svg", height=h_icon_1))
 
-    foreground.append(rect(32, 424, 848, 328))
-    foreground.append(text_block(40, 432, [make_line("VRAM fragmentation", weight="700")]))
-    foreground.append(rect(40, 504, 392, 208, fill=GREY))
-    foreground.append(text_block(48, 512, [make_line("Fragmented layout", weight="700")]))
-    foreground.append(icon_group(376, 512, "RAM.svg"))
-    foreground.append(rect(48, 560, 376, 32))
-    foreground.append(text_block(56, 566, [make_line("10 GB", weight="700")]))
-    foreground.append(rect(48, 600, 376, 32))
-    foreground.append(text_block(56, 606, [make_line("6 GB context cache", weight="700")]))
-    foreground.append(rect(48, 640, 72, 32))
-    foreground.append(rect(128, 640, 56, 32, fill=GREY))
-    foreground.append(rect(192, 640, 88, 32))
-    foreground.append(rect(288, 640, 40, 32, fill=GREY))
-    foreground.append(rect(336, 640, 88, 32))
-    foreground.append(text_block(48, 680, [make_line("Fragmented allocations leave gaps.", fill=HELPER)]))
+    # Helper text below left panel
+    foreground.append(text_block(lc[0], left_y + left_grid["height"] + row_gap,
+                                 [make_line("Logic with optional data.", fill=HELPER)]))
+    foreground.append(text_block(lc[1], left_y + left_grid["height"] + row_gap,
+                                 [make_line("Optional data can stay separate.", fill=HELPER)]))
 
-    foreground.append(rect(480, 504, 392, 208, fill=GREY))
-    foreground.append(text_block(488, 512, [make_line("Packed layout", weight="700")]))
-    foreground.append(icon_group(816, 512, "Memory.svg"))
-    foreground.append(rect(488, 560, 376, 32))
-    foreground.append(text_block(496, 566, [make_line("24 GB GPU memory", weight="700")]))
-    foreground.append(rect(488, 600, 70, 32))
-    foreground.append(text_block(496, 606, [make_line("9 GB", weight="700")]))
-    foreground.append(rect(566, 600, 110, 32, fill=GREY))
-    foreground.append(text_block(574, 606, [make_line("Alloc", weight="700")]))
-    foreground.append(rect(684, 600, 180, 32))
-    foreground.append(rect(488, 640, 220, 32, fill=GREY))
-    foreground.append(rect(716, 640, 148, 32))
-    foreground.append(text_block(724, 646, [make_line("8 GB model", weight="700")]))
-    foreground.append(text_block(488, 680, [make_line("860 B free", fill=HELPER)]))
-    foreground.append(icon_group(432, 596, "Fragmentation.svg"))
+    # ── Right panel: AI inference ──
+    rc = [right_x + cx for cx in right_grid["col_xs"]]
+    rr = [right_y + ry for ry in right_grid["row_ys"]]
+
+    foreground.append(rect(right_x, right_y, right_grid["width"], right_grid["height"]))
+    foreground.append(text_block(right_x + inset, right_y + inset, [make_line("AI inference", weight="700")]))
+
+    foreground.append(box(rc[0], rr[0], col_width, WHITE, [make_line("Logic")], icon_name="AI.svg", height=h_icon_1))
+    foreground.append(box(rc[0], rr[1], col_width, GREY, [make_line("Data")], icon_name="Data.svg", height=h_icon_1))
+    foreground.append(box(rc[0], rr[2], col_width, WHITE, [make_line("CPU")], icon_name="CPU.svg", height=h_icon_1))
+    foreground.append(box(rc[1], rr[0], col_width, WHITE, [make_line("Data")], icon_name="Data.svg", height=h_icon_1))
+    foreground.append(box(rc[1], rr[2], col_width, GREY, [make_line("Memory")], icon_name="Memory.svg", height=h_icon_1))
+
+    # Orange arrows inside right panel (flow from Logic→Data2, Data→CPU, Data2→Memory)
+    background.append(vertical_arrow(rc[0] + col_width // 2, rr[0] + h_icon_1, rr[1]))
+    background.append(vertical_arrow(rc[0] + col_width // 2, rr[1] + h_icon_1, rr[2]))
+    background.append(vertical_arrow(rc[1] + col_width // 2, rr[0] + h_icon_1, rr[2]))
+
+    # Helper text below right panel
+    foreground.append(text_block(rc[0], right_y + right_grid["height"] + row_gap,
+                                 [make_line("Logic inseparable from data.", fill=HELPER)]))
+
+    # ── Bottom panel: VRAM fragmentation ──
+    foreground.append(rect(vram_x, vram_y, vram_outer_w, vram_outer_h))
+    foreground.append(text_block(vram_x + inset, vram_y + inset, [make_line("VRAM fragmentation", weight="700")]))
+
+    # Sub-panel positions
+    sp_y = vram_y + inset + heading_h + row_gap
+    frag_x = vram_x + inset
+    packed_x = frag_x + sub_panel_w + panel_gap
+
+    # Bar row y-positions inside sub-panels
+    bar_y0 = inset + vram_heading_h + row_gap
+    bar_y1 = bar_y0 + vram_bar_h + row_gap
+    bar_y2 = bar_y1 + vram_bar_h + row_gap
+    bar_inner_w = sub_panel_w - 2 * inset  # 376
+
+    # Fragmented layout sub-panel
+    foreground.append(rect(frag_x, sp_y, sub_panel_w, sub_panel_h, fill=GREY))
+    foreground.append(text_block(frag_x + inset, sp_y + inset, [make_line("Fragmented layout", weight="700")]))
+    foreground.append(icon_group(frag_x + sub_panel_w - inset - ICON_SIZE, sp_y + inset, "RAM.svg"))
+    foreground.append(rect(frag_x + inset, sp_y + bar_y0, bar_inner_w, vram_bar_h))
+    foreground.append(text_block(frag_x + inset + inset, sp_y + bar_y0 + 6, [make_line("10 GB")]))
+    foreground.append(rect(frag_x + inset, sp_y + bar_y1, bar_inner_w, vram_bar_h))
+    foreground.append(text_block(frag_x + inset + inset, sp_y + bar_y1 + 6, [make_line("6 GB context cache")]))
+    # Fragment chunks
+    chunk_y = sp_y + bar_y2
+    foreground.append(rect(frag_x + inset, chunk_y, 72, vram_bar_h))
+    foreground.append(rect(frag_x + inset + 80, chunk_y, 56, vram_bar_h, fill=GREY))
+    foreground.append(rect(frag_x + inset + 144, chunk_y, 88, vram_bar_h))
+    foreground.append(rect(frag_x + inset + 240, chunk_y, 40, vram_bar_h, fill=GREY))
+    foreground.append(rect(frag_x + inset + 288, chunk_y, 88, vram_bar_h))
+    # Helper below fragmented
+    foreground.append(text_block(frag_x + inset, sp_y + sub_panel_h + row_gap,
+                                 [make_line("Fragmented allocations leave gaps.", fill=HELPER)]))
+    foreground.append(text_block(frag_x + inset, sp_y + sub_panel_h + row_gap + helper_line_h,
+                                 [make_line("GPU", fill=HELPER)]))
+
+    # Packed layout sub-panel
+    foreground.append(rect(packed_x, sp_y, sub_panel_w, sub_panel_h, fill=GREY))
+    foreground.append(text_block(packed_x + inset, sp_y + inset, [make_line("Packed layout", weight="700")]))
+    foreground.append(icon_group(packed_x + sub_panel_w - inset - ICON_SIZE, sp_y + inset, "Memory.svg"))
+    foreground.append(rect(packed_x + inset, sp_y + bar_y0, bar_inner_w, vram_bar_h))
+    foreground.append(text_block(packed_x + inset + inset, sp_y + bar_y0 + 6, [make_line("24 GB GPU memory")]))
+    # Split row
+    foreground.append(rect(packed_x + inset, sp_y + bar_y1, 70, vram_bar_h))
+    foreground.append(text_block(packed_x + inset + inset, sp_y + bar_y1 + 6, [make_line("9 GB")]))
+    foreground.append(rect(packed_x + inset + 78, sp_y + bar_y1, 110, vram_bar_h, fill=GREY))
+    foreground.append(text_block(packed_x + inset + 78 + inset, sp_y + bar_y1 + 6, [make_line("Alloc")]))
+    foreground.append(rect(packed_x + inset + 196, sp_y + bar_y1, bar_inner_w - 196, vram_bar_h))
+    # Bottom row
+    foreground.append(rect(packed_x + inset, sp_y + bar_y2, 220, vram_bar_h, fill=GREY))
+    foreground.append(rect(packed_x + inset + 228, sp_y + bar_y2, bar_inner_w - 228, vram_bar_h))
+    foreground.append(text_block(packed_x + inset + 228 + inset, sp_y + bar_y2 + 6, [make_line("8 GB model")]))
+    # Helper below packed
+    foreground.append(text_block(packed_x + inset, sp_y + sub_panel_h + row_gap,
+                                 [make_line("860 B free", fill=HELPER)]))
+    foreground.append(text_block(packed_x + inset, sp_y + sub_panel_h + row_gap + helper_line_h,
+                                 [make_line("GPU", fill=HELPER)]))
+
+    # Arrow between sub-panels
+    arrow_y = sp_y + bar_y1 + vram_bar_h // 2
+    background.append(horizontal_arrow(frag_x + sub_panel_w, arrow_y, packed_x))
+
+    # Fragmentation icon between sub-panels
+    foreground.append(icon_group(frag_x + sub_panel_w + (panel_gap - ICON_SIZE) // 2, arrow_y - ICON_SIZE // 2 + 12, "Fragmentation.svg"))
 
     parts.extend(background)
     parts.extend(foreground)

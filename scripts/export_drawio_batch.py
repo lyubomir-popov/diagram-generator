@@ -1323,66 +1323,150 @@ def export_diagram_language_workflow() -> None:
 
 
 def export_logic_data_vram() -> None:
-    builder = DrawioBuilder(name="Page-1", diagram_id="logic-data-vram", page_width=980, page_height=860)
+    # -- Grid tokens --
+    col_width = svg.BLOCK_WIDTH   # 192
+    col_gap = svg.COMPACT_GAP     # 8
+    inset = svg.INSET             # 8
+    row_gap = svg.COMPACT_GAP     # 8
+    panel_gap = svg.GRID_GUTTER   # 24
+    outer = svg.OUTER_MARGIN      # 32
 
-    left_panel = add_plain_rect(builder, x=32, y=32, width=408, height=360, fill=svg.WHITE)
-    add_label(builder, x=8, y=8, width=240, lines=[svg.make_line("Logic + data conflict", weight="700")], parent=left_panel)
-    add_box(builder, x=8, y=144, width=192, height=64, fill=svg.GREY, lines=[svg.make_line("CPU", weight="700")], icon_name="CPU.svg", parent=left_panel, connectable=False)
-    add_box(builder, x=216, y=72, width=192, height=64, fill=svg.WHITE, lines=[svg.make_line("Logic", weight="700")], parent=left_panel, connectable=False)
-    add_box(builder, x=216, y=160, width=192, height=64, fill=svg.WHITE, lines=[svg.make_line("Logic", weight="700")], parent=left_panel, connectable=False)
-    add_box(builder, x=216, y=248, width=192, height=64, fill=svg.GREY, lines=[svg.make_line("Memory", weight="700")], icon_name="Memory.svg", parent=left_panel, connectable=False)
-    add_label(builder, x=8, y=240, width=176, lines=[svg.make_line("Logic with optional", fill=svg.HELPER), svg.make_line("optional data.", fill=svg.HELPER)], parent=left_panel)
-    add_label(builder, x=216, y=336, width=184, lines=[svg.make_line("Optional data can stay", fill=svg.HELPER), svg.make_line("separate.", fill=svg.HELPER)], parent=left_panel)
+    # Box heights (inside-out)
+    h_text_1 = svg.tight_box_height([svg.make_line("x")])                        # 36
+    h_icon_1 = svg.tight_box_height([svg.make_line("x")], has_icon=True)         # 64
+    heading_h = svg.tight_box_height([svg.make_line("x", weight="700")])         # 36
 
-    right_panel = add_plain_rect(builder, x=472, y=32, width=408, height=360, fill=svg.WHITE)
-    add_label(builder, x=8, y=8, width=184, lines=[svg.make_line("AI inference", weight="700")], parent=right_panel)
-    right_logic = add_box(builder, x=8, y=72, width=192, height=64, fill=svg.WHITE, lines=[svg.make_line("Logic", weight="700")], icon_name="AI.svg", parent=right_panel)
-    right_data = add_box(builder, x=8, y=160, width=192, height=64, fill=svg.GREY, lines=[svg.make_line("Data", weight="700")], icon_name="Data.svg", parent=right_panel)
-    right_cpu = add_box(builder, x=8, y=248, width=192, height=64, fill=svg.WHITE, lines=[svg.make_line("CPU", weight="700")], icon_name="CPU.svg", parent=right_panel)
-    right_data_2 = add_box(builder, x=216, y=120, width=192, height=64, fill=svg.WHITE, lines=[svg.make_line("Data", weight="700")], icon_name="Data.svg", parent=right_panel)
-    right_memory = add_box(builder, x=216, y=280, width=192, height=64, fill=svg.GREY, lines=[svg.make_line("Memory", weight="700")], icon_name="Memory.svg", parent=right_panel)
-    add_label(builder, x=8, y=336, width=160, lines=[svg.make_line("Logic inseparable", fill=svg.HELPER), svg.make_line("from data", fill=svg.HELPER)], parent=right_panel)
-
-    lower_panel = add_plain_rect(builder, x=32, y=424, width=848, height=328, fill=svg.WHITE)
-    add_label(builder, x=8, y=8, width=220, lines=[svg.make_line("VRAM fragmentation", weight="700")], parent=lower_panel)
-
-    frag = add_plain_rect(builder, x=8, y=80, width=392, height=208, fill=svg.GREY, parent=lower_panel, connectable=True)
-    add_label(builder, x=8, y=8, width=180, lines=[svg.make_line("Fragmented layout", weight="700")], parent=frag)
-    add_image(builder, x=336, y=8, width=48, height=48, image_uri=icon_uri("RAM.svg"), parent=frag)
-    add_box(builder, x=8, y=56, width=376, height=32, fill=svg.WHITE, lines=[svg.make_line("10 GB", weight="700")], parent=frag, connectable=False)
-    add_box(builder, x=8, y=96, width=376, height=32, fill=svg.WHITE, lines=[svg.make_line("6 GB context cache", weight="700")], parent=frag, connectable=False)
-    add_plain_rect(builder, x=8, y=136, width=72, height=32, fill=svg.WHITE, parent=frag)
-    add_plain_rect(builder, x=88, y=136, width=56, height=32, fill=svg.GREY, parent=frag)
-    add_plain_rect(builder, x=152, y=136, width=88, height=32, fill=svg.WHITE, parent=frag)
-    add_plain_rect(builder, x=248, y=136, width=40, height=32, fill=svg.GREY, parent=frag)
-    add_plain_rect(builder, x=296, y=136, width=88, height=32, fill=svg.WHITE, parent=frag)
-    add_label(builder, x=8, y=176, width=240, lines=[svg.make_line("Fragmented allocations leave gaps.", fill=svg.HELPER)], parent=frag)
-
-    packed = add_plain_rect(builder, x=448, y=80, width=392, height=208, fill=svg.GREY, parent=lower_panel, connectable=True)
-    add_label(builder, x=8, y=8, width=180, lines=[svg.make_line("Packed layout", weight="700")], parent=packed)
-    add_image(builder, x=336, y=8, width=48, height=48, image_uri=icon_uri("Memory.svg"), parent=packed)
-    add_box(builder, x=8, y=56, width=376, height=32, fill=svg.WHITE, lines=[svg.make_line("24 GB GPU memory", weight="700")], parent=packed, connectable=False)
-    add_box(builder, x=8, y=96, width=70, height=32, fill=svg.WHITE, lines=[svg.make_line("9 GB", weight="700")], parent=packed, connectable=False)
-    add_box(builder, x=86, y=96, width=110, height=32, fill=svg.GREY, lines=[svg.make_line("Alloc", weight="700")], parent=packed, connectable=False)
-    add_plain_rect(builder, x=204, y=96, width=180, height=32, fill=svg.WHITE, parent=packed)
-    add_plain_rect(builder, x=8, y=136, width=220, height=32, fill=svg.GREY, parent=packed)
-    add_box(builder, x=236, y=136, width=148, height=32, fill=svg.WHITE, lines=[svg.make_line("8 GB model", weight="700")], parent=packed, connectable=False)
-    add_label(builder, x=8, y=176, width=120, lines=[svg.make_line("860 B free", fill=svg.HELPER)], parent=packed)
-
-    add_image(builder, x=432, y=596, width=48, height=48, image_uri=icon_uri("Fragmentation.svg"))
-
-    builder.add_edge(
-        style=edge_style(svg.ORANGE, exit_x=1, exit_y=0.5, entry_x=0, entry_y=0.5),
-        source=right_logic,
-        target=right_data_2,
-        source_point=(672, 136),
-        target_point=(688, 184),
-        waypoints=[(680, 136), (680, 184)],
+    # -- Top panels --
+    left_grid = svg.panel_grid(
+        cols=2, rows=3,
+        col_width=col_width, col_gap=col_gap, row_gap=row_gap,
+        heading_height=heading_h, heading_gap=row_gap,
+        row_heights=[h_icon_1, h_text_1, h_icon_1],
     )
-    builder.add_edge(style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0), source=right_data, target=right_cpu, source_point=(576, 256), target_point=(576, 280))
-    builder.add_edge(style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0), source=right_data_2, target=right_memory, source_point=(784, 216), target_point=(784, 312))
-    offset_y = (616 - 504) / 208
-    builder.add_edge(style=edge_style(svg.ORANGE, exit_x=1, exit_y=offset_y, entry_x=0, entry_y=offset_y), source=frag, target=packed, source_point=(432, 616), target_point=(480, 616))
+    right_grid = svg.panel_grid(
+        cols=2, rows=3,
+        col_width=col_width, col_gap=col_gap, row_gap=row_gap,
+        heading_height=heading_h, heading_gap=row_gap,
+        row_heights=[h_icon_1, h_icon_1, h_icon_1],
+    )
+
+    left_x = outer
+    left_y = outer
+    right_x = left_x + left_grid["width"] + panel_gap
+    right_y = outer
+
+    # -- Bottom panel: VRAM fragmentation --
+    vram_bar_h = 32
+    vram_rows = 3
+    vram_heading_h = heading_h
+    sub_panel_w = col_width * 2 + col_gap  # 392
+    sub_panel_h = svg.round_up_to_grid(
+        inset + vram_heading_h + row_gap
+        + vram_rows * vram_bar_h + (vram_rows - 1) * row_gap
+        + inset
+    )
+    helper_line_h = svg.BODY_LINE_STEP  # 20
+    vram_outer_h = svg.round_up_to_grid(
+        inset + heading_h + row_gap
+        + sub_panel_h + row_gap
+        + helper_line_h + inset
+    )
+    vram_outer_w = svg.round_up_to_grid(
+        inset + sub_panel_w + panel_gap + sub_panel_w + inset
+    )
+    helper_below_top = max(left_grid["height"], right_grid["height"]) + 2 * helper_line_h + row_gap
+    vram_y = outer + svg.round_up_to_grid(helper_below_top + panel_gap)
+    vram_x = outer
+
+    page_width = svg.round_up_to_grid(outer + max(
+        left_grid["width"] + panel_gap + right_grid["width"],
+        vram_outer_w,
+    ) + outer)
+    page_height = svg.round_up_to_grid(vram_y + vram_outer_h + outer)
+
+    builder = DrawioBuilder(name="Page-1", diagram_id="logic-data-vram", page_width=page_width, page_height=page_height)
+
+    # ── Left panel: Logic + data conflict ──
+    lc = [left_x + cx for cx in left_grid["col_xs"]]
+    lr = [left_y + ry for ry in left_grid["row_ys"]]
+
+    left_panel = add_plain_rect(builder, x=left_x, y=left_y, width=left_grid["width"], height=left_grid["height"], fill=svg.WHITE)
+    add_label(builder, x=inset, y=inset, width=240, lines=[svg.make_line("Logic + data conflict", weight="700")], parent=left_panel)
+
+    add_box(builder, x=inset, y=left_grid["row_ys"][0], width=col_width, height=h_icon_1, fill=svg.GREY, lines=[svg.make_line("CPU")], icon_name="CPU.svg", parent=left_panel, connectable=False)
+    add_box(builder, x=left_grid["col_xs"][1], y=left_grid["row_ys"][0], width=col_width, height=h_text_1, fill=svg.WHITE, lines=[svg.make_line("Logic")], parent=left_panel, connectable=False)
+    add_box(builder, x=left_grid["col_xs"][1], y=left_grid["row_ys"][1], width=col_width, height=h_text_1, fill=svg.WHITE, lines=[svg.make_line("Logic")], parent=left_panel, connectable=False)
+    add_box(builder, x=left_grid["col_xs"][1], y=left_grid["row_ys"][2], width=col_width, height=h_icon_1, fill=svg.GREY, lines=[svg.make_line("Memory")], icon_name="Memory.svg", parent=left_panel, connectable=False)
+
+    add_label(builder, x=inset, y=left_grid["height"] + row_gap, width=200, lines=[svg.make_line("Logic with optional data.", fill=svg.HELPER)], parent=left_panel)
+    add_label(builder, x=left_grid["col_xs"][1], y=left_grid["height"] + row_gap, width=200, lines=[svg.make_line("Optional data can stay separate.", fill=svg.HELPER)], parent=left_panel)
+
+    # ── Right panel: AI inference ──
+    rc = [right_x + cx for cx in right_grid["col_xs"]]
+    rr = [right_y + ry for ry in right_grid["row_ys"]]
+
+    right_panel = add_plain_rect(builder, x=right_x, y=right_y, width=right_grid["width"], height=right_grid["height"], fill=svg.WHITE)
+    add_label(builder, x=inset, y=inset, width=184, lines=[svg.make_line("AI inference", weight="700")], parent=right_panel)
+
+    right_logic = add_box(builder, x=inset, y=right_grid["row_ys"][0], width=col_width, height=h_icon_1, fill=svg.WHITE, lines=[svg.make_line("Logic")], icon_name="AI.svg", parent=right_panel)
+    right_data = add_box(builder, x=inset, y=right_grid["row_ys"][1], width=col_width, height=h_icon_1, fill=svg.GREY, lines=[svg.make_line("Data")], icon_name="Data.svg", parent=right_panel)
+    right_cpu = add_box(builder, x=inset, y=right_grid["row_ys"][2], width=col_width, height=h_icon_1, fill=svg.WHITE, lines=[svg.make_line("CPU")], icon_name="CPU.svg", parent=right_panel)
+    right_data_2 = add_box(builder, x=right_grid["col_xs"][1], y=right_grid["row_ys"][0], width=col_width, height=h_icon_1, fill=svg.WHITE, lines=[svg.make_line("Data")], icon_name="Data.svg", parent=right_panel)
+    right_memory = add_box(builder, x=right_grid["col_xs"][1], y=right_grid["row_ys"][2], width=col_width, height=h_icon_1, fill=svg.GREY, lines=[svg.make_line("Memory")], icon_name="Memory.svg", parent=right_panel)
+
+    add_label(builder, x=inset, y=right_grid["height"] + row_gap, width=220, lines=[svg.make_line("Logic inseparable from data.", fill=svg.HELPER)], parent=right_panel)
+
+    # Orange arrows inside right panel
+    builder.add_edge(style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0), source=right_logic, target=right_data, source_point=(rc[0] + col_width // 2, rr[0] + h_icon_1), target_point=(rc[0] + col_width // 2, rr[1]))
+    builder.add_edge(style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0), source=right_data, target=right_cpu, source_point=(rc[0] + col_width // 2, rr[1] + h_icon_1), target_point=(rc[0] + col_width // 2, rr[2]))
+    builder.add_edge(style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0), source=right_data_2, target=right_memory, source_point=(rc[1] + col_width // 2, rr[0] + h_icon_1), target_point=(rc[1] + col_width // 2, rr[2]))
+
+    # ── Bottom panel: VRAM fragmentation ──
+    lower_panel = add_plain_rect(builder, x=vram_x, y=vram_y, width=vram_outer_w, height=vram_outer_h, fill=svg.WHITE)
+    add_label(builder, x=inset, y=inset, width=220, lines=[svg.make_line("VRAM fragmentation", weight="700")], parent=lower_panel)
+
+    # Sub-panel positions (relative to lower_panel)
+    sp_rel_y = inset + heading_h + row_gap
+    frag_rel_x = inset
+    packed_rel_x = frag_rel_x + sub_panel_w + panel_gap
+
+    bar_y0 = inset + vram_heading_h + row_gap
+    bar_y1 = bar_y0 + vram_bar_h + row_gap
+    bar_y2 = bar_y1 + vram_bar_h + row_gap
+    bar_inner_w = sub_panel_w - 2 * inset  # 376
+
+    # Fragmented layout sub-panel
+    frag = add_plain_rect(builder, x=frag_rel_x, y=sp_rel_y, width=sub_panel_w, height=sub_panel_h, fill=svg.GREY, parent=lower_panel, connectable=True)
+    add_label(builder, x=inset, y=inset, width=180, lines=[svg.make_line("Fragmented layout", weight="700")], parent=frag)
+    add_image(builder, x=sub_panel_w - inset - svg.ICON_SIZE, y=inset, width=48, height=48, image_uri=icon_uri("RAM.svg"), parent=frag)
+    add_box(builder, x=inset, y=bar_y0, width=bar_inner_w, height=vram_bar_h, fill=svg.WHITE, lines=[svg.make_line("10 GB")], parent=frag, connectable=False)
+    add_box(builder, x=inset, y=bar_y1, width=bar_inner_w, height=vram_bar_h, fill=svg.WHITE, lines=[svg.make_line("6 GB context cache")], parent=frag, connectable=False)
+    add_plain_rect(builder, x=inset, y=bar_y2, width=72, height=vram_bar_h, fill=svg.WHITE, parent=frag)
+    add_plain_rect(builder, x=inset + 80, y=bar_y2, width=56, height=vram_bar_h, fill=svg.GREY, parent=frag)
+    add_plain_rect(builder, x=inset + 144, y=bar_y2, width=88, height=vram_bar_h, fill=svg.WHITE, parent=frag)
+    add_plain_rect(builder, x=inset + 240, y=bar_y2, width=40, height=vram_bar_h, fill=svg.GREY, parent=frag)
+    add_plain_rect(builder, x=inset + 288, y=bar_y2, width=88, height=vram_bar_h, fill=svg.WHITE, parent=frag)
+    add_label(builder, x=inset, y=sub_panel_h + row_gap, width=240, lines=[svg.make_line("Fragmented allocations leave gaps.", fill=svg.HELPER)], parent=frag)
+
+    # Packed layout sub-panel
+    packed = add_plain_rect(builder, x=packed_rel_x, y=sp_rel_y, width=sub_panel_w, height=sub_panel_h, fill=svg.GREY, parent=lower_panel, connectable=True)
+    add_label(builder, x=inset, y=inset, width=180, lines=[svg.make_line("Packed layout", weight="700")], parent=packed)
+    add_image(builder, x=sub_panel_w - inset - svg.ICON_SIZE, y=inset, width=48, height=48, image_uri=icon_uri("Memory.svg"), parent=packed)
+    add_box(builder, x=inset, y=bar_y0, width=bar_inner_w, height=vram_bar_h, fill=svg.WHITE, lines=[svg.make_line("24 GB GPU memory")], parent=packed, connectable=False)
+    add_box(builder, x=inset, y=bar_y1, width=70, height=vram_bar_h, fill=svg.WHITE, lines=[svg.make_line("9 GB")], parent=packed, connectable=False)
+    add_box(builder, x=inset + 78, y=bar_y1, width=110, height=vram_bar_h, fill=svg.GREY, lines=[svg.make_line("Alloc")], parent=packed, connectable=False)
+    add_plain_rect(builder, x=inset + 196, y=bar_y1, width=bar_inner_w - 196, height=vram_bar_h, fill=svg.WHITE, parent=packed)
+    add_plain_rect(builder, x=inset, y=bar_y2, width=220, height=vram_bar_h, fill=svg.GREY, parent=packed)
+    add_box(builder, x=inset + 228, y=bar_y2, width=bar_inner_w - 228, height=vram_bar_h, fill=svg.WHITE, lines=[svg.make_line("8 GB model")], parent=packed, connectable=False)
+    add_label(builder, x=inset, y=sub_panel_h + row_gap, width=120, lines=[svg.make_line("860 B free", fill=svg.HELPER)], parent=packed)
+
+    add_image(builder, x=vram_x + frag_rel_x + sub_panel_w + (panel_gap - svg.ICON_SIZE) // 2, y=vram_y + sp_rel_y + bar_y1, width=48, height=48, image_uri=icon_uri("Fragmentation.svg"))
+
+    # Arrow between sub-panels
+    arrow_rel_y = (bar_y1 + vram_bar_h / 2) / sub_panel_h
+    builder.add_edge(style=edge_style(svg.ORANGE, exit_x=1, exit_y=arrow_rel_y, entry_x=0, entry_y=arrow_rel_y), source=frag, target=packed,
+                     source_point=(vram_x + frag_rel_x + sub_panel_w, vram_y + sp_rel_y + bar_y1 + vram_bar_h // 2),
+                     target_point=(vram_x + packed_rel_x, vram_y + sp_rel_y + bar_y1 + vram_bar_h // 2))
 
     builder.write(svg.DRAWIO_DIR / "logic-data-vram-onbrand.drawio")
 

@@ -200,6 +200,104 @@ def lines_required_height(lines: list[dict[str, object]]) -> int:
     return stack_required_height(lines, top_pad=INSET, bottom_pad=INSET, min_height=BOX_MIN_HEIGHT)
 
 
+# ---------------------------------------------------------------------------
+# Grid engine – output-agnostic layout computation
+# ---------------------------------------------------------------------------
+
+COMPACT_GAP = 8
+GROUP_GAP = 16
+ROW_GAP = 24
+
+
+def tight_box_height(
+    lines: list[dict[str, object]],
+    *,
+    has_icon: bool = False,
+) -> int:
+    """Compute box height from content using the inside-out model.
+
+    Text-only:  INSET + (line_count * line_step) + INSET  →  snapped to 4px.
+    With icon:  max(text_height, INSET + ICON_SIZE + INSET).
+    """
+    if not lines:
+        line_step = BODY_LINE_STEP
+        n_lines = 0
+    else:
+        line_step = int(lines[0]["line_step"])
+        n_lines = len(lines)
+    text_h = round_up_to_grid(INSET + n_lines * line_step + INSET)
+    if has_icon:
+        icon_h = INSET + ICON_SIZE + INSET  # 64
+        return max(text_h, icon_h)
+    return text_h
+
+
+def panel_grid(
+    *,
+    cols: int,
+    rows: int,
+    col_width: int = BLOCK_WIDTH,
+    row_heights: list[int] | int | None = None,
+    col_gap: int = COMPACT_GAP,
+    row_gap: int = COMPACT_GAP,
+    heading_height: int = 0,
+    heading_gap: int = COMPACT_GAP,
+    inset: int = INSET,
+) -> dict:
+    """Compute panel layout geometry from its content grid.
+
+    Returns {"width", "height", "col_xs", "row_ys"} – all values on the
+    baseline grid.  The panel dimensions are the *output*, never the input.
+    """
+    col_xs = [inset + i * (col_width + col_gap) for i in range(cols)]
+    panel_width = round_up_to_grid(col_xs[-1] + col_width + inset) if cols else round_up_to_grid(2 * inset)
+
+    # Resolve per-row heights
+    if row_heights is None:
+        rh = [BOX_MIN_HEIGHT] * rows
+    elif isinstance(row_heights, int):
+        rh = [row_heights] * rows
+    else:
+        rh = list(row_heights)
+        while len(rh) < rows:
+            rh.append(rh[-1] if rh else BOX_MIN_HEIGHT)
+
+    first_row_y = inset + (heading_height + heading_gap if heading_height else 0)
+    row_ys: list[int] = []
+    y = first_row_y
+    for i in range(rows):
+        row_ys.append(round_up_to_grid(y))
+        y += rh[i] + row_gap
+    # Panel height = last row bottom + inset
+    panel_height = round_up_to_grid(row_ys[-1] + rh[-1] + inset) if rows else round_up_to_grid(first_row_y + inset)
+
+    return {
+        "width": panel_width,
+        "height": panel_height,
+        "col_xs": col_xs,
+        "row_ys": row_ys,
+    }
+
+
+def assert_text_fits(
+    text_y: float,
+    line_count: int,
+    line_step: int,
+    container_y: float,
+    container_height: float,
+    inset: int = INSET,
+) -> None:
+    """Raise if text would overflow its container."""
+    text_bottom = text_y + line_count * line_step
+    container_bottom = container_y + container_height - inset
+    if text_bottom > container_bottom + 0.5:  # 0.5 tolerance for float math
+        raise ValueError(
+            f"Text overflows container: text bottom {text_bottom} > "
+            f"container bottom {container_bottom} "
+            f"(container_y={container_y}, height={container_height}, inset={inset})"
+        )
+
+
 def icon_column_width() -> int:
     return ICON_SIZE + (INSET * 2)
 
