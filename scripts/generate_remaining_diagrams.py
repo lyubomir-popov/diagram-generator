@@ -294,7 +294,7 @@ def command_bar(
     for center_x in (20, 36, 52):
         parts.append(circle(center_x + x, y + TERMINAL_CHROME_HEIGHT / 2, TERMINAL_DOT_RADIUS, fill=WHITE))
     parts.append(
-        f'  <text x="{fmt(x + 24)}" y="{fmt(line_top_to_baseline(y + 28, text_size))}" '
+        f'  <text x="{fmt(x + INSET)}" y="{fmt(line_top_to_baseline(y + TERMINAL_CHROME_HEIGHT + INSET, text_size))}" '
         f'font-family="{TERMINAL_FONT_FAMILY}" font-size="{text_size}" font-weight="400" fill="{BLACK}">{html.escape(text_value)}</text>'
     )
     return "\n".join(parts)

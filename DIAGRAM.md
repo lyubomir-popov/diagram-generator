@@ -247,11 +247,15 @@ The reusable component set is intentionally small.
 - Emphasis box: black fill, white text, used only when a true highlight is needed.
 - Diagram-tier box copy: `16px/20px` live text, used when the denser imported tier makes labels feel too small relative to icons.
 - Helper note: unboxed `14px` helper text.
-- Terminal command bar: grey body with `20px` chrome strip, separator line, and mono text.
+- Terminal command bar: grey body with `20px` chrome strip, separator line, and mono text. Internal spacing must follow the same `8px` inset rules as every other box: text starts at `INSET` from the left edge and `chromeHeight + INSET` from the top edge. Do not use a wider left margin to "clear" the chrome dots, because those dots sit in the chrome band above the text area and the left edges of terminal text and box text must stay aligned.
 - Matrix widget: explicit top label band above the grid.
 - Memory wall panel: jagged semantic exception.
 
 Use icons from `assets/icons/` only. If no local icon matches the concept, omit the icon rather than sourcing or inventing a new one.
+
+### Internal spacing consistency
+
+Every text-bearing component – boxes, terminal bars, grouped panels, and stacked tiles – must use the same `8px` inset from the nearest visible edge. Do not introduce component-specific inset overrides unless the visual structure genuinely requires it. When a component has a non-text header band (such as the terminal chrome strip), the text area begins at the bottom of that band, and the `8px` inset is measured from there.
 
 ## Editability & outputs
 

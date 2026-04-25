@@ -624,12 +624,13 @@ def add_command_bar(
             connectable=False,
             metadata=dg_tokens.CellMetadata(role="marker", style_tokens=("terminal-dot",)),
         )
+    text_y = svg.TERMINAL_CHROME_HEIGHT + svg.INSET
     add_label(
         builder,
-        x=24,
-        y=28,
-        width=width - 32,
-        height=28,
+        x=svg.INSET,
+        y=text_y,
+        width=width - (svg.INSET * 2),
+        height=64 - text_y - svg.INSET,
         lines=lines or [svg.make_line(text_value)],
         parent=bar,
         font_family=svg.TERMINAL_FONT_FAMILY,
