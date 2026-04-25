@@ -75,6 +75,12 @@ PAIRS = [
         "after": "inference-snaps-onbrand.svg",
     },
     {
+      "slug": "inference-snaps-dense",
+      "title": "Inference snaps – dense token pass",
+      "before": "image 7.png",
+      "after": "inference-snaps-dense-onbrand.svg",
+    },
+    {
         "slug": "aws-hld",
         "title": "AWS High Level Design",
         "before": "complex-tests/1.jpg",
@@ -91,6 +97,12 @@ PAIRS = [
       "title": "Diagram intake workflow",
       "before": "diagram-intake-workflow-rough.svg",
       "after": "diagram-intake-workflow-onbrand.svg",
+    },
+    {
+      "slug": "diagram-language-workflow",
+      "title": "Diagram language workflow",
+      "before": "diagram-language-workflow-rough.svg",
+      "after": "diagram-language-workflow-onbrand.svg",
     },
 ]
 

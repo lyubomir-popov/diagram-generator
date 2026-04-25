@@ -10,6 +10,7 @@ from diagram_shared import (
     BLOCK_WIDTH,
     BODY_SIZE,
     DESCENT_RATIO,
+    GRID_GUTTER,
     GREY,
     HELPER,
     ICON_SIZE,
@@ -532,6 +533,71 @@ def build_inference_snaps() -> None:
     write_svg(SVG_DIR / "inference-snaps-onbrand.svg", parts)
 
 
+def build_inference_snaps_dense() -> None:
+    width = 760
+    height = 800
+    parts = svg_open(width, height)
+    background: list[str] = []
+    foreground: list[str] = []
+
+    x = 60
+    frame_width = 640
+    inner_pad = INSET
+    tile_gap = GRID_GUTTER
+    row_gap = GRID_GUTTER
+    tile_width = 300
+    hardware_gap = GRID_GUTTER
+    hardware_width = BLOCK_WIDTH
+    left_x = x + inner_pad
+    right_x = left_x + tile_width + tile_gap
+    hardware_x = [
+        left_x,
+        left_x + hardware_width + hardware_gap,
+        left_x + (hardware_width + hardware_gap) * 2,
+    ]
+    hardware_centers = [left + hardware_width / 2 for left in hardware_x]
+
+    tile_rows = [
+        ([make_line("Model")], "Network.svg", [make_line("Workload"), make_line("identity")], "User.svg"),
+        ([make_line("Runtime")], "Gauge.svg", [make_line("Heterogeneous"), make_line("hardware")], "Chip 1.svg"),
+        ([make_line("Dependencies")], "Wrench 1.svg", [make_line("Reproducibility")], "Clipboard.svg"),
+        ([make_line("Hardware"), make_line("config")], "CPU.svg", [make_line("Operational"), make_line("observability")], "Bar chart with check.svg"),
+    ]
+
+    current_row_y = inner_pad
+    rows: list[float] = []
+    for left_lines, _left_icon, right_lines, _right_icon in tile_rows:
+        rows.append(current_row_y)
+        current_row_y += max(lines_required_height(left_lines), lines_required_height(right_lines)) + row_gap
+    pad_height = int(current_row_y - row_gap + inner_pad)
+    pad_y = 304
+    hardware_y = pad_y + pad_height + row_gap
+    dashed_height = (hardware_y + 64 + 16) - 200
+
+    background.append(vertical_arrow(x + frame_width / 2, 176, 216))
+    background.append(vertical_arrow(hardware_centers[0], pad_y + pad_height, hardware_y))
+    background.append(vertical_arrow(hardware_centers[1], pad_y + pad_height, hardware_y))
+    background.append(vertical_arrow(hardware_centers[2], pad_y + pad_height, hardware_y))
+
+    foreground.append(box(x, 24, frame_width, WHITE, [make_line("Inference snaps", weight="700")], icon_name="Snap.svg", height=64))
+    foreground.append(command_bar(x, 112, frame_width, "$ snap install gemma3"))
+    foreground.append(rect(x - 8, 200, frame_width + 16, dashed_height, fill="none", stroke=BLACK, dasharray="8 8"))
+    foreground.append(box(x, 216, frame_width, WHITE, [make_line("Inference snap", weight="700")], icon_name="Package.svg", height=64))
+    foreground.append(f'  <rect x="{x}" y="{pad_y}" width="{frame_width}" height="{pad_height}" fill="{GREY}" />')
+
+    for row_y, (left_lines, left_icon, right_lines, right_icon) in zip(rows, tile_rows):
+        foreground.append(box(left_x, pad_y + row_y, tile_width, WHITE, left_lines, icon_name=left_icon))
+        foreground.append(box(right_x, pad_y + row_y, tile_width, WHITE, right_lines, icon_name=right_icon))
+
+    foreground.append(box(hardware_x[0], hardware_y, hardware_width, WHITE, [make_line("CPU")], icon_name="CPU.svg"))
+    foreground.append(box(hardware_x[1], hardware_y, hardware_width, GREY, [make_line("GPU")], icon_name="RAM.svg"))
+    foreground.append(box(hardware_x[2], hardware_y, hardware_width, WHITE, [make_line("NPU")], icon_name="Chip 2.svg"))
+
+    parts.extend(background)
+    parts.extend(foreground)
+    write_svg(SVG_DIR / "inference-snaps-dense-onbrand.svg", parts)
+
+
 def build_gpu_waiting() -> None:
     width = 760
     height = 408
@@ -654,6 +720,132 @@ def build_diagram_intake_workflow() -> None:
     parts.extend(background)
     parts.extend(foreground)
     write_svg(SVG_DIR / "diagram-intake-workflow-onbrand.svg", parts)
+
+
+def build_diagram_language_workflow() -> None:
+    width = 800
+    height = 784
+    parts = svg_open(width, height)
+    background: list[str] = []
+    foreground: list[str] = []
+
+    x = 72
+    frame_y = 24
+    frame_width = 656
+    frame_height = 184
+    center_x = x + frame_width / 2
+
+    background.extend(
+        [
+            vertical_arrow(center_x, frame_y + frame_height, 232),
+            vertical_arrow(center_x, 296, 320),
+            vertical_arrow(center_x, 392, 416),
+            vertical_arrow(center_x, 480, 504),
+            vertical_arrow(center_x, 568, 592),
+            vertical_arrow(center_x, 656, 680),
+        ]
+    )
+
+    foreground.append(rect(x, frame_y, frame_width, frame_height, fill="none", stroke=BLACK, dasharray="8 8"))
+    foreground.append(text_block(x + 8, frame_y + 8, [make_line("Inputs and canonical context", weight="700")]))
+    foreground.append(box(x + 24, frame_y + 48, 192, WHITE, [make_line("Rough source"), make_line("diagram")], icon_name="Document.svg", height=64))
+    foreground.append(box(x + 232, frame_y + 48, 192, GREY, [make_line("Local refs"), make_line("+ outputs")], icon_name="Document with Magnifying glass.svg", height=64))
+    foreground.append(
+        box(
+            x + 440,
+            frame_y + 48,
+            192,
+            BLACK,
+            [make_line("DIAGRAM.md", weight="700", fill=WHITE), make_line("canonical spec", fill=WHITE)],
+            icon_name="Book with Magnifying glass.svg",
+            text_fill=WHITE,
+            icon_fill=WHITE,
+            height=64,
+        )
+    )
+    foreground.append(
+        text_block(
+            x + 8,
+            frame_y + 136,
+            [make_line("Next: ingest typography, spacing, and grid specs into this spec layer.", fill=HELPER)],
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            232,
+            frame_width,
+            BLACK,
+            [make_line("Diagram redraw", weight="700", fill=WHITE), make_line("skill", fill=WHITE)],
+            icon_name="Wrench 1.svg",
+            text_fill=WHITE,
+            icon_fill=WHITE,
+            height=64,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            320,
+            frame_width,
+            WHITE,
+            [make_line("Repo generators", weight="700"), make_line("shared tokens + library", fill=HELPER)],
+            icon_name="Screen with code.svg",
+            height=72,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            416,
+            frame_width,
+            BLACK,
+            [make_line("Build + validate", weight="700", fill=WHITE), make_line("skill", fill=WHITE)],
+            icon_name="Rosette with check.svg",
+            text_fill=WHITE,
+            icon_fill=WHITE,
+            height=64,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            504,
+            frame_width,
+            GREY,
+            [make_line("Compare + review lane", weight="700"), make_line("before / agent / refined", fill=HELPER)],
+            icon_name="Document with Magnifying glass.svg",
+            height=64,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            592,
+            frame_width,
+            BLACK,
+            [make_line("Protected draw.io", weight="700", fill=WHITE), make_line("review skill", fill=WHITE)],
+            icon_name="Design.svg",
+            text_fill=WHITE,
+            icon_fill=WHITE,
+            height=64,
+        )
+    )
+    foreground.append(
+        box(
+            x,
+            680,
+            frame_width,
+            WHITE,
+            [make_line("Editable draw.io +", weight="700"), make_line("SVG outputs"), make_line("ready for token ingest", fill=HELPER)],
+            icon_name="Storage image.svg",
+            height=72,
+        )
+    )
+
+    parts.extend(background)
+    parts.extend(foreground)
+    write_svg(SVG_DIR / "diagram-language-workflow-onbrand.svg", parts)
 
 
 def build_rise_of_inference_economy() -> None:
@@ -1013,9 +1205,11 @@ def main() -> None:
     build_memory_wall()
     build_request_to_hardware_stack()
     build_inference_snaps()
+    build_inference_snaps_dense()
     build_rise_of_inference_economy()
     build_gpu_waiting()
     build_diagram_intake_workflow()
+    build_diagram_language_workflow()
     build_logic_data_vram()
 
 

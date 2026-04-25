@@ -28,7 +28,7 @@ Introduce a style-token layer over generated draw.io cells and build tooling tha
 
 ### Stage 6 — Batch redesign throughput
 
-Process the incoming diagram queue against the documented playbook, keeping outputs stylistically consistent and easy to compare.
+Process the incoming diagram queue against `DIAGRAM.md`, keeping outputs stylistically consistent and easy to compare.
 
 ### Stage 7 — Selective merge and reapply automation
 
@@ -42,6 +42,7 @@ Add lightweight checks or generation helpers only if they reduce repetition with
 
 - Keep the repo minimal and task-focused.
 - Prefer one shared documented style system over per-diagram improvisation.
+- Keep `DIAGRAM.md` aligned with the broader design language so typography, spacing, and grid changes can flow into the renderers without re-deriving the rules.
 - Prefer reusable library components plus scripted style sync over repeated hand restyling of individual cells.
 - Never treat generated draw.io files and manually polished working copies as the same lifecycle stage.
 - Use completed diagrams as exemplars for future cold starts.

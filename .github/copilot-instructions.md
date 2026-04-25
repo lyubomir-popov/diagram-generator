@@ -6,7 +6,9 @@
 |------|------|-----------|
 | `.github/copilot-instructions.md` | Rules. Workflow rules, source precedence, diagram invariants. | Agent maintains |
 | `.github/agents/agent.md` | Optional resume-agent prompt for repo-specific continuation. | Agent maintains |
+| `.github/skills/` | Optional workflow skills. Repeatable on-demand procedures. | Agent maintains |
 | `README.md` | Overview. Repo summary and workflow map. | User + agent maintain |
+| `DIAGRAM.md` | Diagram language. Canonical tokens, rules, and output constraints. | Agent maintains |
 | `ROADMAP.md` | Long-term. Product direction, stages, future ideas. | Agent updates rarely |
 | `TODO.md` | Active plan. Current execution queue, principles, architecture notes. | Agent updates every session |
 | `INBOX.md` | User inbox. Async user notes that should stay easy to scan. | User writes, agent drains |
@@ -27,6 +29,7 @@ Use the two `.github` files for different layers of guidance:
 
 When deciding where extra detail belongs, use this map:
 
+- Diagram design language and tokens: `DIAGRAM.md`
 - Current state or cold-start notes: `STATUS.md`
 - Active tasks or architecture notes: `TODO.md`
 - Long-term direction: `ROADMAP.md`
@@ -41,13 +44,14 @@ When deciding where extra detail belongs, use this map:
 When sources disagree, use this order unless a higher-priority source explicitly narrows it further:
 
 1. Source sketches, reference assets, or explicitly referenced source material listed in `docs/specs.md`
-2. `ROADMAP.md`
-3. `.github/copilot-instructions.md`
-4. `STATUS.md` and `HISTORY.md`
-5. `README.md` and `docs/specs.md`
-6. `INBOX.md`
-7. `AGENT-INBOX.md`
-8. Local implementation details that are not clearly intentional or documented
+2. `DIAGRAM.md`
+3. `ROADMAP.md`
+4. `.github/copilot-instructions.md`
+5. `STATUS.md` and `HISTORY.md`
+6. `README.md` and `docs/specs.md`
+7. `INBOX.md`
+8. `AGENT-INBOX.md`
+9. Local implementation details that are not clearly intentional or documented
 
 Do not rewrite higher-priority docs to match lower-priority implementation drift.
 
@@ -77,6 +81,7 @@ Do not rewrite higher-priority docs to match lower-priority implementation drift
 
 | Information | Goes in |
 |-------------|---------|
+| What is the canonical diagram design language? | `DIAGRAM.md` |
 | What should the next chat do? | `TODO.md` |
 | Why was a stylistic or architectural decision made? | `TODO.md` |
 | What does the repo become long-term? | `ROADMAP.md` |
@@ -94,7 +99,8 @@ Do not rewrite higher-priority docs to match lower-priority implementation drift
 2. Check `INBOX.md`, triage user items into plan or roadmap, then empty it.
 3. Check `AGENT-INBOX.md`, triage machine notes into canonical files, then empty it.
 4. Read `TODO.md` for current tasks.
-5. Read `docs/specs.md` before changing spec-governed behavior.
+5. Read `DIAGRAM.md` before changing diagram behavior.
+6. Read `docs/specs.md` before changing spec-governed behavior.
 
 ### During work
 
@@ -113,7 +119,7 @@ Do not rewrite higher-priority docs to match lower-priority implementation drift
 
 There is no repo-wide automated test suite yet. Before committing, run the checks that match the files you touched:
 
-- If you changed workflow docs only, verify links, file names, and canonical ownership stay consistent.
+- If you changed workflow docs, `DIAGRAM.md`, or workflow skills only, verify links, file names, command examples, and canonical ownership stay consistent.
 - If you changed renderer or exporter code, rebuild the batch with `python scripts/build_outputs.py`.
 - If you changed deliverable SVGs, run `python scripts/svg_illustrator_sanitize.py --write <svg>` and validate the edited SVGs for syntax issues.
 - If you changed compare-page generation, regenerate the affected compare outputs when practical.
@@ -195,18 +201,18 @@ When work in this repo creates a dependency or follow-up in another repo:
 - Default non-highlight fill is white; standard accent fill is `#F3F3F3`; at most one black-filled box with white text is allowed when a true highlight is needed.
 - Do not use orange-filled boxes. Orange is reserved for arrows and arrowheads.
 - For new work, the canonical block is `192px` wide and at least `64px` tall with top-left-aligned live text and a natural-size local `48x48` icon embedded with `8px` padding on all sides.
-- Use `16px` regular text for the main block copy unless the user explicitly asks for another scale.
-- Prefer hierarchy by weight before hierarchy by size: move from `16px` regular to `16px` bold, then `16px` small-caps with `0.05em` tracking before introducing another size, and when a larger size is truly needed use `24pt` before repeating that bold/small-caps progression.
+- Use `14px` regular text with `20px` line height for the main block copy unless the user explicitly asks for another scale.
+- Prefer hierarchy by weight before hierarchy by size: move from `14px` regular to `14px` semi-bold, then `14px` small-caps with `0.05em` tracking before introducing another size; when a larger size is truly needed use `18px/24px`, then `24px/32px`.
 - Keep text top-left aligned whether the label is one line or multiple lines; use an `8px` inset on both X and Y, and do not vertically center single-line labels just because there is extra box height.
 - That `8px` top inset is from the visible top of the text, not the raw SVG baseline; place live text by ascent so the ascenders sit `8px` below the box top.
-- Treat `14px` as a legacy pre-scale-up size; do not introduce it into current new work.
-- If a semantic tile feels crowded, first try `16px` with line breaks, bold/regular contrast, small-caps, wider boxes, or icon omission before changing size.
+- Treat `14px` as the new dense default for current work; treat the older compact `9px` system as legacy-only unless maintaining already-finished outputs.
+- If a semantic tile feels crowded, first try line breaks, `14px` weight contrast, small-caps, wider boxes, or icon omission before changing size.
 - The older `144px` / `128px` / `9px` system should now be treated as legacy-maintenance guidance for previously completed compact diagrams, not the default for new redraws.
 - Right-side in-box icons should be embedded directly from `assets/icons/` at their natural `48x48` size rather than visually thinned down through scaling.
 - Align those icons by their artboard to the top-right corner with an `8px` inset rather than centering them vertically.
 - If a diagram uses a side icon cluster rather than a single in-box icon, keep those icons on the same natural-size treatment instead of shrinking them to a secondary scale.
-- The current box-height rule is icon height plus `2 * 8px` internal padding, with the border on the outside; for the current icon set that means `64px`-tall boxes, and three-line boxes should expand to `72px` rather than shrinking the text.
-- Keep growing taller boxes in `8px` steps when copy runs longer than three lines; do not trade away inset, helper-text size, or icon size to force a box to stay short.
+- The current box-height rule is icon height plus `2 * 8px` internal padding, with the border on the outside; for the current icon set that means `64px`-tall boxes, and taller boxes should be derived from the text stack and snapped to whole `4px` baseline units rather than hard-coded per diagram.
+- Keep growing taller boxes in `4px` baseline steps when copy runs longer than the default height; do not trade away inset, helper-text size, or icon size to force a box to stay short.
 - Orange connectors use `#E95420` and should behave like draw.io `blockThin` arrows: explicit `1px` shaft + filled head, tip touching the destination edge, no shaft visibly protruding through the arrowhead, and no overlap that breaks black box outlines.
 - Reuse the exact arrow proportions from `diagrams/0.reference/sample.svg`, `diagrams/0.reference/onbrand-svg-starter.svg`, or `diagrams/2.output/svg/memory-wall-onbrand.svg`; do not freehand a larger or smaller variant for a one-off diagram.
 - Draw orange connectors behind the boxes they connect to so the destination box edge remains visually continuous.
@@ -218,7 +224,7 @@ When work in this repo creates a dependency or follow-up in another repo:
 - Prefer straight or orthogonal connectors with `90` degree turns, and reroute them to avoid crossings.
 - When a legend is necessary, build it as an evenly spaced marker-and-label row, typically along the bottom of the relevant panel and aligned to the panel's left box edge.
 - Explanatory notes should default to plain helper text rather than extra bordered note boxes unless the note itself is a semantic node.
-- Explanatory notes should stay at the body size and shift only in color: `16px`, regular, `#666666`.
+- Explanatory notes should stay at the body size and shift only in color: `14px`, regular, `#666666`.
 - Before finalizing a diagram, run an explicit icon-coverage pass across every major node and repeated semantic tile; do not stop after placing only one or two obvious icons if the local library has reasonable additional matches.
 - Transfer all source text from the sketch, including small labels; missing icons are acceptable when the local library has no good match, but dropped text is not.
 - Preserve a grid feel in grouped layouts by aligning enclosing widths and stacked boxes rather than centering unrelated widths arbitrarily.
@@ -246,5 +252,7 @@ The key rule: every piece of status information should live in exactly one place
 
 - `.github/copilot-instructions.md` is the single repo-wide instruction file.
 - `.github/agents/agent.md` is optional and should contain only repo-specific resume or subagent guidance.
+- `.github/skills/` is the repo home for optional repeatable workflow procedures that should load on demand rather than live in always-on instructions.
 - `.github/agents/agent.md` should not become a second `STATUS.md`, `TODO.md`, or `README.md`; when details grow beyond a short resume prompt, move them into the canonical file for that kind of information.
+- `DIAGRAM.md` is the canonical diagram-language contract; do not leave long-lived style playbooks in `TODO.md`.
 - Do not duplicate the full workflow rules in both places.
