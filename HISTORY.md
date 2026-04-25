@@ -4,6 +4,13 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-25 — Diagram-tier pilot for inference snaps dense
+
+- Updated `inference-snaps-dense-onbrand.drawio` and `inference-snaps-dense-onbrand.svg` to pilot a diagram-specific typography tier: `16px` main copy with `20px` line height, while keeping the imported dense grid, spacing, and box-height math from `canonical-spacing-spec`.
+- Added explicit diagram-tier tokens and rollout notes to `DIAGRAM.md`, then wired the pilot through the shared helpers so the SVG and draw.io renderers both use the same `16px` line specs for the forked variant only.
+- Fixed draw.io label export so the base `fontSize` now inherits from the line spec instead of always defaulting to `14`, which lets the pilot survive into the generated XML without per-call overrides.
+- Rebuilt the output batch, re-sanitized the pilot SVG, and spot-checked the generated draw.io artifact to confirm the pilot now emits `16px` labels while the original `inference-snaps` artifact remains on `14px`.
+
 ### 2026-04-25 — Inference snaps dense comparison variant
 
 - Added `inference-snaps-dense-onbrand.drawio` and `inference-snaps-dense-onbrand.svg` as a forked comparison variant of the grouped side-by-side `inference-snaps` diagram so the recent dense token sync can be inspected in a real layout rather than only in shared helpers.

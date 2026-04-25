@@ -31,9 +31,12 @@ BODY_SIZE = "14"
 HEADING_SIZE = "18"
 TITLE_SIZE = "24"
 
+DIAGRAM_TIER_BODY_SIZE = "16"
+
 BODY_LINE_STEP = 20
 HEADING_LINE_STEP = 24
 TITLE_LINE_STEP = 32
+DIAGRAM_TIER_BODY_LINE_STEP = 20
 
 LINE_HEIGHTS_BY_SIZE = {
     6: 8,
@@ -122,6 +125,23 @@ def make_line(
         "small_caps": small_caps,
         "line_step": line_step or default_line_step(size),
     }
+
+
+def make_diagram_line(
+    content: str,
+    *,
+    weight: str = "400",
+    fill: str = BLACK,
+    small_caps: bool = False,
+) -> dict[str, object]:
+    return make_line(
+        content,
+        size=DIAGRAM_TIER_BODY_SIZE,
+        weight=weight,
+        fill=fill,
+        small_caps=small_caps,
+        line_step=DIAGRAM_TIER_BODY_LINE_STEP,
+    )
 
 
 def size_to_px(value: str | int | float) -> float:

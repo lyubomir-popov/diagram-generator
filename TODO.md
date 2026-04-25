@@ -21,7 +21,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 3. For new diagrams, build from the sample block system: literal geometry, live text, natural-size local icons, and no hidden SVG reuse constructs.
 4. Reuse exact style snippets: `diagrams/0.reference/onbrand-svg-starter.svg` is now the copy source for the canonical block proportions, inset rhythm, and literal orange arrow geometry.
 5. Editable SVG over screenshots or embedded raster exports.
-6. Typography for new diagrams now follows the dense application and documentation mapping from `canonical-spacing-spec`: `14px` body copy with `20px` line height by default, `18px/24px` for the next size step, and `24px/32px` only when the smaller ladder is not enough.
+6. The imported dense application and documentation mapping from `canonical-spacing-spec` remains the reference tier, but `inference-snaps-dense` is now piloting a diagram tier with `16px` body copy and `20px` line height to keep live text proportionate to the standard `48px` icon treatment.
 7. Orange is reserved for arrows and arrowheads; boxes do not get orange fills.
 8. Geometry stays tight and reference-scaled; do not casually upscale diagrams.
 9. Use local icons only, and omit the icon entirely when no suitable icon exists in `assets/icons/`.
@@ -61,6 +61,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 - [x] Ingest typography, spacing, and grid specs from the broader design language into `DIAGRAM.md` frontmatter and `scripts/diagram_shared.py`.
 - [ ] Finish mapping imported design-language tokens into `scripts/drawio_style_sync.py` and any remaining draw.io style defaults so layout and type glitches can be corrected from one source.
+- [ ] Evaluate the `inference-snaps-dense` diagram-tier pilot (`16px` body / `20px` line height) and decide whether it should replace or coexist with the imported dense `14px` reference tier across the wider batch.
 - [x] Define the three-lane draw.io workflow: generated base file, manually polished working file, and checkpoint snapshots or pages for low-friction revert.
 - [x] Export a repo-owned draw.io library for the canonical primitives: default box, accent box, black highlight box, helper note, orange connector, terminal command bar, matrix widget, memory-wall panel, and common grouped panels.
 - [x] Refactor `scripts/export_drawio_batch.py` to emit style-token metadata and provenance markers on generated cells so future tools can distinguish generator-owned shapes from manual additions.

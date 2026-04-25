@@ -417,12 +417,14 @@ def add_label(
     style_tokens: tuple[str, ...] | None = None,
 ) -> str:
     resolved_height = height if height is not None else text_height(lines)
+    base_font_size = int(round(svg.size_to_px(lines[0]["size"]))) if lines else int(svg.size_to_px(svg.BODY_SIZE))
     return builder.add_vertex(
         x=x,
         y=y,
         width=width,
         height=resolved_height,
         style=label_style(
+            font_size=base_font_size,
             align=align,
             vertical_align=vertical_align,
             font_family=font_family,
@@ -582,7 +584,15 @@ def add_request_cluster(builder: DrawioBuilder, *, x: float, y: float) -> None:
         add_image(builder, x=x + offset, y=y, width=48, height=48, image_uri=icon_uri(name), style_tokens=("request-cluster-icon",))
 
 
-def add_command_bar(builder: DrawioBuilder, *, x: float, y: float, width: float, text_value: str) -> str:
+def add_command_bar(
+    builder: DrawioBuilder,
+    *,
+    x: float,
+    y: float,
+    width: float,
+    text_value: str,
+    lines: list[dict[str, object]] | None = None,
+) -> str:
     bar = builder.add_vertex(
         x=x,
         y=y,
@@ -620,7 +630,7 @@ def add_command_bar(builder: DrawioBuilder, *, x: float, y: float, width: float,
         y=28,
         width=width - 32,
         height=28,
-        lines=[svg.make_line(text_value)],
+        lines=lines or [svg.make_line(text_value)],
         parent=bar,
         font_family=svg.TERMINAL_FONT_FAMILY,
         font_source=None,
@@ -882,27 +892,27 @@ def export_inference_snaps_dense() -> None:
 
     tile_rows = [
         (
-            [svg.make_line("Model")],
+            [svg.make_diagram_line("Model")],
             "Network.svg",
-            [svg.make_line("Workload"), svg.make_line("identity")],
+            [svg.make_diagram_line("Workload"), svg.make_diagram_line("identity")],
             "User.svg",
         ),
         (
-            [svg.make_line("Runtime")],
+            [svg.make_diagram_line("Runtime")],
             "Gauge.svg",
-            [svg.make_line("Heterogeneous"), svg.make_line("hardware")],
+            [svg.make_diagram_line("Heterogeneous"), svg.make_diagram_line("hardware")],
             "Chip 1.svg",
         ),
         (
-            [svg.make_line("Dependencies")],
+            [svg.make_diagram_line("Dependencies")],
             "Wrench 1.svg",
-            [svg.make_line("Reproducibility")],
+            [svg.make_diagram_line("Reproducibility")],
             "Clipboard.svg",
         ),
         (
-            [svg.make_line("Hardware"), svg.make_line("config")],
+            [svg.make_diagram_line("Hardware"), svg.make_diagram_line("config")],
             "CPU.svg",
-            [svg.make_line("Operational"), svg.make_line("observability")],
+            [svg.make_diagram_line("Operational"), svg.make_diagram_line("observability")],
             "Bar chart with check.svg",
         ),
     ]
@@ -914,10 +924,17 @@ def export_inference_snaps_dense() -> None:
         width=frame_width,
         height=64,
         fill=svg.WHITE,
-        lines=[svg.make_line("Inference snaps", weight="700")],
+        lines=[svg.make_diagram_line("Inference snaps", weight="700")],
         icon_name="Snap.svg",
     )
-    command = add_command_bar(builder, x=x, y=112, width=frame_width, text_value="$ snap install gemma3")
+    command = add_command_bar(
+        builder,
+        x=x,
+        y=112,
+        width=frame_width,
+        text_value="$ snap install gemma3",
+        lines=[svg.make_diagram_line("$ snap install gemma3")],
+    )
     snap = add_box(
         builder,
         x=x,
@@ -925,7 +942,7 @@ def export_inference_snaps_dense() -> None:
         width=frame_width,
         height=64,
         fill=svg.WHITE,
-        lines=[svg.make_line("Inference snap", weight="700")],
+        lines=[svg.make_diagram_line("Inference snap", weight="700")],
         icon_name="Package.svg",
     )
 
@@ -946,9 +963,9 @@ def export_inference_snaps_dense() -> None:
         add_box(builder, x=inner_pad, y=row_y, width=tile_width, fill=svg.WHITE, lines=left_lines, icon_name=left_icon, parent=pad, connectable=False)
         add_box(builder, x=inner_pad + tile_width + tile_gap, y=row_y, width=tile_width, fill=svg.WHITE, lines=right_lines, icon_name=right_icon, parent=pad, connectable=False)
 
-    cpu = add_box(builder, x=hardware_x[0], y=hardware_y, width=hardware_width, fill=svg.WHITE, lines=[svg.make_line("CPU")], icon_name="CPU.svg")
-    gpu = add_box(builder, x=hardware_x[1], y=hardware_y, width=hardware_width, fill=svg.GREY, lines=[svg.make_line("GPU")], icon_name="RAM.svg")
-    npu = add_box(builder, x=hardware_x[2], y=hardware_y, width=hardware_width, fill=svg.WHITE, lines=[svg.make_line("NPU")], icon_name="Chip 2.svg")
+    cpu = add_box(builder, x=hardware_x[0], y=hardware_y, width=hardware_width, fill=svg.WHITE, lines=[svg.make_diagram_line("CPU")], icon_name="CPU.svg")
+    gpu = add_box(builder, x=hardware_x[1], y=hardware_y, width=hardware_width, fill=svg.GREY, lines=[svg.make_diagram_line("GPU")], icon_name="RAM.svg")
+    npu = add_box(builder, x=hardware_x[2], y=hardware_y, width=hardware_width, fill=svg.WHITE, lines=[svg.make_diagram_line("NPU")], icon_name="Chip 2.svg")
 
     builder.add_edge(
         style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0),

@@ -6,8 +6,10 @@ sourceSpecs:
   typography: ../canonical-spacing-spec/specs/type scale/draft.md
   spacing: ../canonical-spacing-spec/specs/spacing/draft.md
   grid: ../canonical-spacing-spec/specs/grid/draft.md
-  adoptedTier: applications
-  notes: Dense application-doc defaults drive diagram primitives; diagrams remain their own illustration system rather than a direct UI clone.
+  importedTier: applications
+  adoptedTier: diagram
+  rolloutStatus: pilot
+  notes: The imported dense application-doc tier remains the reference layer, but the current diagram-tier pilot restores `16px` body text with `20px` line height to preserve the proportion between live text and `48px` icons.
 colors:
   ink: "#000000"
   surface-default: "#FFFFFF"
@@ -28,6 +30,16 @@ typography:
     fontFamily: Ubuntu Sans
     fontSize: 14px
     fontWeight: 400
+    lineHeight: 20px
+  diagram-body:
+    fontFamily: Ubuntu Sans
+    fontSize: 16px
+    fontWeight: 400
+    lineHeight: 20px
+  diagram-body-strong:
+    fontFamily: Ubuntu Sans
+    fontSize: 16px
+    fontWeight: 600
     lineHeight: 20px
   body-strong:
     fontFamily: Ubuntu Sans
@@ -176,12 +188,14 @@ When in doubt, reduce color usage rather than expanding it.
 
 Typography is live text first. The current working system is intentionally small:
 
-- Diagrams now inherit the dense application and documentation root size: `14px` Ubuntu Sans regular with a `20px` baseline-snapped line height.
+- The imported dense application and documentation reference tier remains `14px` Ubuntu Sans regular with a `20px` baseline-snapped line height.
+- The current diagram-tier pilot restores main diagram copy to `16px` with a `20px` line height so text keeps the right proportion against the standard `48px` icon treatment.
 - The first hierarchy step is still weight, not size: `400`, then `600`, then small-caps with `0.05em` tracking.
 - When size must change, stay on the modular scale: `18px/24px` for section labels, then `24px/32px` for major titles.
 - No heading or body label in a diagram should fall below `14px` without an explicit accessibility reason.
 - Terminal-style command bars use Ubuntu Sans Mono or a compatible mono fallback at the same body size.
 - Because diagrams currently align most naturally with dense application surfaces, nudge tokens remain `0` and alignment is enforced at the block level first.
+- The `diagram-tier` treatment is currently a pilot used to retune glitch-prone grouped layouts before wider rollout.
 
 Text is positioned by ascent rather than by raw baseline guessing. The visible top of the text sits `8px` below the top edge of the box.
 
@@ -231,6 +245,7 @@ The reusable component set is intentionally small.
 - Default box: white fill, black stroke, live text.
 - Accent box: `#F3F3F3` fill, black stroke, live text.
 - Emphasis box: black fill, white text, used only when a true highlight is needed.
+- Diagram-tier box copy: `16px/20px` live text, used when the denser imported tier makes labels feel too small relative to icons.
 - Helper note: unboxed `14px` helper text.
 - Terminal command bar: grey body with `20px` chrome strip, separator line, and mono text.
 - Matrix widget: explicit top label band above the grid.

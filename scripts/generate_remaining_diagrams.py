@@ -10,6 +10,7 @@ from diagram_shared import (
     BLOCK_WIDTH,
     BODY_SIZE,
     DESCENT_RATIO,
+    DIAGRAM_TIER_BODY_SIZE,
     GRID_GUTTER,
     GREY,
     HELPER,
@@ -32,6 +33,7 @@ from diagram_shared import (
     line_top_to_baseline,
     lines_required_height,
     load_icon,
+    make_diagram_line,
     make_line,
     size_to_px,
 )
@@ -279,14 +281,21 @@ def matrix_group(x: float, y: float, label: str) -> str:
     )
 
 
-def command_bar(x: float, y: float, width: float, text_value: str) -> str:
+def command_bar(
+    x: float,
+    y: float,
+    width: float,
+    text_value: str,
+    *,
+    text_size: str = BODY_SIZE,
+) -> str:
     parts = [rect(x, y, width, 64, fill=GREY)]
     parts.append(line(x, y + TERMINAL_CHROME_HEIGHT, x + width, y + TERMINAL_CHROME_HEIGHT))
     for center_x in (20, 36, 52):
         parts.append(circle(center_x + x, y + TERMINAL_CHROME_HEIGHT / 2, TERMINAL_DOT_RADIUS, fill=WHITE))
     parts.append(
-        f'  <text x="{fmt(x + 24)}" y="{fmt(line_top_to_baseline(y + 28, BODY_SIZE))}" '
-        f'font-family="{TERMINAL_FONT_FAMILY}" font-size="{BODY_SIZE}" font-weight="400" fill="{BLACK}">{html.escape(text_value)}</text>'
+        f'  <text x="{fmt(x + 24)}" y="{fmt(line_top_to_baseline(y + 28, text_size))}" '
+        f'font-family="{TERMINAL_FONT_FAMILY}" font-size="{text_size}" font-weight="400" fill="{BLACK}">{html.escape(text_value)}</text>'
     )
     return "\n".join(parts)
 
@@ -558,10 +567,10 @@ def build_inference_snaps_dense() -> None:
     hardware_centers = [left + hardware_width / 2 for left in hardware_x]
 
     tile_rows = [
-        ([make_line("Model")], "Network.svg", [make_line("Workload"), make_line("identity")], "User.svg"),
-        ([make_line("Runtime")], "Gauge.svg", [make_line("Heterogeneous"), make_line("hardware")], "Chip 1.svg"),
-        ([make_line("Dependencies")], "Wrench 1.svg", [make_line("Reproducibility")], "Clipboard.svg"),
-        ([make_line("Hardware"), make_line("config")], "CPU.svg", [make_line("Operational"), make_line("observability")], "Bar chart with check.svg"),
+        ([make_diagram_line("Model")], "Network.svg", [make_diagram_line("Workload"), make_diagram_line("identity")], "User.svg"),
+        ([make_diagram_line("Runtime")], "Gauge.svg", [make_diagram_line("Heterogeneous"), make_diagram_line("hardware")], "Chip 1.svg"),
+        ([make_diagram_line("Dependencies")], "Wrench 1.svg", [make_diagram_line("Reproducibility")], "Clipboard.svg"),
+        ([make_diagram_line("Hardware"), make_diagram_line("config")], "CPU.svg", [make_diagram_line("Operational"), make_diagram_line("observability")], "Bar chart with check.svg"),
     ]
 
     current_row_y = inner_pad
@@ -579,19 +588,19 @@ def build_inference_snaps_dense() -> None:
     background.append(vertical_arrow(hardware_centers[1], pad_y + pad_height, hardware_y))
     background.append(vertical_arrow(hardware_centers[2], pad_y + pad_height, hardware_y))
 
-    foreground.append(box(x, 24, frame_width, WHITE, [make_line("Inference snaps", weight="700")], icon_name="Snap.svg", height=64))
-    foreground.append(command_bar(x, 112, frame_width, "$ snap install gemma3"))
+    foreground.append(box(x, 24, frame_width, WHITE, [make_diagram_line("Inference snaps", weight="700")], icon_name="Snap.svg", height=64))
+    foreground.append(command_bar(x, 112, frame_width, "$ snap install gemma3", text_size=DIAGRAM_TIER_BODY_SIZE))
     foreground.append(rect(x - 8, 200, frame_width + 16, dashed_height, fill="none", stroke=BLACK, dasharray="8 8"))
-    foreground.append(box(x, 216, frame_width, WHITE, [make_line("Inference snap", weight="700")], icon_name="Package.svg", height=64))
+    foreground.append(box(x, 216, frame_width, WHITE, [make_diagram_line("Inference snap", weight="700")], icon_name="Package.svg", height=64))
     foreground.append(f'  <rect x="{x}" y="{pad_y}" width="{frame_width}" height="{pad_height}" fill="{GREY}" />')
 
     for row_y, (left_lines, left_icon, right_lines, right_icon) in zip(rows, tile_rows):
         foreground.append(box(left_x, pad_y + row_y, tile_width, WHITE, left_lines, icon_name=left_icon))
         foreground.append(box(right_x, pad_y + row_y, tile_width, WHITE, right_lines, icon_name=right_icon))
 
-    foreground.append(box(hardware_x[0], hardware_y, hardware_width, WHITE, [make_line("CPU")], icon_name="CPU.svg"))
-    foreground.append(box(hardware_x[1], hardware_y, hardware_width, GREY, [make_line("GPU")], icon_name="RAM.svg"))
-    foreground.append(box(hardware_x[2], hardware_y, hardware_width, WHITE, [make_line("NPU")], icon_name="Chip 2.svg"))
+    foreground.append(box(hardware_x[0], hardware_y, hardware_width, WHITE, [make_diagram_line("CPU")], icon_name="CPU.svg"))
+    foreground.append(box(hardware_x[1], hardware_y, hardware_width, GREY, [make_diagram_line("GPU")], icon_name="RAM.svg"))
+    foreground.append(box(hardware_x[2], hardware_y, hardware_width, WHITE, [make_diagram_line("NPU")], icon_name="Chip 2.svg"))
 
     parts.extend(background)
     parts.extend(foreground)
