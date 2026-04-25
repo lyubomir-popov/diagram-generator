@@ -59,9 +59,21 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
+### Grid engine and inside-out box model (Roadmap Stage 6)
+
+This is the next major architectural piece. The grid engine is output-agnostic — it computes abstract layout geometry (positions, dimensions, grid arrays) in `diagram_shared.py` that both renderers (SVG and draw.io) consume. Implementation order:
+
+- [ ] **Layer 1 – tight box height.** Add `tight_box_height(lines, has_icon)` to `diagram_shared.py`. Returns `INSET + (lines × line_step) + INSET` snapped to baseline unit. `64px` minimum only when `has_icon=True`.
+- [ ] **Layer 2 – panel grid helper.** Add `panel_grid(cols, rows, col_width, row_height, col_gap, row_gap, heading_height, inset)` to `diagram_shared.py`. Returns `{"width", "height", "col_xs", "row_ys"}`. All dimensions snapped to baseline unit. Output-agnostic: no SVG or draw.io concepts.
+- [ ] **Layer 3 – containment check.** Add `assert_text_fits(text_y, line_count, line_step, container_y, container_height, inset)` that raises during build if text overflows.
+- [ ] **Layer 4 – refactor `build_logic_data_vram()`** as the reference implementation in both renderers: grid variables, inside-out panel sizing, tight box heights, correct typography weight hierarchy (regular for content labels, bold only for panel headings).
+- [ ] **Layer 5 – roll out** grid-variable pattern to all remaining diagram functions in both renderers.
+- [ ] **Typography weight audit.** Change every `make_line("Label", weight="700")` in content boxes to `make_line("Label")` (regular). Keep `weight="700"` only on panel headings and frame titles.
+
+### Previously active
+
 - [x] Ingest typography, spacing, and grid specs from the broader design language into `DIAGRAM.md` frontmatter and `scripts/diagram_shared.py`.
-- [ ] Finish mapping imported design-language tokens into `scripts/drawio_style_sync.py` and any remaining draw.io style defaults so layout and type glitches can be corrected from one source.
-- [ ] Evaluate the `inference-snaps-dense` diagram-tier pilot (`16px` body / `20px` line height) and decide whether it should replace or coexist with the imported dense `14px` reference tier across the wider batch.
+- [x] 16px/20px diagram-tier pilot → now the default body size across all diagrams.
 - [x] Define the three-lane draw.io workflow: generated base file, manually polished working file, and checkpoint snapshots or pages for low-friction revert.
 - [x] Export a repo-owned draw.io library for the canonical primitives: default box, accent box, black highlight box, helper note, orange connector, terminal command bar, matrix widget, memory-wall panel, and common grouped panels.
 - [x] Refactor `scripts/export_drawio_batch.py` to emit style-token metadata and provenance markers on generated cells so future tools can distinguish generator-owned shapes from manual additions.

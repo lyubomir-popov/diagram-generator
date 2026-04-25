@@ -186,33 +186,126 @@ When in doubt, reduce color usage rather than expanding it.
 
 ## Typography
 
-Typography is live text first. The current working system is intentionally small:
+Typography is live text first. The diagram system inherits the editorial tier's paired-heading model from the upstream type spec, where **weight at the same font size creates a distinct hierarchical level**.
 
-- The imported dense application and documentation reference tier remains `14px` Ubuntu Sans regular with a `20px` baseline-snapped line height.
-- The current diagram-tier pilot restores main diagram copy to `16px` with a `20px` line height so text keeps the right proportion against the standard `48px` icon treatment.
-- The first hierarchy step is still weight, not size: `400`, then `600`, then small-caps with `0.05em` tracking.
+### Hierarchy model
+
+The hierarchy ladder, from highest to lowest visual weight at any given size:
+
+1. **Heading / structural label** — `weight 600–700`. Used for panel titles ("Logic + data conflict"), section labels ("VRAM fragmentation"), and frame headings ("Inference snaps"). These are structural signposts.
+2. **Body label** — `weight 400` (regular). Used for box content labels ("CPU", "Logic", "Memory", "Data"). These are the default for every box that is not itself a heading.
+3. **Helper / annotation** — `weight 400`, `fill #666666`. Used for explanatory notes. Hierarchy is expressed only by color shift, never by shrinking the size.
+
+Bold at the same font size is a hierarchical level above regular. Do not make every box label bold — that flattens the hierarchy and makes real headings invisible. Only panel headings and frame titles use bold; individual box labels use regular weight.
+
+### Scale
+
+- Body copy: `16px` Ubuntu Sans regular with `20px` line height (editorial-tier base adapted for diagram use).
+- First hierarchy step is weight: `400` → `600`.
+- Second step is small-caps: `600` weight with `0.05em` tracking.
 - When size must change, stay on the modular scale: `18px/24px` for section labels, then `24px/32px` for major titles.
-- No heading or body label in a diagram should fall below `14px` without an explicit accessibility reason.
+- No heading or body label should fall below `14px` without an explicit accessibility reason.
 - Terminal-style command bars use Ubuntu Sans Mono or a compatible mono fallback at the same body size.
-- Because diagrams currently align most naturally with dense application surfaces, nudge tokens remain `0` and alignment is enforced at the block level first.
-- The `diagram-tier` treatment is currently a pilot used to retune glitch-prone grouped layouts before wider rollout.
 
-Text is positioned by ascent rather than by raw baseline guessing. The visible top of the text sits `8px` below the top edge of the box.
+### Text positioning
+
+Text is positioned by ascent, not by raw baseline guessing. The visible top of the text sits `INSET` (`8px`) below the top edge of the box.
 
 ## Layout & spacing
 
-The layout model uses a `4px` baseline unit, with most block geometry stepping in `8px` rhythm increments and grid-level separation using the application gutter.
+### Baseline grid
 
-- Default new-work box width is `192px`.
-- Default box height is at least `64px`, matching the `48px` icon plus `8px` padding above and below.
-- Taller boxes should be derived from the text stack and then snapped to whole `4px` baseline units rather than hard-coded per diagram.
-- Text is always top-left aligned.
-- Text and icons both use an `8px` inset.
-- Right-side icons align to the top-right by artboard, not vertical center.
-- Use `24px` as the default grid-level gap between peer boxes or rows; reserve `8px` and `16px` for tighter in-panel grouping.
-- Grouping pads and borderless substrates still keep `8px` internal padding.
+Every dimension in a diagram — positions, sizes, padding, gaps — must be an exact multiple of the `4px` baseline unit. No exceptions. No "close enough." If a value does not land on the grid, snap it up to the nearest multiple.
 
-Preserve a grid feeling. If a parent box or panel sits above aligned children, size it so the outer edges align rather than reading as a centered stack of unrelated widths.
+This is a non-negotiable constraint. It replaces all previous guidance about "preserving a grid feeling" or "stepping in rhythm increments." The grid is not a suggestion — it is the coordinate system.
+
+### No ad-hoc positioning
+
+Ad-hoc pixel values are banned. Every coordinate must be derived from:
+
+- Named grid variables (`col_xs`, `row_ys`, `panel_inset`, `row_gap`)
+- Computed container dimensions (see inside-out box model below)
+- Explicit token values from the spacing section of the YAML frontmatter
+
+A cold-start agent should never eyeball a position or tweak a number to "look right." If the position is wrong, the grid parameters are wrong — fix the parameters, not the output.
+
+### Inside-out box model
+
+Containers are the sum of their contents. Size from the inside out, never from the outside in.
+
+**For a text box (no icon):**
+
+```
+box_height = INSET + (line_count × line_step) + INSET
+           → snap to baseline unit
+```
+
+A 1-line box at `16px/20px`: `8 + 20 + 8 = 36px` → `36px` (already on grid).
+A 2-line box: `8 + 40 + 8 = 56px` → `56px`.
+
+There must be no dead space below the last text line. If the text only needs `36px`, the box is `36px`, not `64px`.
+
+**For a text box with icon:**
+
+```
+box_height = max(text_box_height, INSET + ICON_SIZE + INSET)
+           → snap to baseline unit
+```
+
+With a `48px` icon: `8 + 48 + 8 = 64px`. A 1-line-with-icon box is `64px`. A 3-line-with-icon box: `max(8 + 60 + 8, 64) = 76px`.
+
+**For a panel containing child boxes:**
+
+```
+panel_height = INSET
+             + heading_row_height
+             + heading_gap
+             + (n_rows × row_height) + ((n_rows - 1) × row_gap)
+             + INSET
+           → snap to baseline unit
+```
+
+The panel width follows the same logic from columns. Never hardcode a panel size and then try to fit children inside it.
+
+**For a panel heading row (bold title, optional icon):**
+
+```
+heading_row_height = tight_box_height(title_lines, has_icon)
+```
+
+The heading is just another box — its height comes from its content, not from an arbitrary constant.
+
+### Grid variables per panel
+
+When a panel contains multiple boxes, define its internal grid before placing anything:
+
+1. **Columns.** Decide count and width. Write as `col_xs = [inset, inset + col_width + col_gap, ...]`.
+2. **Rows.** First content row starts after heading. Subsequent rows step by `row_height + row_gap`. Write as `row_ys = [first_row_y, first_row_y + step, ...]`.
+3. **All boxes** use these arrays for position. `box(panel_x + col_xs[c], panel_y + row_ys[r], col_width, ...)`.
+4. **Parent dimensions** are computed from the grid, not the other way around.
+
+When sibling panels contain semantically parallel content, synchronize their row heights so rows read across.
+
+### Spacing tokens
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `baseline-unit` | `4px` | Atomic grid step; all dimensions must be multiples |
+| `inset` | `8px` | Padding inside boxes, panels, and all containers |
+| `compact-gap` | `8px` | Gap between tightly grouped peer boxes within a panel |
+| `group-gap` | `16px` | Gap between sub-groups inside a panel |
+| `row-gap` | `24px` | Gap between major rows or peer panels |
+| `grid-gutter` | `24px` | Gap between side-by-side panels |
+| `outer-margin` | `32px` | Margin from diagram edge to first content |
+| `default-box-width` | `192px` | Standard box width |
+| `icon-size` | `48px` | Standard icon artboard |
+| `body-line-step` | `20px` | Line height for `16px` body text |
+
+### Text containment
+
+Every text element — labels, helper notes, headings — must fit entirely within its parent container, or be positioned entirely outside it. No text may cross or overlap a container border.
+
+Before placing text inside a container, verify: `text_y + (line_count × line_step) ≤ container_y + container_height - inset`. If it does not fit, enlarge the container (re-derive from inside-out model), reposition the text, or move the text outside as a standalone helper note.
 
 ## Shapes
 
@@ -240,16 +333,17 @@ The primary question for connector quality is whether the routing still reads cl
 
 ## Components
 
-The reusable component set is intentionally small.
+The reusable component set is intentionally small. Every component follows the inside-out box model — height is computed from content, never hardcoded with dead space.
 
-- Default box: white fill, black stroke, live text.
-- Accent box: `#F3F3F3` fill, black stroke, live text.
-- Emphasis box: black fill, white text, used only when a true highlight is needed.
-- Diagram-tier box copy: `16px/20px` live text, used when the denser imported tier makes labels feel too small relative to icons.
-- Helper note: unboxed `14px` helper text.
-- Terminal command bar: grey body with `20px` chrome strip, separator line, and mono text. Internal spacing must follow the same `8px` inset rules as every other box: text starts at `INSET` from the left edge and `chromeHeight + INSET` from the top edge. Do not use a wider left margin to "clear" the chrome dots, because those dots sit in the chrome band above the text area and the left edges of terminal text and box text must stay aligned.
-- Matrix widget: explicit top label band above the grid.
-- Memory wall panel: jagged semantic exception.
+- **Default box** (text only): white fill, black stroke, regular-weight live text. Height = `INSET + (lines × line_step) + INSET`, snapped to baseline unit. A 1-line text-only box is `36px` tall, not `64px`.
+- **Default box with icon**: white fill, black stroke, regular-weight live text. Height = `max(text_height, INSET + ICON_SIZE + INSET)`. A 1-line box with a `48px` icon is `64px`.
+- **Accent box**: `#F3F3F3` fill, otherwise identical to default.
+- **Emphasis box**: black fill, white text, used only when a true highlight is needed.
+- **Panel heading**: bold (`600–700`) label, applied only to structural containers — not to individual content boxes. Panel headings are just boxes whose text happens to be bold.
+- **Helper note**: unboxed `16px` regular text in `#666666`. Hierarchy expressed only by color, not by size.
+- **Terminal command bar**: grey body with `20px` chrome strip, separator line, and mono text. Internal spacing must follow the same `8px` inset rules as every other box: text starts at `INSET` from the left edge and `chromeHeight + INSET` from the top edge.
+- **Matrix widget**: explicit top label band above the grid.
+- **Memory wall panel**: jagged semantic exception.
 
 Use icons from `assets/icons/` only. If no local icon matches the concept, omit the icon rather than sourcing or inventing a new one.
 

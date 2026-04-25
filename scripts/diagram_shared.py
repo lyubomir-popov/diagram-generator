@@ -27,16 +27,17 @@ ICON_SIZE = 48
 INSET = 8
 BOX_MIN_HEIGHT = ICON_SIZE + (INSET * 2)
 
-BODY_SIZE = "14"
+BODY_SIZE = "16"
 HEADING_SIZE = "18"
 TITLE_SIZE = "24"
 
-DIAGRAM_TIER_BODY_SIZE = "16"
+# Legacy alias – kept so existing call sites that reference the pilot name still work.
+DIAGRAM_TIER_BODY_SIZE = BODY_SIZE
 
 BODY_LINE_STEP = 20
 HEADING_LINE_STEP = 24
 TITLE_LINE_STEP = 32
-DIAGRAM_TIER_BODY_LINE_STEP = 20
+DIAGRAM_TIER_BODY_LINE_STEP = BODY_LINE_STEP
 
 LINE_HEIGHTS_BY_SIZE = {
     6: 8,
@@ -46,7 +47,7 @@ LINE_HEIGHTS_BY_SIZE = {
     10: 12,
     12: 16,
     14: 20,
-    16: 24,
+    16: 20,
     18: 24,
     21: 28,
     24: 32,
@@ -134,13 +135,12 @@ def make_diagram_line(
     fill: str = BLACK,
     small_caps: bool = False,
 ) -> dict[str, object]:
+    """Legacy alias – now identical to make_line() since 16px/20px is the default."""
     return make_line(
         content,
-        size=DIAGRAM_TIER_BODY_SIZE,
         weight=weight,
         fill=fill,
         small_caps=small_caps,
-        line_step=DIAGRAM_TIER_BODY_LINE_STEP,
     )
 
 

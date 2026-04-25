@@ -589,7 +589,7 @@ def build_inference_snaps_dense() -> None:
     background.append(vertical_arrow(hardware_centers[2], pad_y + pad_height, hardware_y))
 
     foreground.append(box(x, 24, frame_width, WHITE, [make_diagram_line("Inference snaps", weight="700")], icon_name="Snap.svg", height=64))
-    foreground.append(command_bar(x, 112, frame_width, "$ snap install gemma3", text_size=DIAGRAM_TIER_BODY_SIZE))
+    foreground.append(command_bar(x, 112, frame_width, "$ snap install gemma3"))
     foreground.append(rect(x - 8, 200, frame_width + 16, dashed_height, fill="none", stroke=BLACK, dasharray="8 8"))
     foreground.append(box(x, 216, frame_width, WHITE, [make_diagram_line("Inference snap", weight="700")], icon_name="Package.svg", height=64))
     foreground.append(f'  <rect x="{x}" y="{pad_y}" width="{frame_width}" height="{pad_height}" fill="{GREY}" />')

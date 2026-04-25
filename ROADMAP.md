@@ -26,15 +26,37 @@ Capture the canonical manual building blocks in a repo-owned draw.io library, so
 
 Introduce a style-token layer over generated draw.io cells and build tooling that can batch-update style properties such as text padding, connector defaults, and panel treatments across existing diagrams when the system changes.
 
-### Stage 6 — Batch redesign throughput
+### Stage 6 — Grid engine and inside-out box model
+
+Replace the current ad-hoc absolute-positioning approach with an output-agnostic grid-aware computation layer in `diagram_shared.py`. This layer sits above both renderers (SVG and draw.io) and produces abstract layout geometry — positions, dimensions, grid arrays — that each renderer consumes. It is not a CSS layout engine; it is a set of helpers that make it structurally impossible to place things off-grid.
+
+**Layer 1 — Tight box height computation.**
+`box_height(lines, has_icon)` computes exact height from content: `INSET + (lines × line_step) + INSET`, snapped to baseline unit. A 1-line text-only box is `36px`, not `64px`. The `64px` minimum only applies when an icon is present. This replaces `lines_required_height()` and `BOX_MIN_HEIGHT` as the default box-height source.
+
+**Layer 2 — Panel grid computation.**
+`panel_grid(cols, rows, col_width, row_height, ...)` returns a dict with `width`, `height`, `col_xs[]`, `row_ys[]` — all derived from content dimensions plus spacing tokens. The panel dimensions are the output of this function, never the input. Each diagram definition calls `panel_grid()` once per panel and both renderers use the returned arrays for child positioning.
+
+**Layer 3 — Containment validation.**
+`assert_contained(text_y, line_count, line_step, container_y, container_height)` — a debug-time check that raises if text would cross a container border.
+
+**Output-agnostic principle:**
+The grid engine computes abstract layout — coordinates, widths, heights, grid arrays. It knows nothing about SVG elements or draw.io `mxCell` XML. Both `generate_remaining_diagrams.py` (SVG renderer) and `export_drawio_batch.py` (draw.io renderer) consume the same computed geometry. If a third output format appears later, it uses the same layout data.
+
+**Scope of change:**
+- `diagram_shared.py`: new output-agnostic helpers, updated box-height semantics, optional containment context.
+- `generate_remaining_diagrams.py`: all `build_*()` functions refactored to use grid variables from the shared layer.
+- `export_drawio_batch.py`: same refactoring for draw.io export functions.
+- `DIAGRAM.md`: already updated with the rules (done ahead of implementation).
+
+### Stage 7 — Batch redesign throughput
 
 Process the incoming diagram queue against `DIAGRAM.md`, keeping outputs stylistically consistent and easy to compare.
 
-### Stage 7 — Selective merge and reapply automation
+### Stage 8 — Selective merge and reapply automation
 
 Once the generated/manual boundaries are explicit, selectively patch generator-owned portions of polished diagrams with rollback support instead of forcing all-or-nothing regeneration.
 
-### Stage 8 — Optional automation
+### Stage 9 — Optional automation
 
 Add lightweight checks or generation helpers only if they reduce repetition without making the outputs less editable.
 
