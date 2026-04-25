@@ -145,7 +145,7 @@ class DrawioBuilder:
             "mxGraphModel",
             {
                 "grid": "1",
-                "gridSize": "8",
+                "gridSize": str(svg.BASELINE_UNIT),
                 "guides": "1",
                 "tooltips": "1",
                 "connect": "1",
@@ -277,7 +277,7 @@ def rect_style(fill: str, *, stroke: str = svg.BLACK, dashed: bool = False) -> s
 
 def label_style(
     *,
-    font_size: int = 16,
+    font_size: int = int(svg.size_to_px(svg.BODY_SIZE)),
     font_color: str = svg.BLACK,
     align: str = "left",
     vertical_align: str = "top",
@@ -349,15 +349,7 @@ def edge_style(
 
 
 def text_height(lines: list[dict[str, object]], *, pad_bottom: int = 0, min_height: int = 0) -> int:
-    if not lines:
-        return min_height
-    current_top = 0
-    max_bottom = 0.0
-    for spec in lines:
-        size_px = svg.size_to_px(spec["size"])
-        max_bottom = max(max_bottom, current_top + size_px * (svg.ASCENT_RATIO + svg.DESCENT_RATIO))
-        current_top += int(spec["line_step"])
-    return max(min_height, svg.round_up_to_grid(max_bottom + pad_bottom))
+    return svg.stack_required_height(lines, top_pad=0, bottom_pad=pad_bottom, min_height=min_height)
 
 
 def rich_text(lines: list[dict[str, object]]) -> str:
@@ -449,7 +441,7 @@ def add_box(
     x: float,
     y: float,
     width: float,
-    height: float,
+    height: float | None = None,
     fill: str,
     lines: list[dict[str, object]],
     icon_name: str | None = None,
@@ -457,24 +449,25 @@ def add_box(
     parent: str = "1",
     connectable: bool = True,
 ) -> str:
+    resolved_height = max(height or 0, svg.lines_required_height(lines))
     box_token = box_style_token(fill)
     box_id = builder.add_vertex(
         x=x,
         y=y,
         width=width,
-        height=height,
+        height=resolved_height,
         style=rect_style(fill),
         parent=parent,
         connectable=connectable,
         metadata=dg_tokens.CellMetadata(role="box", style_tokens=(box_token,)),
     )
-    text_width = width - 16 - (64 if icon_name else 0)
+    text_width = svg.box_text_width(width, has_icon=icon_name is not None)
     add_label(
         builder,
-        x=8,
-        y=8,
+        x=svg.INSET,
+        y=svg.INSET,
         width=text_width,
-        height=height - 16,
+        height=max(0, resolved_height - (svg.INSET * 2)),
         lines=lines,
         parent=box_id,
         style_tokens=("label-box",),
@@ -482,10 +475,10 @@ def add_box(
     if icon_name:
         add_image(
             builder,
-            x=width - 56,
-            y=8,
-            width=48,
-            height=48,
+            x=width - svg.INSET - svg.ICON_SIZE,
+            y=svg.INSET,
+            width=svg.ICON_SIZE,
+            height=svg.ICON_SIZE,
             image_uri=icon_uri(icon_name, icon_fill or svg.BLACK),
             parent=box_id,
             style_tokens=("icon-image",),
@@ -867,6 +860,115 @@ def export_inference_snaps() -> None:
     builder.write(svg.DRAWIO_DIR / "inference-snaps-onbrand.drawio")
 
 
+def export_inference_snaps_dense() -> None:
+    builder = DrawioBuilder(name="Page-1", diagram_id="inference-snaps-dense", page_width=760, page_height=800)
+
+    x = 60
+    frame_width = 640
+    inner_pad = svg.INSET
+    tile_gap = svg.GRID_GUTTER
+    row_gap = svg.GRID_GUTTER
+    tile_width = 300
+    hardware_gap = svg.GRID_GUTTER
+    hardware_width = svg.BLOCK_WIDTH
+    content_left = x + inner_pad
+    right_x = content_left + tile_width + tile_gap
+    hardware_x = [
+        content_left,
+        content_left + hardware_width + hardware_gap,
+        content_left + (hardware_width + hardware_gap) * 2,
+    ]
+    hardware_centers = [left + hardware_width / 2 for left in hardware_x]
+
+    tile_rows = [
+        (
+            [svg.make_line("Model")],
+            "Network.svg",
+            [svg.make_line("Workload"), svg.make_line("identity")],
+            "User.svg",
+        ),
+        (
+            [svg.make_line("Runtime")],
+            "Gauge.svg",
+            [svg.make_line("Heterogeneous"), svg.make_line("hardware")],
+            "Chip 1.svg",
+        ),
+        (
+            [svg.make_line("Dependencies")],
+            "Wrench 1.svg",
+            [svg.make_line("Reproducibility")],
+            "Clipboard.svg",
+        ),
+        (
+            [svg.make_line("Hardware"), svg.make_line("config")],
+            "CPU.svg",
+            [svg.make_line("Operational"), svg.make_line("observability")],
+            "Bar chart with check.svg",
+        ),
+    ]
+
+    header = add_box(
+        builder,
+        x=x,
+        y=24,
+        width=frame_width,
+        height=64,
+        fill=svg.WHITE,
+        lines=[svg.make_line("Inference snaps", weight="700")],
+        icon_name="Snap.svg",
+    )
+    command = add_command_bar(builder, x=x, y=112, width=frame_width, text_value="$ snap install gemma3")
+    snap = add_box(
+        builder,
+        x=x,
+        y=216,
+        width=frame_width,
+        height=64,
+        fill=svg.WHITE,
+        lines=[svg.make_line("Inference snap", weight="700")],
+        icon_name="Package.svg",
+    )
+
+    current_y = inner_pad
+    pad_row_positions: list[float] = []
+    for left_lines, _left_icon, right_lines, _right_icon in tile_rows:
+        pad_row_positions.append(current_y)
+        current_y += max(svg.lines_required_height(left_lines), svg.lines_required_height(right_lines)) + row_gap
+    pad_height = int(current_y - row_gap + inner_pad)
+    pad_y = 304
+    hardware_y = pad_y + pad_height + row_gap
+    dashed_height = (hardware_y + 64 + 16) - 200
+
+    add_plain_rect(builder, x=x - 8, y=200, width=frame_width + 16, height=dashed_height, fill="none", dashed=True)
+    pad = add_plain_rect(builder, x=x, y=pad_y, width=frame_width, height=pad_height, fill=svg.GREY, stroke="none", connectable=True)
+
+    for row_y, (left_lines, left_icon, right_lines, right_icon) in zip(pad_row_positions, tile_rows):
+        add_box(builder, x=inner_pad, y=row_y, width=tile_width, fill=svg.WHITE, lines=left_lines, icon_name=left_icon, parent=pad, connectable=False)
+        add_box(builder, x=inner_pad + tile_width + tile_gap, y=row_y, width=tile_width, fill=svg.WHITE, lines=right_lines, icon_name=right_icon, parent=pad, connectable=False)
+
+    cpu = add_box(builder, x=hardware_x[0], y=hardware_y, width=hardware_width, fill=svg.WHITE, lines=[svg.make_line("CPU")], icon_name="CPU.svg")
+    gpu = add_box(builder, x=hardware_x[1], y=hardware_y, width=hardware_width, fill=svg.GREY, lines=[svg.make_line("GPU")], icon_name="RAM.svg")
+    npu = add_box(builder, x=hardware_x[2], y=hardware_y, width=hardware_width, fill=svg.WHITE, lines=[svg.make_line("NPU")], icon_name="Chip 2.svg")
+
+    builder.add_edge(
+        style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0),
+        source=command,
+        target=snap,
+        source_point=(x + frame_width / 2, 176),
+        target_point=(x + frame_width / 2, 216),
+    )
+    for target, center in ((cpu, hardware_centers[0]), (gpu, hardware_centers[1]), (npu, hardware_centers[2])):
+        builder.add_edge(
+            style=edge_style(svg.ORANGE, exit_x=(center - x) / frame_width, exit_y=1, entry_x=0.5, entry_y=0),
+            source=pad,
+            target=target,
+            source_point=(center, pad_y + pad_height),
+            target_point=(center, hardware_y),
+        )
+
+    builder.write(svg.DRAWIO_DIR / "inference-snaps-dense-onbrand.drawio")
+
+
 def export_rise_of_inference() -> None:
     builder = DrawioBuilder(name="Page-1", diagram_id="rise-inference", page_width=980, page_height=860)
 
@@ -1045,6 +1147,163 @@ def export_diagram_intake_workflow() -> None:
     builder.write(svg.DRAWIO_DIR / "diagram-intake-workflow-onbrand.drawio")
 
 
+def export_diagram_language_workflow() -> None:
+    builder = DrawioBuilder(name="Page-1", diagram_id="diagram-language-workflow", page_width=840, page_height=816)
+
+    frame_x = 72
+    frame_y = 24
+    frame_width = 656
+    frame_height = 184
+    center_x = frame_x + frame_width / 2
+
+    input_frame = add_plain_rect(
+        builder,
+        x=frame_x,
+        y=frame_y,
+        width=frame_width,
+        height=frame_height,
+        fill="none",
+        dashed=True,
+        connectable=True,
+        style_tokens=("group-frame",),
+    )
+    add_label(
+        builder,
+        x=8,
+        y=8,
+        width=320,
+        lines=[svg.make_line("Inputs and canonical context", weight="700")],
+        parent=input_frame,
+    )
+    add_box(
+        builder,
+        x=24,
+        y=48,
+        width=192,
+        height=64,
+        fill=svg.WHITE,
+        lines=[svg.make_line("Rough source"), svg.make_line("diagram")],
+        icon_name="Document.svg",
+        parent=input_frame,
+        connectable=False,
+    )
+    add_box(
+        builder,
+        x=232,
+        y=48,
+        width=192,
+        height=64,
+        fill=svg.GREY,
+        lines=[svg.make_line("Local refs"), svg.make_line("+ outputs")],
+        icon_name="Document with Magnifying glass.svg",
+        parent=input_frame,
+        connectable=False,
+    )
+    add_box(
+        builder,
+        x=440,
+        y=48,
+        width=192,
+        height=64,
+        fill=svg.BLACK,
+        lines=[svg.make_line("DIAGRAM.md", weight="700", fill=svg.WHITE), svg.make_line("canonical spec", fill=svg.WHITE)],
+        icon_name="Book with Magnifying glass.svg",
+        icon_fill=svg.WHITE,
+        parent=input_frame,
+        connectable=False,
+    )
+    add_label(
+        builder,
+        x=8,
+        y=136,
+        width=640,
+        lines=[svg.make_line("Next: ingest typography, spacing, and grid specs into this spec layer.", fill=svg.HELPER)],
+        parent=input_frame,
+    )
+
+    redraw = add_box(
+        builder,
+        x=frame_x,
+        y=232,
+        width=frame_width,
+        height=64,
+        fill=svg.BLACK,
+        lines=[svg.make_line("Diagram redraw", weight="700", fill=svg.WHITE), svg.make_line("skill", fill=svg.WHITE)],
+        icon_name="Wrench 1.svg",
+        icon_fill=svg.WHITE,
+    )
+    generators = add_box(
+        builder,
+        x=frame_x,
+        y=320,
+        width=frame_width,
+        height=72,
+        fill=svg.WHITE,
+        lines=[svg.make_line("Repo generators", weight="700"), svg.make_line("shared tokens + library", fill=svg.HELPER)],
+        icon_name="Screen with code.svg",
+    )
+    validate = add_box(
+        builder,
+        x=frame_x,
+        y=416,
+        width=frame_width,
+        height=64,
+        fill=svg.BLACK,
+        lines=[svg.make_line("Build + validate", weight="700", fill=svg.WHITE), svg.make_line("skill", fill=svg.WHITE)],
+        icon_name="Rosette with check.svg",
+        icon_fill=svg.WHITE,
+    )
+    compare = add_box(
+        builder,
+        x=frame_x,
+        y=504,
+        width=frame_width,
+        height=64,
+        fill=svg.GREY,
+        lines=[svg.make_line("Compare + review lane", weight="700"), svg.make_line("before / agent / refined", fill=svg.HELPER)],
+        icon_name="Document with Magnifying glass.svg",
+    )
+    review = add_box(
+        builder,
+        x=frame_x,
+        y=592,
+        width=frame_width,
+        height=64,
+        fill=svg.BLACK,
+        lines=[svg.make_line("Protected draw.io", weight="700", fill=svg.WHITE), svg.make_line("review skill", fill=svg.WHITE)],
+        icon_name="Design.svg",
+        icon_fill=svg.WHITE,
+    )
+    outputs = add_box(
+        builder,
+        x=frame_x,
+        y=680,
+        width=frame_width,
+        height=72,
+        fill=svg.WHITE,
+        lines=[svg.make_line("Editable draw.io +", weight="700"), svg.make_line("SVG outputs"), svg.make_line("ready for token ingest", fill=svg.HELPER)],
+        icon_name="Storage image.svg",
+    )
+
+    for source, target, source_y, target_y in (
+        (input_frame, redraw, frame_y + frame_height, 232),
+        (redraw, generators, 296, 320),
+        (generators, validate, 392, 416),
+        (validate, compare, 480, 504),
+        (compare, review, 568, 592),
+        (review, outputs, 656, 680),
+    ):
+        builder.add_edge(
+            style=edge_style(svg.ORANGE, exit_x=0.5, exit_y=1, entry_x=0.5, entry_y=0),
+            source=source,
+            target=target,
+            source_point=(center_x, source_y),
+            target_point=(center_x, target_y),
+        )
+
+    builder.write(svg.DRAWIO_DIR / "diagram-language-workflow-onbrand.drawio")
+
+
 def export_logic_data_vram() -> None:
     builder = DrawioBuilder(name="Page-1", diagram_id="logic-data-vram", page_width=980, page_height=860)
 
@@ -1201,9 +1460,11 @@ def main() -> None:
     export_memory_wall()
     export_request_to_hardware_stack()
     export_inference_snaps()
+    export_inference_snaps_dense()
     export_rise_of_inference()
     export_gpu_waiting()
     export_diagram_intake_workflow()
+    export_diagram_language_workflow()
     export_logic_data_vram()
     export_attention_qkv()
 

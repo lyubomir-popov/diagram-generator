@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import math
 import pathlib
 import xml.etree.ElementTree as ET
 
@@ -16,14 +17,48 @@ GREY = "#F3F3F3"
 HELPER = "#666666"
 ORANGE = "#E95420"
 
+BASELINE_UNIT = 4
+RHYTHM_STEP = 8
+GRID_GUTTER = 24
+OUTER_MARGIN = 32
+
 BLOCK_WIDTH = 192
 ICON_SIZE = 48
 INSET = 8
-BODY_SIZE = "16"
+BOX_MIN_HEIGHT = ICON_SIZE + (INSET * 2)
+
+BODY_SIZE = "14"
+HEADING_SIZE = "18"
 TITLE_SIZE = "24"
 
-BODY_LINE_STEP = 18
-TITLE_LINE_STEP = 28
+BODY_LINE_STEP = 20
+HEADING_LINE_STEP = 24
+TITLE_LINE_STEP = 32
+
+LINE_HEIGHTS_BY_SIZE = {
+    6: 8,
+    7: 8,
+    8: 8,
+    9: 12,
+    10: 12,
+    12: 16,
+    14: 20,
+    16: 24,
+    18: 24,
+    21: 28,
+    24: 32,
+    28: 36,
+    32: 40,
+    36: 44,
+    42: 48,
+    48: 56,
+    55: 64,
+    63: 72,
+    73: 80,
+    84: 92,
+    96: 104,
+}
+SORTED_LINE_HEIGHT_SIZES = tuple(sorted(LINE_HEIGHTS_BY_SIZE))
 
 ASCENT_RATIO = 0.94
 DESCENT_RATIO = 0.26
@@ -85,7 +120,7 @@ def make_line(
         "weight": weight,
         "fill": fill,
         "small_caps": small_caps,
-        "line_step": line_step or (BODY_LINE_STEP if size == BODY_SIZE else TITLE_LINE_STEP),
+        "line_step": line_step or default_line_step(size),
     }
 
 
@@ -98,8 +133,20 @@ def size_to_px(value: str | int | float) -> float:
     return float(stripped)
 
 
-def round_up_to_grid(value: float, step: int = 8) -> int:
-    return int(((value + step - 1) // step) * step)
+def default_line_step(value: str | int | float) -> int:
+    size_px = int(round(size_to_px(value)))
+    if size_px in LINE_HEIGHTS_BY_SIZE:
+        return LINE_HEIGHTS_BY_SIZE[size_px]
+    for candidate in SORTED_LINE_HEIGHT_SIZES:
+        if size_px <= candidate:
+            return LINE_HEIGHTS_BY_SIZE[candidate]
+    return round_up_to_grid(size_px * 1.1, BASELINE_UNIT)
+
+
+def round_up_to_grid(value: float, step: int = BASELINE_UNIT) -> int:
+    if step <= 0:
+        raise ValueError("Grid step must be greater than zero.")
+    return int(math.ceil(value / step) * step)
 
 
 def line_top_to_baseline(top_y: float, size: str | int | float) -> float:
@@ -111,13 +158,31 @@ def centered_band_text_top(band_height: float, size: str | int | float) -> float
     return max(0.0, (band_height - text_height) / 2)
 
 
-def lines_required_height(lines: list[dict[str, object]]) -> int:
+def stack_required_height(
+    lines: list[dict[str, object]],
+    *,
+    top_pad: int = 0,
+    bottom_pad: int = 0,
+    min_height: int = 0,
+) -> int:
     if not lines:
-        return 64
-    current_top = INSET
+        return min_height
+    current_top = float(top_pad)
     max_bottom = 0.0
     for spec in lines:
         size_px = size_to_px(spec["size"])
         max_bottom = max(max_bottom, current_top + size_px * (ASCENT_RATIO + DESCENT_RATIO))
         current_top += int(spec["line_step"])
-    return max(64, round_up_to_grid(max_bottom + INSET))
+    return max(min_height, round_up_to_grid(max_bottom + bottom_pad))
+
+
+def lines_required_height(lines: list[dict[str, object]]) -> int:
+    return stack_required_height(lines, top_pad=INSET, bottom_pad=INSET, min_height=BOX_MIN_HEIGHT)
+
+
+def icon_column_width() -> int:
+    return ICON_SIZE + (INSET * 2)
+
+
+def box_text_width(width: float, *, has_icon: bool) -> float:
+    return width - (INSET * 2) - (icon_column_width() if has_icon else 0)

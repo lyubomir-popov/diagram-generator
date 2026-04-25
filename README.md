@@ -8,11 +8,13 @@ Agent instructions live under `.github`, not the repo root:
 
 - **`.github/copilot-instructions.md`** — the single repo-wide instruction file
 - **`.github/agents/agent.md`** — optional repo-specific resume prompt
+- **`.github/skills/`** — optional on-demand workflow skills for repeatable procedures
 
 Everything else lives at the repo root as operational workflow files:
 
 ```
 README.md        — human-readable overview
+DIAGRAM.md       — canonical diagram language spec
 ROADMAP.md       — long-term direction
 TODO.md          — active execution queue
 INBOX.md         — async user notes (agent drains these)
@@ -39,7 +41,7 @@ This repo rebuilds rough, hand-drawn, or inconsistent diagrams into a strict reu
 
 **Read the playbook first.** The diagram style rules are non-negotiable:
 
-1. Read the "Current diagram style playbook" section in [`TODO.md`](TODO.md)
+1. Read [`DIAGRAM.md`](DIAGRAM.md)
 2. Review the invariants in [`.github/copilot-instructions.md`](.github/copilot-instructions.md) under "Non-negotiable diagram rules"
 
 Key rules you must not violate:
@@ -62,7 +64,7 @@ Update the comparison pages so reviewers can see before/after:
 Input:
 
 - rough sketches or screenshot references in [`diagrams/1.input/`](diagrams/1.input)
-- brand and layout invariants documented in [`TODO.md`](TODO.md), [`STATUS.md`](STATUS.md), and [`docs/specs.md`](docs/specs.md)
+- brand and layout invariants documented in [`DIAGRAM.md`](DIAGRAM.md), [`STATUS.md`](STATUS.md), and [`docs/specs.md`](docs/specs.md)
 - local icons from [`assets/icons/`](assets/icons)
 
 Output:
@@ -86,18 +88,7 @@ Build order:
 
 ## Current design system
 
-- Base box width is `192px`
-- Base box height is at least `64px`
-- Three-line boxes grow to `72px`, then continue in `8px` steps
-- Text is always top-left aligned with an `8px` inset on both axes
-- Icons use the local `48x48` artboards and sit top-right with an `8px` inset
-- Default body text is `16px`
-- Hierarchy should prefer weight before size: `16px` regular, `16px` bold, `16px` small-caps, then `24pt`
-- Helper text stays at body size and shifts only to `#666666`
-- Boxes are white or `#F3F3F3` by default, with at most one black emphasis box when justified
-- Orange `#E95420` is reserved for arrows only
-- Box and arrow strokes are `1px`
-- Arrows should connect midpoint-to-midpoint from one box edge to another
+The canonical diagram-language contract now lives in [`DIAGRAM.md`](DIAGRAM.md). It holds the current tokens, layout rules, output constraints, and redraw workflow in one place so `TODO.md` can stay focused on active work.
 
 ## Draw.io export rules
 
@@ -113,7 +104,9 @@ Build order:
 |------|---------|
 | `.github/copilot-instructions.md` | Agent rules, workflow conventions, diagram invariants |
 | `.github/agents/agent.md` | Repo-specific resume-agent prompt |
+| `.github/skills/` | Optional on-demand workflow skills |
 | `README.md` | Human-readable overview and workflow reminder |
+| `DIAGRAM.md` | Canonical diagram language spec |
 | `ROADMAP.md` | Long-term direction and future stages |
 | `TODO.md` | Active queue, principles, architecture notes |
 | `INBOX.md` | Quick user notes to be triaged later |
@@ -132,23 +125,24 @@ Build order:
 2. Keep machine-generated handoff text out of `INBOX.md`; that belongs in `AGENT-INBOX.md`.
 3. Use `TODO.md` for the next real work items only.
 4. Use `ROADMAP.md` for longer-term direction, not the active queue.
-5. Read `README.md` and `STATUS.md` when returning after time away.
+5. Read `README.md`, `STATUS.md`, and `DIAGRAM.md` when returning after time away.
 
 ### If you are the agent
 
 1. Start with `STATUS.md`.
-2. Drain `INBOX.md` into `TODO.md` or `ROADMAP.md`.
-3. Drain `AGENT-INBOX.md` into canonical files.
-4. Read `TODO.md`.
-5. Read `docs/specs.md` before changing spec-governed behavior.
-6. Update `STATUS.md`, `TODO.md`, and `HISTORY.md` as work lands.
+2. Read `DIAGRAM.md` before changing diagram behavior.
+3. Drain `INBOX.md` into `TODO.md` or `ROADMAP.md`.
+4. Drain `AGENT-INBOX.md` into canonical files.
+5. Read `TODO.md`.
+6. Read `docs/specs.md` before changing spec-governed behavior.
+7. Update `STATUS.md`, `TODO.md`, and `HISTORY.md` as work lands.
 
 ## LLM efficiency notes
 
 These habits matter more than prompt cleverness when you are using a coding or diagramming LLM in this repo.
 
 - Pick one model per task. Model switches often invalidate caches and force the tool to reprocess the same context.
-- Keep permanent instructions short. Durable rules belong in `.github/copilot-instructions.md`; one-off task detail belongs in the active prompt, `TODO.md`, or `STATUS.md`.
+- Keep permanent instructions short. Durable rules belong in `.github/copilot-instructions.md` and `DIAGRAM.md`; one-off task detail belongs in the active prompt, `TODO.md`, or `STATUS.md`.
 - Keep project memory in the repo, not only in chat. `STATUS.md`, `TODO.md`, `HISTORY.md`, and `docs/specs.md` are the cheap recovery path for a fresh session.
 - Prefer markdown, plain text, and direct asset paths over screenshots of text, dense tables, or loosely paraphrased descriptions.
 - Search in smaller verified passes, then confirm against the governing reference asset or output file.
@@ -162,4 +156,4 @@ Educational notes:
 
 ## Status
 
-The main editable draw.io batch and matching SVG batch are in place. The current renderer split uses shared diagram primitives in [`diagram_shared.py`](scripts/diagram_shared.py), with [`build_outputs.py`](scripts/build_outputs.py) generating draw.io first into [`diagrams/2.output/draw.io/`](diagrams/2.output/draw.io) and SVG second into [`diagrams/2.output/svg/`](diagrams/2.output/svg). The repo now follows the centralized root workflow used by the new boilerplate repo, and the main remaining manual review step is import and render validation in draw.io and Illustrator.
+The main editable draw.io batch and matching SVG batch are in place. The current renderer split uses shared diagram primitives in [`diagram_shared.py`](scripts/diagram_shared.py), with [`build_outputs.py`](scripts/build_outputs.py) generating draw.io first into [`diagrams/2.output/draw.io/`](diagrams/2.output/draw.io) and SVG second into [`diagrams/2.output/svg/`](diagrams/2.output/svg). The repo now also has a dedicated [`DIAGRAM.md`](DIAGRAM.md) spec and a `.github/skills/` home for repeatable operational workflows, with the next step focused on finishing draw.io style-sync propagation and the remaining draw.io and Illustrator review work.

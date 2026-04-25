@@ -16,6 +16,7 @@ Use this file to answer two questions quickly:
 | Source | Path | Role |
 |--------|------|------|
 | Workflow rules | `.github/copilot-instructions.md` | Canonical workflow and diagram-rule source for this repo |
+| Diagram language spec | `DIAGRAM.md` | Canonical diagram tokens, prose rules, and output constraints |
 | Current state | `STATUS.md` | Cold-start orientation and resume guidance |
 | Product direction | `ROADMAP.md` | Long-term direction when no separate external product spec exists |
 | Starter block reference | `diagrams/0.reference/sample.svg` | Canonical single-block geometry and arrow treatment |
@@ -43,10 +44,13 @@ Use this file to answer two questions quickly:
 |------|--------------|-------|
 | `repo-workflow-boilerplate` | Workflow upstream | Centralized workflow template for the root file layout, inbox split, source precedence, and cold-start rules |
 | `baseline-foundry` | Read-only reference | Allowed workflow or style reference only when the user explicitly asks to mirror conventions |
+| `canonical-spacing-spec` | Read-only design language source | Upstream source for the imported spacing, grid, and dense type-scale rules now mirrored into `DIAGRAM.md` and shared renderer tokens |
+| `design.md` | Read-only format reference | Used as a structure reference for the plain-text `DIAGRAM.md` spec and future design-language token ingestion |
 
 ## Notes
 
 - Local reference assets in this repo are the primary source of truth for diagram visuals.
+- `DIAGRAM.md` is the bridge point for imported typography, spacing, and grid specs from the broader design language into this repo's renderers.
 - draw.io libraries improve reuse for future insertions but do not live-update shapes already placed in diagrams; repo-wide style changes still require a batch XML update strategy.
 - `scripts/export_drawio_library.py` regenerates the tracked draw.io library, and `scripts/drawio_style_sync.py` is the batch rewrite path for token-targeted draw.io style changes.
 - Sibling repos can inform workflow or style, but they do not outrank an explicitly referenced local sketch or reference asset.

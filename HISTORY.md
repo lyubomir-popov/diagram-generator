@@ -4,6 +4,28 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-25 — Inference snaps dense comparison variant
+
+- Added `inference-snaps-dense-onbrand.drawio` and `inference-snaps-dense-onbrand.svg` as a forked comparison variant of the grouped side-by-side `inference-snaps` diagram so the recent dense token sync can be inspected in a real layout rather than only in shared helpers.
+- Re-laid that variant around the current dense defaults: `24px` inter-column and inter-row gutters, standard `192px` hardware tiles, wider `300px` paired tiles inside the grey substrate, and row placement derived from the shared box-height math instead of a fixed `72px` row step.
+- Added `inference-snaps-dense` to the compare-page batch, rebuilt outputs, sanitized the new SVG deliverable, and regenerated the compare HTML so the original source and the new variant can be reviewed under a separate slug.
+
+### 2026-04-25 — Dense design-language token sync
+
+- Imported the dense application and documentation type, spacing, and grid rules from `canonical-spacing-spec` into `DIAGRAM.md`, including a `14px` body size, `4px` baseline unit, `20/24/32px` line-height ladder, and `24px` application gutter defaults.
+- Refactored `scripts/diagram_shared.py` to use the new shared token layer, a canonical line-height table, and true ceiling-based baseline snapping instead of the old float-unsafe grid rounding shortcut.
+- Updated `scripts/export_drawio_batch.py` so generated draw.io files now use a `4px` grid, auto-grow box heights from the shared text-stack math, and keep label and icon placement aligned with the shared box metrics.
+- Rebuilt the output batch and spot-checked generated draw.io artifacts to confirm the new grid size, `14px` label output, and baseline-snapped taller boxes.
+- Updated repo docs and workflow skills so `STATUS.md`, `TODO.md`, `docs/specs.md`, `.github/copilot-instructions.md`, `.github/agents/agent.md`, and the diagram-language sync skill all reflect the new dense default instead of the older `16px` / `24pt` guidance.
+
+### 2026-04-25 — Diagram language spec, skills, and workflow explainer
+
+- Added `DIAGRAM.md` as a design.md-inspired canonical diagram-language spec with machine-readable token frontmatter plus prose rules for colors, typography, layout, components, editability, and workflow application.
+- Repointed `README.md`, `STATUS.md`, `TODO.md`, `docs/specs.md`, `.github/copilot-instructions.md`, `.github/agents/agent.md`, and `ROADMAP.md` so permanent diagram rules now live in `DIAGRAM.md` and `.github/skills/` is the home for repeatable procedures.
+- Added four repo workflow skills under `.github/skills/`: `diagram-redraw`, `diagram-build-validate`, `drawio-review-promote`, and `diagram-language-sync`.
+- Added `diagram-language-workflow-onbrand.drawio` and `diagram-language-workflow-onbrand.svg` as a new generated explainer for the spec-led workflow, with black boxes marking the new additions.
+- Added the rough review asset `diagrams/1.input/diagram-language-workflow-rough.svg`, wired the new slug into `scripts/build_compare_pages.py`, rebuilt the batch, sanitized the new SVG, and regenerated compare pages.
+
 ### 2026-04-24 — Diagram intake workflow explainer
 
 - Added `diagram-intake-workflow-onbrand.drawio` and `diagram-intake-workflow-onbrand.svg` as a generated explainer for the current intake path: known ChatGPT source, open PM input-format questions, repo workflow, compare mode, manual draw.io polish, and final SVG output.

@@ -31,14 +31,16 @@ If this file starts accumulating extra detail, move that detail to the canonical
 
 1. `.github/copilot-instructions.md`
 2. `STATUS.md`
-3. `TODO.md`
-4. `ROADMAP.md`
-5. `docs/specs.md`
-6. `README.md`
+3. `DIAGRAM.md`
+4. `TODO.md`
+5. `ROADMAP.md`
+6. `docs/specs.md`
+7. `README.md`
 
 ## Canonical discipline
 
 - Treat `.github/copilot-instructions.md` as the source of truth for workflow rules and diagram invariants.
+- Treat `DIAGRAM.md` as the source of truth for diagram-language tokens, layout rules, and output constraints.
 - Keep `.github/agents/agent.md` focused on resume guidance only.
 - Keep status in the canonical workflow files: `STATUS.md`, `TODO.md`, `ROADMAP.md`, `HISTORY.md`, `INBOX.md`, `AGENT-INBOX.md`, and `docs/specs.md`.
 - Drain `INBOX.md` and `AGENT-INBOX.md` at session start.
@@ -51,10 +53,11 @@ If this file starts accumulating extra detail, move that detail to the canonical
 ## Working stance
 
 - Follow `TODO.md` by default; if priority order changes, record that in the plan rather than creating side notes.
+- Read `DIAGRAM.md` before making diagram-level layout, type, or connector decisions.
 - Prefer scoped commits that separate diagram or output-structure work, icon or style-rule work, and workflow or documentation work.
 - Do not invent a new visual language when an existing local reference or completed exemplar already establishes the answer.
 - Use local assets first: `assets/icons/`, `assets/UbuntuSans[wdth,wght].ttf`, `diagrams/0.reference/_BRND-3284.drawio.svg`, `diagrams/0.reference/onbrand-reference.png`, completed SVG outputs under `diagrams/2.output/svg/`, and completed draw.io outputs under `diagrams/2.output/draw.io/`.
-- Keep the current scaled-up `16px` and `24pt` system as the default for new work; treat the older compact `9px` system as legacy-only unless maintaining already-finished outputs.
+- Keep the current dense `14px` body, `18px/24px`, and `24px/32px` ladder as the default for new work; treat the older compact `9px` system as legacy-only unless maintaining already-finished outputs.
 - If a reusable starter or helper pattern emerges after multiple diagrams, document it in the canonical docs rather than relying on chat history.
 
 ## Resume focus
