@@ -74,8 +74,9 @@ Output:
 
 Build order:
 
-- run [`build_outputs.py`](scripts/build_outputs.py) for the canonical batch build
-- it generates draw.io first, then regenerates the matching SVG batch
+- **Pipeline 1 (stable):** run [`build_outputs.py`](scripts/build_outputs.py) for the canonical batch build
+- **Pipeline 2 (experimental):** run [`build_v2.py`](scripts/build_v2.py) for the declarative grid outputs
+- Compare with [`_compare_3way.py`](scripts/_compare_3way.py) to validate v2 against v1 and input sketches
 
 ## Canonical references
 
@@ -156,4 +157,37 @@ Educational notes:
 
 ## Status
 
-The main editable draw.io batch and matching SVG batch are in place. The current renderer split uses shared diagram primitives in [`diagram_shared.py`](scripts/diagram_shared.py), with [`build_outputs.py`](scripts/build_outputs.py) generating draw.io first into [`diagrams/2.output/draw.io/`](diagrams/2.output/draw.io) and SVG second into [`diagrams/2.output/svg/`](diagrams/2.output/svg). The repo now also has a dedicated [`DIAGRAM.md`](DIAGRAM.md) spec and a `.github/skills/` home for repeatable operational workflows, with the next step focused on finishing draw.io style-sync propagation and the remaining draw.io and Illustrator review work.
+There are two diagram generation pipelines. Both coexist and write to separate output files.
+
+### Pipeline 1: imperative (stable)
+
+The proven, production-ready pipeline. Each diagram is an imperative Python function that places every box, arrow, icon, and label with explicit coordinates.
+
+| | |
+|---|---|
+| **Builder** | `scripts/generate_remaining_diagrams.py` |
+| **Entry point** | `python scripts/build_outputs.py` |
+| **Outputs** | `*-onbrand.svg`, `*-onbrand.drawio` |
+| **Maturity** | Stable. All 9 diagrams are content-complete against their input sketches. |
+
+### Pipeline 2: declarative grid (experimental)
+
+A newer declarative system where diagrams are defined as data (model → layout → SVG/draw.io). Uses a grid-based layout engine with auto-routing arrows.
+
+| | |
+|---|---|
+| **Definitions** | `scripts/diagrams/*.py` (one file per diagram) |
+| **Layout engine** | `scripts/diagram_layout.py` + `scripts/diagram_model.py` |
+| **Entry point** | `python scripts/build_v2.py` |
+| **Outputs** | `*-onbrand-v2.svg`, `*-onbrand-v2.drawio` |
+| **Maturity** | Experimental. Several diagrams still have missing content, broken arrows, or layout issues vs their v1 equivalents. |
+
+### 3-way visual comparison
+
+Use `python scripts/_compare_3way.py` to generate Playwright screenshots comparing input sketch → v1 → v2 for each diagram. Output lands in `diagrams/3.compare/visual-diff/`. This is the primary tool for identifying v2 regressions.
+
+### Which pipeline to use
+
+- For production outputs, use Pipeline 1.
+- For development of the declarative system, use Pipeline 2 and always validate against the v1 output and input sketch using the 3-way comparison tool.
+- On a cold start, the agent should ask the user which pipeline to work on.

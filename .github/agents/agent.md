@@ -37,6 +37,17 @@ If this file starts accumulating extra detail, move that detail to the canonical
 6. `docs/specs.md`
 7. `README.md`
 
+## Cold-start question
+
+Before starting diagram work, ask the user:
+
+> Which pipeline should we work on this session?
+>
+> 1. **Pipeline 1 (stable)** – imperative builders in `generate_remaining_diagrams.py`, builds via `build_outputs.py`, outputs `*-onbrand.svg/drawio`
+> 2. **Pipeline 2 (experimental)** – declarative grid definitions in `scripts/diagrams/*.py`, builds via `build_v2.py`, outputs `*-onbrand-v2.svg/drawio`
+
+This determines which files to edit, which build script to run, and which comparison mode matters. Do not assume one or the other.
+
 ## Canonical discipline
 
 - Treat `.github/copilot-instructions.md` as the source of truth for workflow rules and diagram invariants.

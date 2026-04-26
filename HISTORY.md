@@ -4,6 +4,46 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-27 – v2 defect fixes: attention-qkv rewrite, wrapper alignment, MatrixWidget engine support
+
+- **MatrixWidget panel support:** `_layout_panel()` in `scripts/diagram_layout.py` now extracts MatrixWidget children alongside Box, Bar, Helper, Terminal, and Panel. Matrix tiles participate in grid sizing and are placed as `MatrixTile` primitives with bounds registered for arrow resolution.
+- **attention-qkv complete rewrite:** All 4 panels set to `frameless=True` and `uniform_height=False`. MatrixWidget instances placed inside panels. Value panel restructured to 3-column layout (helper text beside boxes, not below arrows). 14 top-level arrows added (Q→Ubuntu, K fan-out ×4, QK fan-out ×4, VQ→Ubuntu, VK→Linux, Ubuntu→Linux, Linux→ValueTransfer). Audit: rects 18=18, texts 55=55.
+- **Wrapper alignment fix (inference-snaps):** Dashed frame `col_width` 616→600, inner pad `col_width` 296→288, derived from `peer_width − 2 × INSET`. All edges now flush at x=32/right=648.
+- **Wrapper alignment fix (diagram-intake-workflow):** `col_width` 296→292 so outer (292×2+8+16=608) matches 608px peer boxes.
+- **Documentation:** Added "Grid participants vs wrappers" section to `DIAGRAM.md` with derivation formula, table, and 5-step checklist. Added wrapper non-negotiable rule to `copilot-instructions.md`. Updated `diagram-build-validate` skill with v2 pipeline commands and wrapper guardrails.
+- **Validation:** Both pipelines (v1 + v2) rebuild clean across all 9 diagrams. `_audit_v2.py` and `_compare_3way.py` confirm element parity.
+
+### 2026-04-26 – Müller-Brockmann layout grid + remaining diagram conversions
+
+- **Layout grid system:** Replaced sequential GRID fill with explicit Müller-Brockmann cell placement. Every component now carries `(col, row, col_span, row_span)`. The GRID arrangement computes column widths and row heights from component content, then positions each component at its grid cell. Sparse layouts, side annotations, and multi-quadrant diagrams all work without free-form absolute positioning.
+- **Model additions:** Added `row_span` to all components. Added `col`/`row` to MatrixWidget, Terminal, MemoryWall, RequestCluster, Legend, Panel. Added `col_width`/`row_height` to Diagram for grid field sizing. Added `IconComponent` for standalone icons without box borders.
+- **Layout engine refactor:** Extracted `_natural_size()` and `_render_component()` helpers so component sizing and rendering are separated from position calculation. GRID mode uses a 4-phase approach: determine grid dimensions → compute cell sizes → accumulate positions → render at grid cells.
+- **3 final diagram conversions:**
+  - `gpu_waiting_scheduler.py` – 4×5 grid, sparse layout with scheduler top-right, GPU bottom-left, standalone icons, orthogonal arrow. 776×368, 0 violations.
+  - `memory_wall.py` – 2×7 grid, main stack col 0, side annotations (RequestCluster, helper text, black arrow) col 1. 672×656, 0 violations.
+  - `attention_qkv.py` – 2×3 grid with 4 internal Panels (Query, Keys, Match, Value), MatrixWidgets, Legend, fill-coded boxes. 1712×624, 0 violations.
+- **All 9 diagrams** now build from declarative definitions with both SVG and draw.io output, 0 grid violations across the board.
+### 2026-04-26 — Declarative model: draw.io renderer + 6 diagram conversions
+
+- **Draw.io renderer (Step 4):** Created `scripts/diagram_render_drawio.py` – consumes the same `LayoutResult` as the SVG renderer and emits native editable draw.io XML with `mxCell` boxes, labels, icons, and connected edges.
+- **6 diagrams converted to declarative definitions** under `scripts/diagrams/`:
+  - `request_to_hardware_stack.py` – VERTICAL arrangement, 5 panels (Orchestration, Model Runtime, Compute Kernel, Driver, Hardware) connected by arrows. 472×1176, 0 grid violations.
+  - `rise_of_inference_economy.py` – GRID arrangement (2 cols), col_span=2 full-width boxes, sub-panels (Always-on compute, Revenue impact). 944×656, 0 grid violations.
+  - `inference_snaps.py` – VERTICAL with dashed Panel frame, Terminal component, grey 2×4 tile grid, hardware boxes. 696×888, 0 grid violations.
+  - `diagram_intake_workflow.py` – VERTICAL, dashed source frame → 4 sequential boxes (white/grey/white/black). 680×592, 0 grid violations.
+  - `diagram_language_workflow.py` – VERTICAL, dashed 3-box input frame → 6-box skill chain (alternating black/white). 672×744, 0 grid violations.
+  - (Prior session: `logic_data_vram.py` was the first conversion.)
+- **Model additions:** Added `col_span: int = 1` to Box, `id: str = ""` to Terminal, `col`/`row` to Helper. Added top-level Terminal handling in layout engine. Fixed draw.io renderer `make_line()` call for terminal text.
+- **Remaining:** 4 diagrams (memory-wall, attention-qkv, gpu-waiting-scheduler, inference-snaps-dense) need free-form absolute positioning not yet supported by VERTICAL/HORIZONTAL/GRID arrangements.
+
+### 2026-04-26 — Bar auto-sizing and baseline grid validator
+
+- Bar auto-fill: two-pass width computation – last segment without explicit `width_px` fills to remaining panel width.
+- Bar auto-height: `_min_bar_height()` computes `max(bar.height, INSET + text_height + INSET)` so labelled bars grow from 32→40px.
+- Baseline grid validator: `validate_grid(result)` checks all layout coordinates against the 4px grid.
+- Grid overlay: `show_grid` parameter on `render_svg()` / `write_svg()` draws 8px red guide lines.
+- Body text updated to 18px/24px across `diagram_shared.py` and `DIAGRAM.md`.
+
 ### 2026-04-25 — Diagram-tier pilot for inference snaps dense
 
 - Updated `inference-snaps-dense-onbrand.drawio` and `inference-snaps-dense-onbrand.svg` to pilot a diagram-specific typography tier: `16px` main copy with `20px` line height, while keeping the imported dense grid, spacing, and box-height math from `canonical-spacing-spec`.

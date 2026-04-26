@@ -9,7 +9,7 @@ sourceSpecs:
   importedTier: applications
   adoptedTier: diagram
   rolloutStatus: pilot
-  notes: The imported dense application-doc tier remains the reference layer, but the current diagram-tier pilot restores `16px` body text with `20px` line height to preserve the proportion between live text and `48px` icons.
+  notes: The imported dense application-doc tier remains the reference layer, but the current diagram-tier pilot uses `18px` body text with `24px` line height to preserve the proportion between live text and `48px` icons inside `192px`-wide boxes.
 colors:
   ink: "#000000"
   surface-default: "#FFFFFF"
@@ -33,14 +33,14 @@ typography:
     lineHeight: 20px
   diagram-body:
     fontFamily: Ubuntu Sans
-    fontSize: 16px
+    fontSize: 18px
     fontWeight: 400
-    lineHeight: 20px
+    lineHeight: 24px
   diagram-body-strong:
     fontFamily: Ubuntu Sans
-    fontSize: 16px
+    fontSize: 18px
     fontWeight: 600
-    lineHeight: 20px
+    lineHeight: 24px
   body-strong:
     fontFamily: Ubuntu Sans
     fontSize: 14px
@@ -96,7 +96,7 @@ spacing:
   connected-gap: 24px
   grid-gutter: 24px
   outer-margin: 32px
-  body-line-step: 20px
+  body-line-step: 24px
   heading-line-step: 24px
   title-line-step: 32px
 grid:
@@ -200,11 +200,11 @@ Bold at the same font size is a hierarchical level above regular. Do not make ev
 
 ### Scale
 
-- Body copy: `16px` Ubuntu Sans regular with `20px` line height (editorial-tier base adapted for diagram use).
+- Body copy: `18px` Ubuntu Sans regular with `24px` line height (modular-scale step up from editorial-tier `16px`, sized to fill `192px` boxes alongside `48px` icons).
 - First hierarchy step is weight: `400` → `600`.
 - Second step is small-caps: `600` weight with `0.05em` tracking.
-- When size must change, stay on the modular scale: `18px/24px` for section labels, then `24px/32px` for major titles.
-- No heading or body label should fall below `14px` without an explicit accessibility reason.
+- When size must change, stay on the modular scale: `24px/32px` for major titles.
+- No heading or body label should fall below `16px` without an explicit accessibility reason.
 - Terminal-style command bars use Ubuntu Sans Mono or a compatible mono fallback at the same body size.
 
 ### Text positioning
@@ -233,6 +233,35 @@ A cold-start agent should never eyeball a position or tweak a number to "look ri
 
 Containers are the sum of their contents. Size from the inside out, never from the outside in.
 
+### Grid participants vs wrappers
+
+Not every visible rectangle is a grid participant. Distinguish two roles:
+
+| Role | Examples | Alignment rule |
+|------|----------|----------------|
+| **Grid participant** | Standalone boxes, panels that own a grid cell | Outer edges define the grid column/row boundaries. Peer participants share column edges. |
+| **Wrapper** | Dashed grouping frames, frameless layout containers | Outer edges are **derived** from children + inset. A wrapper does not impose its own width on the grid — it wraps around content that is already grid-aligned. |
+
+**The key invariant:** when a wrapper and standalone boxes sit in the same outer column, the wrapper's **outer** width must equal the standalone box width so edges stay flush. Derive the wrapper's child widths from the outer constraint, not the other way around:
+
+```
+wrapper_outer_width  = peer_box_width          (e.g. 608)
+wrapper_content_span = wrapper_outer_width − 2 × INSET   (e.g. 592)
+child_col_width      = (wrapper_content_span − (cols − 1) × col_gap) / cols
+```
+
+Never set `col_width` on a wrapper's children independently and then let the wrapper grow to fit — that pushes the wrapper edge past its peers and creates the misalignment visible in the arrow lane.
+
+When a wrapper has a heading that spans all columns, the heading width also follows `wrapper_content_span`, not the sum of child columns.
+
+**Practical checklist for wrappers:**
+
+1. Decide the wrapper's outer width from the outer grid (match peer boxes or the diagram column).
+2. Subtract `2 × INSET` to get the content span.
+3. Divide the content span among child columns and gaps.
+4. Size children inside-out for height, but use the derived column width for width.
+5. Verify the wrapper's computed outer width equals the peer boxes' width.
+
 **For a text box (no icon):**
 
 ```
@@ -240,8 +269,8 @@ box_height = INSET + (line_count × line_step) + INSET
            → snap to baseline unit
 ```
 
-A 1-line box at `16px/20px`: `8 + 20 + 8 = 36px` → `36px` (already on grid).
-A 2-line box: `8 + 40 + 8 = 56px` → `56px`.
+A 1-line box at `18px/24px`: `8 + 24 + 8 = 40px` → `40px` (already on grid).
+A 2-line box: `8 + 48 + 8 = 64px` → `64px`.
 
 There must be no dead space below the last text line. If the text only needs `36px`, the box is `36px`, not `64px`.
 
@@ -252,7 +281,7 @@ box_height = max(text_box_height, INSET + ICON_SIZE + INSET)
            → snap to baseline unit
 ```
 
-With a `48px` icon: `8 + 48 + 8 = 64px`. A 1-line-with-icon box is `64px`. A 3-line-with-icon box: `max(8 + 60 + 8, 64) = 76px`.
+With a `48px` icon: `8 + 48 + 8 = 64px`. A 1-line-with-icon box is `64px`. A 3-line-with-icon box: `max(8 + 72 + 8, 64) = 88px`.
 
 **For a panel containing child boxes:**
 
@@ -274,6 +303,27 @@ heading_row_height = tight_box_height(title_lines, has_icon)
 ```
 
 The heading is just another box — its height comes from its content, not from an arbitrary constant.
+
+**For a bar (horizontal segmented strip):**
+
+```
+bar_height = max(explicit_height, INSET + text_height + INSET)
+           → snap to baseline unit
+```
+
+A bar with `18px` text: `max(32, 8 + 21.6 + 8) = max(32, 40) = 40px`. The model's `height` field is a minimum floor, not a fixed value — if the text needs more space, the bar grows. This ensures balanced top and bottom padding in every bar segment.
+
+### Grid validation
+
+After layout, run `validate_grid(result)` to verify every coordinate and dimension is a multiple of the `4px` baseline unit. The validator checks:
+
+- All `Rect` positions and sizes (boxes, bars, panel frames)
+- All `TextBlock` anchor positions (but not font-metric-derived baselines)
+- All `Icon` positions
+- All `Arrow` start/end points
+- Canvas width and height
+
+Bar segment `width_px` values in diagram definitions must be multiples of 4. Non-aligned values will be flagged as violations.
 
 ### Grid variables per panel
 
@@ -299,7 +349,7 @@ When sibling panels contain semantically parallel content, synchronize their row
 | `outer-margin` | `32px` | Margin from diagram edge to first content |
 | `default-box-width` | `192px` | Standard box width |
 | `icon-size` | `48px` | Standard icon artboard |
-| `body-line-step` | `20px` | Line height for `16px` body text |
+| `body-line-step` | `24px` | Line height for `18px` body text |
 
 ### Text containment
 

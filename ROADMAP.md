@@ -26,27 +26,25 @@ Capture the canonical manual building blocks in a repo-owned draw.io library, so
 
 Introduce a style-token layer over generated draw.io cells and build tooling that can batch-update style properties such as text padding, connector defaults, and panel treatments across existing diagrams when the system changes.
 
-### Stage 6 — Grid engine and inside-out box model
+### Stage 6 — Grid engine and inside-out box model (layers 1–4 done)
 
 Replace the current ad-hoc absolute-positioning approach with an output-agnostic grid-aware computation layer in `diagram_shared.py`. This layer sits above both renderers (SVG and draw.io) and produces abstract layout geometry — positions, dimensions, grid arrays — that each renderer consumes. It is not a CSS layout engine; it is a set of helpers that make it structurally impossible to place things off-grid.
 
-**Layer 1 — Tight box height computation.**
-`box_height(lines, has_icon)` computes exact height from content: `INSET + (lines × line_step) + INSET`, snapped to baseline unit. A 1-line text-only box is `36px`, not `64px`. The `64px` minimum only applies when an icon is present. This replaces `lines_required_height()` and `BOX_MIN_HEIGHT` as the default box-height source.
+Layers 1–4 are implemented. Layer 5 (rollout) is superseded by Stage 6a.
 
-**Layer 2 — Panel grid computation.**
-`panel_grid(cols, rows, col_width, row_height, ...)` returns a dict with `width`, `height`, `col_xs[]`, `row_ys[]` — all derived from content dimensions plus spacing tokens. The panel dimensions are the output of this function, never the input. Each diagram definition calls `panel_grid()` once per panel and both renderers use the returned arrays for child positioning.
+### Stage 6a — Declarative diagram model (active)
 
-**Layer 3 — Containment validation.**
-`assert_contained(text_y, line_count, line_step, container_y, container_height)` — a debug-time check that raises if text would cross a container border.
+Replace per-diagram imperative functions (~200 lines each, ×2 renderers) with a declarative tree model. A diagram becomes a data structure of typed components (`Box`, `Panel`, `Bar`, `Terminal`, `Arrow`, `Helper`, `Matrix`). A shared layout engine walks the tree using the Stage 6 grid helpers to compute positions. Separate SVG and draw.io renderers consume the computed layout.
 
-**Output-agnostic principle:**
-The grid engine computes abstract layout — coordinates, widths, heights, grid arrays. It knows nothing about SVG elements or draw.io `mxCell` XML. Both `generate_remaining_diagrams.py` (SVG renderer) and `export_drawio_batch.py` (draw.io renderer) consume the same computed geometry. If a third output format appears later, it uses the same layout data.
+**Why:** The imperative approach does not scale to hundreds of diagrams or PM self-serve. Every new diagram currently requires writing a new Python function from scratch. The declarative model means a new diagram is a compact data definition, not a code change.
 
-**Scope of change:**
-- `diagram_shared.py`: new output-agnostic helpers, updated box-height semantics, optional containment context.
-- `generate_remaining_diagrams.py`: all `build_*()` functions refactored to use grid variables from the shared layer.
-- `export_drawio_batch.py`: same refactoring for draw.io export functions.
-- `DIAGRAM.md`: already updated with the rules (done ahead of implementation).
+**Target architecture:**
+- `diagram_model.py` — pure data: `@dataclass` component types, no rendering
+- `diagram_layout.py` — walks the tree, computes geometry, enforces uniform row heights and containment
+- `diagram_render_svg.py` — consumes layout, emits SVG
+- `diagram_render_drawio.py` — consumes layout, emits draw.io XML
+
+**Future direction:** Once the declarative model works, diagram definitions can move from Python to YAML or JSON, enabling a PM to define a diagram without writing code. A mermaid-to-tree parser or sketch-to-tree AI step could feed the same pipeline.
 
 ### Stage 7 — Batch redesign throughput
 
