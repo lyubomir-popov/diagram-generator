@@ -20,6 +20,41 @@ Critical rules:
 
 ## Current state
 
+There are now **two diagram generation pipelines**. On a cold start, ask the user which pipeline to work on.
+
+### Pipeline 1: imperative (stable)
+
+- Builder: `scripts/generate_remaining_diagrams.py`
+- Entry point: `python scripts/build_outputs.py`
+- Outputs: `*-onbrand.svg`, `*-onbrand.drawio`
+- All 9 diagrams are content-complete against their input sketches.
+
+### Pipeline 2: declarative grid (experimental)
+
+- Definitions: `scripts/diagrams/*.py`
+- Layout engine: `scripts/diagram_layout.py` + `scripts/diagram_model.py`
+- Entry point: `python scripts/build_v2.py`
+- Outputs: `*-onbrand-v2.svg`, `*-onbrand-v2.drawio`
+- **Several diagrams still have content gaps vs v1.** See the defect registry in `TODO.md`.
+
+### Validation tools
+
+- `python scripts/_compare_3way.py` — Playwright 3-way comparison: input sketch → v1 → v2
+- `python scripts/_audit_v2.py` — SVG element count audit (orange elements, texts, rects, icons)
+- `python scripts/_compare_all.py` — v1 vs v2 side-by-side comparisons
+
+### v2 defect summary (April 2026)
+
+| Diagram | Status |
+|---|---|
+| attention-qkv | OK – matrix tiles + fan-out arrows rendering |
+| gpu-waiting-scheduler | MINOR – 1 orange element short |
+| inference-snaps | OK |
+| logic-data-vram | MINOR – missing "GPU" label |
+| memory-wall | OK |
+| request-to-hardware-stack | OK |
+| rise-of-inference-economy | OK |
+
 - **The repo now uses the centralized root workflow.** `STATUS.md`, `TODO.md`, `ROADMAP.md`, `HISTORY.md`, `INBOX.md`, `AGENT-INBOX.md`, and `docs/specs.md` are the canonical workflow files.
 - **A design.md-inspired diagram language spec now exists.** `DIAGRAM.md` holds the canonical tokens, prose rules, output constraints, and redraw workflow for diagram work instead of keeping that material in `TODO.md`.
 - **Optional workflow skills now have a clear home.** `.github/skills/` is the repo location for on-demand workflow skills such as redraw, build-and-validate, and protected draw.io review procedures.
@@ -34,6 +69,11 @@ Critical rules:
 - **Token-aware style sync is now available.** `scripts/drawio_style_sync.py` can batch rewrite tokenized draw.io style fields such as `spacingTop`, connector properties, and dash patterns across generated diagrams.
 - **The manually polished draw.io lane already drifts from generator structure.** Files in `diagrams/2.output/draw.io/manually-edited/` and `memory-wall-onbrand-edited-in-drawio.drawio` flatten some generated parent/child structures, adjust text spacing directly on cells, and introduce one-off local edits that cannot be safely regenerated over today.
 - **Protected manual draw.io edits now use review copies.** `scripts/drawio_review_workflow.py` prepares mirrored review copies under `diagrams/2.output/draw.io/review/` and promotes them back only after checkpointing the original into `diagrams/2.output/draw.io/checkpoints/`.
+- **Declarative diagram architecture is complete (Stage 6a, all steps done).** `scripts/diagram_model.py` defines typed component trees (Box, Panel, Bar, Terminal, Arrow, Helper, MatrixWidget, MemoryWall, RequestCluster, Legend, IconComponent). `scripts/diagram_layout.py` uses Müller-Brockmann explicit grid placement: every component carries `(col, row, col_span, row_span)` and the GRID arrangement computes column widths and row heights from content, then positions each component in its grid cell. VERTICAL and HORIZONTAL arrangements also supported. All 9 diagrams converted to declarative definitions under `scripts/diagrams/`, each producing both SVG and draw.io output with 0 baseline grid violations.
+- **Playwright visual validation is now part of the build.** `scripts/visual_compare.py` renders generated SVGs and manual reference rasters side by side, produces combined comparison PNGs, pixel diff heatmaps, and diff percentages. Wired into `build_outputs.py` as the final step (skip with `--no-visual`).
+- **Body text is now 18px/24px.** `diagram_shared.py` and `DIAGRAM.md` are updated. All outputs rebuilt at the new size.
+- **Bars auto-size from content.** Layout engine computes minimum bar height from `INSET + text_height + INSET` so text has balanced top/bottom padding; the model's `height` field is now a floor, not a fixed value.
+- **Baseline grid validator is live.** `validate_grid(result)` in `diagram_layout.py` checks all Rect, Icon, TextBlock, Arrow, and Canvas coordinates against the 4px grid. Bar segment `width_px` values must be multiples of 4.
 - **Review remains the main open lane.** The remaining work is Illustrator and draw.io import validation, plus finishing the propagation of the newly imported typography, spacing, and grid tokens into draw.io style sync and any remaining renderer defaults.
 
 ## Current execution plan
@@ -72,6 +112,12 @@ Critical rules:
 | Purpose | File |
 |---------|------|
 | Canonical diagram language spec | `DIAGRAM.md` |
+| Declarative data model | `scripts/diagram_model.py` |
+| Layout engine | `scripts/diagram_layout.py` |
+| SVG renderer | `scripts/diagram_render_svg.py` |
+| Diagram definitions | `scripts/diagrams/` (e.g. `logic_data_vram.py`) |
+| Shared tokens and helpers | `scripts/diagram_shared.py` |
+| Visual comparison tool | `scripts/visual_compare.py` |
 | Canonical exemplar for current rules | `diagrams/2.output/svg/memory-wall-onbrand.svg` |
 | Spec-led workflow explainer exemplar | `diagrams/2.output/svg/diagram-language-workflow-onbrand.svg` |
 | Current vertical-stack exemplar | `diagrams/2.output/svg/request-to-hardware-stack-onbrand.svg` |

@@ -101,6 +101,9 @@ Do not rewrite higher-priority docs to match lower-priority implementation drift
 4. Read `TODO.md` for current tasks.
 5. Read `DIAGRAM.md` before changing diagram behavior.
 6. Read `docs/specs.md` before changing spec-governed behavior.
+7. **Ask the user which pipeline to work on** before starting diagram work:
+   - Pipeline 1 (stable): imperative builders, `build_outputs.py`, `*-onbrand.*` outputs
+   - Pipeline 2 (experimental): declarative grid, `build_v2.py`, `*-onbrand-v2.*` outputs
 
 ### During work
 
@@ -121,6 +124,7 @@ There is no repo-wide automated test suite yet. Before committing, run the check
 
 - If you changed workflow docs, `DIAGRAM.md`, or workflow skills only, verify links, file names, command examples, and canonical ownership stay consistent.
 - If you changed renderer or exporter code, rebuild the batch with `python scripts/build_outputs.py`.
+- If you changed v2 declarative definitions or the layout engine, rebuild with `python scripts/build_v2.py`, then run `python scripts/_compare_3way.py` to generate 3-way visual comparisons (input → v1 → v2) and `python scripts/_audit_v2.py` for element count diffs. Do not judge v2 output as "good enough" without checking both tools.
 - If you changed deliverable SVGs, run `python scripts/svg_illustrator_sanitize.py --write <svg>` and validate the edited SVGs for syntax issues.
 - If you changed compare-page generation, regenerate the affected compare outputs when practical.
 
@@ -220,6 +224,7 @@ When work in this repo creates a dependency or follow-up in another repo:
 - Orange connectors should resolve from box edge to box edge; do not aim them into loose helper text.
 - Anchor direct connectors from the midpoint of the source side to the midpoint of the destination side so the geometry stays organized in both SVG and draw.io.
 - Keep box gaps, arrow spans, and pad padding consistent inside a diagram; a grey substrate or dashed grouping frame still needs `8px` padding beyond the boxes it contains.
+- Wrappers (dashed grouping frames, frameless containers) must match the outer width of peer standalone boxes in the same column. Derive child column widths from the wrapper's outer width minus `2 × INSET`, never the other way around. See "Grid participants vs wrappers" in `DIAGRAM.md`.
 - Keep arrowheads large enough to read at export scale, with enough visible shaft before the head that the connector does not collapse into a stub.
 - Prefer straight or orthogonal connectors with `90` degree turns, and reroute them to avoid crossings.
 - When a legend is necessary, build it as an evenly spaced marker-and-label row, typically along the bottom of the relevant panel and aligned to the panel's left box edge.

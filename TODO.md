@@ -59,16 +59,90 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
-### Grid engine and inside-out box model (Roadmap Stage 6)
+### v2 declarative pipeline – defect registry
 
-This is the next major architectural piece. The grid engine is output-agnostic — it computes abstract layout geometry (positions, dimensions, grid arrays) in `diagram_shared.py` that both renderers (SVG and draw.io) consume. Implementation order:
+SVG element audit (v1 vs v2, April 2026). Use `python scripts/_compare_3way.py` for visual comparison and `python scripts/_audit_v2.py` for element counts.
 
-- [ ] **Layer 1 – tight box height.** Add `tight_box_height(lines, has_icon)` to `diagram_shared.py`. Returns `INSET + (lines × line_step) + INSET` snapped to baseline unit. `64px` minimum only when `has_icon=True`.
-- [ ] **Layer 2 – panel grid helper.** Add `panel_grid(cols, rows, col_width, row_height, col_gap, row_gap, heading_height, inset)` to `diagram_shared.py`. Returns `{"width", "height", "col_xs", "row_ys"}`. All dimensions snapped to baseline unit. Output-agnostic: no SVG or draw.io concepts.
-- [ ] **Layer 3 – containment check.** Add `assert_text_fits(text_y, line_count, line_step, container_y, container_height, inset)` that raises during build if text overflows.
-- [ ] **Layer 4 – refactor `build_logic_data_vram()`** as the reference implementation in both renderers: grid variables, inside-out panel sizing, tight box heights, correct typography weight hierarchy (regular for content labels, bold only for panel headings).
-- [ ] **Layer 5 – roll out** grid-variable pattern to all remaining diagram functions in both renderers.
-- [ ] **Typography weight audit.** Change every `make_line("Label", weight="700")` in content boxes to `make_line("Label")` (regular). Keep `weight="700"` only on panel headings and frame titles.
+| Diagram | Status | Orange | Texts | Details |
+|---|---|---|---|---|
+| attention-qkv | OK | 30→50 | 55=55 | Matrix tiles + fan-out arrows now rendering. v2 has more orange segments due to individual Z-bend arrows vs v1 shared trunks; visual coverage is equivalent. Frameless panels, correct box heights, white text on black boxes. |
+| gpu-waiting-scheduler | MINOR | 4→3 | 6=6 | 1 orange element short (minor arrowhead rendering). |
+| inference-snaps | OK | 8→12 | 17=17 | Wrapper alignment fixed (dashed frame and inner pad col_width derived from peer box width). |
+| logic-data-vram | MINOR | 8→9 | 27→25 | Missing "GPU" label text (appears under both sub-panels in v1). |
+| memory-wall | OK | 12=12 | 11=11 | All elements match. Dashed separator present. |
+| request-to-hardware-stack | OK | 10=10 | 27=27 | All elements match. |
+| rise-of-inference-economy | OK | 8=8 | 19=19 | All elements match. |
+
+**Resolved:** MatrixWidget support added to `_layout_panel()`. All matrix tiles now render inside frameless panels with proper grid placement and bounds registration for arrow resolution.
+
+### Declarative diagram model (Roadmap Stage 6a – highest priority)
+
+Replace the current per-diagram imperative functions with a declarative tree model and a shared layout engine. This is the prerequisite for PM self-serve: a PM downloads the repo, feeds a sketch or mermaid, and the tool recreates it on-brand without writing Python.
+
+**Why now:** The imperative approach (one ~200-line Python function per diagram, ×2 renderers) does not scale. Every diagram re-derives the same box/text/arrow patterns. The existing grid engine helpers (`tight_box_height`, `panel_grid`) are useful but sit below the problem – diagrams still need hundreds of lines of manual coordinate wiring.
+
+**Component types** (modelled after draw.io cells / Figma components):
+- `Box` — single labelled box with optional icon, auto-height from content
+- `Panel` — grid of boxes with heading, uniform row heights, inside-out sizing
+- `Bar` — VRAM-style horizontal allocation strip with labelled segments
+- `Terminal` — command bar with chrome dots and monospace text
+- `Arrow` — connector between two components (orange, orthogonal)
+- `Helper` — annotation text below/beside a component
+- `Matrix` — the attention-QKV matrix widget
+
+**Implementation order:**
+
+- [x] **Step 1 – data model.** Define `@dataclass` component types in `scripts/diagram_model.py`. A `Diagram` is a tree of positioned components. Pure data, no rendering.
+- [x] **Step 2 – layout engine.** Add `layout(diagram) → LayoutResult` in `scripts/diagram_layout.py`. Walks the tree, computes all positions/dimensions using existing grid helpers, enforces uniform row heights and containment. Output-agnostic.
+- [x] **Step 3 – SVG renderer.** Add `render_svg(layout_result) → str` in `scripts/diagram_render_svg.py`. Consumes layout geometry, emits SVG. Replaces per-diagram `build_*()` functions.
+- [x] **Step 4 – draw.io renderer.** Add `render_drawio(layout_result) → str` in `scripts/diagram_render_drawio.py`. Consumes same layout geometry, emits draw.io XML.
+- [x] **Step 5 – convert logic-data-vram.** Rewrite `logic-data-vram` as a declarative tree using the new model. Validated – output matches the manually-edited reference with uniform row heights, nested panels, and proper arrows.
+- [x] **Step 6 – convert remaining diagrams.** All 9 diagrams converted to declarative definitions under `scripts/diagrams/`. Müller-Brockmann explicit grid placement (col/row/col_span/row_span) replaced the need for free-form absolute positioning. `inference-snaps-dense` remains as a variant of `inference-snaps` in the imperative generator.
+- [x] **Step 7 – Playwright visual validation.** Add a post-build headless browser check that renders each SVG and flags text overflow, misalignment, and box-height inconsistencies.
+
+### Visual validation process
+
+`scripts/visual_compare.py` runs Playwright comparisons between generated SVGs and manually-edited raster references. It produces:
+
+- Side-by-side combined PNG
+- Individual left/right screenshots at 2x device pixels
+- Red-on-white pixel diff heatmap
+- Percentage of changed pixels
+
+Wired into `build_outputs.py` as the final step (skip with `--no-visual`). Manual pairs are defined in `VISUAL_PAIRS` in `build_outputs.py`. Add new pairs as diagrams get manual edits.
+
+Standalone usage:
+
+```powershell
+python scripts/visual_compare.py \
+  --left diagrams/2.output/svg/logic-data-vram-onbrand-v2.svg \
+  --right diagrams/2.output/draw.io/manually-edited/raster/logic-data-vram-onbrand.jpg \
+  --output diagrams/3.compare/visual-diff/my-comparison.png
+```
+
+### Grid engine fixes (folded into Step 2)
+
+These gaps were discovered in the logic-data-vram audit and are now handled by the layout engine:
+
+- [x] Uniform row heights: tallest box in a row wins, others stretch to match. (`uniform_height` flag on Panel)
+- [x] Text-in-bar positioning: bars use ascent-based text placement, not `+ 6` magic numbers.
+- [x] Helper text positioning: derive from parent panel bounds, not manual offsets.
+- [x] Sub-panel layout: panels can contain child panels, laid out side-by-side.
+- [x] GRID col_span: panels can span multiple columns in a GRID arrangement.
+- [x] Bar auto-fill: last segment without explicit width fills to the remaining panel width.
+- [x] Bar auto-height: bars auto-size from content (INSET + text_height + INSET), never shorter than needed for balanced padding.
+- [x] Baseline grid validator: `validate_grid(result)` checks all layout coordinates land on the 4px grid; bar segment `width_px` values must be multiples of 4.
+
+### Previous grid engine items (partially done, superseded by declarative model)
+
+Layers 1–4 are done. Layer 5 (rollout) and the typography weight audit are superseded by the declarative conversion above.
+
+- [x] Layer 1 – tight box height (`tight_box_height`)
+- [x] Layer 2 – panel grid helper (`panel_grid`)
+- [x] Layer 3 – containment check (`assert_text_fits`)
+- [x] Layer 4 – refactor `build_logic_data_vram()` (reference implementation)
+- [—] Layer 5 – roll out to remaining functions → superseded by Step 6
+- [—] Typography weight audit → handled automatically by declarative model
 
 ### Previously active
 
