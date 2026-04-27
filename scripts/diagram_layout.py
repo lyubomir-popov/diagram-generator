@@ -161,11 +161,24 @@ Primitive = (
 # ---------------------------------------------------------------------------
 
 @dataclass
+class GridInfo:
+    """Captured grid metadata for overlay visualisation."""
+    col_xs: list[float]
+    col_widths: list[int]
+    row_ys: list[float]
+    row_heights: list[int]
+    col_gap: int
+    row_gap: int
+    outer_margin: int
+
+
+@dataclass
 class LayoutResult:
     width: int
     height: int
     background: list[Primitive] = field(default_factory=list)
     foreground: list[Primitive] = field(default_factory=list)
+    grid_info: GridInfo | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -952,7 +965,37 @@ def layout(diagram: Diagram) -> LayoutResult:
     width = round_up_to_grid(int(max_x) + outer)
     height = round_up_to_grid(int(max_y) + outer)
 
-    return LayoutResult(width=width, height=height, background=bg, foreground=fg)
+    # Capture grid info for overlay visualisation
+    grid_info: GridInfo | None = None
+    if diagram.arrangement == Diagram.Arrangement.GRID:
+        grid_info = GridInfo(
+            col_xs=col_xs,
+            col_widths=col_widths,
+            row_ys=row_ys,
+            row_heights=row_heights,
+            col_gap=col_gap,
+            row_gap=row_gap,
+            outer_margin=outer,
+        )
+    else:
+        # Synthesize from laid-out bounds for VERTICAL / HORIZONTAL
+        if all_bounds:
+            synth_col_xs = [all_bounds[0].x]
+            synth_col_widths = [max(int(b.width) for b in all_bounds)]
+            synth_row_ys = [int(b.y) for b in all_bounds]
+            synth_row_heights = [int(b.height) for b in all_bounds]
+            grid_info = GridInfo(
+                col_xs=synth_col_xs,
+                col_widths=synth_col_widths,
+                row_ys=synth_row_ys,
+                row_heights=synth_row_heights,
+                col_gap=col_gap,
+                row_gap=row_gap,
+                outer_margin=outer,
+            )
+
+    return LayoutResult(width=width, height=height, background=bg,
+                        foreground=fg, grid_info=grid_info)
 
 
 # ---------------------------------------------------------------------------

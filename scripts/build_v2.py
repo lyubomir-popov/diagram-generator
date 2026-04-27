@@ -1,7 +1,12 @@
-"""Build all declarative v2 diagram outputs (SVG + draw.io)."""
+"""Build all declarative v2 diagram outputs (SVG + draw.io).
+
+Flags:
+    --grid    Also emit *-v2-grid.svg with the layout grid overlay.
+"""
 from __future__ import annotations
 
 import pathlib
+import sys
 
 from diagram_layout import layout, validate_arrows, validate_grid
 from diagram_render_svg import write_svg
@@ -34,6 +39,7 @@ DIAGRAMS = [
 
 
 def main() -> None:
+    emit_grid = "--grid" in sys.argv
     SVG_DIR.mkdir(parents=True, exist_ok=True)
     DRAWIO_DIR.mkdir(parents=True, exist_ok=True)
     total_arrow_violations = 0
@@ -43,6 +49,11 @@ def main() -> None:
         drawio_path = DRAWIO_DIR / f"{slug}-v2.drawio"
         write_svg(svg_path, result)
         write_drawio(drawio_path, result, name=diagram.title)
+
+        # Grid overlay SVG
+        if emit_grid:
+            grid_path = SVG_DIR / f"{slug}-v2-grid.svg"
+            write_svg(grid_path, result, show_layout_grid=True)
 
         # Arrow clearance check
         arrow_violations = validate_arrows(result)

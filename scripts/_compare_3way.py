@@ -27,42 +27,49 @@ DIAGRAMS = [
         "input": INPUT_DIR / "image 3.png",
         "v1": SVG_DIR / "attention-qkv-onbrand.svg",
         "v2": SVG_DIR / "attention-qkv-onbrand-v2.svg",
+        "grid": SVG_DIR / "attention-qkv-onbrand-v2-grid.svg",
     },
     {
         "slug": "gpu-waiting-scheduler",
         "input": INPUT_DIR / "image 5.png",
         "v1": SVG_DIR / "gpu-waiting-scheduler-onbrand.svg",
         "v2": SVG_DIR / "gpu-waiting-scheduler-onbrand-v2.svg",
+        "grid": SVG_DIR / "gpu-waiting-scheduler-onbrand-v2-grid.svg",
     },
     {
         "slug": "inference-snaps",
         "input": INPUT_DIR / "image 7.png",
         "v1": SVG_DIR / "inference-snaps-onbrand.svg",
         "v2": SVG_DIR / "inference-snaps-onbrand-v2.svg",
+        "grid": SVG_DIR / "inference-snaps-onbrand-v2-grid.svg",
     },
     {
         "slug": "logic-data-vram",
         "input": INPUT_DIR / "image 4.png",
         "v1": SVG_DIR / "logic-data-vram-onbrand.svg",
         "v2": SVG_DIR / "logic-data-vram-onbrand-v2.svg",
+        "grid": SVG_DIR / "logic-data-vram-onbrand-v2-grid.svg",
     },
     {
         "slug": "memory-wall",
         "input": INPUT_DIR / "redo-this-image-onbrand.png",
         "v1": SVG_DIR / "memory-wall-onbrand.svg",
         "v2": SVG_DIR / "memory-wall-onbrand-v2.svg",
+        "grid": SVG_DIR / "memory-wall-onbrand-v2-grid.svg",
     },
     {
         "slug": "request-to-hardware-stack",
         "input": INPUT_DIR / "image 6.png",
         "v1": SVG_DIR / "request-to-hardware-stack-onbrand.svg",
         "v2": SVG_DIR / "request-to-hardware-stack-onbrand-v2.svg",
+        "grid": SVG_DIR / "request-to-hardware-stack-onbrand-v2-grid.svg",
     },
     {
         "slug": "rise-of-inference-economy",
         "input": INPUT_DIR / "image.png",
         "v1": SVG_DIR / "rise-of-inference-economy-onbrand.svg",
         "v2": SVG_DIR / "rise-of-inference-economy-onbrand-v2.svg",
+        "grid": SVG_DIR / "rise-of-inference-economy-onbrand-v2-grid.svg",
     },
 ]
 
@@ -111,6 +118,10 @@ _COMPARE_3WAY_HTML = """\
     <h2>v2 (experimental)</h2>
     {v2_content}
   </div>
+  <div class="col">
+    <h2>v2 + layout grid</h2>
+    {grid_content}
+  </div>
 </div>
 </body>
 </html>
@@ -134,19 +145,26 @@ def compare_3way(
     v2_path: Path,
     out_dir: Path,
     width: int = 2400,
+    grid_path: Path | None = None,
 ) -> Path:
-    """Generate a 3-way comparison screenshot.
+    """Generate a 3-way (or 4-way with grid) comparison screenshot.
 
     Returns the path to the combined PNG.
     """
     out_dir.mkdir(parents=True, exist_ok=True)
     title = f"{slug}: input → v1 → v2"
+    if grid_path and grid_path.exists():
+        title += " → grid"
+
+    grid_content = _img_or_missing(grid_path, "v2 + grid") if grid_path else \
+        '<p class="missing">Grid SVG not generated. Run build_v2.py --grid.</p>'
 
     html_content = _COMPARE_3WAY_HTML.format(
         title=html_mod.escape(title),
         input_content=_img_or_missing(input_path, "Input sketch"),
         v1_content=_img_or_missing(v1_path, "v1 stable"),
         v2_content=_img_or_missing(v2_path, "v2 experimental"),
+        grid_content=grid_content,
     )
 
     tmp_html = out_dir / f"_3way_{slug}.html"
@@ -192,7 +210,8 @@ def main():
             continue
 
         print(f"Comparing {slug}...")
-        out = compare_3way(slug, d["input"], d["v1"], d["v2"], OUT_DIR)
+        out = compare_3way(slug, d["input"], d["v1"], d["v2"], OUT_DIR,
+                           grid_path=d.get("grid"))
         print(f"  → {out}")
 
     print("Done")
