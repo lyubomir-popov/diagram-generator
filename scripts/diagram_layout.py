@@ -264,6 +264,7 @@ def _layout_panel(
     default_col_gap: int,
     default_row_gap: int,
     bounds_map: dict[str, "_Bounds"] | None = None,
+    min_height: int = 0,
 ) -> tuple[_Bounds, list[Primitive], list[Primitive]]:
     """Lay out a panel and its children.  Returns bounds + primitives."""
     col_width = panel.col_width or default_col_width
@@ -396,7 +397,7 @@ def _layout_panel(
     # ── Sub-panels (laid out side-by-side below boxes) ──
     if sub_panels:
         sp_x = x + pad
-        sp_max_h = 0
+        sp_results: list[tuple[Panel, _Bounds, list, list]] = []
         for sp in sub_panels:
             sp_bounds, sp_fg, sp_bg = _layout_panel(
                 sp, sp_x, content_y,
@@ -405,13 +406,22 @@ def _layout_panel(
                 default_row_gap=row_gap,
                 bounds_map=bounds_map,
             )
+            sp_results.append((sp, sp_bounds, sp_fg, sp_bg))
+            sp_x += sp_bounds.width + col_gap
+
+        # Equalize side-by-side sub-panel heights to the tallest
+        sp_max_h = max(r[1].height for r in sp_results)
+        for sp, sp_bounds, sp_fg, sp_bg in sp_results:
+            if sp_bounds.height < sp_max_h and not sp.frameless:
+                # Stretch frame rect (first element when not frameless)
+                if sp_fg and isinstance(sp_fg[0], Rect):
+                    sp_fg[0].height = sp_max_h
+                sp_bounds.height = sp_max_h
             fg.extend(sp_fg)
             bg.extend(sp_bg)
             child_bounds.append(sp_bounds)
             if sp.id and bounds_map is not None:
                 bounds_map[sp.id] = sp_bounds
-            sp_x += sp_bounds.width + col_gap
-            sp_max_h = max(sp_max_h, sp_bounds.height)
         content_y += sp_max_h + row_gap
 
     # ── Bars (sequential below boxes/sub-panels) ──
@@ -483,6 +493,10 @@ def _layout_panel(
     if rows > 0 and boxes:
         grid_h = grid["height"]
         panel_h = max(panel_h, grid_h)
+
+    # Enforce minimum height (from parent grid cell or sub-panel equalization)
+    if min_height > 0:
+        panel_h = max(panel_h, min_height)
 
     # Heading icon (needs panel_w)
     if panel.icon:
@@ -602,6 +616,7 @@ def _render_component(
     h: float,
     default_width: int,
     bounds_map: dict[str, _Bounds],
+    min_height: int = 0,
 ) -> tuple[_Bounds, list, list]:
     """Render *comp* at (x, y) with cell size (w, h).
 
@@ -617,6 +632,7 @@ def _render_component(
             default_col_gap=COMPACT_GAP,
             default_row_gap=COMPACT_GAP,
             bounds_map=bounds_map,
+            min_height=min_height,
         )
         fg.extend(comp_fg)
         bg.extend(comp_bg)
@@ -918,6 +934,7 @@ def layout(diagram: Diagram) -> LayoutResult:
                 comp, x, y, cell_w, cell_h,
                 default_width=int(cell_w),
                 bounds_map=bounds_map,
+                min_height=int(cell_h),
             )
             fg.extend(comp_fg)
             bg.extend(comp_bg)

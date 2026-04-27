@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-27 – Equal-height panel equalization
+
+- **Grid-row equalization:** Panels in a GRID arrangement now stretch their frames to fill the full cell height (the max height of all single-span components in that row). Fixes "Logic + data conflict" being shorter than "AI inference" in logic-data-vram.
+- **Sub-panel equalization:** Side-by-side child panels inside a parent panel are equalized to the tallest sibling after layout. Fixes "Fragmented layout" being shorter than "Packed layout" in logic-data-vram VRAM section.
+- **Implementation:** `min_height` parameter added to `_layout_panel()` and `_render_component()`. Top-level GRID pass sends `cell_h` as `min_height`; sub-panel path collects results first, finds max height, then stretches shorter frame Rects in place.
+- **Documentation:** "Equal-height equalization" section added to DIAGRAM.md. Guardrail added to build-validate skill.
+- **No regressions:** all 9 diagrams build clean, no arrow violations, element counts unchanged.
+
 ### 2026-04-27 – Grid visualisation in 3-way comparison
 
 - **GridInfo dataclass:** Added to `diagram_layout.py` — captures `col_xs`, `col_widths`, `row_ys`, `row_heights`, `col_gap`, `row_gap`, `outer_margin` from both GRID and VERTICAL arrangements.
