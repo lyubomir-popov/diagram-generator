@@ -358,12 +358,13 @@ When sibling panels contain semantically parallel content, synchronize their row
 
 ### Equal-height equalization
 
-The layout engine automatically equalizes heights at two levels:
+The layout engine automatically equalizes heights at three levels:
 
 1. **Grid-row equalization.** In a GRID arrangement, each row height is the maximum of all single-row-span components in that row. Panels and boxes stretch their frames to fill the full cell height, so peer panels in the same row are always the same height.
 2. **Sub-panel equalization.** When a parent panel contains side-by-side child panels (the `sub_panels` path), the engine measures all sub-panels first, then stretches shorter ones to match the tallest. This keeps paired containers (e.g. "Fragmented layout" / "Packed layout") visually balanced.
+3. **Bar equalization across siblings.** Bars at the same index in sibling sub-panels are equalized to the tallest bar at that index before layout. Empty bar segments get the same height as text-bearing ones at the same position, so rows align horizontally across side-by-side panels.
 
-Both mechanisms are automatic — no opt-in flag is needed. Content stays top-aligned; the extra height appears as whitespace at the bottom of the shorter component's frame.
+All three mechanisms are automatic — no opt-in flag is needed. Content stays top-aligned; the extra height appears as whitespace at the bottom of the shorter component's frame.
 
 ### Spacing tokens
 

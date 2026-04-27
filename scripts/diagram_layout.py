@@ -402,6 +402,24 @@ def _layout_panel(
 
     # ── Sub-panels (laid out side-by-side below boxes) ──
     if sub_panels:
+        # ── Pre-pass: equalize bar heights across sibling sub-panels ──
+        # Collect bars-per-index across all siblings and set each bar's
+        # height to the max at that index so rows align horizontally.
+        sibling_bars: list[list[Bar]] = []
+        for sp in sub_panels:
+            sp_bars = [c for c in sp.children if isinstance(c, Bar)]
+            sibling_bars.append(sp_bars)
+        if len(sibling_bars) > 1:
+            max_bar_count = max(len(bl) for bl in sibling_bars)
+            for idx in range(max_bar_count):
+                max_h = 0
+                for bl in sibling_bars:
+                    if idx < len(bl):
+                        max_h = max(max_h, _min_bar_height(bl[idx]))
+                for bl in sibling_bars:
+                    if idx < len(bl):
+                        bl[idx].height = max(bl[idx].height, max_h)
+
         sp_x = x + pad
         sp_results: list[tuple[Panel, _Bounds, list, list]] = []
         for sp in sub_panels:
@@ -418,7 +436,7 @@ def _layout_panel(
         # Equalize side-by-side sub-panel heights to the tallest
         sp_max_h = max(r[1].height for r in sp_results)
         for sp, sp_bounds, sp_fg, sp_bg in sp_results:
-            if sp_bounds.height < sp_max_h and not sp.frameless:
+            if sp_bounds.height < sp_max_h and sp.effective_border != Border.NONE:
                 # Stretch frame rect (first element when not frameless)
                 if sp_fg and isinstance(sp_fg[0], Rect):
                     sp_fg[0].height = sp_max_h
