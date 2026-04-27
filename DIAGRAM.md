@@ -91,10 +91,7 @@ spacing:
   panel-padding: 8px
   icon-inset: 8px
   compact-gap: 8px
-  group-gap: 16px
-  row-gap: 24px
-  connected-gap: 24px
-  grid-gutter: 24px
+  grid-gutter: 32px
   outer-margin: 32px
   body-line-step: 24px
   heading-line-step: 24px
@@ -400,18 +397,20 @@ All three mechanisms are automatic — no opt-in flag is needed. Content stays t
 
 ### Spacing tokens
 
+The system uses exactly two gap scales. There is no middle ground — 16px and 24px gaps have been eliminated.
+
 | Token | Value | Use |
 |-------|-------|-----|
 | `baseline-unit` | `4px` | Atomic grid step; all dimensions must be multiples |
 | `inset` | `8px` | Padding inside boxes, panels, and all containers |
-| `compact-gap` | `8px` | Gap between tightly grouped peer boxes within a panel |
-| `group-gap` | `16px` | Gap between sub-groups inside a panel |
-| `row-gap` | `24px` | Gap between major rows or peer panels |
-| `grid-gutter` | `24px` | Gap between side-by-side panels |
+| `compact-gap` | `8px` | Gap between tightly grouped peer boxes within a panel (no arrows) |
+| `grid-gutter` | `32px` | Structural gap between columns/rows at any nesting level; equals `arrow-gap` so arrows can route through any structural gutter |
 | `outer-margin` | `32px` | Margin from diagram edge to first content |
 | `default-box-width` | `192px` | Standard box width |
 | `icon-size` | `48px` | Standard icon artboard |
 | `body-line-step` | `24px` | Line height for `18px` body text |
+
+**Gutter consistency rule:** the same `grid-gutter` value (32px) must be used at every nesting level for structural column and row gaps. A nested wrapper's internal `col_gap` between sub-panels must match the outer grid's `col_gap`. This keeps the vertical gutter lane continuous through the entire diagram. Only use `compact-gap` (8px) for tightly packed boxes within a single panel where no arrows route.
 
 ### Text containment
 

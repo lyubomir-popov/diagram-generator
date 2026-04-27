@@ -34,7 +34,7 @@ def _helper(text: str) -> Line:
 diagram_intake_workflow = Diagram(
     title="Diagram intake workflow",
     arrangement=Diagram.Arrangement.VERTICAL,
-    row_gap=24,
+    # row_gap defaults to GRID_GUTTER (32)
     outer_margin=32,
     components=[
         # ── Dashed header frame ──

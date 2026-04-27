@@ -40,7 +40,7 @@ memory_wall = Diagram(
     col_width=192,
     row_height=64,
     col_gap=32,  # arrow routes horizontally between columns
-    row_gap=24,
+    row_gap=32,  # arrows route vertically between rows
     outer_margin=32,
     components=[
         # ── Row 0: User request + request cluster ──

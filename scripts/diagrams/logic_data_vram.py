@@ -36,8 +36,7 @@ logic_data_vram = Diagram(
     title="Logic + data conflict / AI inference / VRAM fragmentation",
     arrangement=Diagram.Arrangement.GRID,
     cols=2,
-    col_gap=24,
-    row_gap=24,
+    # col_gap and row_gap default to GRID_GUTTER (32)
     outer_margin=32,
     components=[
         # ── Row 0: two top panels ──
@@ -46,7 +45,7 @@ logic_data_vram = Diagram(
             heading=_heading("Logic + data conflict"),
             cols=2,
             rows=3,
-            row_gap=16,
+            row_gap=8,  # compact: no arrows between rows
             fill=Fill.WHITE,
             col=0, row=0,
             children=[
@@ -62,7 +61,7 @@ logic_data_vram = Diagram(
             heading=_heading("AI inference"),
             cols=2,
             rows=3,
-            row_gap=24,  # arrows route between rows
+            row_gap=32,  # structural: arrows route between rows
             fill=Fill.WHITE,
             col=1, row=0,
             children=[
@@ -93,15 +92,15 @@ logic_data_vram = Diagram(
         ),
 
         # ── Row 2: VRAM fragmentation (col_span=2 → full width) ──
-        # Outer cell = 2 × 408 + 24 = 840.  Content = 840 − 16 = 824.
-        # Two sub-panels + 32px gap → each sub-panel outer = (824 − 32) / 2 = 396.
-        # Sub-panel content col_width = 396 − 2 × 8 = 380.
+        # Outer cell = 2 × 408 + 32 = 848.  Content = 848 − 16 = 832.
+        # Two sub-panels + 32px gap → each sub-panel outer = (832 − 32) / 2 = 400.
+        # Sub-panel content col_width = 400 − 2 × 8 = 384.
         Panel(
             id="vram",
             heading=_heading("VRAM fragmentation"),
             cols=2,
             col_span=2,
-            col_gap=32,  # arrow routes between sub-panels
+            col_gap=32,  # structural: arrow routes between sub-panels
             fill=Fill.WHITE,
             col=0, row=2,
             children=[
@@ -111,15 +110,15 @@ logic_data_vram = Diagram(
                     heading=_heading("Fragmented layout"),
                     icon="RAM.svg",
                     cols=1,
-                    col_width=380,
+                    col_width=384,
                     fill=Fill.GREY,
                     children=[
                         Bar(segments=[BarSegment(label=_body("10 GB"))]),
                         Bar(segments=[BarSegment(label=_body("6 GB context cache"))]),
                         Bar(segments=[
-                            BarSegment(width_px=68),
-                            BarSegment(width_px=52, fill=Fill.GREY),
-                            BarSegment(width_px=84),
+                            BarSegment(width_px=72),
+                            BarSegment(width_px=56, fill=Fill.GREY),
+                            BarSegment(width_px=88),
                             BarSegment(width_px=40, fill=Fill.GREY),
                             BarSegment(),  # auto-fill remainder
                         ]),
@@ -131,17 +130,17 @@ logic_data_vram = Diagram(
                     heading=_heading("Packed layout"),
                     icon="Memory.svg",
                     cols=1,
-                    col_width=380,
+                    col_width=384,
                     fill=Fill.GREY,
                     children=[
                         Bar(segments=[BarSegment(label=_body("24 GB GPU memory"))]),
                         Bar(segments=[
-                            BarSegment(width_px=68, label=_body("9 GB")),
+                            BarSegment(width_px=72, label=_body("9 GB")),
                             BarSegment(width_px=112, fill=Fill.GREY, label=_body("Alloc")),
                             BarSegment(),  # auto-fill remainder
                         ]),
                         Bar(segments=[
-                            BarSegment(width_px=216, fill=Fill.GREY),
+                            BarSegment(width_px=220, fill=Fill.GREY),
                             BarSegment(label=_body("8 GB model")),  # auto-fill remainder
                         ]),
                     ],

@@ -26,7 +26,7 @@ def _heading(text: str) -> Line:
 request_to_hardware_stack = Diagram(
     title="Request to hardware stack",
     arrangement=Diagram.Arrangement.VERTICAL,
-    row_gap=24,
+    # row_gap defaults to GRID_GUTTER (32)
     outer_margin=32,
     components=[
         # Top box

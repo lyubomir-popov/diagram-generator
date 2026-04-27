@@ -34,7 +34,7 @@ def _helper(text: str) -> Line:
 diagram_language_workflow = Diagram(
     title="Diagram language workflow",
     arrangement=Diagram.Arrangement.VERTICAL,
-    row_gap=24,
+    # row_gap defaults to GRID_GUTTER (32)
     outer_margin=32,
     components=[
         # ── Dashed input frame ──
