@@ -93,6 +93,9 @@ logic_data_vram = Diagram(
         ),
 
         # ── Row 2: VRAM fragmentation (col_span=2 → full width) ──
+        # Outer cell = 2 × 408 + 24 = 840.  Content = 840 − 16 = 824.
+        # Two sub-panels + 32px gap → each sub-panel outer = (824 − 32) / 2 = 396.
+        # Sub-panel content col_width = 396 − 2 × 8 = 380.
         Panel(
             id="vram",
             heading=_heading("VRAM fragmentation"),
@@ -108,15 +111,15 @@ logic_data_vram = Diagram(
                     heading=_heading("Fragmented layout"),
                     icon="RAM.svg",
                     cols=1,
-                    col_width=384,
+                    col_width=380,
                     fill=Fill.GREY,
                     children=[
                         Bar(segments=[BarSegment(label=_body("10 GB"))]),
                         Bar(segments=[BarSegment(label=_body("6 GB context cache"))]),
                         Bar(segments=[
-                            BarSegment(width_px=72),
-                            BarSegment(width_px=56, fill=Fill.GREY),
-                            BarSegment(width_px=88),
+                            BarSegment(width_px=68),
+                            BarSegment(width_px=52, fill=Fill.GREY),
+                            BarSegment(width_px=84),
                             BarSegment(width_px=40, fill=Fill.GREY),
                             BarSegment(),  # auto-fill remainder
                         ]),
@@ -128,17 +131,17 @@ logic_data_vram = Diagram(
                     heading=_heading("Packed layout"),
                     icon="Memory.svg",
                     cols=1,
-                    col_width=384,
+                    col_width=380,
                     fill=Fill.GREY,
                     children=[
                         Bar(segments=[BarSegment(label=_body("24 GB GPU memory"))]),
                         Bar(segments=[
-                            BarSegment(width_px=72, label=_body("9 GB")),
+                            BarSegment(width_px=68, label=_body("9 GB")),
                             BarSegment(width_px=112, fill=Fill.GREY, label=_body("Alloc")),
                             BarSegment(),  # auto-fill remainder
                         ]),
                         Bar(segments=[
-                            BarSegment(width_px=220, fill=Fill.GREY),
+                            BarSegment(width_px=216, fill=Fill.GREY),
                             BarSegment(label=_body("8 GB model")),  # auto-fill remainder
                         ]),
                     ],
