@@ -262,7 +262,13 @@ Not every visible rectangle is a grid participant. Distinguish two roles:
 | **Grid participant** | Standalone boxes, panels that own a grid cell | Outer edges define the grid column/row boundaries. Peer participants share column edges. |
 | **Wrapper** | Dashed grouping frames, frameless layout containers | Outer edges are **derived** from children + inset. A wrapper does not impose its own width on the grid — it wraps around content that is already grid-aligned. |
 
-**The key invariant:** when a wrapper and standalone boxes sit in the same outer column, the wrapper's **outer** width must equal the standalone box width so edges stay flush. Derive the wrapper's child widths from the outer constraint, not the other way around:
+**The key invariant:** when a wrapper and standalone boxes sit in the same outer column, the wrapper's **outer** width must equal the standalone box width so edges stay flush. Derive the wrapper's child widths from the outer constraint, not the other way around.
+
+### Nesting and alignment rules
+
+Every container introduces an INSET offset. Nesting levels compound: a box inside a sub-panel inside a wrapper panel has 3 levels of INSET between its content and the diagram edge. When child panels sit inside a multi-span wrapper, their outer edges are offset from the outer grid by the wrapper's INSET, and this offset is **expected and intentional** — the children are visually contained.
+
+**Single-column wrapper** (wrapper occupies exactly one grid column):
 
 ```
 wrapper_outer_width  = peer_box_width          (e.g. 608)
@@ -270,9 +276,33 @@ wrapper_content_span = wrapper_outer_width − 2 × INSET   (e.g. 592)
 child_col_width      = (wrapper_content_span − (cols − 1) × col_gap) / cols
 ```
 
-Never set `col_width` on a wrapper's children independently and then let the wrapper grow to fit — that pushes the wrapper edge past its peers and creates the misalignment visible in the arrow lane.
+**Multi-span wrapper** (wrapper spans N grid columns):
 
-When a wrapper has a heading that spans all columns, the heading width also follows `wrapper_content_span`, not the sum of child columns.
+When a wrapper spans N outer grid columns, its children will be inset from the outer grid. To align child panels with the outer grid columns, **the child panels must absorb the wrapper's INSET**. The formula:
+
+```
+wrapper_outer     = N × outer_col_width + (N − 1) × outer_col_gap
+wrapper_content   = wrapper_outer − 2 × INSET
+child_count       = N  (one child per outer column)
+child_outer_width = (wrapper_content − (child_count − 1) × inner_col_gap) / child_count
+```
+
+The child outer width will always be less than the outer column width by `(2 × INSET + (child_count − 1) × (inner_col_gap − outer_col_gap)) / child_count`. **This is the nesting tax.** Accept it as the cost of the frame, or use `border=Border.NONE` (frameless, pad=0) to eliminate it.
+
+**Example: logic-data-vram VRAM section**
+
+```
+outer_col_width  = 408
+outer_col_gap    = 24
+wrapper_outer    = 2 × 408 + 24 = 840
+wrapper_content  = 840 − 16 = 824
+inner_col_gap    = 32  (for arrow routing)
+child_outer      = (824 − 32) / 2 = 396
+
+Nesting tax = 408 − 396 = 12px per child
+```
+
+The sub-panels are 12px narrower than the top panels. The left sub-panel starts 8px to the right of the top-left panel (wrapper INSET), and the right sub-panel ends 8px to the left of the top-right panel.
 
 **Practical checklist for wrappers:**
 
@@ -280,7 +310,9 @@ When a wrapper has a heading that spans all columns, the heading width also foll
 2. Subtract `2 × INSET` to get the content span.
 3. Divide the content span among child columns and gaps.
 4. Size children inside-out for height, but use the derived column width for width.
-5. Verify the wrapper's computed outer width equals the peer boxes' width.
+5. **Do not hardcode `col_width` on sub-panels independently.** Derive it from the wrapper's content span. Hardcoded values drift when the outer grid changes.
+6. Verify the wrapper's computed outer width equals the peer boxes' width.
+7. Accept the nesting INSET offset, or use `border=Border.NONE` to eliminate it.
 
 **For a text box (no icon):**
 
