@@ -11,13 +11,15 @@ Grid layout: 2 columns, 8 rows.
 from __future__ import annotations
 
 from diagram_model import (
+    Annotation,
     Arrow,
+    Border,
     Box,
     Diagram,
     Fill,
+    IconCluster,
+    JaggedPanel,
     Line,
-    MemoryWall,
-    RequestCluster,
     Separator,
 )
 from diagram_shared import HELPER as HELPER_COLOR
@@ -44,7 +46,8 @@ memory_wall = Diagram(
         # ── Row 0: User request + request cluster ──
         Box(id="user", label=[_body("User request")], width=192,
             col=0, row=0),
-        RequestCluster(id="requests",
+        IconCluster(id="requests",
+            icons=["Document.svg", "Photography.svg", "Globe.svg"],
             col=1, row=0),
 
         # ── Row 1: App & model framework ──
@@ -60,13 +63,12 @@ memory_wall = Diagram(
         # ── Row 2: Dashed separator ──
         Separator(col=0, row=2),
 
-        # ── Row 3: Missing layer + side annotation (borderless box) ──
+        # ── Row 3: Missing layer + side annotation ──
         Box(id="missing", label=[_body("Missing layer")], width=192, height=64,
             col=0, row=3),
-        Box(
+        Annotation(
             id="missing_note",
-            label=[_helper("No model-aware"), _helper("orchestration!")],
-            borderless=True,
+            lines=[_helper("No model-aware"), _helper("orchestration!")],
             col=1, row=3,
         ),
 
@@ -101,7 +103,7 @@ memory_wall = Diagram(
         ),
 
         # ── Row 7: Memory wall ──
-        MemoryWall(
+        JaggedPanel(
             id="wall",
             label=[_body("Memory wall")],
             width=192,

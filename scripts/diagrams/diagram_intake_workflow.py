@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from diagram_model import (
     Arrow,
+    Border,
     Box,
     Diagram,
     Fill,
@@ -46,7 +47,7 @@ diagram_intake_workflow = Diagram(
             col_gap=8,
             row_gap=8,
             fill=Fill.WHITE,
-            dashed=True,
+            border=Border.DASHED,
             heading=_heading("Rough initial diagram sources"),
             children=[
                 Box(

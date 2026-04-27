@@ -13,12 +13,12 @@ The grid adapts to contain:
 from __future__ import annotations
 
 from diagram_model import (
+    Annotation,
     Arrow,
     Box,
     Diagram,
     Fill,
-    Helper,
-    IconComponent,
+    IconCluster,
     Line,
 )
 
@@ -58,21 +58,21 @@ gpu_waiting_scheduler = Diagram(
         ),
 
         # Document icon – middle area
-        IconComponent(
-            icon="Document.svg",
+        IconCluster(
+            icons=["Document.svg"],
             col=1, row=1,
         ),
 
-        # Helper "Queued request" – beside document icon
-        Helper(
+        # Annotation "Queued request" – beside document icon
+        Annotation(
             id="queued",
             lines=[_body("Queued request", fill=HELPER)],
             col=2, row=1, col_span=2,
         ),
 
         # Gauge icon – left area
-        IconComponent(
-            icon="Gauge.svg",
+        IconCluster(
+            icons=["Gauge.svg"],
             col=0, row=2,
         ),
 
@@ -86,8 +86,8 @@ gpu_waiting_scheduler = Diagram(
             col=0, row=3,
         ),
 
-        # Helper "Waiting..." – below GPU
-        Helper(
+        # Annotation "Waiting..." – below GPU
+        Annotation(
             lines=[_heading("Waiting...")],
             col=0, row=4,
         ),

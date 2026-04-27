@@ -155,9 +155,25 @@ components:
   matrix-widget:
     size: 48px
     headerHeight: 20px
-  memory-wall-panel:
+  jagged-panel:
     fill: "{colors.surface-accent}"
     edgeTreatment: jagged-top-bottom
+    notes: Replaces legacy `memory-wall-panel`. Alias `MemoryWall` kept for backward compatibility.
+  annotation:
+    fill: "{colors.surface-default}"
+    border: none
+    paddingX: 8px
+    paddingY: 8px
+    notes: Anchored annotation text. Participates in grid sizing and arrow anchoring. Replaces legacy `Helper`.
+  icon-cluster:
+    iconSize: 48px
+    gap: 4px
+    notes: Inline cluster of one or more icons. Replaces legacy `IconComponent` and `RequestCluster`.
+  border-modes:
+    solid: "1px #000000"
+    dashed: "1px #000000 dashed"
+    none: no visible border
+    notes: Applies to Box and Panel via `border` field. Replaces legacy `borderless`, `frameless`, `dashed` booleans.
 ---
 
 # Diagram Generator diagram language
@@ -415,16 +431,41 @@ The primary question for connector quality is whether the routing still reads cl
 
 The reusable component set is intentionally small. Every component follows the inside-out box model — height is computed from content, never hardcoded with dead space.
 
-- **Default box** (text only): white fill, black stroke, regular-weight live text. Height = `INSET + (lines × line_step) + INSET`, snapped to baseline unit. A 1-line text-only box is `36px` tall, not `64px`.
-- **Default box with icon**: white fill, black stroke, regular-weight live text. Height = `max(text_height, INSET + ICON_SIZE + INSET)`. A 1-line box with a `48px` icon is `64px`.
-- **Accent box**: `#F3F3F3` fill, otherwise identical to default.
-- **Emphasis box**: black fill, white text, used only when a true highlight is needed.
-- **Panel heading**: bold (`600–700`) label, applied only to structural containers — not to individual content boxes. Panel headings are just boxes whose text happens to be bold.
-- **Helper note**: unboxed `16px` regular text in `#666666`. Hierarchy expressed only by color, not by size. Helpers are free-standing text — they do not participate in grid row-height equalization and cannot anchor arrows.
-- **Borderless box**: a `Box` with `borderless=True` — renders text with `INSET` padding but no visible stroke. Participates in grid sizing, equal-height equalization, and arrow anchoring like any other box. Use instead of `Helper` when the annotation needs an arrow connection or must match a peer box's height.
-- **Terminal command bar**: grey body with `20px` chrome strip, separator line, and mono text. Internal spacing must follow the same `8px` inset rules as every other box: text starts at `INSET` from the left edge and `chromeHeight + INSET` from the top edge.
-- **Matrix widget**: explicit top label band above the grid.
-- **Memory wall panel**: jagged semantic exception.
+### Core types
+
+- **Box**: the fundamental building block. White fill, black 1px stroke, regular-weight live text. Height = `INSET + (lines × line_step) + INSET`, snapped to baseline unit. Supports `fill` (WHITE, GREY, BLACK), `icon`, and `border` (SOLID, DASHED, NONE).
+- **Panel**: structural container with optional heading, icon, and child components. Supports `border` (SOLID, DASHED, NONE) and `fill`. Panels with `border=Border.NONE` are frameless layout containers.
+- **Arrow**: orange connector between components, referenced by `source` and `target` anchor strings.
+- **Annotation**: anchored annotation text that participates in grid sizing and arrow anchoring. Default `fill=WHITE`, `border=NONE`. Use when the annotation needs an arrow connection or must match a peer box's height.
+- **JaggedPanel**: semantic exception with jagged top and bottom edges (e.g. memory wall). Alias `MemoryWall` kept for backward compatibility.
+- **IconCluster**: inline cluster of one or more icons at natural `48px` size, spaced by `4px` gap.
+- **Terminal**: command bar with chrome strip, separator, and mono text.
+- **MatrixWidget**: labeled grid tile with a top header band.
+- **Bar / BarSegment**: horizontal segmented strip for memory or capacity visualisations.
+- **Legend / LegendEntry**: marker-and-label row for color keys.
+- **Separator**: horizontal divider between grid rows.
+
+### Border modes
+
+The `Border` enum replaces the legacy `borderless`, `frameless`, and `dashed` boolean flags:
+
+| Border | Appearance | Use case |
+|--------|-----------|----------|
+| `SOLID` | 1px black stroke (default) | Standard boxes and panels |
+| `DASHED` | 1px black dashed stroke | Grouping frames, optional boundaries |
+| `NONE` | No visible stroke | Frameless layout containers, annotations |
+
+### Deprecated types (backward compatible)
+
+These types are still importable but should not be used in new definitions:
+
+- **Helper** → use `Annotation`
+- **IconComponent** → use `IconCluster(icons=["name.svg"])`
+- **RequestCluster** → use `IconCluster(icons=[...])`
+- **MemoryWall** → use `JaggedPanel`
+- `Box(borderless=True)` → use `Box(border=Border.NONE)` or `Annotation`
+- `Panel(frameless=True)` → use `Panel(border=Border.NONE)`
+- `Panel(dashed=True)` → use `Panel(border=Border.DASHED)`
 
 Use icons from `assets/icons/` only. If no local icon matches the concept, omit the icon rather than sourcing or inventing a new one.
 

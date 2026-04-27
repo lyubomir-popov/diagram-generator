@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-27 – Component library refactor (Step 6b)
+
+- **New types:** `Border` enum (SOLID, DASHED, NONE), `Annotation` (replaces Helper + borderless Box), `JaggedPanel` (replaces MemoryWall), `IconCluster` (replaces IconComponent + RequestCluster), `GridSpec` (consolidates grid parameters).
+- **Model + layout engine:** `diagram_model.py` and `diagram_layout.py` updated to support all new types alongside deprecated ones. Backward-compatible `effective_border` properties on Box and Panel.
+- **Diagram migration:** All 9 definitions updated: `memory_wall.py` (JaggedPanel, IconCluster, Annotation), `gpu_waiting_scheduler.py` (Annotation, IconCluster), `logic_data_vram.py` (Annotation), `attention_qkv.py` (Annotation, Border.NONE), `inference_snaps.py` (Border.DASHED, Border.NONE), `diagram_language_workflow.py` (Border.DASHED), `diagram_intake_workflow.py` (Border.DASHED). No deprecated type imports remain in definitions.
+- **DIAGRAM.md:** Components section rewritten with core types, border modes table, and deprecated types list.
+- **All 9 diagrams build clean,** 0 regressions.
+
 ### 2026-04-27 – Equal-height panel equalization
 
 - **Grid-row equalization:** Panels in a GRID arrangement now stretch their frames to fill the full cell height (the max height of all single-span components in that row). Fixes "Logic + data conflict" being shorter than "AI inference" in logic-data-vram.

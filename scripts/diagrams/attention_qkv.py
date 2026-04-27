@@ -17,11 +17,12 @@ Grid layout: 2 columns × 3 rows.
 from __future__ import annotations
 
 from diagram_model import (
+    Annotation,
     Arrow,
+    Border,
     Box,
     Diagram,
     Fill,
-    Helper,
     Legend,
     LegendEntry,
     Line,
@@ -65,7 +66,7 @@ attention_qkv = Diagram(
             col_gap=8,
             row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
-            frameless=True,
+            border=Border.NONE,
             uniform_height=False,
             col=0, row=0,
             children=[
@@ -76,14 +77,14 @@ attention_qkv = Diagram(
                     fill=Fill.GREY,
                     col=0, row=1,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("I am a noun at the start of a"),
                         _helper("sentence followed by a colon."),
                     ],
                     col=1, row=1,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("I am a noun at the start of a sentence followed"),
                         _helper("by a colon. I am likely a subject being defined."),
@@ -103,7 +104,7 @@ attention_qkv = Diagram(
             col_gap=8,
             row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
-            frameless=True,
+            border=Border.NONE,
             uniform_height=False,
             col=1, row=0,
             children=[
@@ -116,7 +117,7 @@ attention_qkv = Diagram(
                     fill=Fill.GREY, col=2, row=1),
                 Box(id="k_beings", label=[_body("beings")],
                     fill=Fill.WHITE, col=3, row=1),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("I am a technical"),
                         _helper("OS kernel"),
@@ -124,7 +125,7 @@ attention_qkv = Diagram(
                     ],
                     col=0, row=2,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("I am a preposition"),
                         _helper("indicating a target"),
@@ -132,7 +133,7 @@ attention_qkv = Diagram(
                     ],
                     col=1, row=2,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("I am the adjective"),
                         _helper("that narrows the"),
@@ -140,7 +141,7 @@ attention_qkv = Diagram(
                     ],
                     col=2, row=2,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("I am the plural noun,"),
                         _helper("the object of the"),
@@ -160,7 +161,7 @@ attention_qkv = Diagram(
             col_gap=8,
             row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
-            frameless=True,
+            border=Border.NONE,
             uniform_height=False,
             col=0, row=1,
             children=[
@@ -173,7 +174,7 @@ attention_qkv = Diagram(
                     fill=Fill.GREY, col=2, row=1),
                 Box(id="m_beings", label=[_body("beings")],
                     fill=Fill.WHITE, col=3, row=1),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("Best semantic match:"),
                         _helper("the likely subject"),
@@ -181,7 +182,7 @@ attention_qkv = Diagram(
                     ],
                     col=0, row=2,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("Relevant as context,"),
                         _helper("but not the thing"),
@@ -189,7 +190,7 @@ attention_qkv = Diagram(
                     ],
                     col=1, row=2,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("Useful modifier,"),
                         _helper("but not stronger than"),
@@ -197,7 +198,7 @@ attention_qkv = Diagram(
                     ],
                     col=2, row=2,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper("Part of the phrase,"),
                         _helper("yet less direct than"),
@@ -228,7 +229,7 @@ attention_qkv = Diagram(
             col_gap=24,
             row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
-            frameless=True,
+            border=Border.NONE,
             uniform_height=False,
             col=1, row=1,
             children=[
@@ -246,7 +247,7 @@ attention_qkv = Diagram(
                     fill=Fill.BLACK,
                     col=1, row=1,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper('Strongest meaning comes from "Linux",'),
                         _helper("with extra audience context from"),
@@ -260,7 +261,7 @@ attention_qkv = Diagram(
                     fill=Fill.GREY,
                     col=0, row=2, col_span=2,
                 ),
-                Helper(
+                Annotation(
                     lines=[
                         _helper('Now that the model knows "Linux" is the most relevant'),
                         _helper("word, it takes the value step to transfer the actual"),

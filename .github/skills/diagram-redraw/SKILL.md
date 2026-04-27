@@ -32,7 +32,7 @@ argument-hint: "Describe the source asset, target slug, and any special constrai
 7. **Apply typography hierarchy.**
    - Panel headings and frame titles: bold (`600–700`).
    - All other box labels: regular weight (`400`). Bold at the same size is a higher hierarchical level — do not make every label bold.
-   - Helper text: regular weight, `#666666` fill. Hierarchy by color only.
+   - Annotation text: regular weight, `#666666` fill. Hierarchy by color only.
 8. **Verify text containment.**
    - For every text element inside a container: `text_y + (lines × line_step) ≤ container_bottom - inset`.
    - If it doesn't fit, re-derive the container height from the inside-out model.
@@ -63,5 +63,5 @@ argument-hint: "Describe the source asset, target slug, and any special constrai
 - **Typography hierarchy.** Bold at same size = higher level. Only structural headings use bold. Content labels use regular weight.
 - **Tight boxes.** A 1-line text-only box is `36px`, not `64px`. No empty space below the last line of text. The `64px` minimum applies only when an icon is present.
 - **Arrow clearance.** Any `row_gap` or `col_gap` through which arrows route must be ≥ `ARROW_GAP` (`32px`). For panels with only straight (same-column) arrows, `24px` is sufficient. The last arrow segment must be ≥ `MIN_ARROW_SEGMENT` (`24px`) so the shaft is visibly longer than the arrowhead. See "Arrow clearance" in `DIAGRAM.md`.
-- **Borderless boxes for annotations.** When an annotation text needs an arrow connection or must match a peer box's height, use `Box(borderless=True)` instead of `Helper`. Borderless boxes render text with standard `INSET` padding but no visible stroke. They participate in grid row-height equalization and provide proper edge anchors for arrows — `Helper` does neither.
+- **Annotations for text notes.** Use `Annotation` for free-standing text that needs arrow connections or grid-height participation. `Annotation` renders text with standard `INSET` padding and supports `Border.NONE` (default, invisible), `Border.SOLID`, or `Border.DASHED`. Use `IconCluster` for icon groups, `JaggedPanel` for jagged-edge semantic exceptions. The deprecated `Helper`, `IconComponent`, `RequestCluster`, and `MemoryWall` types are still importable but should not be used in new definitions.
 - **Equal-height equalization.** Panels in the same grid row automatically stretch to the tallest peer. Side-by-side sub-panels inside a parent also equalize. This is automatic — no flag needed. When designing a row with mixed content heights, the shorter component's frame will grow to match; content stays top-aligned.

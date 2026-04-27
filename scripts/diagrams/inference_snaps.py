@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from diagram_model import (
     Arrow,
+    Border,
     Box,
     Diagram,
     Fill,
@@ -51,7 +52,7 @@ inference_snaps = Diagram(
             cols=1,
             col_width=600,
             fill=Fill.WHITE,
-            dashed=True,
+            border=Border.DASHED,
             children=[
                 # Snap identity box
                 Box(label=[_heading("Inference snap")], icon="Package.svg", width=600),
@@ -93,7 +94,7 @@ inference_snaps = Diagram(
             col_width=200,
             col_gap=8,
             fill=Fill.WHITE,
-            frameless=True,
+            border=Border.NONE,
             uniform_height=True,
             children=[
                 Box(id="hw_cpu", label=[_body("CPU")], icon="CPU.svg", col=0, row=0),

@@ -32,10 +32,11 @@ There are now **two diagram generation pipelines**. On a cold start, ask the use
 ### Pipeline 2: declarative grid (experimental)
 
 - Definitions: `scripts/diagrams/*.py`
-- Layout engine: `scripts/diagram_layout.py` + `scripts/diagram_model.py`
+- Model: `scripts/diagram_model.py` — component types (`Box`, `Panel`, `Arrow`, `Annotation`, `JaggedPanel`, `IconCluster`, etc.) with `Border` enum and `GridSpec`.
+- Layout engine: `scripts/diagram_layout.py`
 - Entry point: `python scripts/build_v2.py`
 - Outputs: `*-onbrand-v2.svg`, `*-onbrand-v2.drawio`
-- **Several diagrams still have content gaps vs v1.** See the defect registry in `TODO.md`.
+- **Component library refactored:** all 9 definitions use the new canonical types. Deprecated types (`Helper`, `IconComponent`, `RequestCluster`, `MemoryWall`) are still importable but no longer used in definitions.
 
 ### Validation tools
 

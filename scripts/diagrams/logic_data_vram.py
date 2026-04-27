@@ -7,13 +7,13 @@ imperative ``build_logic_data_vram()`` in ``generate_remaining_diagrams.py``.
 from __future__ import annotations
 
 from diagram_model import (
+    Annotation,
     Arrow,
     Bar,
     BarSegment,
     Box,
     Diagram,
     Fill,
-    Helper,
     Line,
     Panel,
 )
@@ -79,15 +79,15 @@ logic_data_vram = Diagram(
         Arrow(source="r_data.bottom", target="r_cpu.top"),
         Arrow(source="r_data2.bottom", target="r_memory.top"),
 
-        # ── Row 1: helper text ──
-        Helper(
+        # ── Row 1: annotation text ──
+        Annotation(
             lines=[
                 _helper("Logic with optional data."),
                 _helper("Optional data can stay separate."),
             ],
             col=0, row=1,
         ),
-        Helper(
+        Annotation(
             lines=[_helper("Logic inseparable from data.")],
             col=1, row=1,
         ),
@@ -149,12 +149,12 @@ logic_data_vram = Diagram(
         # Arrow between sub-panels
         Arrow(source="frag.right", target="packed.left"),
 
-        # ── Row 3: helper text below VRAM ──
-        Helper(
+        # ── Row 3: annotation text below VRAM ──
+        Annotation(
             lines=[_helper("Fragmented allocations leave gaps.")],
             col=0, row=3,
         ),
-        Helper(
+        Annotation(
             lines=[_helper("860 B free")],
             col=1, row=3,
         ),
