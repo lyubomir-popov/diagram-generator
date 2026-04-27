@@ -46,6 +46,7 @@ argument-hint: "Describe the source asset, target slug, and any special constrai
     - Box heights are tight to content — no dead space below text.
     - Only structural headings are bold; content labels are regular weight.
     - Arrows route cleanly between grid-aligned boxes.
+    - Every arrow's last segment ≥ `24px` and first segment ≥ `8px` (check `validate_arrows()` output).
     If any check fails, fix the grid parameters, not individual coordinates.
 13. If the change adds a reusable rule, record it in `DIAGRAM.md` rather than expanding `TODO.md`.
 
@@ -61,3 +62,4 @@ argument-hint: "Describe the source asset, target slug, and any special constrai
 - **No text across borders.** Every text element must fit entirely within its parent container, or be positioned entirely outside it.
 - **Typography hierarchy.** Bold at same size = higher level. Only structural headings use bold. Content labels use regular weight.
 - **Tight boxes.** A 1-line text-only box is `36px`, not `64px`. No empty space below the last line of text. The `64px` minimum applies only when an icon is present.
+- **Arrow clearance.** Any `row_gap` or `col_gap` through which arrows route must be ≥ `ARROW_GAP` (`32px`). For panels with only straight (same-column) arrows, `24px` is sufficient. The last arrow segment must be ≥ `MIN_ARROW_SEGMENT` (`24px`) so the shaft is visibly longer than the arrowhead. See "Arrow clearance" in `DIAGRAM.md`.

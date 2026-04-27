@@ -75,6 +75,8 @@ SVG element audit (v1 vs v2, April 2026). Use `python scripts/_compare_3way.py` 
 
 **Resolved:** MatrixWidget support added to `_layout_panel()`. All matrix tiles now render inside frameless panels with proper grid placement and bounds registration for arrow resolution.
 
+**Arrow clearance enforced:** `validate_arrows()` runs in `build_v2.py` and checks every arrow segment. All diagrams pass except logic-data-vram (1 minor first-segment violation on the frag→packed horizontal arrow — 4px exit segment due to sub-panel height mismatch). Arrow clearance tokens (`ARROW_GAP`, `MIN_ARROW_SEGMENT`, `ARROW_EXIT_CLEARANCE`) documented in DIAGRAM.md and skills.
+
 ### Declarative diagram model (Roadmap Stage 6a – highest priority)
 
 Replace the current per-diagram imperative functions with a declarative tree model and a shared layout engine. This is the prerequisite for PM self-serve: a PM downloads the repo, feeds a sketch or mermaid, and the tool recreates it on-brand without writing Python.

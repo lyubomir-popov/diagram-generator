@@ -80,6 +80,22 @@ MATRIX_ROW_DIVIDERS = (29, 38)
 ARROW_HEAD_LENGTH = 10.8408
 ARROW_HEAD_HALF_WIDTH = 2.9053
 
+# Arrow clearance tokens — enforce visible shaft between box edges and
+# arrowheads so arrows never visually overlap boxes.
+#
+#   ARROW_CLEARANCE:      minimum visible shaft on the approach to the target
+#                         (box edge → arrowhead base).  Must be ≥ head length.
+#   MIN_ARROW_SEGMENT:    minimum last-segment length (clearance + head),
+#                         snapped to 4px grid.
+#   ARROW_EXIT_CLEARANCE: minimum first segment leaving the source box
+#                         (no arrowhead, just enough to see the shaft depart).
+#   ARROW_GAP:            minimum gap between rows/columns where arrows route.
+#                         = MIN_ARROW_SEGMENT + ARROW_EXIT_CLEARANCE.
+ARROW_CLEARANCE = 12
+MIN_ARROW_SEGMENT = 24          # ARROW_CLEARANCE + ceil(ARROW_HEAD_LENGTH) on 4px grid
+ARROW_EXIT_CLEARANCE = 8
+ARROW_GAP = 32                  # MIN_ARROW_SEGMENT + ARROW_EXIT_CLEARANCE
+
 
 def fmt(value: float) -> str:
     if abs(value - round(value)) < 1e-6:

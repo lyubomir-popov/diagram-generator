@@ -35,6 +35,8 @@ from diagram_model import (
     Terminal,
 )
 from diagram_shared import (
+    ARROW_CLEARANCE,
+    ARROW_EXIT_CLEARANCE,
     BASELINE_UNIT,
     BLOCK_WIDTH,
     BODY_LINE_STEP,
@@ -47,6 +49,7 @@ from diagram_shared import (
     ICON_SIZE,
     INSET,
     MATRIX_SIZE,
+    MIN_ARROW_SEGMENT,
     OUTER_MARGIN,
     ROW_GAP,
     TERMINAL_CHROME_HEIGHT,
@@ -686,8 +689,12 @@ def _resolve_arrows(
 
     When no explicit waypoints are given and the source/target aren't
     axis-aligned, the arrow is auto-routed orthogonally:
-      - vertical (top/bottom sides): midpoint-Y bend
-      - horizontal (left/right sides): midpoint-X bend
+      - vertical (top/bottom sides): Z-bend with clearance-aware placement
+      - horizontal (left/right sides): L-bend favouring the longer final segment
+
+    The Z-bend placement ensures the final approach segment is at least
+    MIN_ARROW_SEGMENT long (arrowhead + visible shaft) and the exit
+    segment is at least ARROW_EXIT_CLEARANCE long.
     """
     prims = []
     for arrow in arrows:
@@ -709,10 +716,27 @@ def _resolve_arrows(
             vertical_tgt = tgt_side in ("top", "bottom")
 
             if vertical_src and vertical_tgt and sx != tx:
-                # Both sides are vertical but X differs → Z-bend at midpoint Y
-                mid_y = (sy + ty) / 2
-                mid_y = round(mid_y / BASELINE_UNIT) * BASELINE_UNIT
-                waypoints = [(sx, mid_y), (tx, mid_y)]
+                # Both sides are vertical but X differs → Z-bend.
+                # Place the bend so the approach segment (with the
+                # arrowhead) gets at least MIN_ARROW_SEGMENT and the
+                # exit segment gets at least ARROW_EXIT_CLEARANCE.
+                gap = abs(ty - sy)
+                d = 1 if ty > sy else -1
+                if gap >= 2 * MIN_ARROW_SEGMENT:
+                    # Plenty of room → symmetric midpoint
+                    bend_y = (sy + ty) / 2
+                else:
+                    # Tight gap → shift bend toward source so the
+                    # approach segment gets MIN_ARROW_SEGMENT.
+                    bend_y = ty - d * MIN_ARROW_SEGMENT
+                    # Clamp so exit segment ≥ ARROW_EXIT_CLEARANCE
+                    min_bend = sy + d * ARROW_EXIT_CLEARANCE
+                    if d > 0:
+                        bend_y = max(bend_y, min_bend)
+                    else:
+                        bend_y = min(bend_y, min_bend)
+                bend_y = round(bend_y / BASELINE_UNIT) * BASELINE_UNIT
+                waypoints = [(sx, bend_y), (tx, bend_y)]
             elif not vertical_src and not vertical_tgt and sy != ty:
                 # Both sides horizontal but Y differs → L-bend.
                 # Pick bend point that gives the longer final segment so
@@ -993,5 +1017,77 @@ def validate_grid(result: LayoutResult, step: int = BASELINE_UNIT) -> list[GridV
     # Canvas dimensions
     _check("Canvas", "width", result.width, -1)
     _check("Canvas", "height", result.height, -1)
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Arrow clearance validator
+# ---------------------------------------------------------------------------
+
+@dataclass
+class ArrowViolation:
+    """An arrow segment that is too short for clean arrowhead rendering."""
+    index: int                  # position in the primitive list
+    segment: str                # "last", "first", or "mid-N"
+    length: float               # actual segment length
+    minimum: float              # required minimum
+    start: tuple[float, float]
+    end: tuple[float, float]
+
+
+def validate_arrows(result: LayoutResult) -> list[ArrowViolation]:
+    """Check that every arrow has adequate clearance.
+
+    Rules enforced:
+    - Last segment (carries the arrowhead) must be ≥ MIN_ARROW_SEGMENT.
+    - First segment (exits the source) must be ≥ ARROW_EXIT_CLEARANCE.
+    - Interior segments must be ≥ ARROW_EXIT_CLEARANCE.
+
+    Returns a list of violations.  An empty list means all arrows are clean.
+    """
+    from diagram_shared import ARROW_HEAD_LENGTH
+
+    violations: list[ArrowViolation] = []
+    all_prims = list(result.background) + list(result.foreground)
+
+    for idx, p in enumerate(all_prims):
+        if not isinstance(p, ArrowPrimitive):
+            continue
+
+        pts = [p.start] + list(p.waypoints) + [p.end]
+        if len(pts) < 2:
+            continue
+
+        for i in range(len(pts) - 1):
+            seg_len = (
+                abs(pts[i + 1][0] - pts[i][0])
+                + abs(pts[i + 1][1] - pts[i][1])
+            )
+            # Skip zero-length collapsed segments (degenerate bends)
+            if seg_len < 0.5:
+                continue
+
+            if i == len(pts) - 2:
+                # Last segment — carries the arrowhead
+                if seg_len < MIN_ARROW_SEGMENT:
+                    violations.append(ArrowViolation(
+                        idx, "last", seg_len, MIN_ARROW_SEGMENT,
+                        pts[i], pts[i + 1],
+                    ))
+            elif i == 0:
+                # First segment — exit from source
+                if seg_len < ARROW_EXIT_CLEARANCE:
+                    violations.append(ArrowViolation(
+                        idx, "first", seg_len, ARROW_EXIT_CLEARANCE,
+                        pts[i], pts[i + 1],
+                    ))
+            else:
+                # Interior segment
+                if seg_len < ARROW_EXIT_CLEARANCE:
+                    violations.append(ArrowViolation(
+                        idx, f"mid-{i}", seg_len, ARROW_EXIT_CLEARANCE,
+                        pts[i], pts[i + 1],
+                    ))
 
     return violations

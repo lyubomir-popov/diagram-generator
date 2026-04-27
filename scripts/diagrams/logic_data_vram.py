@@ -62,7 +62,7 @@ logic_data_vram = Diagram(
             heading=_heading("AI inference"),
             cols=2,
             rows=3,
-            row_gap=16,
+            row_gap=24,  # arrows route between rows
             fill=Fill.WHITE,
             col=1, row=0,
             children=[
@@ -98,7 +98,7 @@ logic_data_vram = Diagram(
             heading=_heading("VRAM fragmentation"),
             cols=2,
             col_span=2,
-            col_gap=24,
+            col_gap=32,  # arrow routes between sub-panels
             fill=Fill.WHITE,
             col=0, row=2,
             children=[

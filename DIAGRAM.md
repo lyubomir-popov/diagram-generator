@@ -145,6 +145,10 @@ components:
     strokeWidth: 1px
     arrowHeadLength: 10.8408px
     arrowHeadHalfWidth: 2.9053px
+    arrowClearance: 12px
+    minArrowSegment: 24px
+    arrowExitClearance: 8px
+    arrowGap: 32px
   terminal-bar:
     height: 64px
     chromeHeight: 20px
@@ -378,6 +382,23 @@ Connectors are part of the language, not decoration.
 - Prefer straight or orthogonal routing.
 - Draw connectors behind the boxes they terminate into so the destination edge remains visually continuous.
 - Do not terminate arrows into floating helper text.
+
+### Arrow clearance
+
+Every arrow's **last segment** (the one carrying the arrowhead) must be at least `MIN_ARROW_SEGMENT` (`24px`) long. This guarantees a visible shaft at least as long as the arrowhead before the arrow reaches the target box. Without this clearance the arrowhead overlaps the destination box edge and the diagram looks broken.
+
+The **first segment** (exiting the source box) must be at least `ARROW_EXIT_CLEARANCE` (`8px`) so the shaft is visibly departing the source edge.
+
+| Token | Value | Purpose |
+|-------|-------|---------|
+| `ARROW_CLEARANCE` | `12px` | Minimum visible shaft on approach (box edge → arrowhead base) |
+| `MIN_ARROW_SEGMENT` | `24px` | Minimum last-segment length (`ARROW_CLEARANCE` + head) |
+| `ARROW_EXIT_CLEARANCE` | `8px` | Minimum first segment leaving the source |
+| `ARROW_GAP` | `32px` | Minimum gap between rows/columns where arrows route (`MIN_ARROW_SEGMENT` + `ARROW_EXIT_CLEARANCE`) |
+
+**Practical rule:** any `row_gap` or `col_gap` through which an arrow routes must be ≥ `ARROW_GAP` (`32px`). For panels that only have straight (same-column) arrows, `24px` is sufficient. For fan-out or Z-bend arrows (different source and target columns), use `32px`.
+
+The layout engine auto-routes Z-bends with the bend biased toward the source so the approach segment gets the full `MIN_ARROW_SEGMENT`. The `validate_arrows()` post-layout check catches any segment that is still too short.
 
 The primary question for connector quality is whether the routing still reads clearly if the user inspects the raw XML or moves the boxes in draw.io.
 

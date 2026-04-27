@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pathlib
 
-from diagram_layout import layout
+from diagram_layout import layout, validate_arrows, validate_grid
 from diagram_render_svg import write_svg
 from diagram_render_drawio import write_drawio
 
@@ -36,13 +36,28 @@ DIAGRAMS = [
 def main() -> None:
     SVG_DIR.mkdir(parents=True, exist_ok=True)
     DRAWIO_DIR.mkdir(parents=True, exist_ok=True)
+    total_arrow_violations = 0
     for slug, diagram in DIAGRAMS:
         result = layout(diagram)
         svg_path = SVG_DIR / f"{slug}-v2.svg"
         drawio_path = DRAWIO_DIR / f"{slug}-v2.drawio"
         write_svg(svg_path, result)
         write_drawio(drawio_path, result, name=diagram.title)
-        print(f"  {slug}: SVG + draw.io")
+
+        # Arrow clearance check
+        arrow_violations = validate_arrows(result)
+        if arrow_violations:
+            total_arrow_violations += len(arrow_violations)
+            print(f"  {slug}: SVG + draw.io  ⚠ {len(arrow_violations)} arrow violation(s)")
+            for v in arrow_violations:
+                print(f"    {v.segment}: {v.length:.1f}px < {v.minimum:.0f}px  "
+                      f"({v.start[0]:.0f},{v.start[1]:.0f})→({v.end[0]:.0f},{v.end[1]:.0f})")
+        else:
+            print(f"  {slug}: SVG + draw.io")
+
+    if total_arrow_violations:
+        print(f"\n  ⚠ {total_arrow_violations} total arrow clearance violation(s)")
+        print(f"    Increase row_gap/col_gap to ARROW_GAP (32) where arrows route.")
 
 
 if __name__ == "__main__":

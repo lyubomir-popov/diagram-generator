@@ -28,6 +28,7 @@ from diagram_model import (
     MatrixWidget,
     Panel,
 )
+from diagram_shared import ARROW_GAP
 
 WHITE = "#FFFFFF"
 BLACK = "#000000"
@@ -62,7 +63,7 @@ attention_qkv = Diagram(
             cols=2,
             col_width=240,
             col_gap=8,
-            row_gap=8,
+            row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
             frameless=True,
             uniform_height=False,
@@ -100,7 +101,7 @@ attention_qkv = Diagram(
             cols=4,
             col_width=192,
             col_gap=8,
-            row_gap=8,
+            row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
             frameless=True,
             uniform_height=False,
@@ -157,7 +158,7 @@ attention_qkv = Diagram(
             cols=4,
             col_width=192,
             col_gap=8,
-            row_gap=8,
+            row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
             frameless=True,
             uniform_height=False,
@@ -225,7 +226,7 @@ attention_qkv = Diagram(
             cols=3,
             col_width=192,
             col_gap=24,
-            row_gap=8,
+            row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
             frameless=True,
             uniform_height=False,

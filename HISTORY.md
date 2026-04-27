@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-27 – Arrow clearance system: tokens, auto-router, validator
+
+- **Arrow clearance tokens** added to `diagram_shared.py`: `ARROW_CLEARANCE` (12px), `MIN_ARROW_SEGMENT` (24px), `ARROW_EXIT_CLEARANCE` (8px), `ARROW_GAP` (32px). These define the minimum shaft visibility so arrows never overlap destination boxes.
+- **Auto-router fix:** Z-bend waypoint placement in `_resolve_arrows()` now biases the bend toward the source, keeping the approach segment ≥ `MIN_ARROW_SEGMENT`. Prevents the midpoint split that left only ~1px of visible shaft in tight gaps.
+- **Arrow validator:** `validate_arrows()` in `diagram_layout.py` checks every segment of every arrow post-layout. Wired into `build_v2.py` — violations print inline with build output.
+- **Diagram fixes:** attention-qkv panels `row_gap` 8→32 (ARROW_GAP), inference-snaps `row_gap` 24→32, logic-data-vram right panel `row_gap` 16→24 and VRAM `col_gap` 24→32, memory-wall `col_gap` 16→32. 17 violations → 1 (minor known edge case).
+- **Documentation:** "Arrow clearance" section added to DIAGRAM.md with token table and practical rules. Arrow non-negotiable added to copilot-instructions.md. Both build-validate and diagram-redraw skills updated.
+
 ### 2026-04-27 – v2 defect fixes: attention-qkv rewrite, wrapper alignment, MatrixWidget engine support
 
 - **MatrixWidget panel support:** `_layout_panel()` in `scripts/diagram_layout.py` now extracts MatrixWidget children alongside Box, Bar, Helper, Terminal, and Panel. Matrix tiles participate in grid sizing and are placed as `MatrixTile` primitives with bounds registered for arrow resolution.
