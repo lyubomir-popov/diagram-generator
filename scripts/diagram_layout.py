@@ -14,16 +14,20 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from diagram_model import (
+    Annotation,
     Arrow,
     ArrowDirection,
     Bar,
     BarSegment,
+    Border,
     Box,
     Component,
     Diagram,
     Fill,
     Helper,
+    IconCluster,
     IconComponent,
+    JaggedPanel,
     Legend,
     LegendEntry,
     Line,
@@ -270,12 +274,13 @@ def _layout_panel(
     col_width = panel.col_width or default_col_width
     col_gap = panel.col_gap if panel.col_gap is not None else default_col_gap
     row_gap = panel.row_gap if panel.row_gap is not None else default_row_gap
-    pad = 0 if panel.frameless else INSET
+    panel_border = panel.effective_border
+    pad = 0 if panel_border == Border.NONE else INSET
 
     # Separate children by type
     boxes = [c for c in panel.children if isinstance(c, Box)]
     bars = [c for c in panel.children if isinstance(c, Bar)]
-    all_helpers = [c for c in panel.children if isinstance(c, Helper)]
+    all_helpers = [c for c in panel.children if isinstance(c, (Helper, Annotation))]
     terminals = [c for c in panel.children if isinstance(c, Terminal)]
     sub_panels = [c for c in panel.children if isinstance(c, Panel)]
     matrices = [c for c in panel.children if isinstance(c, MatrixWidget)]
@@ -355,7 +360,7 @@ def _layout_panel(
             bx_w = bx.width or col_width
             bx_h = bx.height or row_heights[bx.row]
             bx_fill = bx.fill.value
-            bx_stroke = "none" if bx.borderless else "#000000"
+            bx_stroke = "none" if bx.effective_border == Border.NONE else "#000000"
 
             fg.append(Rect(bx_x, bx_y, bx_w, bx_h, fill=bx_fill, stroke=bx_stroke))
             fg.append(TextBlock(bx_x + INSET, bx_y + INSET,
@@ -508,9 +513,9 @@ def _layout_panel(
         ))
 
     # Panel frame (emitted last so we know final size, but insert at front for z-order)
-    if not panel.frameless:
+    if panel_border != Border.NONE:
         frame = Rect(x, y, panel_w, panel_h, fill=panel.fill.value,
-                     dashed=panel.dashed)
+                     dashed=(panel_border == Border.DASHED))
         fg.insert(0, frame)
 
     bounds = _Bounds(x, y, panel_w, panel_h, panel, children=child_bounds)
@@ -531,7 +536,7 @@ def _layout_box(
     has_icon = bx.icon is not None
     h = bx.height or tight_box_height(_lines_to_dicts(bx.label), has_icon=has_icon)
     fill = bx.fill.value
-    stroke = "none" if bx.borderless else "#000000"
+    stroke = "none" if bx.effective_border == Border.NONE else "#000000"
     prims: list[Primitive] = []
     prims.append(Rect(x, y, w, h, fill=fill, stroke=stroke))
     prims.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(bx.label)))
@@ -583,16 +588,23 @@ def _natural_size(
             bounds_map={},
         )
         return (b.width, b.height)
+    elif isinstance(comp, Annotation):
+        lines = _lines_to_dicts(comp.lines)
+        h = tight_box_height(lines, has_icon=False)
+        return (default_width, h)
     elif isinstance(comp, Helper):
         lines = _lines_to_dicts(comp.lines)
         n = len(lines)
         line_step = int(lines[0]["line_step"]) if lines else BODY_LINE_STEP
         hw = comp.width if hasattr(comp, "width") and comp.width else default_width
         return (hw, n * line_step)
-    elif isinstance(comp, MemoryWall):
+    elif isinstance(comp, (MemoryWall, JaggedPanel)):
         return (comp.width or BLOCK_WIDTH, comp.height or BOX_MIN_HEIGHT)
     elif isinstance(comp, MatrixWidget):
         return (MATRIX_SIZE, MATRIX_SIZE)
+    elif isinstance(comp, IconCluster):
+        n = len(comp.icons)
+        return (ICON_SIZE * n + COMPACT_GAP * max(0, n - 1), ICON_SIZE)
     elif isinstance(comp, RequestCluster):
         return (ICON_SIZE * 3 + COMPACT_GAP * 2, ICON_SIZE)
     elif isinstance(comp, IconComponent):
@@ -648,13 +660,26 @@ def _render_component(
         has_icon = comp.icon is not None
         bh = comp.height or tight_box_height(_lines_to_dicts(comp.label), has_icon=has_icon)
         fill = comp.fill.value
-        stroke = "none" if comp.borderless else "#000000"
+        stroke = "none" if comp.effective_border == Border.NONE else "#000000"
         fg.append(Rect(x, y, bw, bh, fill=fill, stroke=stroke))
         fg.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(comp.label)))
         if comp.icon:
             fg.append(Icon(x + bw - INSET - ICON_SIZE, y + INSET, comp.icon,
                            fill=comp.icon_fill or "#000000"))
         return _Bounds(x, y, bw, bh, comp), fg, bg
+
+    elif isinstance(comp, Annotation):
+        # Annotation: anchored text box that participates in grid sizing.
+        ann_w = int(w) if w > 0 else default_width
+        lines = _lines_to_dicts(comp.lines)
+        has_icon = False
+        ann_h = tight_box_height(lines, has_icon=has_icon)
+        ann_fill = comp.fill.value
+        ann_stroke = "none" if comp.border == Border.NONE else "#000000"
+        ann_dashed = comp.border == Border.DASHED
+        fg.append(Rect(x, y, ann_w, ann_h, fill=ann_fill, stroke=ann_stroke, dashed=ann_dashed))
+        fg.append(TextBlock(x + INSET, y + INSET, lines))
+        return _Bounds(x, y, ann_w, ann_h, comp), fg, bg
 
     elif isinstance(comp, Helper):
         lines = _lines_to_dicts(comp.lines)
@@ -664,7 +689,7 @@ def _render_component(
         fg.append(TextBlock(x, y, lines))
         return _Bounds(x, y, int(w), ch, comp), fg, bg
 
-    elif isinstance(comp, MemoryWall):
+    elif isinstance(comp, (MemoryWall, JaggedPanel)):
         mw = comp.width or BLOCK_WIDTH
         mh = comp.height or BOX_MIN_HEIGHT
         fg.append(JaggedRect(x, y, mw, mh))
@@ -674,6 +699,15 @@ def _render_component(
     elif isinstance(comp, MatrixWidget):
         fg.append(MatrixTile(x, y, comp.label))
         return _Bounds(x, y, MATRIX_SIZE, MATRIX_SIZE, comp), fg, bg
+
+    elif isinstance(comp, IconCluster):
+        n_icons = len(comp.icons)
+        cw = ICON_SIZE * n_icons + COMPACT_GAP * max(0, n_icons - 1)
+        ix = x
+        for icon_name in comp.icons:
+            fg.append(Icon(ix, y, icon_name, fill=comp.fill))
+            ix += ICON_SIZE + COMPACT_GAP
+        return _Bounds(x, y, cw, ICON_SIZE, comp), fg, bg
 
     elif isinstance(comp, RequestCluster):
         cw = ICON_SIZE * 3 + COMPACT_GAP * 2
