@@ -4,6 +4,13 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-27 – Grid visualisation in 3-way comparison
+
+- **GridInfo dataclass:** Added to `diagram_layout.py` — captures `col_xs`, `col_widths`, `row_ys`, `row_heights`, `col_gap`, `row_gap`, `outer_margin` from both GRID and VERTICAL arrangements.
+- **Grid overlay renderer:** `_layout_grid_overlay()` in `diagram_render_svg.py` draws dashed margin boundary (blue), column/row cell bands (light blue fills), gap fills (purple tint), and dimension labels, all in a `<g id="layout-grid" opacity="0.35">` group.
+- **Build flag:** `build_v2.py --grid` emits `*-v2-grid.svg` files alongside standard v2 outputs.
+- **4-panel compare:** `_compare_3way.py` updated from 3 to 4 columns (input → v1 → v2 → v2+grid) with graceful "not found" fallback when grid SVGs are missing.
+
 ### 2026-04-27 – Arrow clearance system: tokens, auto-router, validator
 
 - **Arrow clearance tokens** added to `diagram_shared.py`: `ARROW_CLEARANCE` (12px), `MIN_ARROW_SEGMENT` (24px), `ARROW_EXIT_CLEARANCE` (8px), `ARROW_GAP` (32px). These define the minimum shaft visibility so arrows never overlap destination boxes.

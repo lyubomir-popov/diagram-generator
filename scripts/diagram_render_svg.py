@@ -15,6 +15,7 @@ from diagram_layout import (
     ArrowPrimitive,
     CircleMarker,
     DashedLinePrimitive,
+    GridInfo,
     Icon,
     JaggedRect,
     LayoutResult,
@@ -253,15 +254,125 @@ def _grid_overlay(width: int, height: int, step: int = INSET) -> list[str]:
     return parts
 
 
+def _layout_grid_overlay(gi: GridInfo, width: int, height: int) -> list[str]:
+    """Emit the Müller-Brockmann layout grid: columns, rows, gaps, margins.
+
+    Draws:
+    - Blue column bands (semi-transparent fills for cells)
+    - Blue row bands
+    - Purple gap regions between cells
+    - Dashed margin boundary
+    - Column/row dimension labels
+    """
+    parts = ['  <g id="layout-grid" opacity="0.35">']
+
+    # Margin boundary (dashed)
+    m = gi.outer_margin
+    parts.append(
+        f'    <rect x="{m}" y="{m}" '
+        f'width="{width - 2 * m}" height="{height - 2 * m}" '
+        f'fill="none" stroke="#0066CC" stroke-width="1" '
+        f'stroke-dasharray="6 4" />'
+    )
+
+    # Column fills and labels
+    for i, (cx, cw) in enumerate(zip(gi.col_xs, gi.col_widths)):
+        # Column cell band (full height, light blue)
+        parts.append(
+            f'    <rect x="{cx}" y="{m}" '
+            f'width="{cw}" height="{height - 2 * m}" '
+            f'fill="#3399FF" opacity="0.08" />'
+        )
+        # Column left/right edges
+        parts.append(
+            f'    <line x1="{cx}" y1="{m}" x2="{cx}" y2="{height - m}" '
+            f'stroke="#0066CC" stroke-width="0.75" />'
+        )
+        parts.append(
+            f'    <line x1="{cx + cw}" y1="{m}" x2="{cx + cw}" y2="{height - m}" '
+            f'stroke="#0066CC" stroke-width="0.75" />'
+        )
+        # Column width label at top
+        parts.append(
+            f'    <text x="{cx + cw / 2}" y="{m - 4}" '
+            f'text-anchor="middle" font-size="9" fill="#0066CC" '
+            f'font-family="Ubuntu Sans, sans-serif">{cw}px</text>'
+        )
+
+    # Column gap fills (purple tint between columns)
+    for i in range(len(gi.col_xs) - 1):
+        gap_x = gi.col_xs[i] + gi.col_widths[i]
+        gap_w = gi.col_xs[i + 1] - gap_x
+        if gap_w > 0:
+            parts.append(
+                f'    <rect x="{gap_x}" y="{m}" '
+                f'width="{gap_w}" height="{height - 2 * m}" '
+                f'fill="#9933FF" opacity="0.06" />'
+            )
+            # Gap label
+            parts.append(
+                f'    <text x="{gap_x + gap_w / 2}" y="{m - 4}" '
+                f'text-anchor="middle" font-size="7" fill="#9933FF" '
+                f'font-family="Ubuntu Sans, sans-serif">{int(gap_w)}</text>'
+            )
+
+    # Row fills and labels
+    for i, (ry, rh) in enumerate(zip(gi.row_ys, gi.row_heights)):
+        # Row cell band (full width, light blue)
+        parts.append(
+            f'    <rect x="{m}" y="{ry}" '
+            f'width="{width - 2 * m}" height="{rh}" '
+            f'fill="#3399FF" opacity="0.08" />'
+        )
+        # Row top/bottom edges
+        parts.append(
+            f'    <line x1="{m}" y1="{ry}" x2="{width - m}" y2="{ry}" '
+            f'stroke="#0066CC" stroke-width="0.75" />'
+        )
+        parts.append(
+            f'    <line x1="{m}" y1="{ry + rh}" x2="{width - m}" y2="{ry + rh}" '
+            f'stroke="#0066CC" stroke-width="0.75" />'
+        )
+        # Row height label on right edge
+        parts.append(
+            f'    <text x="{width - m + 4}" y="{ry + rh / 2 + 3}" '
+            f'font-size="9" fill="#0066CC" '
+            f'font-family="Ubuntu Sans, sans-serif">{rh}px</text>'
+        )
+
+    # Row gap fills (purple tint between rows)
+    for i in range(len(gi.row_ys) - 1):
+        gap_y = gi.row_ys[i] + gi.row_heights[i]
+        gap_h = gi.row_ys[i + 1] - gap_y
+        if gap_h > 0:
+            parts.append(
+                f'    <rect x="{m}" y="{gap_y}" '
+                f'width="{width - 2 * m}" height="{gap_h}" '
+                f'fill="#9933FF" opacity="0.06" />'
+            )
+            # Gap label
+            parts.append(
+                f'    <text x="{width - m + 4}" y="{gap_y + gap_h / 2 + 3}" '
+                f'font-size="7" fill="#9933FF" '
+                f'font-family="Ubuntu Sans, sans-serif">{int(gap_h)}</text>'
+            )
+
+    parts.append('  </g>')
+    return parts
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
-def render_svg(result: LayoutResult, *, show_grid: bool = False) -> str:
+def render_svg(result: LayoutResult, *, show_grid: bool = False,
+               show_layout_grid: bool = False) -> str:
     """Render a LayoutResult to a complete SVG string.
 
     When *show_grid* is True, a faint 4px baseline grid overlay is drawn
     on top of the diagram (red lines at 8px rhythm, cyan at 4px steps).
+    When *show_layout_grid* is True, the Müller-Brockmann layout grid
+    (column/row boundaries, gap regions, dimension labels) is drawn.
     """
     parts = _svg_open(result.width, result.height)
     for prim in result.background:
@@ -272,6 +383,9 @@ def render_svg(result: LayoutResult, *, show_grid: bool = False) -> str:
         s = _render_primitive(prim)
         if s:
             parts.append(s)
+    if show_layout_grid and result.grid_info:
+        parts.extend(_layout_grid_overlay(
+            result.grid_info, result.width, result.height))
     if show_grid:
         parts.extend(_grid_overlay(result.width, result.height))
     parts.append("</svg>")
@@ -284,6 +398,9 @@ def write_svg(
     result: LayoutResult,
     *,
     show_grid: bool = False,
+    show_layout_grid: bool = False,
 ) -> None:
     """Render and write an SVG file."""
-    path.write_text(render_svg(result, show_grid=show_grid), encoding="utf-8")
+    path.write_text(render_svg(result, show_grid=show_grid,
+                               show_layout_grid=show_layout_grid),
+                    encoding="utf-8")

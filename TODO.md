@@ -122,6 +122,11 @@ python scripts/visual_compare.py \
   --output diagrams/3.compare/visual-diff/my-comparison.png
 ```
 
+### Grid visualisation in 3-way comparison
+
+- [x] Extend `_compare_3way.py` to show a grid-overlaid view: 4-panel layout (input → v1 → v2 → v2+grid). The grid panel renders the Müller-Brockmann layout grid (column/row boundaries, gaps, cell spans) on top of the v2 SVG so reviewers can see how boxes map to grid cells.
+- [x] Layout-level grid overlay: `GridInfo` dataclass captures column widths, row heights, gap regions; `_layout_grid_overlay()` in `diagram_render_svg.py` draws dashed margin boundary, column/row cell bands, gap fills with dimension labels; `build_v2.py --grid` emits `*-v2-grid.svg` files.
+
 ### Grid engine fixes (folded into Step 2)
 
 These gaps were discovered in the logic-data-vram audit and are now handled by the layout engine:
