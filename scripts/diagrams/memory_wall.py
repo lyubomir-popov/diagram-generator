@@ -15,7 +15,6 @@ from diagram_model import (
     Box,
     Diagram,
     Fill,
-    Helper,
     Line,
     MemoryWall,
     RequestCluster,
@@ -61,12 +60,13 @@ memory_wall = Diagram(
         # ── Row 2: Dashed separator ──
         Separator(col=0, row=2),
 
-        # ── Row 3: Missing layer + side annotation ──
+        # ── Row 3: Missing layer + side annotation (borderless box) ──
         Box(id="missing", label=[_body("Missing layer")], width=192, height=64,
             col=0, row=3),
-        Helper(
+        Box(
             id="missing_note",
-            lines=[_helper("No model-aware"), _helper("orchestration!")],
+            label=[_helper("No model-aware"), _helper("orchestration!")],
+            borderless=True,
             col=1, row=3,
         ),
 

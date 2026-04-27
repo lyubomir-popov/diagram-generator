@@ -61,6 +61,7 @@ class Box:
     icon_fill: str | None = None
     width: int | None = None           # override col_width
     height: int | None = None          # override computed height
+    borderless: bool = False           # no visible border (invisible box)
     # Grid position (col, row) and span for layout grid placement.
     col: int = 0
     row: int = 0

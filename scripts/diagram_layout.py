@@ -355,8 +355,9 @@ def _layout_panel(
             bx_w = bx.width or col_width
             bx_h = bx.height or row_heights[bx.row]
             bx_fill = bx.fill.value
+            bx_stroke = "none" if bx.borderless else "#000000"
 
-            fg.append(Rect(bx_x, bx_y, bx_w, bx_h, fill=bx_fill))
+            fg.append(Rect(bx_x, bx_y, bx_w, bx_h, fill=bx_fill, stroke=bx_stroke))
             fg.append(TextBlock(bx_x + INSET, bx_y + INSET,
                                 _lines_to_dicts(bx.label)))
             if bx.icon:
@@ -530,8 +531,9 @@ def _layout_box(
     has_icon = bx.icon is not None
     h = bx.height or tight_box_height(_lines_to_dicts(bx.label), has_icon=has_icon)
     fill = bx.fill.value
+    stroke = "none" if bx.borderless else "#000000"
     prims: list[Primitive] = []
-    prims.append(Rect(x, y, w, h, fill=fill))
+    prims.append(Rect(x, y, w, h, fill=fill, stroke=stroke))
     prims.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(bx.label)))
     if bx.icon:
         prims.append(Icon(x + w - INSET - ICON_SIZE, y + INSET, bx.icon,
@@ -646,7 +648,8 @@ def _render_component(
         has_icon = comp.icon is not None
         bh = comp.height or tight_box_height(_lines_to_dicts(comp.label), has_icon=has_icon)
         fill = comp.fill.value
-        fg.append(Rect(x, y, bw, bh, fill=fill))
+        stroke = "none" if comp.borderless else "#000000"
+        fg.append(Rect(x, y, bw, bh, fill=fill, stroke=stroke))
         fg.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(comp.label)))
         if comp.icon:
             fg.append(Icon(x + bw - INSET - ICON_SIZE, y + INSET, comp.icon,
