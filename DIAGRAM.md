@@ -390,7 +390,7 @@ Connectors are part of the language, not decoration.
 - Connectors should run from midpoint to midpoint, edge to edge.
 - Prefer straight or orthogonal routing.
 - Draw connectors behind the boxes they terminate into so the destination edge remains visually continuous.
-- Do not terminate arrows into floating helper text.
+- Do not terminate arrows into floating helper text. When an annotation needs an arrow connection, use a borderless `Box` (`borderless=True`) instead of a `Helper` so the box participates in grid sizing and provides proper edge anchors.
 
 ### Arrow clearance
 
@@ -420,7 +420,8 @@ The reusable component set is intentionally small. Every component follows the i
 - **Accent box**: `#F3F3F3` fill, otherwise identical to default.
 - **Emphasis box**: black fill, white text, used only when a true highlight is needed.
 - **Panel heading**: bold (`600–700`) label, applied only to structural containers — not to individual content boxes. Panel headings are just boxes whose text happens to be bold.
-- **Helper note**: unboxed `16px` regular text in `#666666`. Hierarchy expressed only by color, not by size.
+- **Helper note**: unboxed `16px` regular text in `#666666`. Hierarchy expressed only by color, not by size. Helpers are free-standing text — they do not participate in grid row-height equalization and cannot anchor arrows.
+- **Borderless box**: a `Box` with `borderless=True` — renders text with `INSET` padding but no visible stroke. Participates in grid sizing, equal-height equalization, and arrow anchoring like any other box. Use instead of `Helper` when the annotation needs an arrow connection or must match a peer box's height.
 - **Terminal command bar**: grey body with `20px` chrome strip, separator line, and mono text. Internal spacing must follow the same `8px` inset rules as every other box: text starts at `INSET` from the left edge and `chromeHeight + INSET` from the top edge.
 - **Matrix widget**: explicit top label band above the grid.
 - **Memory wall panel**: jagged semantic exception.
