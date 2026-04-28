@@ -250,6 +250,36 @@ A cold-start agent should never eyeball a position or tweak a number to "look ri
 
 Containers are the sum of their contents. Size from the inside out, never from the outside in.
 
+### Sizing constraints
+
+The Diagram model supports optional sizing constraints that make output dimensions predictable and uniform across a batch of diagrams.
+
+| Field | Effect |
+|-------|--------|
+| `canvas_width` | Fixed output width in pixels. Column widths are derived from: `col_width = (canvas_width − 2 × margin − (cols − 1) × gutter) / cols`. Content-driven column growth is suppressed. |
+| `canvas_height` | Fixed output height in pixels. Optional — when omitted, height is content-driven. |
+| `uniform_rows` | When `True`, all grid rows are equalized to the tallest row's height. Useful for creating a regular Müller-Brockmann grid where all modules are the same size. |
+| `col_width` | Explicit column width. When both `canvas_width` and `col_width` are set, `canvas_width` takes precedence. |
+
+**When to use `canvas_width`:** when multiple diagrams must share the same output width, or when you want a true proportional grid with equal columns.
+
+**When to use `uniform_rows`:** when rows should form a regular grid of equal-height modules, regardless of content. Note that content must still fit — uniform rows enlarge smaller rows but never shrink larger ones.
+
+### Auto-fill
+
+Sub-panels inside a parent panel no longer need manual `col_width` derivation. The layout engine auto-derives child widths from the parent's available content span:
+
+```
+parent_content  = parent_cell − 2 × INSET
+child_count     = N
+child_outer     = (parent_content − (N − 1) × inner_gap) / N
+child_col_width = child_outer − 2 × child_INSET
+```
+
+This eliminates the nesting tax calculations that previously had to be done by hand. If a sub-panel has an explicit `col_width`, it is respected; otherwise the engine auto-fills.
+
+Auto-fill triggers when the parent cell is wider than `BLOCK_WIDTH` (192px) — i.e. when the grid has been explicitly sized via `col_width` or `canvas_width`. Panels in default-sized cells use `BLOCK_WIDTH` to avoid inflating diagrams that rely on content-driven width.
+
 ### Grid participants vs wrappers
 
 Not every visible rectangle is a grid participant. Distinguish two roles:
@@ -307,7 +337,7 @@ The sub-panels are 8px narrower than the top panels. The left sub-panel starts 8
 2. Subtract `2 × INSET` to get the content span.
 3. Divide the content span among child columns and gaps.
 4. Size children inside-out for height, but use the derived column width for width.
-5. **Do not hardcode `col_width` on sub-panels independently.** Derive it from the wrapper's content span. Hardcoded values drift when the outer grid changes.
+5. **Do not hardcode `col_width` on sub-panels independently.** The layout engine auto-derives sub-panel widths from the wrapper's content span when `canvas_width` or an explicit `col_width` is set on the diagram. Manual derivation is only needed if auto-fill is disabled or for documentation.
 6. Verify the wrapper's computed outer width equals the peer boxes' width.
 7. Accept the nesting INSET offset, or use `border=Border.NONE` to eliminate it.
 

@@ -4,6 +4,16 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-28 – Canvas constraints, uniform rows, and auto-fill
+
+- **Diagram model:** added `canvas_width`, `canvas_height`, `uniform_rows` fields to `Diagram`.
+- **Canvas width derivation:** when `canvas_width` is set, column widths are auto-derived as `(canvas_width − 2 × margin − (cols − 1) × gutter) / cols`, locked after the natural-size pass.
+- **Uniform rows:** when `uniform_rows=True`, all grid rows are equalized to the tallest row's height.
+- **Auto-fill for panels:** panels and sub-panels auto-derive `col_width` from their parent cell's available content span, eliminating manual nesting tax calculations. Auto-fill triggers only when cell width > BLOCK_WIDTH (explicitly sized grids).
+- **Cleaned diagram definitions:** removed all explicit `col_width` from `aws_hld.py` sub-panels and `logic_data_vram.py` sub-panels.
+- **DIAGRAM.md:** added "Sizing constraints" and "Auto-fill" sections, updated wrapper checklist.
+- **All 10 diagrams build clean**, only 1 pre-existing arrow violation.
+
 ### 2026-04-28 – Revert wrapper outdent back to nesting tax
 
 - **Removed `outdent` field** from `Panel` in `diagram_model.py`.
