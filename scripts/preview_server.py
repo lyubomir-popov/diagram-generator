@@ -218,12 +218,21 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 .stage svg g.dg-selected > rect:first-of-type {{ outline: 2px solid #E95420; outline-offset: -1px; }}
 .stage svg g.dg-hover > rect:first-of-type {{ outline: 1px dashed #6cc; outline-offset: -1px; }}
 .dg-handle {{ fill: #E95420; stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }}
+.dg-handle.dg-handle-tl {{ cursor: nw-resize; }}
+.dg-handle.dg-handle-t {{ cursor: ns-resize; }}
+.dg-handle.dg-handle-tr {{ cursor: ne-resize; }}
 .dg-handle.dg-handle-r {{ cursor: ew-resize; }}
-.dg-handle.dg-handle-b {{ cursor: ns-resize; }}
 .dg-handle.dg-handle-br {{ cursor: nwse-resize; }}
+.dg-handle.dg-handle-b {{ cursor: ns-resize; }}
+.dg-handle.dg-handle-bl {{ cursor: nesw-resize; }}
+.dg-handle.dg-handle-l {{ cursor: ew-resize; }}
 .btn {{ font-size: 11px; padding: 3px 8px; border: 1px solid #555;
        background: #2a2a2a; color: #e0e0e0; border-radius: 3px; cursor: pointer; }}
 .btn:hover {{ background: #3a3a3a; }}
+.btn:disabled {{ opacity: 0.4; cursor: not-allowed; }}
+.btn:disabled:hover {{ background: #2a2a2a; }}
+.btn-save.dirty {{ background: #E95420; border-color: #E95420; color: #fff; }}
+.btn-save.dirty:hover {{ background: #d44a1a; }}
 </style>
 </head>
 <body>
@@ -239,7 +248,10 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
   <div class="tree" id="tree"></div>
   <h2>Overrides</h2>
   <div id="override-summary" style="font-size:11px;color:#666">No overrides.</div>
-  <div style="margin-top:4px;display:flex;gap:4px">
+  <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
+    <button class="btn btn-save" id="btn-save" disabled>Save</button>
+    <button class="btn" id="btn-undo" disabled>Undo</button>
+    <button class="btn" id="btn-redo" disabled>Redo</button>
     <button class="btn" id="btn-clear-all">Clear all</button>
     <button class="btn" id="btn-export">Export</button>
   </div>
@@ -257,7 +269,14 @@ let isStale = false;
 let selectedId = null;
 let dragState = null;
 let resizeState = null;
+let isDirty = false;
 const HANDLE_SIZE = 8;
+
+// ---- Undo/Redo stack ----
+let undoStack = [];
+let redoStack = [];
+let lastSavedState = null;
+const MAX_UNDO_STACK_SIZE = 50;
 
 async function loadSVG() {{
   const suffix = GRID ? "-v2-grid.svg" : "-v2.svg";
@@ -289,6 +308,91 @@ async function loadOverrides() {{
     }}
   }} catch (e) {{ /* ignore */ }}
   updateOverrideSummary();
+  // Initialize undo stack and saved state
+  undoStack = [];
+  redoStack = [];
+  lastSavedState = JSON.stringify(overrides);
+  updateUndoRedoButtons();
+}}
+
+// ---- Undo/Redo functions ----
+
+function recordSnapshot() {{
+  // Record current state to undo stack
+  const currentState = JSON.stringify(overrides);
+  if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== currentState) {{
+    undoStack.push(currentState);
+    // Cap stack size
+    if (undoStack.length > MAX_UNDO_STACK_SIZE) {{
+      undoStack.shift();
+    }}
+    // Clear redo stack when new action is performed
+    redoStack = [];
+    updateUndoRedoButtons();
+  }}
+}}
+
+function canUndo() {{
+  return undoStack.length > 0;
+}}
+
+function canRedo() {{
+  return redoStack.length > 0;
+}}
+
+function performUndo() {{
+  if (!canUndo()) return;
+  
+  // Save current state to redo stack before undoing
+  const currentState = JSON.stringify(overrides);
+  redoStack.push(currentState);
+  
+  // Restore previous state
+  const previousState = undoStack.pop();
+  overrides = JSON.parse(previousState);
+  
+  // Update UI
+  applyAllOverrides();
+  if (selectedId) updateInspector(selectedId);
+  updateOverrideSummary();
+  refreshTreeColors();
+  
+  // Update dirty flag
+  const currentStateStr = JSON.stringify(overrides);
+  setDirty(currentStateStr !== lastSavedState);
+  
+  updateUndoRedoButtons();
+}}
+
+function performRedo() {{
+  if (!canRedo()) return;
+  
+  // Save current state to undo stack before redoing
+  const currentState = JSON.stringify(overrides);
+  undoStack.push(currentState);
+  
+  // Restore next state
+  const nextState = redoStack.pop();
+  overrides = JSON.parse(nextState);
+  
+  // Update UI
+  applyAllOverrides();
+  if (selectedId) updateInspector(selectedId);
+  updateOverrideSummary();
+  refreshTreeColors();
+  
+  // Update dirty flag
+  const currentStateStr = JSON.stringify(overrides);
+  setDirty(currentStateStr !== lastSavedState);
+  
+  updateUndoRedoButtons();
+}}
+
+function updateUndoRedoButtons() {{
+  const undoBtn = document.getElementById("btn-undo");
+  const redoBtn = document.getElementById("btn-redo");
+  if (undoBtn) undoBtn.disabled = !canUndo();
+  if (redoBtn) redoBtn.disabled = !canRedo();
 }}
 
 // ---- Override application ----
@@ -518,8 +622,9 @@ function onDragUp() {{
   document.removeEventListener("mouseup", onDragUp);
   if (dragState && dragState.hasMoved) {{
     cleanOverride(dragState.cid);
-    saveOverrides();
     selectComponent(dragState.cid);
+    // Record snapshot after drag operation
+    recordSnapshot();
   }} else if (dragState) {{
     selectComponent(dragState.cid);
   }}
@@ -565,12 +670,22 @@ function showResizeHandles(cid) {{
     r.setAttribute("data-resize-axis", axis);
     svg.appendChild(r);
   }}
+  // Top-left corner
+  mkHandle(minX, minY, "dg-handle-tl", "tl");
+  // Top-edge midpoint
+  mkHandle((minX + maxX) / 2, minY, "dg-handle-t", "t");
+  // Top-right corner
+  mkHandle(maxX, minY, "dg-handle-tr", "tr");
   // Right-edge midpoint
   mkHandle(maxX, (minY + maxY) / 2, "dg-handle-r", "r");
-  // Bottom-edge midpoint
-  mkHandle((minX + maxX) / 2, maxY, "dg-handle-b", "b");
   // Bottom-right corner
   mkHandle(maxX, maxY, "dg-handle-br", "br");
+  // Bottom-edge midpoint
+  mkHandle((minX + maxX) / 2, maxY, "dg-handle-b", "b");
+  // Bottom-left corner
+  mkHandle(minX, maxY, "dg-handle-bl", "bl");
+  // Left-edge midpoint
+  mkHandle(minX, (minY + maxY) / 2, "dg-handle-l", "l");
 }}
 
 function removeResizeHandles() {{
@@ -586,6 +701,7 @@ function startResize(e) {{
   resizeState = {{
     cid, axis,
     startX: e.clientX, startY: e.clientY,
+    origDx: own.dx, origDy: own.dy,
     origDw: own.dw, origDh: own.dh,
     hasMoved: false,
   }};
@@ -601,15 +717,35 @@ function onResizeMove(e) {{
   const dy = e.clientY - resizeState.startY;
   if (Math.abs(dx) > 2 || Math.abs(dy) > 2) resizeState.hasMoved = true;
   if (!resizeState.hasMoved) return;
+  let newDx = resizeState.origDx;
+  let newDy = resizeState.origDy;
   let newDw = resizeState.origDw;
   let newDh = resizeState.origDh;
-  if (resizeState.axis === "r" || resizeState.axis === "br") {{
+  
+  const axis = resizeState.axis;
+  // Handle horizontal resizing
+  if (axis === "l" || axis === "tl" || axis === "bl") {{
+    // Left side: move left edge, right edge stays anchored
+    const delta = Math.round(dx / 4) * 4;
+    newDx = resizeState.origDx - delta;
+    newDw = resizeState.origDw + delta;
+  }} else if (axis === "r" || axis === "tr" || axis === "br") {{
+    // Right side: left edge stays anchored, grow rightward
     newDw = Math.round((resizeState.origDw + dx) / 4) * 4;
   }}
-  if (resizeState.axis === "b" || resizeState.axis === "br") {{
+  
+  // Handle vertical resizing
+  if (axis === "t" || axis === "tl" || axis === "tr") {{
+    // Top side: move top edge, bottom edge stays anchored
+    const delta = Math.round(dy / 4) * 4;
+    newDy = resizeState.origDy - delta;
+    newDh = resizeState.origDh + delta;
+  }} else if (axis === "b" || axis === "bl" || axis === "br") {{
+    // Bottom side: top edge stays anchored, grow downward
     newDh = Math.round((resizeState.origDh + dy) / 4) * 4;
   }}
-  setOverride(resizeState.cid, {{ dw: newDw, dh: newDh }});
+  
+  setOverride(resizeState.cid, {{ dx: newDx, dy: newDy, dw: newDw, dh: newDh }});
   applyAllOverrides();
   if (selectedId === resizeState.cid) updateInspector(resizeState.cid);
 }}
@@ -619,8 +755,9 @@ function onResizeUp() {{
   document.removeEventListener("mouseup", onResizeUp);
   if (resizeState && resizeState.hasMoved) {{
     cleanOverride(resizeState.cid);
-    saveOverrides();
     selectComponent(resizeState.cid);
+    // Record snapshot after resize operation
+    recordSnapshot();
   }}
   resizeState = null;
 }}
@@ -630,6 +767,7 @@ function onResizeUp() {{
 function setOverride(cid, partial) {{
   const prev = overrides[cid] || {{}};
   overrides[cid] = {{ dx: prev.dx || 0, dy: prev.dy || 0, dw: prev.dw || 0, dh: prev.dh || 0, ...partial }};
+  setDirty(true);
 }}
 
 function cleanOverride(cid) {{
@@ -716,13 +854,18 @@ async function saveOverrides() {{
     headers: {{ "Content-Type": "application/json" }},
     body: JSON.stringify({{ format_version: 1, definition_hash: definitionHash, overrides }}),
   }});
+  setDirty(false);
+  // Update saved state for dirty flag comparison
+  lastSavedState = JSON.stringify(overrides);
   updateOverrideSummary();
   refreshTreeColors();
 }}
 
 function clearOverride(cid) {{
+  // Record snapshot before clearing override
+  recordSnapshot();
   delete overrides[cid];
-  saveOverrides();
+  setDirty(true);
   applyAllOverrides();
   if (selectedId === cid) updateInspector(cid);
 }}
@@ -758,13 +901,59 @@ document.getElementById("btn-export").addEventListener("click", () => {{
   navigator.clipboard.writeText(lines.join("\\n")).then(() => alert("Copied to clipboard."));
 }});
 
+function setDirty(dirty) {{
+  isDirty = dirty;
+  const saveBtn = document.getElementById("btn-save");
+  saveBtn.disabled = !dirty;
+  if (dirty) {{
+    saveBtn.classList.add("dirty");
+  }} else {{
+    saveBtn.classList.remove("dirty");
+  }}
+}}
+
+document.getElementById("btn-save").addEventListener("click", () => {{
+  if (!isDirty) return;
+  saveOverrides();
+}});
+
 document.getElementById("btn-clear-all").addEventListener("click", () => {{
   if (Object.keys(overrides).length === 0) return;
   if (!confirm("Clear all overrides for " + SLUG + "?")) return;
+  // Record snapshot before clearing all overrides
+  recordSnapshot();
   overrides = {{}};
-  saveOverrides();
+  setDirty(true);
   applyAllOverrides();
   if (selectedId) updateInspector(selectedId);
+}});
+
+// Keyboard shortcuts: Ctrl+S to save, Ctrl+Z to undo, Ctrl+Shift+Z/Ctrl+Y to redo
+document.addEventListener("keydown", (e) => {{
+  if (e.ctrlKey && e.key === "s") {{
+    e.preventDefault();
+    if (isDirty) {{
+      saveOverrides();
+    }}
+  }} else if (e.ctrlKey && e.key === "z" && !e.shiftKey) {{
+    e.preventDefault();
+    performUndo();
+  }} else if ((e.ctrlKey && e.shiftKey && e.key === "Z") || (e.ctrlKey && e.key === "y")) {{
+    e.preventDefault();
+    performRedo();
+  }}
+}});
+
+// Undo/Redo button event listeners
+document.getElementById("btn-undo").addEventListener("click", performUndo);
+document.getElementById("btn-redo").addEventListener("click", performRedo);
+
+// Warn before leaving with unsaved changes
+window.addEventListener("beforeunload", (e) => {{
+  if (isDirty) {{
+    e.preventDefault();
+    return "You have unsaved changes. Are you sure you want to leave?";
+  }}
 }});
 
 // ---- SSE ----

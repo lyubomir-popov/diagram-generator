@@ -25,7 +25,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 7. Orange is reserved for arrows and arrowheads; boxes do not get orange fills.
 8. Geometry stays tight and reference-scaled; do not casually upscale diagrams.
 9. Use local icons only, and omit the icon entirely when no suitable icon exists in `assets/icons/`.
-10. The current canonical output exemplar is `diagrams/2.output/svg/memory-wall-onbrand.svg`; inspect it before treating any other output as precedent.
+10. The current canonical output exemplar is `diagrams/2.output/svg/memory-wall-onbrand.svg` (generated locally by `build_v2.py`); inspect it before treating any other output as precedent.
 11. Canonical project state lives only in `STATUS.md`, `TODO.md`, `ROADMAP.md`, `HISTORY.md`, `INBOX.md`, `AGENT-INBOX.md`, and `docs/specs.md`.
 
 ## Architecture
@@ -66,9 +66,9 @@ SVG element audit (v1 vs v2, April 2026). Use `python scripts/_compare_3way.py` 
 | Diagram | Status | Orange | Texts | Details |
 |---|---|---|---|---|
 | attention-qkv | OK | 30→50 | 55=55 | Matrix tiles + fan-out arrows now rendering. v2 has more orange segments due to individual Z-bend arrows vs v1 shared trunks; visual coverage is equivalent. Frameless panels, correct box heights, white text on black boxes. |
-| gpu-waiting-scheduler | MINOR | 4→3 | 6=6 | 1 orange element short (minor arrowhead rendering). |
+| gpu-waiting-scheduler | OK | 4→4 | 6=6 | Fixed: added explicit waypoints to match v1 orthogonal path. |
 | inference-snaps | OK | 8→12 | 17=17 | Wrapper alignment fixed (dashed frame and inner pad col_width derived from peer box width). |
-| logic-data-vram | MINOR | 8→9 | 27→25 | Missing "GPU" label text (appears under both sub-panels in v1). |
+| logic-data-vram | OK | 8→9 | 27=27 | Fixed: added missing "GPU" annotation labels under both sub-panels. |
 | memory-wall | OK | 12=12 | 11=11 | All elements match. Dashed separator present. |
 | request-to-hardware-stack | OK | 10=10 | 27=27 | All elements match. |
 | rise-of-inference-economy | OK | 8=8 | 19=19 | All elements match. |
@@ -156,11 +156,11 @@ Layers 1–4 are done. Layer 5 (rollout) and the typography weight audit are sup
 
 Component IDs, drag-to-move, resize handles, and override persistence are working. The following issues were identified during user testing:
 
-- [ ] **Click targeting selects parent instead of child.** Clicking a nested component (e.g. a box inside a panel) selects the parent panel because `e.target.closest("[data-component-id]")` walks up and hits the outermost group first. Fix: walk up to find the *innermost* (deepest-nested) `data-component-id` group, not the outermost.
-- [ ] **Cannot select nested items.** Related to the above – child components inside panels are unreachable via click. The tree sidebar works but direct SVG click should prefer the deepest match.
-- [ ] **No undo.** Moving or resizing a component is immediately applied with no way to revert. Add Ctrl+Z / Ctrl+Shift+Z undo/redo stack for override changes. This is crucial for interactive drafting.
-- [ ] **Resize only works bottom-right.** Handles only grow width rightward and height downward. To make a component wider to the left, the user must reposition then resize – a 2-step operation. Add top-left, top, and left resize handles that shift position (dx/dy) while adjusting size (dw/dh) so the opposite edge stays anchored.
-- [ ] **Explicit save button.** Currently every drag auto-saves to the override JSON. Add a manual "Save" button and only persist on explicit save, so accidental drags don't pollute the override file.
+- [x] **Click targeting selects parent instead of child.** Fixed: uses `elementsFromPoint()` to find deepest nested component at click coordinates.
+- [x] **Cannot select nested items.** Fixed: same `elementsFromPoint()` approach applied to both click and hover handlers.
+- [x] **No undo.** Fixed: full undo/redo stack (50 entries), Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y, toolbar buttons.
+- [x] **Resize in all directions.** Fixed: 8 resize handles (all edges + corners), top/left handles adjust position to keep opposite edge anchored.
+- [x] **Explicit save button.** Fixed: dirty flag, Save button (turns orange when dirty), Ctrl+S, beforeunload warning.
 
 ### Previously active
 
@@ -179,4 +179,4 @@ Component IDs, drag-to-move, resize handles, and override persistence are workin
 - [ ] Make the repo PM-shareable by tracking a curated exemplar pack of at least `3` to `5` real before/after pairs plus their compare assets.
 - [ ] Track the governing visual references currently excluded by gitignore: `diagrams/0.reference/_BRND-3284.drawio.svg`, `diagrams/0.reference/onbrand-reference.png`, and at least one canonical output exemplar beyond the workflow explainer.
 - [ ] New component: stacked icon+text block (icon above label, both grid-aligned) to avoid keyline breaks from side-by-side icon placement pushing text out of alignment.
-- [ ] Reconcile `README.md`, `STATUS.md`, `docs/specs.md`, and `.github/copilot-instructions.md` with the actually tracked corpus so cold-start instructions do not point at ignored files.
+- [x] Reconcile `README.md`, `STATUS.md`, `docs/specs.md`, and `.github/copilot-instructions.md` with the actually tracked corpus so cold-start instructions do not point at ignored files.

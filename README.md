@@ -138,6 +138,8 @@ Update the comparison pages so reviewers can see before/after:
 
 ### Input/output structure
 
+**Note:** `diagrams/1.input/`, `diagrams/2.output/`, and `diagrams/3.compare/` are gitignored. Run `python scripts/build_v2.py` to generate outputs locally. Reference assets like `_BRND-3284.drawio.svg` are team-internal and excluded from the public repo.
+
 Input:
 
 - rough sketches or screenshot references in [`diagrams/1.input/`](diagrams/1.input)
@@ -160,7 +162,7 @@ Build order:
 - Starter block: [`sample.svg`](diagrams/0.reference/sample.svg)
 - Larger visual preview: [`sample.png`](diagrams/0.reference/sample.png)
 - Reusable SVG starter: [`onbrand-svg-starter.svg`](diagrams/0.reference/onbrand-svg-starter.svg)
-- Canonical exemplar: [`memory-wall-onbrand.svg`](diagrams/2.output/svg/memory-wall-onbrand.svg)
+- Canonical exemplar: [`memory-wall-onbrand.svg`](diagrams/2.output/svg/memory-wall-onbrand.svg) (generated locally)
 - Canonical draw.io exporter: [`export_drawio_batch.py`](scripts/export_drawio_batch.py)
 - Shared primitives module: [`diagram_shared.py`](scripts/diagram_shared.py)
 

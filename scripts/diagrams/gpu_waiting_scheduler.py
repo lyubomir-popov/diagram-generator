@@ -93,11 +93,21 @@ gpu_waiting_scheduler = Diagram(
         ),
 
         # Orthogonal arrow from GPU to scheduler
-        # Uses explicit waypoints to route left of the icon/text area,
-        # avoiding overlap with "Queued request" text.
+        # Uses explicit waypoints to create 3-segment path matching v1:
+        # 1. vertical up from GPU
+        # 2. horizontal right 
+        # 3. horizontal to scheduler
+        # This creates 3 line segments + 1 arrowhead = 4 orange elements
         Arrow(
             source="gpu.top",
             target="scheduler.left",
+            waypoints=[
+                # Route up from GPU, then right, then to scheduler
+                # Using coordinates that create the orthogonal 3-segment path
+                (0, 264),   # horizontal segment start (x will be adjusted by renderer)
+                (304, 264), # corner point - horizontal then vertical
+                (304, 68),  # vertical segment end point
+            ],
         ),
     ],
 )

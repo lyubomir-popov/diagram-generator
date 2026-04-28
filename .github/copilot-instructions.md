@@ -191,6 +191,10 @@ When work in this repo creates a dependency or follow-up in another repo:
 
 ## Non-negotiable diagram rules
 
+<!--
+Several references below point to locally generated outputs under `diagrams/2.output/` or team-internal reference assets. These are gitignored; run `python scripts/build_v2.py` to create the output batch.
+-->
+
 - Prefer hand-authored, editable SVG. Do not generate new Illustrator-style base64 image payloads for final outputs.
 - Use `assets/UbuntuSans[wdth,wght].ttf` from this repo as the source font, but final deliverable SVGs should reference the family by name only, typically `font-family: 'Ubuntu Sans', sans-serif`, rather than a file-path `@font-face`.
 - Final deliverable SVGs must be Illustrator-safe: no `<symbol>`, no `<use>`, no external `<image href="...">`, and no marker refs such as `marker-start="url(#...)"`.

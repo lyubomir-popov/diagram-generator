@@ -149,11 +149,17 @@ logic_data_vram = Diagram(
 
         # ── Row 3: annotation text below VRAM ──
         Annotation(
-            lines=[_helper("Fragmented allocations leave gaps.")],
+            lines=[
+                _helper("Fragmented allocations leave gaps."),
+                _helper("GPU"),
+            ],
             col=0, row=3,
         ),
         Annotation(
-            lines=[_helper("860 B free")],
+            lines=[
+                _helper("860 B free"),
+                _helper("GPU"),
+            ],
             col=1, row=3,
         ),
     ],

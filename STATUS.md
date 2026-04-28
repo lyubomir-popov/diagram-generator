@@ -20,6 +20,8 @@ Critical rules:
 
 ## Current state
 
+Several paths below refer to locally generated or team-internal assets that are gitignored. Run the build to create them.
+
 There are now **two diagram generation pipelines**. On a cold start, ask the user which pipeline to work on.
 
 ### Pipeline 1: imperative (stable)

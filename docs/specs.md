@@ -13,6 +13,8 @@ Use this file to answer two questions quickly:
 
 ## Source docs and reference assets
 
+Rows marked ⚠ reference assets excluded by `.gitignore`. Run the build or obtain them from the team.
+
 | Source | Path | Role |
 |--------|------|------|
 | Workflow rules | `.github/copilot-instructions.md` | Canonical workflow and diagram-rule source for this repo |
@@ -23,9 +25,9 @@ Use this file to answer two questions quickly:
 | Visual preview of starter block | `diagrams/0.reference/sample.png` | Clearer `3x` raster preview of the same canonical block |
 | Reusable style copy source | `diagrams/0.reference/onbrand-svg-starter.svg` | Canonical inset rhythm, box proportions, and literal arrow geometry |
 | Tracked draw.io library | `assets/drawio/diagram-generator-primitives.mxlibrary` | Repo-owned reusable library for canonical draw.io primitives |
-| Secondary layout reference | `diagrams/0.reference/_BRND-3284.drawio.svg` | Connector and broader layout reference |
-| Broader brand-language reference | `diagrams/0.reference/onbrand-reference.png` | Higher-level visual direction reference |
-| Current canonical implementation | `diagrams/2.output/svg/memory-wall-onbrand.svg` | Palette, icon placement, side-icon cluster, and scale checkpoint |
+| Secondary layout reference ⚠ | `diagrams/0.reference/_BRND-3284.drawio.svg` | Connector and broader layout reference |
+| Broader brand-language reference ⚠ | `diagrams/0.reference/onbrand-reference.png` | Higher-level visual direction reference |
+| Current canonical implementation ⚠ | `diagrams/2.output/svg/memory-wall-onbrand.svg` | Palette, icon placement, side-icon cluster, and scale checkpoint |
 
 ## External tool references
 
