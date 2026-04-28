@@ -173,8 +173,8 @@ Component IDs, drag-to-move, resize handles, and override persistence are workin
 - [x] **Editable grid controls.** Sidebar inputs for columns, rows, col gutter, row gutter, and margin. Changing gutter or margin re-runs layout via `/api/relayout/<slug>` so elements reflow in real-time.
 - [x] **Selection color.** Changed selection outline, drop-shadow, and tree-item highlight from orange (#E95420) to golden-amber (#F6B73C) matching resize handles.
 - [x] **Keyboard nudging.** ★ simple — Arrow keys nudge selected element by 1px; Shift+Arrow nudges by baseline grid unit (8px).
-- [ ] **Multi-select.** ★★ medium — Shift+click to select multiple elements; move them together.
-- [ ] **Double-click nested selection.** ★★ medium — Double-click drills into groups to select nested children, Figma-style.
+- [x] **Multi-select.** ★★ medium — Shift+click to select multiple elements; move them together.
+- [x] **Double-click nested selection.** ★★ medium — Double-click drills into groups to select nested children, Figma-style.
 - [ ] **Baseline alignment guide.** ★★★ complex — Visual guide that moves with a dragged box showing which baseline it snaps to (see brand-layout-ops parity).
 - [ ] **Component swap.** ★★★ complex — Select a component and swap it for another type from the shape library (like Figma component swap).
 
