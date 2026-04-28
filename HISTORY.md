@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-30 – Preview server interaction improvements
+
+- **Selection color:** changed selection outline, drop-shadow, and tree-item highlight from orange (#E95420) to golden-amber (#F6B73C) matching resize handles.
+- **Keyboard nudging:** Arrow keys nudge selected element(s) by 1px; Shift+Arrow nudges by 8px (baseline unit). Works with multi-select.
+- **Multi-select:** Shift+click toggles additive selection. Group drag moves all selected elements together with 4px grid snap. Shift+click also works in tree sidebar.
+- **Double-click drill-in:** single click now selects topmost parent group; double-click drills one level deeper into children, Figma-style. Hover preview follows current drill depth. Clicking a different top-level group resets depth.
+- **TODO complexity triage:** rated all open tasks with ★/★★/★★★ complexity for delegation.
+
 ### 2026-04-29 – Preview server interactive editing fixes
 
 - **Top/left resize sign fix:** corrected inverted delta signs in left-side and top-side resize handlers so dragging left/up correctly moves position and grows the element.
