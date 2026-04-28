@@ -83,15 +83,14 @@ aws_hld = Diagram(
         ),
 
         # Core spans 2 columns; contains Logging + Network Services.
-        # Outdent: content = cell = 192 + 192 + 32 = 416.
-        # Two sub-panels + 32px gap → sp_outer = (416 − 32) / 2 = 192.
-        # Sub-panel col_width = 192 − 16 = 176.
+        # Cell = 192 + 192 + 32 = 416. Content = 416 − 16 = 400.
+        # Two sub-panels + 32px gap → sp_outer = (400 − 32) / 2 = 184.
+        # Sub-panel col_width = 184 − 16 = 168.
         Panel(
             id="core",
             heading=_heading("Core"),
             icon="Cloud.svg",
             fill=Fill.WHITE,
-            outdent=True,
             col_gap=32,
             col=1, row=1, col_span=2,
             children=[
@@ -101,7 +100,7 @@ aws_hld = Diagram(
                     icon="Document.svg",
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=176,
+                    col_width=168,
                     row_gap=8,
                     children=[
                         Box(label=[
@@ -117,7 +116,7 @@ aws_hld = Diagram(
                     icon="Networking.svg",
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=176,
+                    col_width=168,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC")], icon="Network.svg", row=0),
@@ -209,17 +208,17 @@ aws_hld = Diagram(
         Arrow(source="tgw.right", target="customer_gw.left"),
         Arrow(source="tgw.bottom", target="vpc_accounts.top"),
 
-        # ── Row 3: VPC accounts (dashed wrapper, outdent) ──
-        # Outdent: content = cell = 1136.
-        # 5 sub-panels + 4 × 32 → sp_outer ≈ 200, col_width = 184.
+        # ── Row 3: VPC accounts (dashed wrapper) ──
+        # Cell = 1136. Content = 1136 − 16 = 1120.
+        # 5 sub-panels + 4 × 32 → sp_outer = (1120 − 128) / 5 ≈ 198 → 196.
+        # col_width = 196 − 16 = 180.
         Panel(
             id="vpc_accounts",
             heading=_heading("VPC_Accounts"),
             icon="Document management.svg",
             border=Border.DASHED,
             fill=Fill.WHITE,
-            outdent=True,
-            col_width=184,
+            col_width=180,
             col_gap=32,
             col=0, row=3, col_span=5,
             children=[
@@ -228,7 +227,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-production"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")], row=0),
@@ -240,7 +239,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-preprod"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -251,7 +250,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-test"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -262,7 +261,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-dev"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -273,7 +272,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-sandbox"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -289,7 +288,7 @@ aws_hld = Diagram(
         Arrow(source="vpc_dev.bottom", target="ou_ccr.top"),
 
         # ── Row 4: organisational units (borderless wrapper) ──
-        # 4 sub-panels matching VPC col_width=184 for vertical alignment.
+        # 4 sub-panels matching VPC col_width=180 for vertical alignment.
         Panel(
             id="ous_wrapper",
             border=Border.NONE,
@@ -303,7 +302,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -316,7 +315,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -330,7 +329,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -343,7 +342,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=184,
+                    col_width=180,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),

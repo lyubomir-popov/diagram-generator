@@ -304,7 +304,6 @@ class Panel:
     frameless: bool = False            # deprecated: use border=Border.NONE
     icon: str | None = None            # heading icon
     uniform_height: bool = True        # all rows use tallest box height
-    outdent: bool = False              # frame extends outward; content fills cell
     # GRID arrangement: span multiple columns/rows
     col_span: int = 1
     row_span: int = 1

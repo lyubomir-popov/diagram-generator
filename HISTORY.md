@@ -4,7 +4,16 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
-### 2026-04-27 – Component library refactor (Step 6b)
+### 2026-04-28 – Revert wrapper outdent back to nesting tax
+
+- **Removed `outdent` field** from `Panel` in `diagram_model.py`.
+- **Reverted layout engine** (`diagram_layout.py`): pad logic back to `pad = 0 if border == NONE else INSET`; removed `min_width` parameter; removed frame/bounds outdent branches.
+- **Reverted diagram definitions:** `aws_hld.py` (Core col_width 176→168, VPC/OU col_width 184→180), `logic_data_vram.py` (VRAM col_width 392→384). All `outdent=True` flags removed.
+- **Restored "Nesting and alignment rules" section** in `DIAGRAM.md` with updated example (gutter=32, nesting tax = 8px per child).
+- **Reverted wrapper guardrails** in `.github/copilot-instructions.md` and both skills back to indenting derivation.
+- **Rationale:** outdenting created more alignment problems than it solved – Core frame protruded past Security/Shared-services, 5 keylines on the right edge. Indenting is simpler and predictable.
+
+### 2026-04-28 – Gutter unification and AWS HLD diagram
 
 - **New types:** `Border` enum (SOLID, DASHED, NONE), `Annotation` (replaces Helper + borderless Box), `JaggedPanel` (replaces MemoryWall), `IconCluster` (replaces IconComponent + RequestCluster), `GridSpec` (consolidates grid parameters).
 - **Model + layout engine:** `diagram_model.py` and `diagram_layout.py` updated to support all new types alongside deprecated ones. Backward-compatible `effective_border` properties on Box and Panel.

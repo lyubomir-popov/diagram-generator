@@ -59,7 +59,7 @@ argument-hint: "Describe the source asset, target slug, and any special constrai
 - Sanitize changed deliverable SVGs before treating them as final.
 - **No ad-hoc coordinates.** Every position and dimension must derive from named grid variables and baseline-unit math. No magic numbers, no eyeballing, no "tweaking until it looks right."
 - **Inside-out box model.** Box height is the sum of its content plus padding. Panel height is the sum of its rows plus gaps plus padding. Never size a container first and fit content inside.
-- **Wrapper outdent.** Panels containing sub-panels should use `outdent=True`. The frame extends INSET outward; content fills the cell exactly. Derive child `col_width` from the cell width (not `cell − 2 × INSET`). See "Wrapper outdent rule" in `DIAGRAM.md`.
+- **Nesting alignment.** Wrappers must match the outer width of peer standalone boxes. Derive child `col_width` from the wrapper's content span: `child_col_width = ((wrapper_outer − 2 × INSET) − (N − 1) × inner_gap) / N − 2 × INSET`. See "Nesting and alignment rules" in `DIAGRAM.md`.
 - **Gutter consistency.** Only two gap scales: `compact-gap` (8px) for tight in-panel packing, `grid-gutter` (32px) for all structural gaps. Do not use 16 or 24 — they break gutter continuity across nesting levels.
 - **No text across borders.** Every text element must fit entirely within its parent container, or be positioned entirely outside it.
 - **Typography hierarchy.** Bold at same size = higher level. Only structural headings use bold. Content labels use regular weight.
