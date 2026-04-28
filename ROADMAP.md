@@ -38,6 +38,10 @@ Replace per-diagram imperative functions (~200 lines each, ×2 renderers) with a
 
 **Why:** The imperative approach does not scale to hundreds of diagrams or PM self-serve. Every new diagram currently requires writing a new Python function from scratch. The declarative model means a new diagram is a compact data definition, not a code change.
 
+**When complex diagrams require new component types** (e.g. subnet columns, VPC tile grids, legend entries with icons), capture the need and add it to the model rather than working around it with ad-hoc positioning.
+
+**Grid design per diagram:** Layout grids are designed for each diagram's specific content, following the Müller-Brockmann approach. The upstream spacing specs dictate a power-of-2 grid; how whitespace is distributed within that grid is at the model's discretion.
+
 **Target architecture:**
 - `diagram_model.py` — pure data: `@dataclass` component types, no rendering
 - `diagram_layout.py` — walks the tree, computes geometry, enforces uniform row heights and containment
