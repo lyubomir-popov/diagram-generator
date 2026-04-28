@@ -62,6 +62,31 @@ Once the generated/manual boundaries are explicit, selectively patch generator-o
 
 Add lightweight checks or generation helpers only if they reduce repetition without making the outputs less editable.
 
+### Stage 10 — Interactive preview and visual editing
+
+The preview server (`scripts/preview_server.py`) provides hot-reload, click-to-select, drag-to-move, resize, undo/redo, and override persistence. This stage extends it toward a Figma-like editing experience layered over the declarative diagram model.
+
+**Near-term (implemented or in progress):**
+- Component selection, move, resize with per-component override persistence
+- Undo/redo stack, explicit save, keyboard shortcuts
+- 8-direction resize handles
+- Arrow and annotation selection and repositioning
+
+**Medium-term:**
+- Nested grid controls: set panel grid dimensions (rows, cols), gutters, and padding interactively
+- Auto-fill children: add/remove boxes in a panel and have the grid re-flow like Figma auto-layout
+- Resize a panel and have children redistribute proportionally
+- Snap-to-grid visual guides during drag
+- Multi-select and group move
+- Property panel for editing text, fill, border style on selected component
+
+**Longer-term:**
+- Visual arrow routing: drag arrow waypoints, add/remove bends
+- Create new components from the UI (add box, add panel, add arrow)
+- Export edited layout back to the Python definition or a YAML/JSON format
+- Collaborative editing or at least conflict-free override merging
+- Theming controls: switch colour palette, typography tier, spacing scale
+
 ## Long-term direction
 
 - Keep the repo minimal and task-focused.

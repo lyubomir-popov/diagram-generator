@@ -117,8 +117,8 @@ def _get_layout_result(slug: str):
         mod = importlib.import_module(f"diagrams.{mod_name}")
         importlib.reload(mod)
         diagram_obj = getattr(mod, mod_name)
-        from diagram_layout import layout
-        result = layout(diagram_obj)
+        import diagram_layout
+        result = diagram_layout.layout(diagram_obj)
         _layout_cache[slug] = result
         return result
     except Exception:
@@ -215,7 +215,12 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
          justify-content: center; padding: 32px; }}
 .stage svg {{ background: #fff; cursor: crosshair; }}
 .stage svg [data-component-id] {{ cursor: pointer; }}
+.stage svg [data-component-id] > text,
+.stage svg [data-component-id] > image,
+.stage svg [data-component-id] > tspan {{ pointer-events: none; }}
 .stage svg g.dg-selected > rect:first-of-type {{ outline: 2px solid #E95420; outline-offset: -1px; }}
+.stage svg g.dg-selected > line {{ filter: drop-shadow(0 0 2px #E95420); }}
+.stage svg g.dg-selected > polygon {{ filter: drop-shadow(0 0 2px #E95420); }}
 .stage svg g.dg-hover > rect:first-of-type {{ outline: 1px dashed #6cc; outline-offset: -1px; }}
 .dg-handle {{ fill: #E95420; stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }}
 .dg-handle.dg-handle-tl {{ cursor: nw-resize; }}
@@ -318,7 +323,7 @@ async function loadOverrides() {{
 // ---- Undo/Redo functions ----
 
 function recordSnapshot() {{
-  // Record current state to undo stack
+  // Record current state to undo stack (call BEFORE making the change)
   const currentState = JSON.stringify(overrides);
   if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== currentState) {{
     undoStack.push(currentState);
@@ -499,6 +504,26 @@ function bindInteraction() {{
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
 
+  // Add invisible wider hit-area lines for arrow components
+  const ns = "http://www.w3.org/2000/svg";
+  svg.querySelectorAll("[data-component-id]").forEach(g => {{
+    const lines = g.querySelectorAll("line");
+    if (lines.length > 0 && !g.querySelector("rect")) {{
+      // This is likely an arrow group (lines + polygon, no rect)
+      lines.forEach(ln => {{
+        const hit = document.createElementNS(ns, "line");
+        hit.setAttribute("x1", ln.getAttribute("x1"));
+        hit.setAttribute("y1", ln.getAttribute("y1"));
+        hit.setAttribute("x2", ln.getAttribute("x2"));
+        hit.setAttribute("y2", ln.getAttribute("y2"));
+        hit.setAttribute("stroke", "transparent");
+        hit.setAttribute("stroke-width", "12");
+        hit.style.pointerEvents = "stroke";
+        g.insertBefore(hit, g.firstChild);
+      }});
+    }}
+  }});
+
   // Build tree sidebar
   const treeEl = document.getElementById("tree");
   treeEl.innerHTML = "";
@@ -598,7 +623,7 @@ function onSvgMouseDown(e) {{
   const cid = deepestComponent.dataset.componentId;
   const own = getOwnDelta(cid);
   dragState = {{ cid, startX: e.clientX, startY: e.clientY,
-                origDx: own.dx, origDy: own.dy, hasMoved: false }};
+                origDx: own.dx, origDy: own.dy, hasMoved: false, snapshotRecorded: false }};
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragUp);
   e.preventDefault();
@@ -610,6 +635,11 @@ function onDragMove(e) {{
   const dy = e.clientY - dragState.startY;
   if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragState.hasMoved = true;
   if (!dragState.hasMoved) return;
+  // Record pre-drag snapshot on first actual move
+  if (!dragState.snapshotRecorded) {{
+    recordSnapshot();
+    dragState.snapshotRecorded = true;
+  }}
   const newDx = Math.round((dragState.origDx + dx) / 4) * 4;
   const newDy = Math.round((dragState.origDy + dy) / 4) * 4;
   setOverride(dragState.cid, {{ dx: newDx, dy: newDy }});
@@ -623,8 +653,6 @@ function onDragUp() {{
   if (dragState && dragState.hasMoved) {{
     cleanOverride(dragState.cid);
     selectComponent(dragState.cid);
-    // Record snapshot after drag operation
-    recordSnapshot();
   }} else if (dragState) {{
     selectComponent(dragState.cid);
   }}
@@ -703,7 +731,7 @@ function startResize(e) {{
     startX: e.clientX, startY: e.clientY,
     origDx: own.dx, origDy: own.dy,
     origDw: own.dw, origDh: own.dh,
-    hasMoved: false,
+    hasMoved: false, snapshotRecorded: false,
   }};
   document.addEventListener("mousemove", onResizeMove);
   document.addEventListener("mouseup", onResizeUp);
@@ -717,6 +745,11 @@ function onResizeMove(e) {{
   const dy = e.clientY - resizeState.startY;
   if (Math.abs(dx) > 2 || Math.abs(dy) > 2) resizeState.hasMoved = true;
   if (!resizeState.hasMoved) return;
+  // Record pre-resize snapshot on first actual move
+  if (!resizeState.snapshotRecorded) {{
+    recordSnapshot();
+    resizeState.snapshotRecorded = true;
+  }}
   let newDx = resizeState.origDx;
   let newDy = resizeState.origDy;
   let newDw = resizeState.origDw;
@@ -727,8 +760,8 @@ function onResizeMove(e) {{
   if (axis === "l" || axis === "tl" || axis === "bl") {{
     // Left side: move left edge, right edge stays anchored
     const delta = Math.round(dx / 4) * 4;
-    newDx = resizeState.origDx - delta;
-    newDw = resizeState.origDw + delta;
+    newDx = resizeState.origDx + delta;
+    newDw = resizeState.origDw - delta;
   }} else if (axis === "r" || axis === "tr" || axis === "br") {{
     // Right side: left edge stays anchored, grow rightward
     newDw = Math.round((resizeState.origDw + dx) / 4) * 4;
@@ -738,8 +771,8 @@ function onResizeMove(e) {{
   if (axis === "t" || axis === "tl" || axis === "tr") {{
     // Top side: move top edge, bottom edge stays anchored
     const delta = Math.round(dy / 4) * 4;
-    newDy = resizeState.origDy - delta;
-    newDh = resizeState.origDh + delta;
+    newDy = resizeState.origDy + delta;
+    newDh = resizeState.origDh - delta;
   }} else if (axis === "b" || axis === "bl" || axis === "br") {{
     // Bottom side: top edge stays anchored, grow downward
     newDh = Math.round((resizeState.origDh + dy) / 4) * 4;
@@ -756,8 +789,6 @@ function onResizeUp() {{
   if (resizeState && resizeState.hasMoved) {{
     cleanOverride(resizeState.cid);
     selectComponent(resizeState.cid);
-    // Record snapshot after resize operation
-    recordSnapshot();
   }}
   resizeState = null;
 }}

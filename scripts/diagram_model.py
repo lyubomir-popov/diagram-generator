@@ -277,6 +277,7 @@ class Arrow:
     """
     source: str
     target: str
+    id: str | None = None
     color: str = "#E95420"
     waypoints: list[tuple[float, float]] = field(default_factory=list)
 

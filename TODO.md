@@ -161,6 +161,10 @@ Component IDs, drag-to-move, resize handles, and override persistence are workin
 - [x] **No undo.** Fixed: full undo/redo stack (50 entries), Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y, toolbar buttons.
 - [x] **Resize in all directions.** Fixed: 8 resize handles (all edges + corners), top/left handles adjust position to keep opposite edge anchored.
 - [x] **Explicit save button.** Fixed: dirty flag, Save button (turns orange when dirty), Ctrl+S, beforeunload warning.
+- [x] **Top/left resize inverted.** Fixed: corrected sign logic so left/top handles move position and shrink/grow width/height in the correct direction.
+- [x] **Undo records post-change state.** Fixed: snapshot is now recorded before the first actual drag/resize move, not after the action completes.
+- [x] **Text and icons block mouse selection.** Fixed: CSS `pointer-events: none` on `<text>`, `<image>`, and `<tspan>` children of component groups so clicks pass through to the parent `<g>`.
+- [x] **Arrows not selectable or moveable.** Fixed: arrows now carry `component_id` in layout, `data-component-id` in SVG, and invisible 12px-wide hit-area lines in the preview for easy click targeting. All component types (Helper, JaggedPanel, MatrixWidget, IconCluster, Terminal, Separator, Legend) now emit `component_id`.
 
 ### Previously active
 

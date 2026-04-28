@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-29 – Preview server interactive editing fixes
+
+- **Top/left resize sign fix:** corrected inverted delta signs in left-side and top-side resize handlers so dragging left/up correctly moves position and grows the element.
+- **Undo/redo timing fix:** snapshot is now recorded before the first actual drag/resize move (via `snapshotRecorded` flag on drag/resize state), not after the action completes. This ensures Ctrl+Z restores the pre-change state.
+- **Pointer-events fix:** CSS `pointer-events: none` on `<text>`, `<image>`, and `<tspan>` children of component groups so clicks pass through to the parent `<g>` for selection.
+- **Arrow selectability:** arrows now carry `component_id` in layout, `data-component-id` in SVG, and invisible 12px-wide hit-area lines in the preview for click targeting. Added `Arrow.id` field to model. All component types (Helper, JaggedPanel, MatrixWidget, IconCluster, Terminal, Separator, Legend) now emit `component_id`.
+- **ROADMAP.md:** added Stage 10 "Interactive preview and visual editing" with near-term, medium-term, and longer-term items.
+
 ### 2026-04-28 – Canvas constraints, uniform rows, and auto-fill
 
 - **Diagram model:** added `canvas_width`, `canvas_height`, `uniform_rows` fields to `Diagram`.
