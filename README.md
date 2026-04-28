@@ -2,6 +2,83 @@
 
 An LLM-based diagramming workflow that turns rough sketches and brand/layout rules into on-brand SVG and draw.io diagrams.
 
+## Quick start for new users
+
+```bash
+# 1. Clone and set up
+git clone <repo-url> && cd diagram-generator
+python -m venv .venv
+.venv/Scripts/activate  # Windows
+# source .venv/bin/activate  # macOS/Linux
+
+# 2. Build all diagrams (SVG + draw.io)
+cd scripts
+python build_v2.py
+
+# 3. View outputs
+# SVGs land in diagrams/2.output/svg/
+# draw.io files land in diagrams/2.output/draw.io/
+```
+
+### Creating your own diagram
+
+Create a new file in `scripts/diagrams/`, for example `scripts/diagrams/my_diagram.py`:
+
+```python
+from diagram_model import Arrow, Box, Diagram, Fill, Line
+
+my_diagram = Diagram(
+    title="My diagram",
+    arrangement=Diagram.Arrangement.GRID,
+    cols=1, col_width=192, row_height=64,
+    col_gap=32, row_gap=32, outer_margin=32,
+    components=[
+        Box(id="step1", label=[Line("First step")],
+            icon="Document.svg", col=0, row=0),
+        Box(id="step2", label=[Line("Second step")],
+            fill=Fill.GREY, icon="Package.svg", col=0, row=1),
+        Arrow(source="step1.bottom", target="step2.top"),
+    ],
+)
+```
+
+Then register it in `scripts/build_v2.py` by adding a tuple to `_REGISTRY` and rebuild. See [`scripts/diagrams/example_deployment_pipeline.py`](scripts/diagrams/example_deployment_pipeline.py) for a complete starter example.
+
+### Example diagrams (tracked)
+
+Three generic examples ship with the repo for reference:
+
+| Example | What it demonstrates |
+|---------|---------------------|
+| [`example_deployment_pipeline.py`](scripts/diagrams/example_deployment_pipeline.py) | Simple vertical flow: boxes + arrows |
+| [`example_platform_architecture.py`](scripts/diagrams/example_platform_architecture.py) | Grid with nested panels, multi-column span |
+| [`example_data_processing.py`](scripts/diagrams/example_data_processing.py) | Panels with allocation bars, separators, annotations |
+
+### Interactive preview (in development)
+
+A hot-reload preview server is available for visual drafting. **This feature is experimental** – expect rough edges around selection targeting and undo support.
+
+```bash
+python scripts/preview_server.py              # all diagrams, port 8100
+python scripts/preview_server.py --slug memory-wall --grid  # single diagram with grid overlay
+```
+
+Features: component tree sidebar, click-to-select inspector, drag-to-move (4px snap), resize handles, override persistence to JSON. Overrides are a drafting aid – the agent reads them and applies fixes to the Python definition.
+
+### Available icons
+
+~150 SVG icons from the Canonical/Ubuntu icon set are available in [`assets/icons/`](assets/icons). Use the filename (e.g. `"Server.svg"`) in the `icon` field of any `Box` or `Panel`.
+
+### Design rules at a glance
+
+- **Fills**: white (default), `#F3F3F3` grey (accent), black (one emphasis box max)
+- **Orange** `#E95420`: arrows and arrowheads only – never boxes
+- **Icons**: from `assets/icons/` only – omit rather than invent
+- **Text**: top-left aligned, 8px inset, 18px/24px body
+- **Grid**: 4px baseline, 32px gutters, 192px default box width
+
+Full spec: [`DIAGRAM.md`](DIAGRAM.md)
+
 ## Quick start: file convention
 
 Agent instructions live under `.github`, not the repo root:

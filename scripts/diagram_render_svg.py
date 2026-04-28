@@ -243,7 +243,7 @@ def _render_primitive(prim: Primitive) -> str:
 
 def _grid_overlay(width: int, height: int, step: int = INSET) -> list[str]:
     """Emit faint grid lines at every *step* px."""
-    parts = ['  <g id="baseline-grid" opacity="0.25">']
+    parts = ['  <g id="baseline-grid" opacity="0.25" style="pointer-events:none">']
     for x in range(0, width + 1, step):
         parts.append(f'    <line x1="{x}" y1="0" x2="{x}" y2="{height}" '
                      f'stroke="#FF0000" stroke-width="0.5" />')
@@ -264,7 +264,7 @@ def _layout_grid_overlay(gi: GridInfo, width: int, height: int) -> list[str]:
     - Dashed margin boundary
     - Column/row dimension labels
     """
-    parts = ['  <g id="layout-grid" opacity="0.35">']
+    parts = ['  <g id="layout-grid" opacity="0.35" style="pointer-events:none">']
 
     # Margin boundary (dashed)
     m = gi.outer_margin
@@ -365,6 +365,28 @@ def _layout_grid_overlay(gi: GridInfo, width: int, height: int) -> list[str]:
 # Public API
 # ---------------------------------------------------------------------------
 
+def _emit_primitives(prims: list, parts: list[str]) -> None:
+    """Emit primitives, grouping consecutive runs with the same component_id
+    inside ``<g data-component-id="...">`` wrappers."""
+    current_cid: str | None = None
+    in_group = False
+    for prim in prims:
+        cid = getattr(prim, "component_id", None)
+        if cid != current_cid:
+            if in_group:
+                parts.append("  </g>")
+                in_group = False
+            current_cid = cid
+            if cid:
+                parts.append(f'  <g data-component-id="{html_mod.escape(cid)}">')
+                in_group = True
+        s = _render_primitive(prim)
+        if s:
+            parts.append(s)
+    if in_group:
+        parts.append("  </g>")
+
+
 def render_svg(result: LayoutResult, *, show_grid: bool = False,
                show_layout_grid: bool = False) -> str:
     """Render a LayoutResult to a complete SVG string.
@@ -375,14 +397,8 @@ def render_svg(result: LayoutResult, *, show_grid: bool = False,
     (column/row boundaries, gap regions, dimension labels) is drawn.
     """
     parts = _svg_open(result.width, result.height)
-    for prim in result.background:
-        s = _render_primitive(prim)
-        if s:
-            parts.append(s)
-    for prim in result.foreground:
-        s = _render_primitive(prim)
-        if s:
-            parts.append(s)
+    _emit_primitives(result.background, parts)
+    _emit_primitives(result.foreground, parts)
     if show_layout_grid and result.grid_info:
         parts.extend(_layout_grid_overlay(
             result.grid_info, result.width, result.height))

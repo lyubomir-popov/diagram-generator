@@ -2,42 +2,50 @@
 
 Flags:
     --grid    Also emit *-v2-grid.svg with the layout grid overlay.
+
+Diagram definitions live in scripts/diagrams/.  Company-specific definitions
+may be gitignored; the build gracefully skips any that are absent.
 """
 from __future__ import annotations
 
+import importlib
 import pathlib
 import sys
 
 from diagram_layout import layout, validate_arrows, validate_grid
 from diagram_render_svg import write_svg
 from diagram_render_drawio import write_drawio
-
-from diagrams.attention_qkv import attention_qkv
-from diagrams.aws_hld import aws_hld
-from diagrams.gpu_waiting_scheduler import gpu_waiting_scheduler
-from diagrams.inference_snaps import inference_snaps
-from diagrams.logic_data_vram import logic_data_vram
-from diagrams.memory_wall import memory_wall
-from diagrams.request_to_hardware_stack import request_to_hardware_stack
-from diagrams.rise_of_inference_economy import rise_of_inference_economy
-from diagrams.diagram_intake_workflow import diagram_intake_workflow
-from diagrams.diagram_language_workflow import diagram_language_workflow
-
 from diagram_shared import SVG_DIR, DRAWIO_DIR
 
 
-DIAGRAMS = [
-    ("attention-qkv-onbrand", attention_qkv),
-    ("aws-hld-onbrand", aws_hld),
-    ("gpu-waiting-scheduler-onbrand", gpu_waiting_scheduler),
-    ("inference-snaps-onbrand", inference_snaps),
-    ("logic-data-vram-onbrand", logic_data_vram),
-    ("memory-wall-onbrand", memory_wall),
-    ("request-to-hardware-stack-onbrand", request_to_hardware_stack),
-    ("rise-of-inference-economy-onbrand", rise_of_inference_economy),
-    ("diagram-intake-workflow-onbrand", diagram_intake_workflow),
-    ("diagram-language-workflow-onbrand", diagram_language_workflow),
+# (slug, module_name, variable_name)
+_REGISTRY: list[tuple[str, str, str]] = [
+    ("attention-qkv-onbrand", "diagrams.attention_qkv", "attention_qkv"),
+    ("aws-hld-onbrand", "diagrams.aws_hld", "aws_hld"),
+    ("gpu-waiting-scheduler-onbrand", "diagrams.gpu_waiting_scheduler", "gpu_waiting_scheduler"),
+    ("inference-snaps-onbrand", "diagrams.inference_snaps", "inference_snaps"),
+    ("logic-data-vram-onbrand", "diagrams.logic_data_vram", "logic_data_vram"),
+    ("memory-wall-onbrand", "diagrams.memory_wall", "memory_wall"),
+    ("request-to-hardware-stack-onbrand", "diagrams.request_to_hardware_stack", "request_to_hardware_stack"),
+    ("rise-of-inference-economy-onbrand", "diagrams.rise_of_inference_economy", "rise_of_inference_economy"),
+    ("diagram-intake-workflow-onbrand", "diagrams.diagram_intake_workflow", "diagram_intake_workflow"),
+    ("diagram-language-workflow-onbrand", "diagrams.diagram_language_workflow", "diagram_language_workflow"),
+    ("example-deployment-pipeline-onbrand", "diagrams.example_deployment_pipeline", "example_deployment_pipeline"),
+    ("example-platform-architecture-onbrand", "diagrams.example_platform_architecture", "example_platform_architecture"),
+    ("example-data-processing-onbrand", "diagrams.example_data_processing", "example_data_processing"),
 ]
+
+
+def _load_diagrams() -> list[tuple[str, object]]:
+    """Import diagram definitions, skipping any that are missing (gitignored)."""
+    diagrams = []
+    for slug, mod_name, var_name in _REGISTRY:
+        try:
+            mod = importlib.import_module(mod_name)
+            diagrams.append((slug, getattr(mod, var_name)))
+        except (ModuleNotFoundError, FileNotFoundError):
+            print(f"  {slug}: skipped (definition not found)")
+    return diagrams
 
 
 def main() -> None:
@@ -45,7 +53,8 @@ def main() -> None:
     SVG_DIR.mkdir(parents=True, exist_ok=True)
     DRAWIO_DIR.mkdir(parents=True, exist_ok=True)
     total_arrow_violations = 0
-    for slug, diagram in DIAGRAMS:
+    diagrams = _load_diagrams()
+    for slug, diagram in diagrams:
         result = layout(diagram)
         svg_path = SVG_DIR / f"{slug}-v2.svg"
         drawio_path = DRAWIO_DIR / f"{slug}-v2.drawio"

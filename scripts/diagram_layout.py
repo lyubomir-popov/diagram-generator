@@ -76,6 +76,7 @@ class Rect:
     fill: str = "#FFFFFF"
     stroke: str = "#000000"
     dashed: bool = False
+    component_id: str | None = None
 
 
 @dataclass
@@ -83,6 +84,7 @@ class TextBlock:
     x: float
     y: float
     lines: list[dict]          # make_line() dicts
+    component_id: str | None = None
 
 
 @dataclass
@@ -91,6 +93,7 @@ class Icon:
     y: float
     name: str
     fill: str = "#000000"
+    component_id: str | None = None
 
 
 @dataclass
@@ -101,6 +104,7 @@ class ArrowPrimitive:
     color: str = "#E95420"
     waypoints: list[tuple[float, float]] = field(default_factory=list)
     direction: str = "down"    # "down", "right", "up", "left"
+    component_id: str | None = None
 
 
 @dataclass
@@ -110,6 +114,7 @@ class CircleMarker:
     radius: float
     fill: str
     stroke: str = "#000000"
+    component_id: str | None = None
 
 
 @dataclass
@@ -119,6 +124,7 @@ class JaggedRect:
     width: float
     height: float
     fill: str = "#F3F3F3"
+    component_id: str | None = None
 
 
 @dataclass
@@ -129,6 +135,7 @@ class TerminalBar:
     height: float
     command: str
     font_family: str | None = None
+    component_id: str | None = None
 
 
 @dataclass
@@ -136,12 +143,14 @@ class MatrixTile:
     x: float
     y: float
     label: str
+    component_id: str | None = None
 
 
 @dataclass
 class RequestClusterPrimitive:
     x: float
     y: float
+    component_id: str | None = None
 
 
 @dataclass
@@ -151,6 +160,7 @@ class DashedLinePrimitive:
     x2: float
     y2: float
     dash: str = "12 8"
+    component_id: str | None = None
 
 
 Primitive = (
@@ -177,12 +187,25 @@ class GridInfo:
 
 
 @dataclass
+class ComponentInfo:
+    """Serialisable component metadata for the interactive preview."""
+    id: str
+    type: str
+    x: float
+    y: float
+    width: float
+    height: float
+    children: list["ComponentInfo"] = field(default_factory=list)
+
+
+@dataclass
 class LayoutResult:
     width: int
     height: int
     background: list[Primitive] = field(default_factory=list)
     foreground: list[Primitive] = field(default_factory=list)
     grid_info: GridInfo | None = None
+    component_tree: list[ComponentInfo] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -217,6 +240,14 @@ def _line_to_dict(line: Line) -> dict:
 
 def _lines_to_dicts(lines: list[Line]) -> list[dict]:
     return [_line_to_dict(ln) for ln in lines]
+
+
+def _stamp(prims: list[Primitive], cid: str | None) -> list[Primitive]:
+    """Set component_id on every primitive in the list (in place)."""
+    if cid:
+        for p in prims:
+            p.component_id = cid
+    return prims
 
 
 def _min_bar_height(bar: Bar) -> int:
@@ -361,16 +392,20 @@ def _layout_panel(
             bx_h = bx.height or row_heights[bx.row]
             bx_fill = bx.fill.value
             bx_stroke = "none" if bx.effective_border == Border.NONE else "#000000"
+            bx_cid = bx.id or None
 
-            fg.append(Rect(bx_x, bx_y, bx_w, bx_h, fill=bx_fill, stroke=bx_stroke))
+            fg.append(Rect(bx_x, bx_y, bx_w, bx_h, fill=bx_fill, stroke=bx_stroke,
+                           component_id=bx_cid))
             fg.append(TextBlock(bx_x + INSET, bx_y + INSET,
-                                _lines_to_dicts(bx.label)))
+                                _lines_to_dicts(bx.label),
+                                component_id=bx_cid))
             if bx.icon:
                 fg.append(Icon(
                     bx_x + bx_w - INSET - ICON_SIZE,
                     bx_y + INSET,
                     bx.icon,
                     fill=bx.icon_fill or "#000000",
+                    component_id=bx_cid,
                 ))
             child_bounds.append(_Bounds(bx_x, bx_y, bx_w, bx_h, bx))
 
@@ -548,13 +583,23 @@ def _layout_panel(
             x + panel_w - pad - ICON_SIZE,
             y + pad,
             panel.icon,
+            component_id=panel.id,
         ))
 
     # Panel frame (emitted last so we know final size, but insert at front for z-order)
     if panel_border != Border.NONE:
         frame = Rect(x, y, panel_w, panel_h, fill=panel.fill.value,
-                     dashed=(panel_border == Border.DASHED))
+                     dashed=(panel_border == Border.DASHED),
+                     component_id=panel.id)
         fg.insert(0, frame)
+
+    # Stamp heading text with panel ID
+    if panel.heading and panel.id:
+        # The heading TextBlock is the first fg element (or second if frame inserted)
+        for p in fg:
+            if isinstance(p, TextBlock) and p.component_id is None:
+                p.component_id = panel.id
+                break
 
     bounds = _Bounds(x, y, panel_w, panel_h, panel, children=child_bounds)
     return bounds, fg, bg
@@ -575,12 +620,14 @@ def _layout_box(
     h = bx.height or tight_box_height(_lines_to_dicts(bx.label), has_icon=has_icon)
     fill = bx.fill.value
     stroke = "none" if bx.effective_border == Border.NONE else "#000000"
+    cid = bx.id or None
     prims: list[Primitive] = []
-    prims.append(Rect(x, y, w, h, fill=fill, stroke=stroke))
-    prims.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(bx.label)))
+    prims.append(Rect(x, y, w, h, fill=fill, stroke=stroke, component_id=cid))
+    prims.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(bx.label),
+                           component_id=cid))
     if bx.icon:
         prims.append(Icon(x + w - INSET - ICON_SIZE, y + INSET, bx.icon,
-                          fill=bx.icon_fill or "#000000"))
+                          fill=bx.icon_fill or "#000000", component_id=cid))
     return _Bounds(x, y, w, h, bx), prims
 
 
@@ -713,11 +760,13 @@ def _render_component(
         bh = comp.height or tight_box_height(_lines_to_dicts(comp.label), has_icon=has_icon)
         fill = comp.fill.value
         stroke = "none" if comp.effective_border == Border.NONE else "#000000"
-        fg.append(Rect(x, y, bw, bh, fill=fill, stroke=stroke))
-        fg.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(comp.label)))
+        cid = comp.id or None
+        fg.append(Rect(x, y, bw, bh, fill=fill, stroke=stroke, component_id=cid))
+        fg.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(comp.label),
+                            component_id=cid))
         if comp.icon:
             fg.append(Icon(x + bw - INSET - ICON_SIZE, y + INSET, comp.icon,
-                           fill=comp.icon_fill or "#000000"))
+                           fill=comp.icon_fill or "#000000", component_id=cid))
         return _Bounds(x, y, bw, bh, comp), fg, bg
 
     elif isinstance(comp, Annotation):
@@ -729,8 +778,10 @@ def _render_component(
         ann_fill = comp.fill.value
         ann_stroke = "none" if comp.border == Border.NONE else "#000000"
         ann_dashed = comp.border == Border.DASHED
-        fg.append(Rect(x, y, ann_w, ann_h, fill=ann_fill, stroke=ann_stroke, dashed=ann_dashed))
-        fg.append(TextBlock(x + INSET, y + INSET, lines))
+        cid = comp.id or None
+        fg.append(Rect(x, y, ann_w, ann_h, fill=ann_fill, stroke=ann_stroke,
+                        dashed=ann_dashed, component_id=cid))
+        fg.append(TextBlock(x + INSET, y + INSET, lines, component_id=cid))
         return _Bounds(x, y, ann_w, ann_h, comp), fg, bg
 
     elif isinstance(comp, Helper):
@@ -935,6 +986,26 @@ def _register_child_bounds(
             _register_child_bounds(child, bounds_map)
 
 
+def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
+    """Convert a _Bounds node to a ComponentInfo, recursively."""
+    comp = bounds.component
+    cid = getattr(comp, "id", None) or ""
+    if not cid:
+        return None
+    ctype = type(comp).__name__
+    children: list[ComponentInfo] = []
+    for child in bounds.children:
+        ci = _bounds_to_component_info(child)
+        if ci:
+            children.append(ci)
+    return ComponentInfo(
+        id=cid, type=ctype,
+        x=bounds.x, y=bounds.y,
+        width=bounds.width, height=bounds.height,
+        children=children,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Main layout function
 # ---------------------------------------------------------------------------
@@ -1125,8 +1196,16 @@ def layout(diagram: Diagram) -> LayoutResult:
                 outer_margin=outer,
             )
 
+    # Build component tree for interactive preview
+    component_tree: list[ComponentInfo] = []
+    for b in all_bounds:
+        ci = _bounds_to_component_info(b)
+        if ci:
+            component_tree.append(ci)
+
     return LayoutResult(width=width, height=height, background=bg,
-                        foreground=fg, grid_info=grid_info)
+                        foreground=fg, grid_info=grid_info,
+                        component_tree=component_tree)
 
 
 # ---------------------------------------------------------------------------
