@@ -378,3 +378,7 @@ class Diagram:
     col_gap: int | None = None
     row_gap: int | None = None
     outer_margin: int | None = None
+    # ── Sizing constraints ──
+    canvas_width: int | None = None    # fixed output width in px; derives col_width
+    canvas_height: int | None = None   # optional fixed output height in px
+    uniform_rows: bool = False         # all rows use tallest row's height
