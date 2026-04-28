@@ -89,6 +89,8 @@ The preview server (`scripts/preview_server.py`) provides hot-reload, click-to-s
 - Export edited layout back to the Python definition or a YAML/JSON format
 - Collaborative editing or at least conflict-free override merging
 - Theming controls: switch colour palette, typography tier, spacing scale
+- Component swap from shape library (like Figma component swap)
+- brand-layout-ops parity audit: baseline alignment guide, field snapping, text overlay positioning feature set
 
 ## Long-term direction
 

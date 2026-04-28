@@ -139,6 +139,32 @@ def _get_grid_info(slug: str) -> dict | None:
     return None
 
 
+def _relayout(slug: str, grid_overrides: dict) -> dict | None:
+    """Re-run layout with patched grid params and return SVG + metadata."""
+    try:
+        if str(SCRIPTS) not in sys.path:
+            sys.path.insert(0, str(SCRIPTS))
+        import importlib, copy
+        mod_name = slug.replace("-", "_")
+        mod = importlib.import_module(f"diagrams.{mod_name}")
+        importlib.reload(mod)
+        diagram_obj = copy.deepcopy(getattr(mod, mod_name))
+        # Patch grid params
+        for key in ("col_gap", "row_gap", "outer_margin"):
+            if key in grid_overrides:
+                setattr(diagram_obj, key, grid_overrides[key])
+        import diagram_layout
+        result = diagram_layout.layout(diagram_obj)
+        import diagram_render_svg
+        svg_str = diagram_render_svg.render_svg(result)
+        tree = [asdict(ci) for ci in result.component_tree] if result.component_tree else []
+        gi = asdict(result.grid_info) if result.grid_info else None
+        return {"svg": svg_str, "tree": tree, "grid_info": gi}
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return None
+
+
 def _load_overrides(slug: str) -> dict:
     path = OVERRIDES_DIR / f"{slug}.json"
     if path.exists():
@@ -500,15 +526,29 @@ function populateGridControls() {{
   document.getElementById("grid-margin").value = gridInfo.outer_margin || 0;
 }}
 
+let relayoutTimer = null;
+
 function onGridControlChange() {{
   if (!gridInfo) return;
+  const colGap = Math.max(0, parseInt(document.getElementById("grid-col-gap").value) || 0);
+  const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
+  const margin = Math.max(0, parseInt(document.getElementById("grid-margin").value) || 0);
+
+  // Debounce the relayout call so rapid typing doesn't flood the server
+  if (relayoutTimer) clearTimeout(relayoutTimer);
+  relayoutTimer = setTimeout(() => requestRelayout(colGap, rowGap, margin), 200);
+
+  // Immediately update the grid overlay from the input values (local recompute)
+  updateGridOverlayFromInputs();
+}}
+
+function updateGridOverlayFromInputs() {{
   const cols = Math.max(1, parseInt(document.getElementById("grid-cols").value) || 1);
   const rows = Math.max(1, parseInt(document.getElementById("grid-rows").value) || 1);
   const colGap = Math.max(0, parseInt(document.getElementById("grid-col-gap").value) || 0);
   const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
   const margin = Math.max(0, parseInt(document.getElementById("grid-margin").value) || 0);
 
-  // Recompute grid geometry from the editable values
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
   const vb = svg.viewBox.baseVal;
@@ -534,6 +574,34 @@ function onGridControlChange() {{
     col_gap: colGap, row_gap: rowGap, outer_margin: margin,
   }};
   renderGridOverlay();
+}}
+
+async function requestRelayout(colGap, rowGap, margin) {{
+  try {{
+    const resp = await fetch("/api/relayout/" + SLUG, {{
+      method: "POST",
+      headers: {{ "Content-Type": "application/json" }},
+      body: JSON.stringify({{ col_gap: colGap, row_gap: rowGap, outer_margin: margin }}),
+    }});
+    if (!resp.ok) return;
+    const data = await resp.json();
+    // Replace SVG in stage
+    document.getElementById("stage").innerHTML = data.svg;
+    // Update component tree
+    if (data.tree) componentTree = data.tree;
+    // Update grid info from the actual layout result
+    if (data.grid_info) {{
+      gridInfo = data.grid_info;
+      populateGridControls();
+    }}
+    // Re-apply overrides and interaction on the new SVG
+    applyAllOverrides();
+    bindInteraction();
+    renderGridOverlay();
+    if (selectedId) selectComponent(selectedId);
+    // Rebuild component tree in sidebar
+    buildTreeUI();
+  }} catch (e) {{ /* ignore relayout errors */ }}
 }}
 
 // Bind grid control events
@@ -910,6 +978,24 @@ function applyAllOverrides() {{
 
 // ---- Interaction ----
 
+function buildTreeUI() {{
+  const treeEl = document.getElementById("tree");
+  treeEl.innerHTML = "";
+  function buildTree(nodes, container, depth) {{
+    for (const node of nodes) {{
+      const item = document.createElement("div");
+      item.className = "tree-item";
+      item.style.paddingLeft = (8 + depth * 12) + "px";
+      item.textContent = node.id;
+      if (overrides[node.id]) item.style.color = "#E95420";
+      item.onclick = (e) => {{ e.stopPropagation(); selectComponent(node.id); }};
+      container.appendChild(item);
+      if (node.children && node.children.length > 0) buildTree(node.children, container, depth + 1);
+    }}
+  }}
+  buildTree(componentTree, treeEl, 0);
+}}
+
 function bindInteraction() {{
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
@@ -950,21 +1036,7 @@ function bindInteraction() {{
   }});
 
   // Build tree sidebar
-  const treeEl = document.getElementById("tree");
-  treeEl.innerHTML = "";
-  function buildTree(nodes, container, depth) {{
-    for (const node of nodes) {{
-      const item = document.createElement("div");
-      item.className = "tree-item";
-      item.style.paddingLeft = (8 + depth * 12) + "px";
-      item.textContent = node.id;
-      if (overrides[node.id]) item.style.color = "#E95420";
-      item.onclick = (e) => {{ e.stopPropagation(); selectComponent(node.id); }};
-      container.appendChild(item);
-      if (node.children && node.children.length > 0) buildTree(node.children, container, depth + 1);
-    }}
-  }}
-  buildTree(componentTree, treeEl, 0);
+  buildTreeUI();
 
   // Mouse handlers on SVG
   svg.addEventListener("mousedown", onSvgMouseDown);
@@ -1519,6 +1591,8 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         path = urlparse(self.path).path.rstrip("/")
         if path.startswith("/api/overrides/"):
             self._serve_overrides_post(path[15:])
+        elif path.startswith("/api/relayout/"):
+            self._serve_relayout(path[14:])
         else:
             self.send_error(404)
 
@@ -1577,6 +1651,24 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         data["format_version"] = 1
         _save_overrides(slug, data)
         self._respond(200, "application/json", b'{"ok":true}')
+
+    def _serve_relayout(self, slug: str):
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length)
+        try:
+            params = json.loads(body)
+        except json.JSONDecodeError:
+            self.send_error(400, "Invalid JSON")
+            return
+        grid_overrides = {}
+        for key in ("col_gap", "row_gap", "outer_margin"):
+            if key in params and params[key] is not None:
+                grid_overrides[key] = int(params[key])
+        result = _relayout(slug, grid_overrides)
+        if result is None:
+            self.send_error(500, "Relayout failed")
+            return
+        self._respond(200, "application/json", json.dumps(result).encode())
 
     def _serve_sse(self):
         self.send_response(200)
