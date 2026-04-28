@@ -269,6 +269,7 @@ def _layout_panel(
     default_row_gap: int,
     bounds_map: dict[str, "_Bounds"] | None = None,
     min_height: int = 0,
+    min_width: int = 0,
 ) -> tuple[_Bounds, list[Primitive], list[Primitive]]:
     """Lay out a panel and its children.  Returns bounds + primitives."""
     col_width = panel.col_width or default_col_width
@@ -522,6 +523,10 @@ def _layout_panel(
     if min_height > 0:
         panel_h = max(panel_h, min_height)
 
+    # Enforce minimum width (from parent grid cell, ensures symmetric outdent)
+    if min_width > 0:
+        panel_w = max(panel_w, min_width)
+
     # Heading icon (needs panel_w)
     if panel.icon:
         fg.append(Icon(
@@ -543,7 +548,14 @@ def _layout_panel(
                          dashed=(panel_border == Border.DASHED))
         fg.insert(0, frame)
 
-    bounds = _Bounds(x, y, panel_w, panel_h, panel, children=child_bounds)
+    # Bounds: for outdenting panels, match the frame so arrows terminate
+    # at the visible frame edge rather than INSET inside it.
+    if panel.outdent and panel_border != Border.NONE:
+        bounds = _Bounds(x - INSET, y - INSET,
+                         panel_w + 2 * INSET, panel_h + 2 * INSET,
+                         panel, children=child_bounds)
+    else:
+        bounds = _Bounds(x, y, panel_w, panel_h, panel, children=child_bounds)
     return bounds, fg, bg
 
 
@@ -667,11 +679,12 @@ def _render_component(
     if isinstance(comp, Panel):
         bounds, comp_fg, comp_bg = _layout_panel(
             comp, x, y,
-            default_col_width=BLOCK_WIDTH,
+            default_col_width=default_width,
             default_col_gap=COMPACT_GAP,
             default_row_gap=COMPACT_GAP,
             bounds_map=bounds_map,
             min_height=min_height,
+            min_width=int(w) if w > 0 else 0,
         )
         fg.extend(comp_fg)
         bg.extend(comp_bg)

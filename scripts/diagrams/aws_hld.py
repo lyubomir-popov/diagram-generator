@@ -289,7 +289,7 @@ aws_hld = Diagram(
         Arrow(source="vpc_dev.bottom", target="ou_ccr.top"),
 
         # ── Row 4: organisational units (borderless wrapper) ──
-        # 4 sub-panels at col_width=240 (derived above).
+        # 4 sub-panels matching VPC col_width=184 for vertical alignment.
         Panel(
             id="ous_wrapper",
             border=Border.NONE,
@@ -303,7 +303,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=240,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -316,7 +316,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=240,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -330,7 +330,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=240,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -343,7 +343,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=240,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
