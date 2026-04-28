@@ -333,7 +333,7 @@ let componentTree = [];
 let overrides = {{}};
 let definitionHash = "";
 let isStale = false;
-let selectedId = null;
+let selectedIds = new Set();
 let dragState = null;
 let resizeState = null;
 let isDirty = false;
@@ -362,7 +362,7 @@ async function loadSVG() {{
   applyAllOverrides();
   bindInteraction();
   renderGridOverlay();
-  if (selectedId) selectComponent(selectedId);
+  reapplySelection();
 }}
 
 async function loadTree() {{
@@ -598,7 +598,7 @@ async function requestRelayout(colGap, rowGap, margin) {{
     applyAllOverrides();
     bindInteraction();
     renderGridOverlay();
-    if (selectedId) selectComponent(selectedId);
+    reapplySelection();
     // Rebuild component tree in sidebar
     buildTreeUI();
   }} catch (e) {{ /* ignore relayout errors */ }}
@@ -665,7 +665,7 @@ function performUndo() {{
   
   // Update UI
   applyAllOverrides();
-  if (selectedId) updateInspector(selectedId);
+  if (selectedIds.size === 1) updateInspector([...selectedIds][0]);
   updateOverrideSummary();
   refreshTreeColors();
   
@@ -689,7 +689,7 @@ function performRedo() {{
   
   // Update UI
   applyAllOverrides();
-  if (selectedId) updateInspector(selectedId);
+  if (selectedIds.size === 1) updateInspector([...selectedIds][0]);
   updateOverrideSummary();
   refreshTreeColors();
   
@@ -973,7 +973,7 @@ function applyAllOverrides() {{
   }}
 
   // Refresh resize handles if selected
-  if (selectedId) showResizeHandles(selectedId);
+  if (selectedIds.size > 0) showResizeHandles([...selectedIds].pop());
 }}
 
 // ---- Interaction ----
@@ -988,7 +988,7 @@ function buildTreeUI() {{
       item.style.paddingLeft = (8 + depth * 12) + "px";
       item.textContent = node.id;
       if (overrides[node.id]) item.style.color = "#E95420";
-      item.onclick = (e) => {{ e.stopPropagation(); selectComponent(node.id); }};
+      item.onclick = (e) => {{ e.stopPropagation(); selectComponent(node.id, e.shiftKey); }};
       container.appendChild(item);
       if (node.children && node.children.length > 0) buildTree(node.children, container, depth + 1);
     }}
@@ -1118,9 +1118,28 @@ function onSvgMouseDown(e) {{
   
   if (!deepestComponent || e.button !== 0) return;
   const cid = deepestComponent.dataset.componentId;
-  const own = getOwnDelta(cid);
-  dragState = {{ cid, startX: e.clientX, startY: e.clientY,
-                origDx: own.dx, origDy: own.dy, hasMoved: false, snapshotRecorded: false }};
+
+  // Shift+click: toggle additive selection, no drag
+  if (e.shiftKey) {{
+    selectComponent(cid, true);
+    e.preventDefault();
+    return;
+  }}
+
+  // Determine which components to drag
+  let dragCids;
+  if (selectedIds.has(cid)) {{
+    dragCids = [...selectedIds];
+  }} else {{
+    dragCids = [cid];
+  }}
+  const origDeltas = {{}};
+  for (const id of dragCids) {{
+    const own = getOwnDelta(id);
+    origDeltas[id] = {{ dx: own.dx, dy: own.dy }};
+  }}
+  dragState = {{ cid, cids: dragCids, startX: e.clientX, startY: e.clientY,
+                origDeltas, hasMoved: false, snapshotRecorded: false }};
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragUp);
   e.preventDefault();
@@ -1137,19 +1156,26 @@ function onDragMove(e) {{
     recordSnapshot();
     dragState.snapshotRecorded = true;
   }}
-  const newDx = Math.round((dragState.origDx + dx) / 4) * 4;
-  const newDy = Math.round((dragState.origDy + dy) / 4) * 4;
-  setOverride(dragState.cid, {{ dx: newDx, dy: newDy }});
+  for (const id of dragState.cids) {{
+    const orig = dragState.origDeltas[id];
+    const newDx = Math.round((orig.dx + dx) / 4) * 4;
+    const newDy = Math.round((orig.dy + dy) / 4) * 4;
+    setOverride(id, {{ dx: newDx, dy: newDy }});
+  }}
   applyAllOverrides();
-  if (selectedId === dragState.cid) updateInspector(dragState.cid);
+  if (selectedIds.has(dragState.cid) && selectedIds.size === 1) updateInspector(dragState.cid);
 }}
 
 function onDragUp() {{
   document.removeEventListener("mousemove", onDragMove);
   document.removeEventListener("mouseup", onDragUp);
   if (dragState && dragState.hasMoved) {{
-    cleanOverride(dragState.cid);
-    selectComponent(dragState.cid);
+    for (const id of dragState.cids) cleanOverride(id);
+    if (dragState.cids.length === 1) {{
+      selectComponent(dragState.cid);
+    }} else {{
+      reapplySelection();
+    }}
   }} else if (dragState) {{
     selectComponent(dragState.cid);
   }}
@@ -1303,7 +1329,7 @@ function onResizeMove(e) {{
   
   setOverride(resizeState.cid, {{ dx: newDx, dy: newDy, dw: newDw, dh: newDh }});
   applyAllOverrides();
-  if (selectedId === resizeState.cid) updateInspector(resizeState.cid);
+  if (selectedIds.has(resizeState.cid)) updateInspector(resizeState.cid);
 }}
 
 function onResizeUp() {{
@@ -1334,22 +1360,56 @@ function cleanOverride(cid) {{
 
 // ---- Selection & Inspector ----
 
-function selectComponent(cid) {{
-  selectedId = cid;
+function selectComponent(cid, additive) {{
+  if (additive) {{
+    if (selectedIds.has(cid)) {{
+      selectedIds.delete(cid);
+    }} else {{
+      selectedIds.add(cid);
+    }}
+  }} else {{
+    selectedIds.clear();
+    selectedIds.add(cid);
+  }}
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
   svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
-  svg.querySelectorAll('[data-component-id="' + cid + '"]')
-    .forEach(g => g.classList.add("dg-selected"));
+  selectedIds.forEach(id => {{
+    svg.querySelectorAll('[data-component-id="' + id + '"]')
+      .forEach(g => g.classList.add("dg-selected"));
+  }});
   document.querySelectorAll(".tree-item").forEach(el => {{
-    el.classList.toggle("selected", el.textContent === cid);
+    el.classList.toggle("selected", selectedIds.has(el.textContent));
   }});
   showResizeHandles(cid);
-  updateInspector(cid);
+  if (selectedIds.size === 1) {{
+    updateInspector(cid);
+  }} else if (selectedIds.size > 1) {{
+    document.getElementById("inspector").innerHTML =
+      '<div style="color:#555">' + selectedIds.size + ' components selected. Drag to move all.</div>';
+  }} else {{
+    document.getElementById("inspector").innerHTML =
+      '<div style="color:#555">Click a component to inspect it.</div>';
+  }}
+}}
+
+function reapplySelection() {{
+  const svg = document.querySelector("#stage svg");
+  if (!svg || selectedIds.size === 0) return;
+  svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
+  selectedIds.forEach(id => {{
+    svg.querySelectorAll('[data-component-id="' + id + '"]')
+      .forEach(g => g.classList.add("dg-selected"));
+  }});
+  document.querySelectorAll(".tree-item").forEach(el => {{
+    el.classList.toggle("selected", selectedIds.has(el.textContent));
+  }});
+  const primary = [...selectedIds].pop();
+  if (primary) showResizeHandles(primary);
 }}
 
 function clearSelection() {{
-  selectedId = null;
+  selectedIds.clear();
   const svg = document.querySelector("#stage svg");
   if (svg) svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
   removeResizeHandles();
@@ -1421,7 +1481,7 @@ function clearOverride(cid) {{
   delete overrides[cid];
   setDirty(true);
   applyAllOverrides();
-  if (selectedId === cid) updateInspector(cid);
+  if (selectedIds.has(cid)) updateInspector(cid);
 }}
 
 function updateOverrideSummary() {{
@@ -1479,7 +1539,7 @@ document.getElementById("btn-clear-all").addEventListener("click", () => {{
   overrides = {{}};
   setDirty(true);
   applyAllOverrides();
-  if (selectedId) updateInspector(selectedId);
+  if (selectedIds.size === 1) updateInspector([...selectedIds][0]);
 }});
 
 // Keyboard shortcuts: Ctrl+S to save, Ctrl+Z to undo, Ctrl+Shift+Z/Ctrl+Y to redo, arrows to nudge
@@ -1497,21 +1557,24 @@ document.addEventListener("keydown", (e) => {{
     performRedo();
   }} else if ((e.key === "w" || e.key === "W") && !e.ctrlKey && !e.metaKey && !e.altKey) {{
     cycleGuideMode();
-  }} else if (selectedId && !e.ctrlKey && !e.metaKey && !e.altKey &&
+  }} else if (selectedIds.size > 0 && !e.ctrlKey && !e.metaKey && !e.altKey &&
              ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {{
     e.preventDefault();
     const step = e.shiftKey ? 8 : 1;
-    const own = getOwnDelta(selectedId);
-    let dx = own.dx, dy = own.dy;
-    if (e.key === "ArrowUp") dy -= step;
-    else if (e.key === "ArrowDown") dy += step;
-    else if (e.key === "ArrowLeft") dx -= step;
-    else if (e.key === "ArrowRight") dx += step;
     recordSnapshot();
-    setOverride(selectedId, {{ dx, dy }});
+    selectedIds.forEach(id => {{
+      const own = getOwnDelta(id);
+      let dx = own.dx, dy = own.dy;
+      if (e.key === "ArrowUp") dy -= step;
+      else if (e.key === "ArrowDown") dy += step;
+      else if (e.key === "ArrowLeft") dx -= step;
+      else if (e.key === "ArrowRight") dx += step;
+      setOverride(id, {{ dx, dy }});
+    }});
     applyAllOverrides();
-    showResizeHandles(selectedId);
-    updateInspector(selectedId);
+    const primary = [...selectedIds].pop();
+    if (primary) showResizeHandles(primary);
+    if (selectedIds.size === 1) updateInspector([...selectedIds][0]);
   }}
 }});
 
