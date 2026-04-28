@@ -7,11 +7,14 @@ diagram-generator.code-workspace
 diagrams/1.input/
 diagrams/2.output/
 
-# Ignore generated visual-diff comparison PNGs
-diagrams/3.compare/visual-diff/
+# Ignore comparison pages (contain company diagram screenshots)
+diagrams/3.compare/
 
 # Ignore brand reference files
 diagrams/0.reference/_BRND-3284.drawio.svg
 diagrams/0.reference/onbrand-reference.png
+
+# Ignore company-specific diagram definitions
+scripts/diagrams/aws_hld.py
 
 image.png

@@ -152,6 +152,16 @@ Layers 1–4 are done. Layer 5 (rollout) and the typography weight audit are sup
 - [—] Layer 5 – roll out to remaining functions → superseded by Step 6
 - [—] Typography weight audit → handled automatically by declarative model
 
+### Interactive preview server – defects and missing features
+
+Component IDs, drag-to-move, resize handles, and override persistence are working. The following issues were identified during user testing:
+
+- [ ] **Click targeting selects parent instead of child.** Clicking a nested component (e.g. a box inside a panel) selects the parent panel because `e.target.closest("[data-component-id]")` walks up and hits the outermost group first. Fix: walk up to find the *innermost* (deepest-nested) `data-component-id` group, not the outermost.
+- [ ] **Cannot select nested items.** Related to the above – child components inside panels are unreachable via click. The tree sidebar works but direct SVG click should prefer the deepest match.
+- [ ] **No undo.** Moving or resizing a component is immediately applied with no way to revert. Add Ctrl+Z / Ctrl+Shift+Z undo/redo stack for override changes. This is crucial for interactive drafting.
+- [ ] **Resize only works bottom-right.** Handles only grow width rightward and height downward. To make a component wider to the left, the user must reposition then resize – a 2-step operation. Add top-left, top, and left resize handles that shift position (dx/dy) while adjusting size (dw/dh) so the opposite edge stays anchored.
+- [ ] **Explicit save button.** Currently every drag auto-saves to the override JSON. Add a manual "Save" button and only persist on explicit save, so accidental drags don't pollute the override file.
+
 ### Previously active
 
 - [x] Ingest typography, spacing, and grid specs from the broader design language into `DIAGRAM.md` frontmatter and `scripts/diagram_shared.py`.
