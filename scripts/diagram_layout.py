@@ -658,9 +658,11 @@ def _render_component(
     bg: list = []
 
     if isinstance(comp, Panel):
+        # Use BLOCK_WIDTH as default (same as _natural_size) so the panel
+        # renders at its natural width and doesn't overflow its grid cell.
         bounds, comp_fg, comp_bg = _layout_panel(
             comp, x, y,
-            default_col_width=default_width,
+            default_col_width=BLOCK_WIDTH,
             default_col_gap=COMPACT_GAP,
             default_row_gap=COMPACT_GAP,
             bounds_map=bounds_map,

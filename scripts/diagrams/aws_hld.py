@@ -2,25 +2,24 @@
 
 Declarative definition using the diagram model.
 
-Grid derivation (5 columns):
-  Cols 0, 3, 4 grow to 208 from single-span panels (192 + 2 × INSET).
-  Cols 1, 2 stay 192 (only multi-span Core or standard boxes).
-  Total = 208 + 192 + 192 + 208 + 208 = 1008, + 4 × 32 = 1136.
-
-VPC_Accounts (col_span=5):
-  Cell = 1136, content = 1136 − 16 = 1120.
-  5 sub-panels + 4 × 32 → sp_outer = (1120 − 128) / 5 ≈ 200.
-  sp col_width = 200 − 16 = 184. → set 180 for safety margin.
+Grid derivation (5 columns, col_width=208):
+  All 5 columns are 208px (panel outer width: 8+192+8 = 208).
+  Total = 5 × 208 + 4 × 32 = 1168.
 
 Core (col_span=2):
-  Cell = 192 + 192 + 32 = 416, content = 416 − 16 = 400.
-  2 sub-panels + 32 → sp_outer = (400 − 32) / 2 = 184.
-  sp col_width = 184 − 16 = 168.
+  Cell = 2 × 208 + 32 = 448. Content = 448 − 16 = 432.
+  2 sub-panels + 32 → sp_outer = (432 − 32) / 2 = 200.
+  Sub-panel col_width = 200 − 16 = 184.
+
+VPC_Accounts (col_span=5):
+  Cell = 1168. Content = 1168 − 16 = 1152.
+  5 sub-panels + 4 × 32 → sp_outer = (1152 − 128) / 5 = 204 (snapped).
+  sp col_width = 204 − 16 = 188.
 
 OUs wrapper (borderless, col_span=5):
-  Cell = 1136, content = 1136 (pad=0).
-  4 sub-panels + 3 × 32 → sp_outer = (1136 − 96) / 4 = 260.
-  sp col_width = 260 − 16 = 244. → set 240 for safety.
+  Cell = 1168. Content = 1168 (pad=0).
+  4 sub-panels + 3 × 32 → sp_outer = (1168 − 96) / 4 = 268.
+  sp col_width = 268 − 16 = 252.
 """
 
 from __future__ import annotations
@@ -54,6 +53,7 @@ aws_hld = Diagram(
     title="AWS high level design",
     arrangement=Diagram.Arrangement.GRID,
     cols=5,
+    col_width=208,
     # col_gap and row_gap default to GRID_GUTTER (32)
     outer_margin=32,
     components=[
@@ -83,9 +83,9 @@ aws_hld = Diagram(
         ),
 
         # Core spans 2 columns; contains Logging + Network Services.
-        # Cell = 192 + 192 + 32 = 416. Content = 416 − 16 = 400.
-        # Two sub-panels + 32px gap → sp_outer = (400 − 32) / 2 = 184.
-        # Sub-panel col_width = 184 − 16 = 168.
+        # Cell = 2 × 208 + 32 = 448. Content = 448 − 16 = 432.
+        # Two sub-panels + 32px gap → sp_outer = (432 − 32) / 2 = 200.
+        # Sub-panel col_width = 200 − 16 = 184.
         Panel(
             id="core",
             heading=_heading("Core"),
@@ -100,7 +100,7 @@ aws_hld = Diagram(
                     icon="Document.svg",
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=168,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[
@@ -116,7 +116,7 @@ aws_hld = Diagram(
                     icon="Networking.svg",
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=168,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC")], icon="Network.svg", row=0),
@@ -210,15 +210,15 @@ aws_hld = Diagram(
 
         # ── Row 3: VPC accounts (dashed wrapper) ──
         # Cell = 1136. Content = 1136 − 16 = 1120.
-        # 5 sub-panels + 4 × 32 → sp_outer = (1120 − 128) / 5 ≈ 198 → 196.
-        # col_width = 196 − 16 = 180.
+        # 5 sub-panels + 4 × 32 → sp_outer = (1152 − 128) / 5 = 204 (snapped).
+        # col_width = 204 − 16 = 188.
         Panel(
             id="vpc_accounts",
             heading=_heading("VPC_Accounts"),
             icon="Document management.svg",
             border=Border.DASHED,
             fill=Fill.WHITE,
-            col_width=180,
+            col_width=188,
             col_gap=32,
             col=0, row=3, col_span=5,
             children=[
@@ -227,7 +227,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-production"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=188,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")], row=0),
@@ -239,7 +239,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-preprod"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=188,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -250,7 +250,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-test"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=188,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -261,7 +261,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-dev"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=188,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -272,7 +272,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-sandbox"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=188,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -288,7 +288,9 @@ aws_hld = Diagram(
         Arrow(source="vpc_dev.bottom", target="ou_ccr.top"),
 
         # ── Row 4: organisational units (borderless wrapper) ──
-        # 4 sub-panels matching VPC col_width=180 for vertical alignment.
+        # Cell = 1168 (borderless, pad=0). Content = 1168.
+        # 4 sub-panels + 3 × 32 → sp_outer = (1168 − 96) / 4 = 268.
+        # col_width = 268 − 16 = 252.
         Panel(
             id="ous_wrapper",
             border=Border.NONE,
@@ -302,7 +304,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=180,
+                    col_width=252,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -315,7 +317,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=180,
+                    col_width=252,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -329,7 +331,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=180,
+                    col_width=252,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
@@ -342,7 +344,7 @@ aws_hld = Diagram(
                     icon="Document management.svg",
                     fill=Fill.WHITE,
                     cols=1,
-                    col_width=180,
+                    col_width=252,
                     row_gap=8,
                     children=[
                         Box(label=[_body("production")], fill=Fill.GREY, row=0),
