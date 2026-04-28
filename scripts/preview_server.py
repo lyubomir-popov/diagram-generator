@@ -1482,7 +1482,7 @@ document.getElementById("btn-clear-all").addEventListener("click", () => {{
   if (selectedId) updateInspector(selectedId);
 }});
 
-// Keyboard shortcuts: Ctrl+S to save, Ctrl+Z to undo, Ctrl+Shift+Z/Ctrl+Y to redo
+// Keyboard shortcuts: Ctrl+S to save, Ctrl+Z to undo, Ctrl+Shift+Z/Ctrl+Y to redo, arrows to nudge
 document.addEventListener("keydown", (e) => {{
   if (e.ctrlKey && e.key === "s") {{
     e.preventDefault();
@@ -1497,6 +1497,21 @@ document.addEventListener("keydown", (e) => {{
     performRedo();
   }} else if ((e.key === "w" || e.key === "W") && !e.ctrlKey && !e.metaKey && !e.altKey) {{
     cycleGuideMode();
+  }} else if (selectedId && !e.ctrlKey && !e.metaKey && !e.altKey &&
+             ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {{
+    e.preventDefault();
+    const step = e.shiftKey ? 8 : 1;
+    const own = getOwnDelta(selectedId);
+    let dx = own.dx, dy = own.dy;
+    if (e.key === "ArrowUp") dy -= step;
+    else if (e.key === "ArrowDown") dy += step;
+    else if (e.key === "ArrowLeft") dx -= step;
+    else if (e.key === "ArrowRight") dx += step;
+    recordSnapshot();
+    setOverride(selectedId, {{ dx, dy }});
+    applyAllOverrides();
+    showResizeHandles(selectedId);
+    updateInspector(selectedId);
   }}
 }});
 
