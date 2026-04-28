@@ -84,7 +84,7 @@ PAIRS = [
         "slug": "aws-hld",
         "title": "AWS High Level Design",
         "before": "complex-tests/1.jpg",
-        "after": "aws-hld-onbrand.svg",
+        "after": "aws-hld-onbrand-v2.svg",
     },
     {
         "slug": "layer3-mpls",
