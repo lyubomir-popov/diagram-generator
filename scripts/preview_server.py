@@ -334,6 +334,7 @@ let overrides = {{}};
 let definitionHash = "";
 let isStale = false;
 let selectedIds = new Set();
+let selectionDepth = 0;
 let dragState = null;
 let resizeState = null;
 let isDirty = false;
@@ -714,6 +715,28 @@ function getOwnDelta(cid) {{
   return {{ dx: o.dx || 0, dy: o.dy || 0, dw: o.dw || 0, dh: o.dh || 0 }};
 }}
 
+function findComponentAtDepth(x, y, targetDepth) {{
+  function walk(nodes, depth) {{
+    for (const node of nodes) {{
+      const eff = getEffectiveDelta(node.id);
+      const own = getOwnDelta(node.id);
+      const nx = node.x + eff.dx;
+      const ny = node.y + eff.dy;
+      const nw = node.width + own.dw;
+      const nh = node.height + own.dh;
+      if (x >= nx && x <= nx + nw && y >= ny && y <= ny + nh) {{
+        if (depth === targetDepth) return node.id;
+        if (node.children && node.children.length > 0 && depth < targetDepth) {{
+          const child = walk(node.children, depth + 1);
+          if (child) return child;
+        }}
+      }}
+    }}
+    return null;
+  }}
+  return walk(componentTree, 0);
+}}
+
 function getAncestors(cid) {{
   const path = [];
   function walk(nodes, trail) {{
@@ -1040,34 +1063,17 @@ function bindInteraction() {{
 
   // Mouse handlers on SVG
   svg.addEventListener("mousedown", onSvgMouseDown);
+  svg.addEventListener("dblclick", onSvgDblClick);
   svg.addEventListener("mouseover", (e) => {{
     if (dragState) return;
-    
-    // Find the deepest component at hover point (same logic as click)
-    const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
-    let deepestComponent = null;
-    let maxDepth = -1;
-    
-    for (const el of elementsAtPoint) {{
-      const componentEl = el.closest("[data-component-id]");
-      if (componentEl) {{
-        // Calculate depth by counting parent elements
-        let depth = 0;
-        let parent = componentEl.parentElement;
-        while (parent && parent !== svg) {{
-          depth++;
-          parent = parent.parentElement;
-        }}
-        if (depth > maxDepth) {{
-          maxDepth = depth;
-          deepestComponent = componentEl;
-        }}
-      }}
-    }}
-    
-    if (deepestComponent) {{
-      svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
-      svg.querySelectorAll('[data-component-id="' + deepestComponent.dataset.componentId + '"]')
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const hoverCid = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
+    svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
+    if (hoverCid) {{
+      svg.querySelectorAll('[data-component-id="' + hoverCid + '"]')
         .forEach(el => el.classList.add("dg-hover"));
     }}
   }});
@@ -1080,6 +1086,21 @@ function bindInteraction() {{
 
 // ---- Drag (move) ----
 
+function onSvgDblClick(e) {{
+  if (e.target.classList.contains("dg-handle")) return;
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  const deeper = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth + 1);
+  if (deeper) {{
+    selectionDepth++;
+    selectComponent(deeper, false);
+  }}
+}}
+
 function onSvgMouseDown(e) {{
   // Check if clicking a resize handle
   if (e.target.classList.contains("dg-handle")) {{
@@ -1087,58 +1108,57 @@ function onSvgMouseDown(e) {{
     return;
   }}
   
-  // Find the deepest (innermost) component at the click point
   const svg = document.querySelector("#stage svg");
   const pt = svg.createSVGPoint();
   pt.x = e.clientX;
   pt.y = e.clientY;
   const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
   
-  // Get all elements at this point and find the deepest one with data-component-id
-  const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
-  let deepestComponent = null;
-  let maxDepth = -1;
+  // Find component at current selectionDepth (shallowest = depth 0 by default)
+  const cid = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
+  // Fall back: if nothing at current depth, try top-level
+  const effectiveCid = cid || findComponentAtDepth(svgPt.x, svgPt.y, 0);
   
-  for (const el of elementsAtPoint) {{
-    const componentEl = el.closest("[data-component-id]");
-    if (componentEl) {{
-      // Calculate depth by counting parent elements
-      let depth = 0;
-      let parent = componentEl.parentElement;
-      while (parent && parent !== svg) {{
-        depth++;
-        parent = parent.parentElement;
-      }}
-      if (depth > maxDepth) {{
-        maxDepth = depth;
-        deepestComponent = componentEl;
-      }}
-    }}
+  if (!effectiveCid || e.button !== 0) return;
+  
+  // If clicking a different top-level group, reset to depth 0
+  const clickedTopLevel = findComponentAtDepth(svgPt.x, svgPt.y, 0);
+  const currentTopLevel = selectedIds.size > 0
+    ? findComponentAtDepth(svgPt.x, svgPt.y, 0)
+    : null;
+  let currentSelectedTopLevel = null;
+  if (selectedIds.size > 0) {{
+    const firstSelected = [...selectedIds][0];
+    // Walk ancestors to find the root
+    const ancestors = getAncestors(firstSelected);
+    currentSelectedTopLevel = ancestors.length > 0 ? ancestors[0] : firstSelected;
+  }}
+  if (clickedTopLevel && currentSelectedTopLevel && clickedTopLevel !== currentSelectedTopLevel) {{
+    selectionDepth = 0;
   }}
   
-  if (!deepestComponent || e.button !== 0) return;
-  const cid = deepestComponent.dataset.componentId;
+  const finalCid = selectionDepth === 0 ? (clickedTopLevel || effectiveCid) : effectiveCid;
 
   // Shift+click: toggle additive selection, no drag
   if (e.shiftKey) {{
-    selectComponent(cid, true);
+    selectComponent(finalCid, true);
     e.preventDefault();
     return;
   }}
 
   // Determine which components to drag
   let dragCids;
-  if (selectedIds.has(cid)) {{
+  if (selectedIds.has(finalCid)) {{
     dragCids = [...selectedIds];
   }} else {{
-    dragCids = [cid];
+    dragCids = [finalCid];
   }}
   const origDeltas = {{}};
   for (const id of dragCids) {{
     const own = getOwnDelta(id);
     origDeltas[id] = {{ dx: own.dx, dy: own.dy }};
   }}
-  dragState = {{ cid, cids: dragCids, startX: e.clientX, startY: e.clientY,
+  dragState = {{ cid: finalCid, cids: dragCids, startX: e.clientX, startY: e.clientY,
                 origDeltas, hasMoved: false, snapshotRecorded: false }};
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragUp);
@@ -1410,6 +1430,7 @@ function reapplySelection() {{
 
 function clearSelection() {{
   selectedIds.clear();
+  selectionDepth = 0;
   const svg = document.querySelector("#stage svg");
   if (svg) svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
   removeResizeHandles();
