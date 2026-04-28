@@ -71,12 +71,15 @@ The preview server (`scripts/preview_server.py`) provides hot-reload, click-to-s
 - Undo/redo stack, explicit save, keyboard shortcuts
 - 8-direction resize handles
 - Arrow and annotation selection and repositioning
+- Arrow attachment: endpoints track source/target box movement and resize
+- Grid overlay toggle (W key): cycles off → composition (columns, rows, gutters, margins) → baseline (4px grid lines) → off
 
 **Medium-term:**
 - Nested grid controls: set panel grid dimensions (rows, cols), gutters, and padding interactively
 - Auto-fill children: add/remove boxes in a panel and have the grid re-flow like Figma auto-layout
 - Resize a panel and have children redistribute proportionally
-- Snap-to-grid visual guides during drag
+- Snap-to-grid visual guides during drag (snap feedback lines, snap-to-column/row edges)
+- Grid field snapping: constrain drag destinations to grid cells rather than free 4px steps
 - Multi-select and group move
 - Property panel for editing text, fill, border style on selected component
 

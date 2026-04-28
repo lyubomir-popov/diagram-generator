@@ -169,6 +169,7 @@ Component IDs, drag-to-move, resize handles, and override persistence are workin
 - [x] **Icons and dashed lines not selectable.** Fixed: auto-generated separator IDs, transparent hit-area rects for icon clusters, wider hit-area lines for separators, CSS selection/hover feedback for non-rect components.
 - [x] **1D resize handles.** Fixed: arrows show handles along primary axis only (vertical: top/bottom, horizontal: left/right). Separators show left/right only.
 - [x] **Arrow attachment to boxes.** Fixed: arrows track their source/target box positions when boxes are dragged or resized. `source_ref`/`target_ref` fields on `ArrowPrimitive`, `source`/`target` on `ComponentInfo`, side-aware endpoint shifting in the preview JS.
+- [x] **Grid overlay toggle (W key).** Cycles off → composition → baseline → off. Composition mode shows columns, rows, gutters, margins, and content boundary. Baseline mode adds 4px horizontal grid lines. Grid data served via `/api/grid/<slug>` endpoint.
 
 ### Previously active
 

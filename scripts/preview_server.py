@@ -132,6 +132,13 @@ def _get_component_tree(slug: str) -> list[dict]:
     return []
 
 
+def _get_grid_info(slug: str) -> dict | None:
+    result = _get_layout_result(slug)
+    if result and result.grid_info:
+        return asdict(result.grid_info)
+    return None
+
+
 def _load_overrides(slug: str) -> dict:
     path = OVERRIDES_DIR / f"{slug}.json"
     if path.exists():
@@ -242,6 +249,12 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 .btn:disabled:hover {{ background: #2a2a2a; }}
 .btn-save.dirty {{ background: #E95420; border-color: #E95420; color: #fff; }}
 .btn-save.dirty:hover {{ background: #d44a1a; }}
+.guide-badge {{ position: fixed; top: 8px; right: 8px; padding: 4px 10px;
+               font-size: 11px; font-family: 'Ubuntu Mono', monospace;
+               border-radius: 3px; pointer-events: none; z-index: 9999;
+               display: none; }}
+.guide-badge.composition {{ display: block; background: rgba(100,160,255,0.25); color: #9cf; }}
+.guide-badge.baseline {{ display: block; background: rgba(100,255,160,0.25); color: #9f9; }}
 </style>
 </head>
 <body>
@@ -266,6 +279,7 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
   </div>
 </div>
 <div class="stage" id="stage"></div>
+<div class="guide-badge" id="guide-badge"></div>
 <script>
 "use strict";
 const SLUG = "{slug}";
@@ -281,6 +295,11 @@ let resizeState = null;
 let isDirty = false;
 const HANDLE_SIZE = 8;
 
+// ---- Guide mode (W key) ----
+const GUIDE_MODES = ["off", "composition", "baseline"];
+let guideMode = "off";
+let gridInfo = null;
+
 // ---- Undo/Redo stack ----
 let undoStack = [];
 let redoStack = [];
@@ -293,9 +312,11 @@ async function loadSVG() {{
   if (!resp.ok) return;
   document.getElementById("stage").innerHTML = await resp.text();
   await loadTree();
+  await loadGridInfo();
   await loadOverrides();
   applyAllOverrides();
   bindInteraction();
+  renderGridOverlay();
   if (selectedId) selectComponent(selectedId);
 }}
 
@@ -304,6 +325,151 @@ async function loadTree() {{
     const resp = await fetch("/api/tree/" + SLUG);
     if (resp.ok) componentTree = await resp.json();
   }} catch (e) {{ /* ignore */ }}
+}}
+
+async function loadGridInfo() {{
+  try {{
+    const resp = await fetch("/api/grid/" + SLUG);
+    if (resp.ok) gridInfo = await resp.json();
+  }} catch (e) {{ /* ignore */ }}
+}}
+
+function cycleGuideMode() {{
+  const idx = GUIDE_MODES.indexOf(guideMode);
+  guideMode = GUIDE_MODES[(idx + 1) % GUIDE_MODES.length];
+  renderGridOverlay();
+  const badge = document.getElementById("guide-badge");
+  badge.className = "guide-badge " + guideMode;
+  if (guideMode === "off") {{
+    badge.textContent = "";
+  }} else {{
+    badge.textContent = "Grid: " + guideMode + " (W)";
+  }}
+}}
+
+function renderGridOverlay() {{
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+  // Remove existing overlay
+  const existing = svg.querySelector("#dg-grid-overlay");
+  if (existing) existing.remove();
+
+  if (guideMode === "off" || !gridInfo) return;
+
+  const ns = "http://www.w3.org/2000/svg";
+  const g = document.createElementNS(ns, "g");
+  g.id = "dg-grid-overlay";
+  g.style.pointerEvents = "none";
+
+  const vb = svg.viewBox.baseVal;
+  const svgW = vb.width || parseFloat(svg.getAttribute("width") || svg.clientWidth);
+  const svgH = vb.height || parseFloat(svg.getAttribute("height") || svg.clientHeight);
+  const colXs = gridInfo.col_xs || [];
+  const colWidths = gridInfo.col_widths || [];
+  const rowYs = gridInfo.row_ys || [];
+  const rowHeights = gridInfo.row_heights || [];
+  const colGap = gridInfo.col_gap || 0;
+  const rowGap = gridInfo.row_gap || 0;
+  const margin = gridInfo.outer_margin || 0;
+
+  // -- Margin overlays --
+  const marginColor = "rgba(235,180,65,0.06)";
+  // top
+  if (margin > 0) {{
+    addRect(g, ns, 0, 0, svgW, margin, marginColor);
+    // bottom
+    addRect(g, ns, 0, svgH - margin, svgW, margin, marginColor);
+    // left
+    addRect(g, ns, 0, margin, margin, svgH - 2 * margin, marginColor);
+    // right
+    addRect(g, ns, svgW - margin, margin, margin, svgH - 2 * margin, marginColor);
+  }}
+
+  // -- Content area dashed boundary --
+  const boundary = document.createElementNS(ns, "rect");
+  boundary.setAttribute("x", margin);
+  boundary.setAttribute("y", margin);
+  boundary.setAttribute("width", svgW - 2 * margin);
+  boundary.setAttribute("height", svgH - 2 * margin);
+  boundary.setAttribute("fill", "none");
+  boundary.setAttribute("stroke", "rgba(255,255,255,0.18)");
+  boundary.setAttribute("stroke-dasharray", "6 4");
+  boundary.setAttribute("stroke-width", "1");
+  g.appendChild(boundary);
+
+  // -- Column bands --
+  const colFill = "rgba(100,160,255,0.04)";
+  const keylineColor = "rgba(100,160,255,0.22)";
+  for (let c = 0; c < colXs.length; c++) {{
+    const cx = colXs[c];
+    const cw = c < colWidths.length ? colWidths[c] : colWidths[colWidths.length - 1];
+    // Column fill
+    addRect(g, ns, cx, margin, cw, svgH - 2 * margin, colFill);
+    // Left keyline
+    const kl = document.createElementNS(ns, "line");
+    kl.setAttribute("x1", cx); kl.setAttribute("y1", margin);
+    kl.setAttribute("x2", cx); kl.setAttribute("y2", svgH - margin);
+    kl.setAttribute("stroke", keylineColor); kl.setAttribute("stroke-width", "0.5");
+    g.appendChild(kl);
+    // Right keyline
+    const kr = document.createElementNS(ns, "line");
+    kr.setAttribute("x1", cx + cw); kr.setAttribute("y1", margin);
+    kr.setAttribute("x2", cx + cw); kr.setAttribute("y2", svgH - margin);
+    kr.setAttribute("stroke", keylineColor); kr.setAttribute("stroke-width", "0.5");
+    g.appendChild(kr);
+    // Column gutter highlight (between columns)
+    if (c < colXs.length - 1 && colGap > 0) {{
+      addRect(g, ns, cx + cw, margin, colGap, svgH - 2 * margin, "rgba(255,100,100,0.03)");
+    }}
+  }}
+
+  // -- Row bands --
+  const rowFill = "rgba(100,255,160,0.03)";
+  const rowLine = "rgba(100,255,160,0.15)";
+  for (let r = 0; r < rowYs.length; r++) {{
+    const ry = rowYs[r];
+    const rh = r < rowHeights.length ? rowHeights[r] : rowHeights[rowHeights.length - 1];
+    // Row top line
+    const rl = document.createElementNS(ns, "line");
+    rl.setAttribute("x1", margin); rl.setAttribute("y1", ry);
+    rl.setAttribute("x2", svgW - margin); rl.setAttribute("y2", ry);
+    rl.setAttribute("stroke", rowLine); rl.setAttribute("stroke-width", "0.5");
+    g.appendChild(rl);
+    // Row bottom line
+    const rb = document.createElementNS(ns, "line");
+    rb.setAttribute("x1", margin); rb.setAttribute("y1", ry + rh);
+    rb.setAttribute("x2", svgW - margin); rb.setAttribute("y2", ry + rh);
+    rb.setAttribute("stroke", rowLine); rb.setAttribute("stroke-width", "0.5");
+    g.appendChild(rb);
+    // Row gutter highlight (between rows)
+    if (r < rowYs.length - 1 && rowGap > 0) {{
+      addRect(g, ns, margin, ry + rh, svgW - 2 * margin, rowGap, "rgba(255,100,100,0.03)");
+    }}
+  }}
+
+  // -- Baseline grid (4px lines, shown only in "baseline" mode) --
+  if (guideMode === "baseline") {{
+    const baselineStep = 4;
+    const baselineColor = "rgba(255,255,255,0.07)";
+    for (let y = margin; y <= svgH - margin; y += baselineStep) {{
+      const bl = document.createElementNS(ns, "line");
+      bl.setAttribute("x1", margin); bl.setAttribute("y1", y);
+      bl.setAttribute("x2", svgW - margin); bl.setAttribute("y2", y);
+      bl.setAttribute("stroke", baselineColor); bl.setAttribute("stroke-width", "0.25");
+      g.appendChild(bl);
+    }}
+  }}
+
+  // Insert overlay just before the closing of the SVG so it sits on top
+  svg.appendChild(g);
+}}
+
+function addRect(parent, ns, x, y, w, h, fill) {{
+  const r = document.createElementNS(ns, "rect");
+  r.setAttribute("x", x); r.setAttribute("y", y);
+  r.setAttribute("width", w); r.setAttribute("height", h);
+  r.setAttribute("fill", fill);
+  parent.appendChild(r);
 }}
 
 async function loadOverrides() {{
@@ -1089,7 +1255,7 @@ function updateInspector(cid) {{
   if (hasOverride) {{
     html += '<button class="danger" onclick="clearOverride(\\''+cid+'\\')">Clear override</button>';
   }}
-  html += '<div style="margin-top:8px;font-size:10px;color:#555">Drag to move &#xb7; handles to resize (4px grid).</div>';
+  html += '<div style="margin-top:8px;font-size:10px;color:#555">Drag to move &#xb7; handles to resize (4px grid) &#xb7; W to toggle grid overlay.</div>';
   document.getElementById("inspector").innerHTML = html;
 }}
 
@@ -1188,6 +1354,8 @@ document.addEventListener("keydown", (e) => {{
   }} else if ((e.ctrlKey && e.shiftKey && e.key === "Z") || (e.ctrlKey && e.key === "y")) {{
     e.preventDefault();
     performRedo();
+  }} else if ((e.key === "w" || e.key === "W") && !e.ctrlKey && !e.metaKey && !e.altKey) {{
+    cycleGuideMode();
   }}
 }});
 
@@ -1271,6 +1439,8 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self._serve_viewer(path[6:])
         elif path.startswith("/api/tree/"):
             self._serve_tree(path[10:])
+        elif path.startswith("/api/grid/"):
+            self._serve_grid(path[10:])
         elif path.startswith("/api/overrides/"):
             self._serve_overrides_get(path[15:])
         else:
@@ -1306,6 +1476,13 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
     def _serve_tree(self, slug: str):
         tree = _get_component_tree(slug)
         self._respond(200, "application/json", json.dumps(tree, indent=2).encode())
+
+    def _serve_grid(self, slug: str):
+        info = _get_grid_info(slug)
+        if info is None:
+            self._respond(200, "application/json", b"null")
+        else:
+            self._respond(200, "application/json", json.dumps(info, indent=2).encode())
 
     def _serve_overrides_get(self, slug: str):
         data = _load_overrides(slug)
