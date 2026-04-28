@@ -221,7 +221,11 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 .stage svg g.dg-selected > rect:first-of-type {{ outline: 2px solid #E95420; outline-offset: -1px; }}
 .stage svg g.dg-selected > line {{ filter: drop-shadow(0 0 2px #E95420); }}
 .stage svg g.dg-selected > polygon {{ filter: drop-shadow(0 0 2px #E95420); }}
+.stage svg g.dg-selected > .dg-icon {{ filter: drop-shadow(0 0 2px #E95420); }}
 .stage svg g.dg-hover > rect:first-of-type {{ outline: 1px dashed #6cc; outline-offset: -1px; }}
+.stage svg g.dg-hover > line {{ filter: drop-shadow(0 0 1px #6cc); }}
+.stage svg g.dg-hover > .dg-icon {{ filter: drop-shadow(0 0 1px #6cc); }}
+.stage svg .dg-icon > * {{ pointer-events: none; }}
 .dg-handle {{ fill: #E95420; stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }}
 .dg-handle.dg-handle-tl {{ cursor: nw-resize; }}
 .dg-handle.dg-handle-t {{ cursor: ns-resize; }}
@@ -459,6 +463,10 @@ function applyAllOverrides() {{
     r.setAttribute("width", r.getAttribute("data-orig-width"));
     r.setAttribute("height", r.getAttribute("data-orig-height"));
   }});
+  // Restore original icon transforms
+  svg.querySelectorAll(".dg-icon[data-orig-tx]").forEach(icon => {{
+    icon.setAttribute("transform", "translate(" + icon.getAttribute("data-orig-tx") + " " + icon.getAttribute("data-orig-ty") + ")");
+  }});
   // Save original sizes on first pass
   svg.querySelectorAll("[data-component-id] > rect:first-of-type").forEach(r => {{
     if (!r.hasAttribute("data-orig-width")) {{
@@ -480,6 +488,21 @@ function applyAllOverrides() {{
           const origH = parseFloat(rect.getAttribute("data-orig-height") || rect.getAttribute("height"));
           rect.setAttribute("width", Math.max(32, origW + eff.dw));
           rect.setAttribute("height", Math.max(32, origH + eff.dh));
+        }}
+        // Re-anchor top-right icons when width changes
+        if (eff.dw !== 0) {{
+          g.querySelectorAll(".dg-icon").forEach(icon => {{
+            if (!icon.hasAttribute("data-orig-tx")) {{
+              const m = (icon.getAttribute("transform") || "").match(/translate\(([\\d.e+-]+)[, ]\\s*([\\d.e+-]+)\)/);
+              if (m) {{
+                icon.setAttribute("data-orig-tx", m[1]);
+                icon.setAttribute("data-orig-ty", m[2]);
+              }}
+            }}
+            const otx = parseFloat(icon.getAttribute("data-orig-tx") || "0");
+            const oty = parseFloat(icon.getAttribute("data-orig-ty") || "0");
+            icon.setAttribute("transform", "translate(" + (otx + eff.dw) + " " + oty + ")");
+          }});
         }}
       }}
     }});
@@ -504,13 +527,16 @@ function bindInteraction() {{
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
 
-  // Add invisible wider hit-area lines for arrow components
+  // Add invisible wider hit-area lines for arrow and separator components
   const ns = "http://www.w3.org/2000/svg";
   svg.querySelectorAll("[data-component-id]").forEach(g => {{
+    const hasRect = g.querySelector("rect");
     const lines = g.querySelectorAll("line");
-    if (lines.length > 0 && !g.querySelector("rect")) {{
-      // This is likely an arrow group (lines + polygon, no rect)
+    const icons = g.querySelectorAll(".dg-icon");
+    if (lines.length > 0 && !hasRect) {{
+      // Arrow or separator group (lines, no rect) – add wider hit areas
       lines.forEach(ln => {{
+        if (ln.style.pointerEvents === "stroke") return; // already a hit area
         const hit = document.createElementNS(ns, "line");
         hit.setAttribute("x1", ln.getAttribute("x1"));
         hit.setAttribute("y1", ln.getAttribute("y1"));
@@ -521,6 +547,18 @@ function bindInteraction() {{
         hit.style.pointerEvents = "stroke";
         g.insertBefore(hit, g.firstChild);
       }});
+    }}
+    if (icons.length > 0 && !hasRect) {{
+      // Icon cluster (icons, no rect) – add invisible rect hit area
+      const bbox = g.getBBox();
+      const hit = document.createElementNS(ns, "rect");
+      hit.setAttribute("x", bbox.x);
+      hit.setAttribute("y", bbox.y);
+      hit.setAttribute("width", bbox.width);
+      hit.setAttribute("height", bbox.height);
+      hit.setAttribute("fill", "transparent");
+      hit.style.pointerEvents = "fill";
+      g.insertBefore(hit, g.firstChild);
     }}
   }});
 
@@ -661,6 +699,17 @@ function onDragUp() {{
 
 // ---- Resize ----
 
+function getComponentType(cid) {{
+  function find(nodes) {{
+    for (const n of nodes) {{
+      if (n.id === cid) return n.type;
+      if (n.children) {{ const r = find(n.children); if (r) return r; }}
+    }}
+    return null;
+  }}
+  return find(componentTree) || "Box";
+}}
+
 function showResizeHandles(cid) {{
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
@@ -698,22 +747,37 @@ function showResizeHandles(cid) {{
     r.setAttribute("data-resize-axis", axis);
     svg.appendChild(r);
   }}
-  // Top-left corner
-  mkHandle(minX, minY, "dg-handle-tl", "tl");
-  // Top-edge midpoint
-  mkHandle((minX + maxX) / 2, minY, "dg-handle-t", "t");
-  // Top-right corner
-  mkHandle(maxX, minY, "dg-handle-tr", "tr");
-  // Right-edge midpoint
-  mkHandle(maxX, (minY + maxY) / 2, "dg-handle-r", "r");
-  // Bottom-right corner
-  mkHandle(maxX, maxY, "dg-handle-br", "br");
-  // Bottom-edge midpoint
-  mkHandle((minX + maxX) / 2, maxY, "dg-handle-b", "b");
-  // Bottom-left corner
-  mkHandle(minX, maxY, "dg-handle-bl", "bl");
-  // Left-edge midpoint
-  mkHandle(minX, (minY + maxY) / 2, "dg-handle-l", "l");
+  const ctype = getComponentType(cid);
+  const isHLine = ctype === "Separator";
+  const isArrow = ctype === "arrow";
+  if (isHLine) {{
+    // Horizontal line: left and right edge handles only
+    mkHandle(minX, (minY + maxY) / 2, "dg-handle-l", "l");
+    mkHandle(maxX, (minY + maxY) / 2, "dg-handle-r", "r");
+  }} else if (isArrow) {{
+    // Arrow: resize along primary axis only
+    const w = maxX - minX;
+    const h = maxY - minY;
+    if (w > h) {{
+      // Primarily horizontal
+      mkHandle(minX, (minY + maxY) / 2, "dg-handle-l", "l");
+      mkHandle(maxX, (minY + maxY) / 2, "dg-handle-r", "r");
+    }} else {{
+      // Primarily vertical
+      mkHandle((minX + maxX) / 2, minY, "dg-handle-t", "t");
+      mkHandle((minX + maxX) / 2, maxY, "dg-handle-b", "b");
+    }}
+  }} else {{
+    // 2D component: all 8 handles
+    mkHandle(minX, minY, "dg-handle-tl", "tl");
+    mkHandle((minX + maxX) / 2, minY, "dg-handle-t", "t");
+    mkHandle(maxX, minY, "dg-handle-tr", "tr");
+    mkHandle(maxX, (minY + maxY) / 2, "dg-handle-r", "r");
+    mkHandle(maxX, maxY, "dg-handle-br", "br");
+    mkHandle((minX + maxX) / 2, maxY, "dg-handle-b", "b");
+    mkHandle(minX, maxY, "dg-handle-bl", "bl");
+    mkHandle(minX, (minY + maxY) / 2, "dg-handle-l", "l");
+  }}
 }}
 
 function removeResizeHandles() {{

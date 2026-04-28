@@ -116,7 +116,7 @@ def _text_block(x, y, lines) -> str:
 
 
 def _icon_group(x, y, name, fill=BLACK) -> str:
-    return f'  <g transform="translate({fmt(x)} {fmt(y)})">\n{load_icon(name, fill)}\n  </g>'
+    return f'  <g class="dg-icon" transform="translate({fmt(x)} {fmt(y)})">\n{load_icon(name, fill)}\n  </g>'
 
 
 def _polyline_arrow(points, color=ORANGE) -> str:
@@ -234,7 +234,7 @@ def _render_primitive(prim: Primitive) -> str:
         return _request_cluster(prim.x, prim.y)
     if isinstance(prim, DashedLinePrimitive):
         return (
-            f'  <line x1="{prim.x1}" y1="{prim.y1}" x2="{prim.x2}" y2="{prim.y2}"'
+            f'  <line class="dg-separator" x1="{prim.x1}" y1="{prim.y1}" x2="{prim.x2}" y2="{prim.y2}"'
             f' fill="none" stroke="#000000" stroke-width="1"'
             f' stroke-miterlimit="10" stroke-dasharray="{prim.dash}" />'
         )

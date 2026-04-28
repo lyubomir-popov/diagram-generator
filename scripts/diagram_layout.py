@@ -837,6 +837,10 @@ def _render_component(
         sep_h = BASELINE_UNIT  # thin row
         mid_y = y + sep_h / 2
         cid = comp.id or None
+        if not cid:
+            # Auto-generate id so separators appear in component tree
+            cid = f"sep_{int(x)}_{int(y)}"
+            comp.id = cid
         fg.append(DashedLinePrimitive(x, mid_y, x + w, mid_y, dash=comp.dash, component_id=cid))
         return _Bounds(x, y, int(w), sep_h, comp), fg, bg
 
