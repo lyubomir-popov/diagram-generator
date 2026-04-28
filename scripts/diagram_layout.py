@@ -105,6 +105,8 @@ class ArrowPrimitive:
     waypoints: list[tuple[float, float]] = field(default_factory=list)
     direction: str = "down"    # "down", "right", "up", "left"
     component_id: str | None = None
+    source_ref: str = ""   # original "id.side" reference
+    target_ref: str = ""   # original "id.side" reference
 
 
 @dataclass
@@ -196,6 +198,8 @@ class ComponentInfo:
     width: float
     height: float
     children: list["ComponentInfo"] = field(default_factory=list)
+    source: str = ""   # arrow only: "component_id.side"
+    target: str = ""   # arrow only: "component_id.side"
 
 
 @dataclass
@@ -948,6 +952,7 @@ def _resolve_arrows(
             start=src, end=tgt, color=arrow.color,
             waypoints=waypoints, direction=direction,
             component_id=arrow_id,
+            source_ref=arrow.source, target_ref=arrow.target,
         ))
     return prims
 
@@ -1230,6 +1235,8 @@ def layout(diagram: Diagram) -> LayoutResult:
                 x=min(xs), y=min(ys),
                 width=max(xs) - min(xs),
                 height=max(ys) - min(ys),
+                source=ap.source_ref,
+                target=ap.target_ref,
             ))
 
     return LayoutResult(width=width, height=height, background=bg,

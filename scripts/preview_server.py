@@ -467,6 +467,16 @@ function applyAllOverrides() {{
   svg.querySelectorAll(".dg-icon[data-orig-tx]").forEach(icon => {{
     icon.setAttribute("transform", "translate(" + icon.getAttribute("data-orig-tx") + " " + icon.getAttribute("data-orig-ty") + ")");
   }});
+  // Restore original arrow line coords
+  svg.querySelectorAll("line[data-orig-x1]").forEach(ln => {{
+    ln.setAttribute("x1", ln.getAttribute("data-orig-x1"));
+    ln.setAttribute("y1", ln.getAttribute("data-orig-y1"));
+    ln.setAttribute("x2", ln.getAttribute("data-orig-x2"));
+    ln.setAttribute("y2", ln.getAttribute("data-orig-y2"));
+  }});
+  svg.querySelectorAll("polygon[data-orig-points]").forEach(p => {{
+    p.setAttribute("points", p.getAttribute("data-orig-points"));
+  }});
   // Save original sizes on first pass
   svg.querySelectorAll("[data-component-id] > rect:first-of-type").forEach(r => {{
     if (!r.hasAttribute("data-orig-width")) {{
@@ -510,13 +520,155 @@ function applyAllOverrides() {{
   // Apply to tree components
   function visit(nodes) {{
     for (const node of nodes) {{
-      applyToComponent(node.id);
+      if (node.type !== "arrow") applyToComponent(node.id);
       if (node.children) visit(node.children);
     }}
   }}
   visit(componentTree);
   // Also handle overrides outside tree
   for (const cid of Object.keys(overrides)) applyToComponent(cid);
+
+  // Arrow attachment: adjust arrow positions based on source/target box overrides
+  for (const node of componentTree) {{
+    if (node.type !== "arrow" || (!node.source && !node.target)) continue;
+    const srcCid = node.source ? node.source.split(".")[0] : "";
+    const srcSide = node.source ? node.source.split(".").pop() : "";
+    const tgtCid = node.target ? node.target.split(".")[0] : "";
+    const tgtSide = node.target ? node.target.split(".").pop() : "";
+
+    // Compute the endpoint deltas from source/target box overrides
+    const srcEff = srcCid ? getEffectiveDelta(srcCid) : {{ dx: 0, dy: 0, dw: 0, dh: 0 }};
+    const tgtEff = tgtCid ? getEffectiveDelta(tgtCid) : {{ dx: 0, dy: 0, dw: 0, dh: 0 }};
+
+    // Side-aware endpoint shift: midpoint of the side shifts with dx/dy + half of dw/dh
+    function sideShift(eff, side) {{
+      let sdx = eff.dx, sdy = eff.dy;
+      if (side === "bottom") sdy += eff.dh;
+      if (side === "top") {{}} // top edge doesn't move on dh
+      if (side === "right") sdx += eff.dw;
+      if (side === "left") {{}} // left edge doesn't move on dw
+      // Side midpoint shifts by half the perpendicular size delta
+      if (side === "top" || side === "bottom") sdx += eff.dw / 2;
+      if (side === "left" || side === "right") sdy += eff.dh / 2;
+      return {{ dx: sdx, dy: sdy }};
+    }}
+
+    const srcShift = sideShift(srcEff, srcSide);
+    const tgtShift = sideShift(tgtEff, tgtSide);
+
+    // If both shifts are the same, just CSS-translate the whole arrow group
+    if (srcShift.dx === tgtShift.dx && srcShift.dy === tgtShift.dy) {{
+      if (srcShift.dx !== 0 || srcShift.dy !== 0) {{
+        svg.querySelectorAll('[data-component-id="' + node.id + '"]').forEach(g => {{
+          g.style.transform = "translate(" + srcShift.dx + "px, " + srcShift.dy + "px)";
+        }});
+      }}
+    }} else {{
+      // Different shifts for source vs target → modify individual line coords
+      svg.querySelectorAll('[data-component-id="' + node.id + '"]').forEach(g => {{
+        const lines = g.querySelectorAll("line");
+        const polys = g.querySelectorAll("polygon");
+        if (lines.length === 0) return;
+
+        // Save original coords on first pass
+        lines.forEach(ln => {{
+          if (!ln.hasAttribute("data-orig-x1")) {{
+            ln.setAttribute("data-orig-x1", ln.getAttribute("x1"));
+            ln.setAttribute("data-orig-y1", ln.getAttribute("y1"));
+            ln.setAttribute("data-orig-x2", ln.getAttribute("x2"));
+            ln.setAttribute("data-orig-y2", ln.getAttribute("y2"));
+          }}
+        }});
+        polys.forEach(p => {{
+          if (!p.hasAttribute("data-orig-points")) {{
+            p.setAttribute("data-orig-points", p.getAttribute("points"));
+          }}
+        }});
+
+        // Restore originals before applying new shifts
+        lines.forEach(ln => {{
+          ln.setAttribute("x1", ln.getAttribute("data-orig-x1"));
+          ln.setAttribute("y1", ln.getAttribute("data-orig-y1"));
+          ln.setAttribute("x2", ln.getAttribute("data-orig-x2"));
+          ln.setAttribute("y2", ln.getAttribute("data-orig-y2"));
+        }});
+        polys.forEach(p => {{
+          p.setAttribute("points", p.getAttribute("data-orig-points"));
+        }});
+
+        // The visible lines are those NOT used as hit areas (not transparent)
+        const visLines = Array.from(lines).filter(ln => ln.getAttribute("stroke") !== "transparent");
+        const hitLines = Array.from(lines).filter(ln => ln.getAttribute("stroke") === "transparent");
+
+        if (visLines.length === 0) return;
+
+        // First visible line starts from source, last visible line ends at target
+        // Shift first line's start by srcShift, last line's end by tgtShift
+        // For intermediate waypoints, interpolate or shift by srcShift
+        const first = visLines[0];
+        const last = visLines[visLines.length - 1];
+
+        // Shift source end (first line start)
+        const fx1 = parseFloat(first.getAttribute("x1")) + srcShift.dx;
+        const fy1 = parseFloat(first.getAttribute("y1")) + srcShift.dy;
+        first.setAttribute("x1", fx1);
+        first.setAttribute("y1", fy1);
+
+        // Shift target end (last line end)
+        const lx2 = parseFloat(last.getAttribute("x2")) + tgtShift.dx;
+        const ly2 = parseFloat(last.getAttribute("y2")) + tgtShift.dy;
+        last.setAttribute("x2", lx2);
+        last.setAttribute("y2", ly2);
+
+        // For multi-segment arrows, adjust waypoints (shared endpoints between segments)
+        if (visLines.length > 1) {{
+          // Shift intermediate connections: line end/next line start
+          // Linearly interpolate between source and target shifts for waypoints
+          for (let i = 0; i < visLines.length; i++) {{
+            const t = visLines.length > 1 ? i / (visLines.length - 1) : 0;
+            const nt = visLines.length > 1 ? (i + 1) / (visLines.length - 1) : 1;
+            const wdx = srcShift.dx + t * (tgtShift.dx - srcShift.dx);
+            const wdy = srcShift.dy + t * (tgtShift.dy - srcShift.dy);
+            const wdx2 = srcShift.dx + nt * (tgtShift.dx - srcShift.dx);
+            const wdy2 = srcShift.dy + nt * (tgtShift.dy - srcShift.dy);
+
+            if (i > 0) {{
+              // Adjust start of this segment (= waypoint)
+              visLines[i].setAttribute("x1", parseFloat(visLines[i].getAttribute("data-orig-x1") || visLines[i].getAttribute("x1")) + wdx);
+              visLines[i].setAttribute("y1", parseFloat(visLines[i].getAttribute("data-orig-y1") || visLines[i].getAttribute("y1")) + wdy);
+            }}
+            if (i < visLines.length - 1) {{
+              // Adjust end of this segment (= waypoint)
+              visLines[i].setAttribute("x2", parseFloat(visLines[i].getAttribute("data-orig-x2") || visLines[i].getAttribute("x2")) + wdx2);
+              visLines[i].setAttribute("y2", parseFloat(visLines[i].getAttribute("data-orig-y2") || visLines[i].getAttribute("y2")) + wdy2);
+            }}
+          }}
+        }}
+
+        // Shift arrowhead polygon by target shift
+        polys.forEach(p => {{
+          const origPts = p.getAttribute("data-orig-points");
+          const shifted = origPts.split(/[, ]+/).reduce((acc, v, i) => {{
+            if (i % 2 === 0) acc.push(parseFloat(v) + tgtShift.dx);
+            else acc[acc.length - 1] = acc[acc.length - 1] + "," + (parseFloat(v) + tgtShift.dy);
+            return acc;
+          }}, []).join(" ");
+          p.setAttribute("points", shifted);
+        }});
+
+        // Update hit-area lines to match
+        hitLines.forEach((hl, i) => {{
+          if (i < visLines.length) {{
+            hl.setAttribute("x1", visLines[i].getAttribute("x1"));
+            hl.setAttribute("y1", visLines[i].getAttribute("y1"));
+            hl.setAttribute("x2", visLines[i].getAttribute("x2"));
+            hl.setAttribute("y2", visLines[i].getAttribute("y2"));
+          }}
+        }});
+      }});
+    }}
+  }}
+
   // Refresh resize handles if selected
   if (selectedId) showResizeHandles(selectedId);
 }}

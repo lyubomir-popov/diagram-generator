@@ -165,6 +165,10 @@ Component IDs, drag-to-move, resize handles, and override persistence are workin
 - [x] **Undo records post-change state.** Fixed: snapshot is now recorded before the first actual drag/resize move, not after the action completes.
 - [x] **Text and icons block mouse selection.** Fixed: CSS `pointer-events: none` on `<text>`, `<image>`, and `<tspan>` children of component groups so clicks pass through to the parent `<g>`.
 - [x] **Arrows not selectable or moveable.** Fixed: arrows now carry `component_id` in layout, `data-component-id` in SVG, and invisible 12px-wide hit-area lines in the preview for easy click targeting. All component types (Helper, JaggedPanel, MatrixWidget, IconCluster, Terminal, Separator, Legend) now emit `component_id`.
+- [x] **Icon anchoring on resize.** Fixed: icons re-anchor to top-right corner when a box is resized via `dw` override. `.dg-icon` class on SVG icon groups enables JS targeting.
+- [x] **Icons and dashed lines not selectable.** Fixed: auto-generated separator IDs, transparent hit-area rects for icon clusters, wider hit-area lines for separators, CSS selection/hover feedback for non-rect components.
+- [x] **1D resize handles.** Fixed: arrows show handles along primary axis only (vertical: top/bottom, horizontal: left/right). Separators show left/right only.
+- [x] **Arrow attachment to boxes.** Fixed: arrows track their source/target box positions when boxes are dragged or resized. `source_ref`/`target_ref` fields on `ArrowPrimitive`, `source`/`target` on `ComponentInfo`, side-aware endpoint shifting in the preview JS.
 
 ### Previously active
 
