@@ -13,6 +13,7 @@ from diagram_render_svg import write_svg
 from diagram_render_drawio import write_drawio
 
 from diagrams.attention_qkv import attention_qkv
+from diagrams.aws_hld import aws_hld
 from diagrams.gpu_waiting_scheduler import gpu_waiting_scheduler
 from diagrams.inference_snaps import inference_snaps
 from diagrams.logic_data_vram import logic_data_vram
@@ -27,6 +28,7 @@ from diagram_shared import SVG_DIR, DRAWIO_DIR
 
 DIAGRAMS = [
     ("attention-qkv-onbrand", attention_qkv),
+    ("aws-hld-onbrand", aws_hld),
     ("gpu-waiting-scheduler-onbrand", gpu_waiting_scheduler),
     ("inference-snaps-onbrand", inference_snaps),
     ("logic-data-vram-onbrand", logic_data_vram),
