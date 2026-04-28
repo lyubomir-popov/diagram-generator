@@ -789,26 +789,30 @@ def _render_component(
         n = len(lines)
         line_step = int(lines[0]["line_step"]) if lines else BODY_LINE_STEP
         ch = n * line_step
-        fg.append(TextBlock(x, y, lines))
+        cid = comp.id or None
+        fg.append(TextBlock(x, y, lines, component_id=cid))
         return _Bounds(x, y, int(w), ch, comp), fg, bg
 
     elif isinstance(comp, (MemoryWall, JaggedPanel)):
         mw = comp.width or BLOCK_WIDTH
         mh = comp.height or BOX_MIN_HEIGHT
-        fg.append(JaggedRect(x, y, mw, mh))
-        fg.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(comp.label)))
+        cid = comp.id or None
+        fg.append(JaggedRect(x, y, mw, mh, component_id=cid))
+        fg.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(comp.label), component_id=cid))
         return _Bounds(x, y, mw, mh, comp), fg, bg
 
     elif isinstance(comp, MatrixWidget):
-        fg.append(MatrixTile(x, y, comp.label))
+        cid = comp.id or None
+        fg.append(MatrixTile(x, y, comp.label, component_id=cid))
         return _Bounds(x, y, MATRIX_SIZE, MATRIX_SIZE, comp), fg, bg
 
     elif isinstance(comp, IconCluster):
         n_icons = len(comp.icons)
         cw = ICON_SIZE * n_icons + COMPACT_GAP * max(0, n_icons - 1)
+        cid = comp.id or None
         ix = x
         for icon_name in comp.icons:
-            fg.append(Icon(ix, y, icon_name, fill=comp.fill))
+            fg.append(Icon(ix, y, icon_name, fill=comp.fill, component_id=cid))
             ix += ICON_SIZE + COMPACT_GAP
         return _Bounds(x, y, cw, ICON_SIZE, comp), fg, bg
 
@@ -824,21 +828,24 @@ def _render_component(
     elif isinstance(comp, Terminal):
         tw = comp.width or default_width
         th = BOX_MIN_HEIGHT
-        fg.append(TerminalBar(x, y, tw, th, comp.command, comp.font_family))
+        cid = comp.id or None
+        fg.append(TerminalBar(x, y, tw, th, comp.command, comp.font_family, component_id=cid))
         return _Bounds(x, y, tw, th, comp), fg, bg
 
     elif isinstance(comp, Separator):
         # Renders as a centered dashed horizontal line
         sep_h = BASELINE_UNIT  # thin row
         mid_y = y + sep_h / 2
-        fg.append(DashedLinePrimitive(x, mid_y, x + w, mid_y, dash=comp.dash))
+        cid = comp.id or None
+        fg.append(DashedLinePrimitive(x, mid_y, x + w, mid_y, dash=comp.dash, component_id=cid))
         return _Bounds(x, y, int(w), sep_h, comp), fg, bg
 
     elif isinstance(comp, Legend):
+        cid = comp.id or None
         lx = x
         for entry in comp.entries:
-            fg.append(CircleMarker(lx + 4, y + 10, 4, entry.color))
-            fg.append(TextBlock(lx + 16, y, [_make_line(entry.label, fill=HELPER_COLOR)]))
+            fg.append(CircleMarker(lx + 4, y + 10, 4, entry.color, component_id=cid))
+            fg.append(TextBlock(lx + 16, y, [_make_line(entry.label, fill=HELPER_COLOR)], component_id=cid))
             lx += 100
         return _Bounds(x, y, lx - x, 24, comp), fg, bg
 
@@ -866,11 +873,14 @@ def _resolve_arrows(
     segment is at least ARROW_EXIT_CLEARANCE long.
     """
     prims = []
-    for arrow in arrows:
+    for idx, arrow in enumerate(arrows):
         src = _resolve_anchor(arrow.source, bounds_map)
         tgt = _resolve_anchor(arrow.target, bounds_map)
         if not (src and tgt):
             continue
+
+        # Auto-generate arrow ID if not provided
+        arrow_id = arrow.id if arrow.id else f"arrow_{idx}"
 
         waypoints = list(arrow.waypoints)
 
@@ -933,6 +943,7 @@ def _resolve_arrows(
         prims.append(ArrowPrimitive(
             start=src, end=tgt, color=arrow.color,
             waypoints=waypoints, direction=direction,
+            component_id=arrow_id,
         ))
     return prims
 
@@ -1202,6 +1213,20 @@ def layout(diagram: Diagram) -> LayoutResult:
         ci = _bounds_to_component_info(b)
         if ci:
             component_tree.append(ci)
+
+    # Add arrows to component tree
+    for ap in arrow_prims:
+        if ap.component_id:
+            pts = [ap.start] + ap.waypoints + [ap.end]
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            component_tree.append(ComponentInfo(
+                id=ap.component_id,
+                type="arrow",
+                x=min(xs), y=min(ys),
+                width=max(xs) - min(xs),
+                height=max(ys) - min(ys),
+            ))
 
     return LayoutResult(width=width, height=height, background=bg,
                         foreground=fg, grid_info=grid_info,
