@@ -92,9 +92,7 @@ logic_data_vram = Diagram(
         ),
 
         # ── Row 2: VRAM fragmentation (col_span=2) ──
-        # Outer cell = 2 × 408 + 32 = 848.  Content = 848 − 16 = 832.
-        # Two sub-panels + 32px gap → each sub-panel outer = (832 − 32) / 2 = 400.
-        # Sub-panel content col_width = 400 − 2 × 8 = 384.
+        # Auto-fill derives sub-panel widths from parent cell.
         Panel(
             id="vram",
             heading=_heading("VRAM fragmentation"),
@@ -110,7 +108,6 @@ logic_data_vram = Diagram(
                     heading=_heading("Fragmented layout"),
                     icon="RAM.svg",
                     cols=1,
-                    col_width=384,
                     fill=Fill.GREY,
                     children=[
                         Bar(segments=[BarSegment(label=_body("10 GB"))]),
@@ -130,7 +127,6 @@ logic_data_vram = Diagram(
                     heading=_heading("Packed layout"),
                     icon="Memory.svg",
                     cols=1,
-                    col_width=384,
                     fill=Fill.GREY,
                     children=[
                         Bar(segments=[BarSegment(label=_body("24 GB GPU memory"))]),

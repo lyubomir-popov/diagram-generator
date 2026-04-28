@@ -422,10 +422,30 @@ def _layout_panel(
 
         sp_x = x + pad
         sp_results: list[tuple[Panel, _Bounds, list, list]] = []
+
+        # Auto-fill: derive sub-panel content width from the parent's
+        # available content span when the sub-panel has no explicit col_width.
+        n_subs = len(sub_panels)
+        parent_content_w = cols * col_width + (cols - 1) * col_gap
+        sp_outer_w = (parent_content_w - (n_subs - 1) * col_gap) / n_subs
+        sp_outer_w = round_up_to_grid(int(sp_outer_w))
+
         for sp in sub_panels:
+            # If sub-panel has explicit col_width, respect it; otherwise
+            # derive from the equal-share outer width minus its own padding,
+            # divided by its internal column count.
+            if sp.col_width is not None:
+                sp_default_cw = sp.col_width
+            else:
+                sp_pad = 0 if sp.effective_border == Border.NONE else INSET
+                sp_content = sp_outer_w - 2 * sp_pad
+                sp_n_cols = sp.cols if sp.cols and sp.cols > 0 else 1
+                sp_inner_gap = sp.col_gap if sp.col_gap is not None else col_gap
+                sp_default_cw = (sp_content - (sp_n_cols - 1) * sp_inner_gap) // sp_n_cols
+                sp_default_cw = round_up_to_grid(sp_default_cw)
             sp_bounds, sp_fg, sp_bg = _layout_panel(
                 sp, sp_x, content_y,
-                default_col_width=col_width,
+                default_col_width=sp_default_cw,
                 default_col_gap=col_gap,
                 default_row_gap=row_gap,
                 bounds_map=bounds_map,
@@ -658,11 +678,23 @@ def _render_component(
     bg: list = []
 
     if isinstance(comp, Panel):
-        # Use BLOCK_WIDTH as default (same as _natural_size) so the panel
-        # renders at its natural width and doesn't overflow its grid cell.
+        # Auto-fill: derive the panel's default content col_width from the
+        # cell width so panels fill their grid cells without manual math.
+        # For multi-column panels, divide content among N columns + gaps.
+        # Only constrain if the cell is larger than BLOCK_WIDTH (i.e. the
+        # cell has been explicitly sized); otherwise let content drive width.
+        panel_pad = 0 if comp.effective_border == Border.NONE else INSET
+        if w > 0 and int(w) > BLOCK_WIDTH:
+            content_w = int(w - 2 * panel_pad)
+            n_internal_cols = comp.cols if comp.cols and comp.cols > 0 else 1
+            internal_gap = comp.col_gap if comp.col_gap is not None else COMPACT_GAP
+            auto_cw = (content_w - (n_internal_cols - 1) * internal_gap) // n_internal_cols
+            auto_cw = round_up_to_grid(auto_cw)
+        else:
+            auto_cw = BLOCK_WIDTH
         bounds, comp_fg, comp_bg = _layout_panel(
             comp, x, y,
-            default_col_width=BLOCK_WIDTH,
+            default_col_width=auto_cw,
             default_col_gap=COMPACT_GAP,
             default_row_gap=COMPACT_GAP,
             bounds_map=bounds_map,
@@ -924,8 +956,6 @@ def layout(diagram: Diagram) -> LayoutResult:
 
     if diagram.arrangement == Diagram.Arrangement.GRID:
         # ── Müller-Brockmann grid: explicit cell placement ──
-        default_cw = diagram.col_width or BLOCK_WIDTH
-        default_rh = diagram.row_height or BOX_MIN_HEIGHT
 
         # 1. Determine grid dimensions from component placements
         max_col = 0
@@ -939,6 +969,17 @@ def layout(diagram: Diagram) -> LayoutResult:
             max_row = max(max_row, r + rs)
         n_cols = max(max_col, diagram.cols)
         n_rows = max_row
+
+        # Derive default column width:
+        # If canvas_width is set, divide available space equally.
+        # If col_width is set explicitly, use it.
+        # Otherwise fall back to BLOCK_WIDTH.
+        if diagram.canvas_width is not None:
+            content_w = diagram.canvas_width - 2 * outer - (n_cols - 1) * col_gap
+            default_cw = round_up_to_grid(content_w // n_cols)
+        else:
+            default_cw = diagram.col_width or BLOCK_WIDTH
+        default_rh = diagram.row_height or BOX_MIN_HEIGHT
 
         # 2. Compute natural sizes and build per-cell size requirements
         col_widths = [default_cw] * n_cols
@@ -962,6 +1003,16 @@ def layout(diagram: Diagram) -> LayoutResult:
         # Snap to grid
         col_widths = [round_up_to_grid(w) for w in col_widths]
         row_heights = [round_up_to_grid(h) for h in row_heights]
+
+        # When canvas_width is set, lock columns to the derived width
+        # so content-driven growth doesn't break the fixed canvas.
+        if diagram.canvas_width is not None:
+            col_widths = [default_cw] * n_cols
+
+        # Uniform rows: equalize all row heights to the tallest
+        if diagram.uniform_rows:
+            max_rh = max(row_heights)
+            row_heights = [max_rh] * n_rows
 
         # 3. Compute cumulative positions
         col_xs = []
@@ -1038,6 +1089,12 @@ def layout(diagram: Diagram) -> LayoutResult:
     max_y = max((b.y + b.height for b in all_bounds), default=0)
     width = round_up_to_grid(int(max_x) + outer)
     height = round_up_to_grid(int(max_y) + outer)
+
+    # Apply fixed canvas dimensions when set
+    if diagram.canvas_width is not None:
+        width = diagram.canvas_width
+    if diagram.canvas_height is not None:
+        height = diagram.canvas_height
 
     # Capture grid info for overlay visualisation
     grid_info: GridInfo | None = None
