@@ -233,7 +233,7 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 .stage svg g.dg-hover > line {{ filter: drop-shadow(0 0 1px #6cc); }}
 .stage svg g.dg-hover > .dg-icon {{ filter: drop-shadow(0 0 1px #6cc); }}
 .stage svg .dg-icon > * {{ pointer-events: none; }}
-.dg-handle {{ fill: #E95420; stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }}
+.dg-handle {{ fill: #F6B73C; stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }}
 .dg-handle.dg-handle-tl {{ cursor: nw-resize; }}
 .dg-handle.dg-handle-t {{ cursor: ns-resize; }}
 .dg-handle.dg-handle-tr {{ cursor: ne-resize; }}
@@ -255,6 +255,16 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
                display: none; }}
 .guide-badge.composition {{ display: block; background: rgba(100,160,255,0.25); color: #9cf; }}
 .guide-badge.baseline {{ display: block; background: rgba(100,255,160,0.25); color: #9f9; }}
+.grid-controls {{ font-size: 12px; }}
+.grid-controls .grid-row {{ display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }}
+.grid-controls .grid-label {{ color: #666; font-size: 10px; text-transform: uppercase;
+                             letter-spacing: 0.06em; min-width: 60px; }}
+.grid-controls input[type=number] {{ width: 52px; padding: 2px 4px; font-size: 12px;
+                                    font-family: 'Ubuntu Mono', monospace;
+                                    background: #2a2a2a; color: #e0e0e0; border: 1px solid #555;
+                                    border-radius: 3px; text-align: right; }}
+.grid-controls input[type=number]:focus {{ border-color: #6cc; outline: none; }}
+.grid-controls .unit {{ font-size: 10px; color: #555; }}
 </style>
 </head>
 <body>
@@ -268,6 +278,14 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
   </div>
   <h2>Components</h2>
   <div class="tree" id="tree"></div>
+  <h2>Grid</h2>
+  <div class="grid-controls" id="grid-controls">
+    <div class="grid-row"><span class="grid-label">Columns</span><input type="number" id="grid-cols" min="1" max="20" value="1"><span class="unit">cols</span></div>
+    <div class="grid-row"><span class="grid-label">Rows</span><input type="number" id="grid-rows" min="1" max="40" value="1"><span class="unit">rows</span></div>
+    <div class="grid-row"><span class="grid-label">Col gutter</span><input type="number" id="grid-col-gap" min="0" max="128" step="4" value="32"><span class="unit">px</span></div>
+    <div class="grid-row"><span class="grid-label">Row gutter</span><input type="number" id="grid-row-gap" min="0" max="128" step="4" value="32"><span class="unit">px</span></div>
+    <div class="grid-row"><span class="grid-label">Margin</span><input type="number" id="grid-margin" min="0" max="128" step="4" value="32"><span class="unit">px</span></div>
+  </div>
   <h2>Overrides</h2>
   <div id="override-summary" style="font-size:11px;color:#666">No overrides.</div>
   <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
@@ -313,6 +331,7 @@ async function loadSVG() {{
   document.getElementById("stage").innerHTML = await resp.text();
   await loadTree();
   await loadGridInfo();
+  populateGridControls();
   await loadOverrides();
   applyAllOverrides();
   bindInteraction();
@@ -471,6 +490,56 @@ function addRect(parent, ns, x, y, w, h, fill) {{
   r.setAttribute("fill", fill);
   parent.appendChild(r);
 }}
+
+function populateGridControls() {{
+  if (!gridInfo) return;
+  document.getElementById("grid-cols").value = (gridInfo.col_xs || []).length;
+  document.getElementById("grid-rows").value = (gridInfo.row_ys || []).length;
+  document.getElementById("grid-col-gap").value = gridInfo.col_gap || 0;
+  document.getElementById("grid-row-gap").value = gridInfo.row_gap || 0;
+  document.getElementById("grid-margin").value = gridInfo.outer_margin || 0;
+}}
+
+function onGridControlChange() {{
+  if (!gridInfo) return;
+  const cols = Math.max(1, parseInt(document.getElementById("grid-cols").value) || 1);
+  const rows = Math.max(1, parseInt(document.getElementById("grid-rows").value) || 1);
+  const colGap = Math.max(0, parseInt(document.getElementById("grid-col-gap").value) || 0);
+  const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
+  const margin = Math.max(0, parseInt(document.getElementById("grid-margin").value) || 0);
+
+  // Recompute grid geometry from the editable values
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+  const vb = svg.viewBox.baseVal;
+  const svgW = vb.width || parseFloat(svg.getAttribute("width") || svg.clientWidth);
+  const svgH = vb.height || parseFloat(svg.getAttribute("height") || svg.clientHeight);
+
+  const contentW = svgW - 2 * margin;
+  const contentH = svgH - 2 * margin;
+  const colW = cols > 1 ? Math.floor((contentW - (cols - 1) * colGap) / cols) : contentW;
+  const rowH = rows > 1 ? Math.floor((contentH - (rows - 1) * rowGap) / rows) : contentH;
+
+  const newColXs = [];
+  for (let c = 0; c < cols; c++) newColXs.push(margin + c * (colW + colGap));
+  const newColWidths = Array(cols).fill(colW);
+
+  const newRowYs = [];
+  for (let r = 0; r < rows; r++) newRowYs.push(margin + r * (rowH + rowGap));
+  const newRowHeights = Array(rows).fill(rowH);
+
+  gridInfo = {{
+    col_xs: newColXs, col_widths: newColWidths,
+    row_ys: newRowYs, row_heights: newRowHeights,
+    col_gap: colGap, row_gap: rowGap, outer_margin: margin,
+  }};
+  renderGridOverlay();
+}}
+
+// Bind grid control events
+["grid-cols", "grid-rows", "grid-col-gap", "grid-row-gap", "grid-margin"].forEach(id => {{
+  document.getElementById(id).addEventListener("input", onGridControlChange);
+}});
 
 async function loadOverrides() {{
   try {{
