@@ -256,58 +256,55 @@ Not every visible rectangle is a grid participant. Distinguish two roles:
 
 | Role | Examples | Alignment rule |
 |------|----------|----------------|
-| **Grid participant** | Standalone boxes, panels that own a grid cell | Outer edges define the grid column/row boundaries. Peer participants share column edges. |
-| **Wrapper** | Dashed grouping frames, frameless layout containers | Outer edges are **derived** from children + inset. A wrapper does not impose its own width on the grid — it wraps around content that is already grid-aligned. |
+| **Grid participant** | Standalone boxes, leaf panels (contain only boxes/bars) | Outer edges define the grid column/row boundaries. Content is inset by INSET. |
+| **Wrapper** | Dashed grouping frames, multi-span containers with sub-panels | Frame **outdents** beyond the grid cell. Content fills the cell exactly, keeping children aligned with the outer grid. |
 
-**The key invariant:** when a wrapper and standalone boxes sit in the same outer column, the wrapper's **outer** width must equal the standalone box width so edges stay flush. Derive the wrapper's child widths from the outer constraint, not the other way around.
+### Wrapper outdent rule
 
-### Nesting and alignment rules
+Wrappers use `outdent=True` on the Panel. This inverts the normal padding model:
 
-Every container introduces an INSET offset. Nesting levels compound: a box inside a sub-panel inside a wrapper panel has 3 levels of INSET between its content and the diagram edge. When child panels sit inside a multi-span wrapper, their outer edges are offset from the outer grid by the wrapper's INSET, and this offset is **expected and intentional** — the children are visually contained.
+- **Normal panel:** frame = cell, content = cell − 2 × INSET.
+- **Outdenting wrapper:** content = cell, frame = cell + 2 × INSET (extends outward).
 
-**Single-column wrapper** (wrapper occupies exactly one grid column):
+The wrapper's heading, children, and sub-panels are positioned from the cell origin (x, y), not from (x + INSET, y + INSET). The frame extends INSET beyond the cell in every direction. Since INSET (8px) is much smaller than the gutter (32px) and outer margin (32px), the frame extension is always absorbed without overlap.
 
-```
-wrapper_outer_width  = peer_box_width          (e.g. 608)
-wrapper_content_span = wrapper_outer_width − 2 × INSET   (e.g. 592)
-child_col_width      = (wrapper_content_span − (cols − 1) × col_gap) / cols
-```
+**Benefits:**
+- Children at all nesting levels align to the same grid columns.
+- No "nesting tax" — sub-panel widths are derived from the cell, not from `cell − 2 × INSET`.
+- The vertical gutter lane is continuous through all nesting levels.
 
-**Multi-span wrapper** (wrapper spans N grid columns):
-
-When a wrapper spans N outer grid columns, its children will be inset from the outer grid. To align child panels with the outer grid columns, **the child panels must absorb the wrapper's INSET**. The formula:
+**Derivation for outdenting wrappers:**
 
 ```
-wrapper_outer     = N × outer_col_width + (N − 1) × outer_col_gap
-wrapper_content   = wrapper_outer − 2 × INSET
-child_count       = N  (one child per outer column)
-child_outer_width = (wrapper_content − (child_count − 1) × inner_col_gap) / child_count
+wrapper_cell     = N × col_width + (N − 1) × col_gap   (from the outer grid)
+wrapper_content  = wrapper_cell                          (no INSET subtracted)
+child_count      = M
+child_outer      = (wrapper_content − (M − 1) × inner_gap) / M
+child_col_width  = child_outer − 2 × INSET              (leaf panels keep normal INSET)
 ```
 
-The child outer width will always be less than the outer column width by `(2 × INSET + (child_count − 1) × (inner_col_gap − outer_col_gap)) / child_count`. **This is the nesting tax.** Accept it as the cost of the frame, or use `border=Border.NONE` (frameless, pad=0) to eliminate it.
-
-**Example: logic-data-vram VRAM section**
+**Example: logic-data-vram VRAM section (outdent)**
 
 ```
 outer_col_width  = 408
-outer_col_gap    = 24
-wrapper_outer    = 2 × 408 + 24 = 840
-wrapper_content  = 840 − 16 = 824
-inner_col_gap    = 32  (for arrow routing)
-child_outer      = (824 − 32) / 2 = 396
-
-Nesting tax = 408 − 396 = 12px per child
+outer_col_gap    = 32
+wrapper_cell     = 2 × 408 + 32 = 848
+wrapper_content  = 848  (outdent: pad = 0)
+inner_gap        = 32
+child_outer      = (848 − 32) / 2 = 408
+child_col_width  = 408 − 16 = 392
 ```
 
-The sub-panels are 12px narrower than the top panels. The left sub-panel starts 8px to the right of the top-left panel (wrapper INSET), and the right sub-panel ends 8px to the left of the top-right panel.
+The sub-panels are the same outer width as the top-level columns. The vertical gutter between them is continuous with the outer gutter.
 
-**Practical checklist for wrappers:**
+**When to use outdent:**
+- Any panel that contains sub-panels (child Panels) and whose border you want visible.
+- Dashed grouping wrappers (`border=Border.DASHED`).
+- Multi-span containers where children should align with the outer grid.
 
-1. Decide the wrapper's outer width from the outer grid (match peer boxes or the diagram column).
-2. Subtract `2 × INSET` to get the content span.
-3. Divide the content span among child columns and gaps.
-4. Size children inside-out for height, but use the derived column width for width.
-5. **Do not hardcode `col_width` on sub-panels independently.** Derive it from the wrapper's content span. Hardcoded values drift when the outer grid changes.
+**When NOT to use outdent:**
+- Leaf panels (contain only boxes/bars) — these keep normal INSET padding.
+- Borderless wrappers (`border=Border.NONE`) — already have pad=0, no frame to outdent.
 6. Verify the wrapper's computed outer width equals the peer boxes' width.
 7. Accept the nesting INSET offset, or use `border=Border.NONE` to eliminate it.
 

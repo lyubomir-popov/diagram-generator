@@ -82,13 +82,16 @@ aws_hld = Diagram(
             ],
         ),
 
-        # Core spans 2 columns; contains Logging + Network Services
-        # sub-panels.  col_width=168 derived above.
+        # Core spans 2 columns; contains Logging + Network Services.
+        # Outdent: content = cell = 192 + 192 + 32 = 416.
+        # Two sub-panels + 32px gap → sp_outer = (416 − 32) / 2 = 192.
+        # Sub-panel col_width = 192 − 16 = 176.
         Panel(
             id="core",
             heading=_heading("Core"),
             icon="Cloud.svg",
             fill=Fill.WHITE,
+            outdent=True,
             col_gap=32,
             col=1, row=1, col_span=2,
             children=[
@@ -98,7 +101,7 @@ aws_hld = Diagram(
                     icon="Document.svg",
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=168,
+                    col_width=176,
                     row_gap=8,
                     children=[
                         Box(label=[
@@ -114,7 +117,7 @@ aws_hld = Diagram(
                     icon="Networking.svg",
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=168,
+                    col_width=176,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC")], icon="Network.svg", row=0),
@@ -206,15 +209,17 @@ aws_hld = Diagram(
         Arrow(source="tgw.right", target="customer_gw.left"),
         Arrow(source="tgw.bottom", target="vpc_accounts.top"),
 
-        # ── Row 3: VPC accounts (dashed wrapper) ──
-        # 5 sub-panels at col_width=180 (derived above).
+        # ── Row 3: VPC accounts (dashed wrapper, outdent) ──
+        # Outdent: content = cell = 1136.
+        # 5 sub-panels + 4 × 32 → sp_outer ≈ 200, col_width = 184.
         Panel(
             id="vpc_accounts",
             heading=_heading("VPC_Accounts"),
             icon="Document management.svg",
             border=Border.DASHED,
             fill=Fill.WHITE,
-            col_width=180,
+            outdent=True,
+            col_width=184,
             col_gap=32,
             col=0, row=3, col_span=5,
             children=[
@@ -223,7 +228,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-production"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")], row=0),
@@ -235,7 +240,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-preprod"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -246,7 +251,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-test"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -257,7 +262,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-dev"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),
@@ -268,7 +273,7 @@ aws_hld = Diagram(
                     heading=_heading("core-vpc-sandbox"),
                     fill=Fill.GREY,
                     cols=1,
-                    col_width=180,
+                    col_width=184,
                     row_gap=8,
                     children=[
                         Box(label=[_body("VPC per"), _body("business unit")]),

@@ -275,7 +275,7 @@ def _layout_panel(
     col_gap = panel.col_gap if panel.col_gap is not None else default_col_gap
     row_gap = panel.row_gap if panel.row_gap is not None else default_row_gap
     panel_border = panel.effective_border
-    pad = 0 if panel_border == Border.NONE else INSET
+    pad = 0 if panel_border == Border.NONE or panel.outdent else INSET
 
     # Separate children by type
     boxes = [c for c in panel.children if isinstance(c, Box)]
@@ -532,8 +532,15 @@ def _layout_panel(
 
     # Panel frame (emitted last so we know final size, but insert at front for z-order)
     if panel_border != Border.NONE:
-        frame = Rect(x, y, panel_w, panel_h, fill=panel.fill.value,
-                     dashed=(panel_border == Border.DASHED))
+        if panel.outdent:
+            # Wrapper outdent: frame extends INSET beyond the content area
+            frame = Rect(x - INSET, y - INSET,
+                         panel_w + 2 * INSET, panel_h + 2 * INSET,
+                         fill=panel.fill.value,
+                         dashed=(panel_border == Border.DASHED))
+        else:
+            frame = Rect(x, y, panel_w, panel_h, fill=panel.fill.value,
+                         dashed=(panel_border == Border.DASHED))
         fg.insert(0, frame)
 
     bounds = _Bounds(x, y, panel_w, panel_h, panel, children=child_bounds)
