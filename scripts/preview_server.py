@@ -243,7 +243,7 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 .tree-item {{ padding: 2px 0; cursor: pointer; border-left: 2px solid transparent;
              padding-left: 8px; font-family: 'Ubuntu Mono', monospace; }}
 .tree-item:hover {{ border-left-color: #555; }}
-.tree-item.selected {{ border-left-color: #E95420; color: #E95420; }}
+.tree-item.selected {{ border-left-color: #F6B73C; color: #F6B73C; }}
 .stage {{ flex: 1; overflow: auto; display: flex; align-items: flex-start;
          justify-content: center; padding: 32px; }}
 .stage svg {{ background: #fff; cursor: crosshair; }}
@@ -251,10 +251,10 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 .stage svg [data-component-id] > text,
 .stage svg [data-component-id] > image,
 .stage svg [data-component-id] > tspan {{ pointer-events: none; }}
-.stage svg g.dg-selected > rect:first-of-type {{ outline: 2px solid #E95420; outline-offset: -1px; }}
-.stage svg g.dg-selected > line {{ filter: drop-shadow(0 0 2px #E95420); }}
-.stage svg g.dg-selected > polygon {{ filter: drop-shadow(0 0 2px #E95420); }}
-.stage svg g.dg-selected > .dg-icon {{ filter: drop-shadow(0 0 2px #E95420); }}
+.stage svg g.dg-selected > rect:first-of-type {{ outline: 2px solid #F6B73C; outline-offset: -1px; }}
+.stage svg g.dg-selected > line {{ filter: drop-shadow(0 0 2px #F6B73C); }}
+.stage svg g.dg-selected > polygon {{ filter: drop-shadow(0 0 2px #F6B73C); }}
+.stage svg g.dg-selected > .dg-icon {{ filter: drop-shadow(0 0 2px #F6B73C); }}
 .stage svg g.dg-hover > rect:first-of-type {{ outline: 1px dashed #6cc; outline-offset: -1px; }}
 .stage svg g.dg-hover > line {{ filter: drop-shadow(0 0 1px #6cc); }}
 .stage svg g.dg-hover > .dg-icon {{ filter: drop-shadow(0 0 1px #6cc); }}

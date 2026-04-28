@@ -171,11 +171,12 @@ Component IDs, drag-to-move, resize handles, and override persistence are workin
 - [x] **Arrow attachment to boxes.** Fixed: arrows track their source/target box positions when boxes are dragged or resized. `source_ref`/`target_ref` fields on `ArrowPrimitive`, `source`/`target` on `ComponentInfo`, side-aware endpoint shifting in the preview JS.
 - [x] **Grid overlay toggle (W key).** Cycles off → composition → baseline → off. Composition mode shows columns, rows, gutters, margins, and content boundary. Baseline mode adds 4px horizontal grid lines. Grid data served via `/api/grid/<slug>` endpoint.
 - [x] **Editable grid controls.** Sidebar inputs for columns, rows, col gutter, row gutter, and margin. Changing gutter or margin re-runs layout via `/api/relayout/<slug>` so elements reflow in real-time.
-- [ ] **Keyboard nudging.** Arrow keys nudge selected element by 1px; Shift+Arrow nudges by baseline grid unit (8px).
-- [ ] **Multi-select.** Shift+click to select multiple elements; move them together.
-- [ ] **Double-click nested selection.** Double-click drills into groups to select nested children, Figma-style.
-- [ ] **Baseline alignment guide.** Visual guide that moves with a dragged box showing which baseline it snaps to (see brand-layout-ops parity).
-- [ ] **Component swap.** Select a component and swap it for another type from the shape library (like Figma component swap).
+- [x] **Selection color.** Changed selection outline, drop-shadow, and tree-item highlight from orange (#E95420) to golden-amber (#F6B73C) matching resize handles.
+- [ ] **Keyboard nudging.** ★ simple — Arrow keys nudge selected element by 1px; Shift+Arrow nudges by baseline grid unit (8px).
+- [ ] **Multi-select.** ★★ medium — Shift+click to select multiple elements; move them together.
+- [ ] **Double-click nested selection.** ★★ medium — Double-click drills into groups to select nested children, Figma-style.
+- [ ] **Baseline alignment guide.** ★★★ complex — Visual guide that moves with a dragged box showing which baseline it snaps to (see brand-layout-ops parity).
+- [ ] **Component swap.** ★★★ complex — Select a component and swap it for another type from the shape library (like Figma component swap).
 
 ### Previously active
 
