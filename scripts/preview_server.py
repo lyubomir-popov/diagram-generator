@@ -415,10 +415,33 @@ function bindInteraction() {{
   // Mouse handlers on SVG
   svg.addEventListener("mousedown", onSvgMouseDown);
   svg.addEventListener("mouseover", (e) => {{
-    const g = e.target.closest("[data-component-id]");
-    if (g && !dragState) {{
+    if (dragState) return;
+    
+    // Find the deepest component at hover point (same logic as click)
+    const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+    let deepestComponent = null;
+    let maxDepth = -1;
+    
+    for (const el of elementsAtPoint) {{
+      const componentEl = el.closest("[data-component-id]");
+      if (componentEl) {{
+        // Calculate depth by counting parent elements
+        let depth = 0;
+        let parent = componentEl.parentElement;
+        while (parent && parent !== svg) {{
+          depth++;
+          parent = parent.parentElement;
+        }}
+        if (depth > maxDepth) {{
+          maxDepth = depth;
+          deepestComponent = componentEl;
+        }}
+      }}
+    }}
+    
+    if (deepestComponent) {{
       svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
-      svg.querySelectorAll('[data-component-id="' + g.dataset.componentId + '"]')
+      svg.querySelectorAll('[data-component-id="' + deepestComponent.dataset.componentId + '"]')
         .forEach(el => el.classList.add("dg-hover"));
     }}
   }});
@@ -437,9 +460,38 @@ function onSvgMouseDown(e) {{
     startResize(e);
     return;
   }}
-  const g = e.target.closest("[data-component-id]");
-  if (!g || e.button !== 0) return;
-  const cid = g.dataset.componentId;
+  
+  // Find the deepest (innermost) component at the click point
+  const svg = document.querySelector("#stage svg");
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  
+  // Get all elements at this point and find the deepest one with data-component-id
+  const elementsAtPoint = document.elementsFromPoint(e.clientX, e.clientY);
+  let deepestComponent = null;
+  let maxDepth = -1;
+  
+  for (const el of elementsAtPoint) {{
+    const componentEl = el.closest("[data-component-id]");
+    if (componentEl) {{
+      // Calculate depth by counting parent elements
+      let depth = 0;
+      let parent = componentEl.parentElement;
+      while (parent && parent !== svg) {{
+        depth++;
+        parent = parent.parentElement;
+      }}
+      if (depth > maxDepth) {{
+        maxDepth = depth;
+        deepestComponent = componentEl;
+      }}
+    }}
+  }}
+  
+  if (!deepestComponent || e.button !== 0) return;
+  const cid = deepestComponent.dataset.componentId;
   const own = getOwnDelta(cid);
   dragState = {{ cid, startX: e.clientX, startY: e.clientY,
                 origDx: own.dx, origDy: own.dy, hasMoved: false }};
