@@ -258,10 +258,16 @@ class ComponentModel {
         };
       }
     } else if (layout === "grid") {
-      // Grid: distribute width across columns, height across rows
-      // For now, give each child the full delta (simple case)
+      // Grid: group children by unique x-position (columns) and y-position (rows).
+      // Distribute width delta equally across columns, height across rows.
+      const colXs = [...new Set(layoutChildren.map(c => c.data.x))].sort((a, b) => a - b);
+      const rowYs = [...new Set(layoutChildren.map(c => c.data.y))].sort((a, b) => a - b);
+      const numCols = colXs.length || 1;
+      const numRows = rowYs.length || 1;
+      const perColDw = Math.round(parentDw / numCols / 4) * 4;
+      const perRowDh = Math.round(parentDh / numRows / 4) * 4;
       for (const child of layoutChildren) {
-        result[child.id] = { dw: 0, dh: 0 };
+        result[child.id] = { dw: perColDw, dh: perRowDh };
       }
     } else {
       // Unknown layout — no propagation
