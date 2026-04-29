@@ -44,6 +44,13 @@ Object.defineProperty(window, "selectionDepth", {
 let isDirty = false;
 const HANDLE_SIZE = 8;
 
+// ---- BoxStyle presets (mirrors diagram_model.py BoxStyle enum) ----
+const BOX_STYLES = {
+  default:   { fill: "#FFFFFF", text: "#000000", icon: "#000000", label: "Default (white)" },
+  accent:    { fill: "#F3F3F3", text: "#000000", icon: "#000000", label: "Accent (grey)" },
+  highlight: { fill: "#000000", text: "#FFFFFF", icon: "#FFFFFF", label: "Highlight (black)" },
+};
+
 // ---- Guide mode (W key) ----
 const GUIDE_MODES = ["off", "composition", "baseline"];
 let guideMode = "off";
@@ -526,7 +533,12 @@ function applyAllOverrides() {
     if (!r.hasAttribute("data-orig-width")) {
       r.setAttribute("data-orig-width", r.getAttribute("width") || "0");
       r.setAttribute("data-orig-height", r.getAttribute("height") || "0");
+      r.setAttribute("data-orig-fill", r.getAttribute("fill") || "#FFFFFF");
     }
+  });
+  // Restore original rect fills (style overrides may have changed them)
+  svg.querySelectorAll("rect[data-orig-fill]").forEach(r => {
+    r.setAttribute("fill", r.getAttribute("data-orig-fill"));
   });
   // Save original tspan text on first pass, restore on subsequent passes
   svg.querySelectorAll("[data-component-id] text").forEach(textEl => {
@@ -605,6 +617,16 @@ function applyAllOverrides() {
             }
           }
         }
+      }
+      // Apply style overrides (BoxStyle swap)
+      if (ovr && ovr.style && BOX_STYLES[ovr.style]) {
+        const preset = BOX_STYLES[ovr.style];
+        const rect = g.querySelector("rect:first-of-type");
+        if (rect) rect.setAttribute("fill", preset.fill);
+        g.querySelectorAll("text tspan").forEach(ts => ts.setAttribute("fill", preset.text));
+        g.querySelectorAll(".dg-icon").forEach(icon => {
+          icon.style.filter = preset.icon === "#FFFFFF" ? "invert(1)" : "";
+        });
       }
     });
   }
@@ -1837,6 +1859,25 @@ function cleanOverride(cid) {
   model.cleanOverride(cid);
 }
 
+function applyStyleOverride(cid, styleName) {
+  recordSnapshot();
+  if (styleName && BOX_STYLES[styleName]) {
+    setOverride(cid, { style: styleName });
+  } else {
+    // Clear style override
+    const ovr = overrides[cid];
+    if (ovr) {
+      delete ovr.style;
+      model.cleanOverride(cid);
+    }
+    setDirty(true);
+  }
+  applyAllOverrides();
+  reapplySelection();
+  runConstraints();
+  updateInspector(cid);
+}
+
 // ---- Selection & Inspector ----
 
 function deselectAll() {
@@ -1956,6 +1997,19 @@ function updateInspector(cid) {
   }
   if (hasOverride) {
     html += '<button class="danger" onclick="clearOverride(\''+cid+'\')">Clear override</button>';
+  }
+  // Style picker for box-type components
+  const ctype = getComponentType(cid).toLowerCase();
+  if (ctype === "box" || ctype === "panel" || ctype === "terminal") {
+    const currentStyle = (overrides[cid] && overrides[cid].style) || "";
+    html += '<div class="field" style="margin-top:6px"><span class="label">Style</span><br>';
+    html += '<select class="style-picker" onchange="applyStyleOverride(\'' + cid + '\', this.value)">';
+    html += '<option value=""' + (currentStyle === "" ? ' selected' : '') + '>— original —</option>';
+    for (const [key, preset] of Object.entries(BOX_STYLES)) {
+      html += '<option value="' + key + '"' + (currentStyle === key ? ' selected' : '') + '>' +
+              preset.label + '</option>';
+    }
+    html += '</select></div>';
   }
   // Show constraint violations for this component
   const cv = getViolationsForComponent(cid);
