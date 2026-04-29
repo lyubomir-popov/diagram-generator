@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>%TITLE%</title>
+<link rel="stylesheet" href="/preview/editor.css">
+</head>
+<body>
+<div class="sidebar">
+  <a class="nav-back" href="/">&#x2190; all diagrams</a>
+  <div class="nav-strip">%NAV_LINKS%</div>
+  <div class="build-status build-ok" id="build-status">Watching for changes&#x2026;</div>
+  <h2>Inspector</h2>
+  <div class="inspector" id="inspector">
+    <div style="color:#555">Click a component to inspect it.</div>
+  </div>
+  <h2>Components</h2>
+  <div class="tree" id="tree"></div>
+  <h2>Grid</h2>
+  <div class="grid-controls" id="grid-controls">
+    <div class="grid-row"><span class="grid-label">Columns</span><input type="number" id="grid-cols" min="1" max="20" value="1"><span class="unit">cols</span></div>
+    <div class="grid-row"><span class="grid-label">Rows</span><input type="number" id="grid-rows" min="1" max="40" value="1"><span class="unit">rows</span></div>
+    <div class="grid-row"><span class="grid-label">Col gutter</span><input type="number" id="grid-col-gap" min="0" max="128" step="4" value="32"><span class="unit">px</span></div>
+    <div class="grid-row"><span class="grid-label">Row gutter</span><input type="number" id="grid-row-gap" min="0" max="128" step="4" value="32"><span class="unit">px</span></div>
+    <div class="grid-row"><span class="grid-label">Margin</span><input type="number" id="grid-margin" min="0" max="128" step="4" value="32"><span class="unit">px</span></div>
+  </div>
+  <h2>Overrides</h2>
+  <div id="override-summary" style="font-size:11px;color:#666">No overrides.</div>
+  <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
+    <button class="btn btn-save" id="btn-save" disabled>Save</button>
+    <button class="btn" id="btn-undo" disabled>Undo</button>
+    <button class="btn" id="btn-redo" disabled>Redo</button>
+    <button class="btn" id="btn-clear-all">Clear all</button>
+    <button class="btn" id="btn-export">Export</button>
+  </div>
+</div>
+<div class="stage" id="stage"></div>
+<div class="guide-badge" id="guide-badge"></div>
+<script>%CONFIG_SCRIPT%</script>
+<script src="/preview/editor.js"></script>
+</body>
+</html>
