@@ -81,3 +81,7 @@ body { font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
                                     border-radius: 3px; text-align: right; }
 .grid-controls input[type=number]:focus { border-color: #6cc; outline: none; }
 .grid-controls .unit { font-size: 10px; color: #555; }
+.style-picker { width: 100%; padding: 3px 4px; font-size: 11px; font-family: 'Ubuntu Sans', sans-serif;
+                background: #2a2a2a; color: #e0e0e0; border: 1px solid #555;
+                border-radius: 3px; cursor: pointer; }
+.style-picker:focus { border-color: #6cc; outline: none; }

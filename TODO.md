@@ -177,7 +177,7 @@ These items are now unblocked by the completed refactor:
 - [ ] **Parenting architecture.** ★★★ complex — True parent-child element relationships governing resize, move, and constraint behavior. `ComponentModel` has the tree; needs propagation logic.
 - [ ] **Auto-layout fill container.** ★★★ complex — Figma-style auto-layout redistribution when one child is resized.
 - [ ] **Parent resize propagates to autolayout children.** ★★★ complex — Resizing a parent panel resizes auto-layout children proportionally.
-- [ ] **Component swap.** ★★★ complex — Change a box's fill/border style or shape type from the UI. Constraint system can enforce brand palette.
+- [x] **Component swap.** Done — style picker in inspector (default/accent/highlight). Overrides persist, undo/redo works, constraint system validates.
 - [ ] **Baseline alignment guide.** ★★★ complex — Visual guide showing snap targets during drag. Needs interaction manager state.
 - [x] **Full interaction manager adoption.** Done — all 4 state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) replaced with `mgr.startXxx()`/`mgr.endInteraction()` and `mgr.state` access.
 - [ ] **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
