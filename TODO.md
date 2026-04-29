@@ -177,6 +177,7 @@ Component IDs, drag-to-move, resize handles, and override persistence are workin
 - [x] **Double-click nested selection.** ★★ medium — Double-click drills into groups to select nested children, Figma-style.
 - [ ] **Baseline alignment guide.** ★★★ complex — Visual guide that moves with a dragged box showing which baseline it snaps to (see brand-layout-ops parity).
 - [ ] **Component swap.** ★★★ complex — Select a component and swap it for another type from the shape library (like Figma component swap).
+- [ ] **Orthogonal arrow routing.** ★★★ complex — Draw.io-style arrows that bend at 90° angles. Research draw.io arrow behavior first: bendable waypoints, adding/removing control points, always-orthogonal constraint. Build a feature list before implementing.
 
 ### Previously active
 
