@@ -713,7 +713,7 @@ function applyAllOverrides() {
         if (eff.dw !== 0) {
           g.querySelectorAll(".dg-icon").forEach(icon => {
             if (!icon.hasAttribute("data-orig-tx")) {
-              const m = (icon.getAttribute("transform") || "").match(/translate\(([\\d.e+-]+)[, ]\\s*([\\d.e+-]+)\)/);
+              const m = (icon.getAttribute("transform") || "").match(/translate\(([\d.e+-]+)[, ]\s*([\d.e+-]+)\)/);
               if (m) {
                 icon.setAttribute("data-orig-tx", m[1]);
                 icon.setAttribute("data-orig-ty", m[2]);
