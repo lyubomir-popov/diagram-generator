@@ -1,0 +1,89 @@
+# yaml-language-server: $schema=../../../docs/diagram-schema.json
+
+title: Deployment pipeline
+arrangement: grid
+cols: 1
+col_width: 192
+row_height: 64
+col_gap: 32
+row_gap: 32
+outer_margin: 32
+
+components:
+  - type: box
+    id: commit
+    label:
+      - Developer
+      - commit
+    icon: Laptop with code.svg
+    col: 0
+    row: 0
+
+  - type: box
+    id: build
+    label:
+      - Build &
+      - lint
+    style: accent
+    icon: Package.svg
+    col: 0
+    row: 1
+
+  - type: box
+    id: test
+    label:
+      - Automated
+      - tests
+    style: accent
+    icon: Rosette with check.svg
+    col: 0
+    row: 2
+
+  - type: box
+    id: staging
+    label:
+      - Staging
+      - environment
+    style: accent
+    icon: Cloud.svg
+    col: 0
+    row: 3
+
+  - type: box
+    id: approval
+    label:
+      - Manual
+      - approval
+    icon: User management.svg
+    col: 0
+    row: 4
+
+  - type: box
+    id: production
+    label:
+      - Production
+      - deploy
+    style: highlight
+    icon: Server.svg
+    col: 0
+    row: 5
+
+  - type: arrow
+    source: commit.bottom
+    target: build.top
+
+  - type: arrow
+    source: build.bottom
+    target: test.top
+
+  - type: arrow
+    source: test.bottom
+    target: staging.top
+
+  - type: arrow
+    source: staging.bottom
+    target: approval.top
+
+  - type: arrow
+    source: approval.bottom
+    target: production.top

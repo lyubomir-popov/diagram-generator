@@ -21,6 +21,7 @@ from diagram_model import (
     Arrow,
     Border,
     Box,
+    BoxStyle,
     Diagram,
     Fill,
     Legend,
@@ -109,8 +110,8 @@ attention_qkv = Diagram(
             col=1, row=0,
             children=[
                 MatrixWidget(label="K", id="k_matrix", col=1, row=0),
-                Box(id="k_linux", label=[_body("Linux", fill=WHITE)],
-                    fill=Fill.BLACK, col=0, row=1),
+                Box(id="k_linux", label=[_body("Linux")],
+                    style=BoxStyle.HIGHLIGHT, col=0, row=1),
                 Box(id="k_for", label=[_body("for")],
                     fill=Fill.WHITE, col=1, row=1),
                 Box(id="k_human", label=[_body("human")],
@@ -166,8 +167,8 @@ attention_qkv = Diagram(
             col=0, row=1,
             children=[
                 MatrixWidget(label="QK", id="qk_matrix", col=1, row=0),
-                Box(id="m_linux", label=[_body("Linux", fill=WHITE)],
-                    fill=Fill.BLACK, col=0, row=1),
+                Box(id="m_linux", label=[_body("Linux")],
+                    style=BoxStyle.HIGHLIGHT, col=0, row=1),
                 Box(id="m_for", label=[_body("for")],
                     fill=Fill.WHITE, col=1, row=1),
                 Box(id="m_human", label=[_body("human")],
@@ -243,8 +244,8 @@ attention_qkv = Diagram(
                 ),
                 Box(
                     id="v_linux",
-                    label=[_body("Linux", fill=WHITE)],
-                    fill=Fill.BLACK,
+                    label=[_body("Linux")],
+                    style=BoxStyle.HIGHLIGHT,
                     col=1, row=1,
                 ),
                 Annotation(

@@ -1,0 +1,115 @@
+# yaml-language-server: $schema=../../../docs/diagram-schema.json
+
+title: Data processing stack
+arrangement: grid
+cols: 2
+col_width: 192
+row_height: 64
+col_gap: 32
+row_gap: 32
+outer_margin: 32
+
+components:
+  # Row 0: Ingestion
+  - type: box
+    id: ingest
+    label:
+      - Data
+      - ingestion
+    icon: Cloud.svg
+    col: 0
+    row: 0
+
+  - type: annotation
+    id: ingest_note
+    lines:
+      - { text: "Accepts CSV,", fill: "#666666" }
+      - { text: "JSON, Parquet", fill: "#666666" }
+    col: 1
+    row: 0
+
+  # Row 1: Processing
+  - type: box
+    id: validate
+    label:
+      - Validate
+      - "& clean"
+    style: accent
+    icon: Rosette with check.svg
+    col: 0
+    row: 1
+
+  - type: box
+    id: enrich
+    label:
+      - Enrich
+      - "& join"
+    style: accent
+    icon: Integration.svg
+    col: 1
+    row: 1
+
+  # Row 2: Separator
+  - type: separator
+    col: 0
+    row: 2
+    col_span: 2
+
+  # Row 3: Storage panel
+  - type: panel
+    id: storage
+    cols: 1
+    heading: { text: Storage tiers, weight: "700" }
+    icon: Storage node.svg
+    fill: grey
+    border: dashed
+    col: 0
+    row: 3
+    col_span: 2
+    children:
+      - type: bar
+        segments:
+          - { width_px: 128, fill: grey, label: Hot }
+          - { label: Archive }
+      - type: bar
+        segments:
+          - { width_px: 96, fill: grey, label: SSD }
+          - { width_px: 96, label: HDD }
+          - { label: Object }
+
+  # Row 4: Output
+  - type: box
+    id: warehouse
+    label:
+      - Data
+      - warehouse
+    style: highlight
+    icon: Storage node.svg
+    col: 0
+    row: 4
+
+  - type: box
+    id: dashboard
+    label:
+      - Analytics
+      - dashboard
+    icon: Bar chart with check.svg
+    col: 1
+    row: 4
+
+  # Arrows
+  - type: arrow
+    source: ingest.bottom
+    target: validate.top
+
+  - type: arrow
+    source: ingest.bottom
+    target: enrich.top
+
+  - type: arrow
+    source: validate.bottom
+    target: warehouse.top
+
+  - type: arrow
+    source: enrich.bottom
+    target: dashboard.top

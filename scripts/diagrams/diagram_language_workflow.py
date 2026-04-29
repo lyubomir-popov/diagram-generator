@@ -9,6 +9,7 @@ from diagram_model import (
     Arrow,
     Border,
     Box,
+    BoxStyle,
     Diagram,
     Fill,
     Line,
@@ -34,7 +35,7 @@ def _helper(text: str) -> Line:
 diagram_language_workflow = Diagram(
     title="Diagram language workflow",
     arrangement=Diagram.Arrangement.VERTICAL,
-    # row_gap defaults to GRID_GUTTER (32)
+    row_gap=32,  # arrows route vertically between rows
     outer_margin=32,
     components=[
         # ── Dashed input frame ──
@@ -62,12 +63,11 @@ diagram_language_workflow = Diagram(
                 ),
                 Box(
                     label=[
-                        _heading("DIAGRAM.md", fill=WHITE),
-                        _body("canonical spec", fill=WHITE),
+                        _heading("DIAGRAM.md"),
+                        _body("canonical spec"),
                     ],
                     icon="Book with Magnifying glass.svg",
-                    icon_fill=WHITE,
-                    fill=Fill.BLACK,
+                    style=BoxStyle.HIGHLIGHT,
                     col=2, row=0,
                 ),
             ],
@@ -79,12 +79,11 @@ diagram_language_workflow = Diagram(
         Box(
             id="redraw",
             label=[
-                _heading("Diagram redraw", fill=WHITE),
-                _body("skill", fill=WHITE),
+                _heading("Diagram redraw"),
+                _body("skill"),
             ],
             icon="Wrench 1.svg",
-            icon_fill=WHITE,
-            fill=Fill.BLACK,
+            style=BoxStyle.HIGHLIGHT,
             width=608,
         ),
 
@@ -106,12 +105,11 @@ diagram_language_workflow = Diagram(
         Box(
             id="validate",
             label=[
-                _heading("Build + validate", fill=WHITE),
-                _body("skill", fill=WHITE),
+                _heading("Build + validate"),
+                _body("skill"),
             ],
             icon="Rosette with check.svg",
-            icon_fill=WHITE,
-            fill=Fill.BLACK,
+            style=BoxStyle.HIGHLIGHT,
             width=608,
         ),
 
@@ -133,12 +131,11 @@ diagram_language_workflow = Diagram(
         Box(
             id="drawio",
             label=[
-                _heading("Protected draw.io", fill=WHITE),
-                _body("review skill", fill=WHITE),
+                _heading("Protected draw.io"),
+                _body("review skill"),
             ],
             icon="Design.svg",
-            icon_fill=WHITE,
-            fill=Fill.BLACK,
+            style=BoxStyle.HIGHLIGHT,
             width=608,
         ),
 

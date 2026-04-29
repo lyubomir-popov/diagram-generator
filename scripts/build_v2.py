@@ -3,7 +3,8 @@
 Flags:
     --grid    Also emit *-v2-grid.svg with the layout grid overlay.
 
-Diagram definitions live in scripts/diagrams/.  Company-specific definitions
+Diagram definitions live in scripts/diagrams/ (Python) and
+scripts/diagrams/yaml/ (YAML/JSON).  Company-specific definitions
 may be gitignored; the build gracefully skips any that are absent.
 """
 from __future__ import annotations
@@ -13,6 +14,7 @@ import pathlib
 import sys
 
 from diagram_layout import layout, validate_arrows, validate_grid
+from diagram_loader import load_diagram
 from diagram_render_svg import write_svg
 from diagram_render_drawio import write_drawio
 from diagram_shared import SVG_DIR, DRAWIO_DIR
@@ -39,12 +41,27 @@ _REGISTRY: list[tuple[str, str, str]] = [
 def _load_diagrams() -> list[tuple[str, object]]:
     """Import diagram definitions, skipping any that are missing (gitignored)."""
     diagrams = []
+    # Python definitions
     for slug, mod_name, var_name in _REGISTRY:
         try:
             mod = importlib.import_module(mod_name)
             diagrams.append((slug, getattr(mod, var_name)))
         except (ModuleNotFoundError, FileNotFoundError):
             print(f"  {slug}: skipped (definition not found)")
+
+    # YAML/JSON definitions from scripts/diagrams/yaml/
+    yaml_dir = pathlib.Path(__file__).parent / "diagrams" / "yaml"
+    if yaml_dir.is_dir():
+        for p in sorted(yaml_dir.iterdir()):
+            if p.suffix in (".yaml", ".yml", ".json"):
+                slug = p.stem
+                # Append -onbrand only if the stem doesn't already have it
+                if not slug.endswith("-onbrand"):
+                    slug += "-onbrand"
+                try:
+                    diagrams.append((slug, load_diagram(p)))
+                except Exception as exc:
+                    print(f"  {slug}: skipped ({exc})")
     return diagrams
 
 

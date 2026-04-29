@@ -8,6 +8,7 @@ from __future__ import annotations
 from diagram_model import (
     Arrow,
     Box,
+    BoxStyle,
     Diagram,
     Fill,
     Line,
@@ -32,7 +33,7 @@ rise_of_inference_economy = Diagram(
     arrangement=Diagram.Arrangement.GRID,
     cols=2,
     col_gap=32,
-    # row_gap defaults to GRID_GUTTER (32)
+    row_gap=32,  # arrows route vertically between rows
     outer_margin=32,
     components=[
         # ── Row 0: full-width title ──
@@ -56,9 +57,8 @@ rise_of_inference_economy = Diagram(
         Box(
             id="inference_hdr",
             label=[_white_text("Inference")],
-            fill=Fill.BLACK,
+            style=BoxStyle.HIGHLIGHT,
             icon="CPU.svg",
-            icon_fill="#FFFFFF",
             width=408,
             col=1, row=1,
         ),

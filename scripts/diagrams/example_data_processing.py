@@ -14,6 +14,7 @@ from diagram_model import (
     BarSegment,
     Border,
     Box,
+    BoxStyle,
     Diagram,
     Fill,
     Line,
@@ -90,7 +91,7 @@ example_data_processing = Diagram(
 
         # ── Row 4: Output ──
         Box(id="warehouse", label=[_body("Data"), _body("warehouse")],
-            fill=Fill.BLACK, icon="Storage node.svg",
+            style=BoxStyle.HIGHLIGHT, icon="Storage node.svg",
             col=0, row=4),
         Box(id="dashboard", label=[_body("Analytics"), _body("dashboard")],
             icon="Bar chart with check.svg",

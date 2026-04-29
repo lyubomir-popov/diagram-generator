@@ -9,6 +9,7 @@ from diagram_model import (
     Arrow,
     Border,
     Box,
+    BoxStyle,
     Diagram,
     Fill,
     Line,
@@ -34,7 +35,7 @@ def _helper(text: str) -> Line:
 diagram_intake_workflow = Diagram(
     title="Diagram intake workflow",
     arrangement=Diagram.Arrangement.VERTICAL,
-    # row_gap defaults to GRID_GUTTER (32)
+    row_gap=32,  # arrows route vertically between rows
     outer_margin=32,
     components=[
         # ── Dashed header frame ──
@@ -114,12 +115,11 @@ diagram_intake_workflow = Diagram(
         Box(
             id="final",
             label=[
-                _heading("Final SVGs", fill=WHITE),
-                _body("on-brand deliverables", fill=WHITE),
+                _heading("Final SVGs"),
+                _body("on-brand deliverables"),
             ],
             icon="Storage image.svg",
-            icon_fill=WHITE,
-            fill=Fill.BLACK,
+            style=BoxStyle.HIGHLIGHT,
             width=608,
         ),
     ],

@@ -9,6 +9,7 @@ from __future__ import annotations
 from diagram_model import (
     Arrow,
     Box,
+    BoxStyle,
     Diagram,
     Fill,
     Line,
@@ -45,7 +46,7 @@ example_deployment_pipeline = Diagram(
             icon="User management.svg", col=0, row=4),
 
         Box(id="production", label=[_body("Production"), _body("deploy")],
-            fill=Fill.BLACK, icon="Server.svg", col=0, row=5),
+            style=BoxStyle.HIGHLIGHT, icon="Server.svg", col=0, row=5),
 
         Arrow(source="commit.bottom", target="build.top"),
         Arrow(source="build.bottom", target="test.top"),

@@ -1,0 +1,347 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://diagram-generator/diagram-schema.json",
+  "title": "Diagram definition",
+  "description": "Schema for declarative diagram definitions. Agents and humans can author YAML or JSON conforming to this schema.",
+  "type": "object",
+  "required": ["components"],
+  "properties": {
+    "title": { "type": "string", "description": "Diagram title (metadata, not rendered unless a title box exists)." },
+    "arrangement": {
+      "type": "string",
+      "enum": ["vertical", "horizontal", "grid"],
+      "default": "vertical"
+    },
+    "cols": { "type": "integer", "minimum": 1, "default": 1 },
+    "col_width": { "type": "integer", "minimum": 1 },
+    "row_height": { "type": "integer", "minimum": 1 },
+    "col_gap": { "type": "integer", "minimum": 0 },
+    "row_gap": { "type": "integer", "minimum": 0 },
+    "outer_margin": { "type": "integer", "minimum": 0 },
+    "canvas_width": { "type": "integer", "minimum": 1 },
+    "canvas_height": { "type": "integer", "minimum": 1 },
+    "uniform_rows": { "type": "boolean", "default": false },
+    "components": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/component" }
+    }
+  },
+  "additionalProperties": false,
+
+  "$defs": {
+
+    "component": {
+      "oneOf": [
+        { "$ref": "#/$defs/box" },
+        { "$ref": "#/$defs/panel" },
+        { "$ref": "#/$defs/arrow" },
+        { "$ref": "#/$defs/bar" },
+        { "$ref": "#/$defs/terminal" },
+        { "$ref": "#/$defs/annotation" },
+        { "$ref": "#/$defs/separator" },
+        { "$ref": "#/$defs/icon_cluster" },
+        { "$ref": "#/$defs/matrix_widget" },
+        { "$ref": "#/$defs/jagged_panel" },
+        { "$ref": "#/$defs/legend" }
+      ]
+    },
+
+    "line": {
+      "description": "A single line of text. Can be a plain string (uses body defaults) or an object with overrides.",
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "required": ["text"],
+          "properties": {
+            "text": { "type": "string" },
+            "size": { "type": "string", "default": "18" },
+            "weight": { "type": "string", "enum": ["400", "500", "600", "700"], "default": "400" },
+            "fill": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "small_caps": { "type": "boolean", "default": false },
+            "line_step": { "type": "integer", "minimum": 1 },
+            "font_family": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+
+    "grid_position": {
+      "description": "Grid placement fields shared by all grid-capable components.",
+      "type": "object",
+      "properties": {
+        "col": { "type": "integer", "minimum": 0, "default": 0 },
+        "row": { "type": "integer", "minimum": 0, "default": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "id": { "type": "string" }
+      }
+    },
+
+    "fill": {
+      "type": "string",
+      "enum": ["white", "grey", "black"],
+      "default": "white"
+    },
+
+    "box_style": {
+      "type": "string",
+      "enum": ["default", "accent", "highlight"],
+      "description": "Semantic preset that sets fill + text + icon colours. Overrides raw fill when set."
+    },
+
+    "border": {
+      "type": "string",
+      "enum": ["solid", "none", "dashed"],
+      "default": "solid"
+    },
+
+    "box": {
+      "type": "object",
+      "required": ["type", "label"],
+      "properties": {
+        "type": { "const": "box" },
+        "label": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/line" },
+          "minItems": 1
+        },
+        "style": { "$ref": "#/$defs/box_style" },
+        "fill": { "$ref": "#/$defs/fill" },
+        "icon": { "type": "string", "description": "Filename from assets/icons/" },
+        "icon_fill": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "border": { "$ref": "#/$defs/border" },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0, "default": 0 },
+        "row": { "type": "integer", "minimum": 0, "default": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "bar_segment": {
+      "type": "object",
+      "properties": {
+        "width_fraction": { "type": "number", "minimum": 0, "maximum": 1 },
+        "width_px": { "type": "integer", "minimum": 1 },
+        "fill": { "$ref": "#/$defs/fill" },
+        "label": { "$ref": "#/$defs/line" }
+      },
+      "additionalProperties": false
+    },
+
+    "bar": {
+      "type": "object",
+      "required": ["type", "segments"],
+      "properties": {
+        "type": { "const": "bar" },
+        "segments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/bar_segment" },
+          "minItems": 1
+        },
+        "height": { "type": "integer", "minimum": 1, "default": 32 },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "terminal": {
+      "type": "object",
+      "required": ["type", "command"],
+      "properties": {
+        "type": { "const": "terminal" },
+        "command": { "type": "string" },
+        "width": { "type": "integer", "minimum": 1 },
+        "font_family": { "type": "string" },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "icon_cluster": {
+      "type": "object",
+      "required": ["type", "icons"],
+      "properties": {
+        "type": { "const": "icon_cluster" },
+        "icons": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "fill": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$", "default": "#000000" },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "matrix_widget": {
+      "type": "object",
+      "required": ["type", "label"],
+      "properties": {
+        "type": { "const": "matrix_widget" },
+        "label": { "type": "string" },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "jagged_panel": {
+      "type": "object",
+      "required": ["type", "label"],
+      "properties": {
+        "type": { "const": "jagged_panel" },
+        "label": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/line" },
+          "minItems": 1
+        },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "legend_entry": {
+      "type": "object",
+      "required": ["color", "label"],
+      "properties": {
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "label": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "legend": {
+      "type": "object",
+      "required": ["type", "entries"],
+      "properties": {
+        "type": { "const": "legend" },
+        "entries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/legend_entry" },
+          "minItems": 1
+        },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "annotation": {
+      "type": "object",
+      "required": ["type", "lines"],
+      "properties": {
+        "type": { "const": "annotation" },
+        "lines": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/line" },
+          "minItems": 1
+        },
+        "fill": { "$ref": "#/$defs/fill" },
+        "border": { "$ref": "#/$defs/border" },
+        "placement": { "type": "string", "enum": ["below", "right", "left"], "default": "below" },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "separator": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "separator" },
+        "dash": { "type": "string", "default": "12 8" },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    },
+
+    "arrow": {
+      "type": "object",
+      "required": ["type", "source", "target"],
+      "properties": {
+        "type": { "const": "arrow" },
+        "source": { "type": "string", "description": "component_id.side (e.g. 'commit.bottom')" },
+        "target": { "type": "string", "description": "component_id.side (e.g. 'build.top')" },
+        "id": { "type": "string" },
+        "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$", "default": "#E95420" },
+        "waypoints": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "panel": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "const": "panel" },
+        "heading": { "$ref": "#/$defs/line" },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/component" }
+        },
+        "cols": { "type": "integer", "minimum": 1, "default": 1 },
+        "rows": { "type": "integer", "minimum": 1 },
+        "col_width": { "type": "integer", "minimum": 1 },
+        "col_gap": { "type": "integer", "minimum": 0 },
+        "row_gap": { "type": "integer", "minimum": 0 },
+        "fill": { "$ref": "#/$defs/fill" },
+        "border": { "$ref": "#/$defs/border" },
+        "icon": { "type": "string" },
+        "uniform_height": { "type": "boolean", "default": true },
+        "width": { "type": "integer", "minimum": 1 },
+        "id": { "type": "string" },
+        "col": { "type": "integer", "minimum": 0 },
+        "row": { "type": "integer", "minimum": 0 },
+        "col_span": { "type": "integer", "minimum": 1, "default": 1 },
+        "row_span": { "type": "integer", "minimum": 1, "default": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

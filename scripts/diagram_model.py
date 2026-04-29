@@ -43,6 +43,36 @@ class Fill(Enum):
     BLACK = "#000000"
 
 
+class BoxStyle(Enum):
+    """Semantic box presets — maps to fill + text + icon colours.
+
+    Using a style instead of raw fills lets agents generate correct
+    diagrams without remembering colour pairing rules.  Raw ``Fill``
+    overrides remain available for edge cases.
+    """
+    DEFAULT = auto()     # white bg, black text, black icon
+    ACCENT = auto()      # grey bg, black text, black icon
+    HIGHLIGHT = auto()   # black bg, white text, white icon
+
+
+# Lookup tables for BoxStyle → derived colours.
+_BOXSTYLE_FILL: dict[BoxStyle, Fill] = {
+    BoxStyle.DEFAULT: Fill.WHITE,
+    BoxStyle.ACCENT: Fill.GREY,
+    BoxStyle.HIGHLIGHT: Fill.BLACK,
+}
+_BOXSTYLE_TEXT: dict[BoxStyle, str] = {
+    BoxStyle.DEFAULT: "#000000",
+    BoxStyle.ACCENT: "#000000",
+    BoxStyle.HIGHLIGHT: "#FFFFFF",
+}
+_BOXSTYLE_ICON: dict[BoxStyle, str] = {
+    BoxStyle.DEFAULT: "#000000",
+    BoxStyle.ACCENT: "#000000",
+    BoxStyle.HIGHLIGHT: "#FFFFFF",
+}
+
+
 class Border(Enum):
     """Visible border style for boxes and panels."""
     SOLID = auto()
@@ -79,6 +109,7 @@ class GridSpec:
 class Box:
     """Labelled box with optional icon — the foundational building block."""
     label: list[Line]
+    style: BoxStyle | None = None      # semantic preset (derives fill/text/icon)
     fill: Fill = Fill.WHITE
     icon: str | None = None            # filename in assets/icons/
     icon_fill: str | None = None
@@ -92,6 +123,12 @@ class Box:
     id: str = ""
     col_span: int = 1
     row_span: int = 1
+
+    def __post_init__(self) -> None:
+        if self.style is not None:
+            self.fill = _BOXSTYLE_FILL[self.style]
+            if self.icon_fill is None:
+                self.icon_fill = _BOXSTYLE_ICON[self.style]
 
     @property
     def effective_border(self) -> Border:
