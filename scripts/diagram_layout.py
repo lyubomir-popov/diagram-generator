@@ -1287,12 +1287,24 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
     if hasattr(comp, "children") and len(getattr(comp, "children", [])) > 0:
         if hasattr(comp, "cols"):
             cols = getattr(comp, "effective_cols", None) or getattr(comp, "cols", 1)
+            num_children = len(getattr(comp, "children", []))
             if cols > 1:
-                layout_str = "grid"
+                # Single row with cols == children count → horizontal
+                # Multi-row grid otherwise
+                rows = getattr(comp, "effective_rows", None) or getattr(comp, "rows", None)
+                if rows is None and num_children > 0:
+                    rows = -(-num_children // cols)  # ceil division
+                if rows == 1 and cols == num_children:
+                    layout_str = "horizontal"
+                    layout_gap = float(getattr(comp, "effective_col_gap", None)
+                                       or getattr(comp, "col_gap", None) or 0)
+                else:
+                    layout_str = "grid"
             else:
                 layout_str = "vertical"
-            layout_gap = float(getattr(comp, "effective_row_gap", None)
-                               or getattr(comp, "row_gap", None) or 0)
+            if not layout_gap:
+                layout_gap = float(getattr(comp, "effective_row_gap", None)
+                                   or getattr(comp, "row_gap", None) or 0)
         else:
             layout_str = "vertical"
     return ComponentInfo(
