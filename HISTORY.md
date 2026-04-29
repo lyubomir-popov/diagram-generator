@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2025-05-01 – 7-bug audit + grid propagation fix
+
+- **7-bug audit (commit 51535bf):** Fixed icon re-anchor regex (double-escaped `\\d` → `\d`), arrow points regex (same pattern), Escape key clearing guides/drag/resize, onResizeUp preserving user-set overrides via `propagatedIds` Set, guide viewport reading actual SVG dimensions, icon delta using `getOwnDelta()` not accumulated effective delta.
+- **Grid layout propagation (commit dec8160):** `propagateResize()` now distributes width delta equally across columns and height delta equally across rows for grid-layout panels, snapped to 4px baseline. Previously returned no-op `{dw:0, dh:0}`.
+- **Browser verification:** All 4 features confirmed working via Playwright: snap guides (4 lines appear during drag, cleared on release), layout metadata in inspector, icon re-anchor on resize, parent→child resize propagation for grid panels.
+
 ### 2026-05-01 – Interaction manager migration + component swap
 
 - **Full interaction manager adoption (commit 47d0760):** Migrated all 4 legacy state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) to `InteractionManager`. All interaction flows now use `mgr.startXxx()`/`mgr.endInteraction()` with typed `InteractionMode` enum. Hover suppression unified via `mgr.suppressHover`.

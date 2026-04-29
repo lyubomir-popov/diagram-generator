@@ -77,8 +77,9 @@ The project has evolved from a batch diagram generator into a **constrained inte
 
 **Remaining interactive editor work** (post-refactor):
 - Command pattern for granular undo/redo (deferred; snapshot approach works)
+- Bug 6: horizontal layout with `cols=1` misclassified as "vertical" in `_bounds_to_component_info` (no current diagrams affected)
 
-**Current TODO categorisation:** All Category 1 (defects) and Category 2 (safe features) items are now complete. Remaining open items are Category 3 – features that require the JS extraction (Stage 11) before they can be implemented cleanly.
+**Browser-verified (May 2026):** snap guides, layout metadata in inspector, icon re-anchor on resize, parent→child grid propagation. All audit bugs fixed (commits `51535bf`, `dec8160`).
 
 - **The repo now uses the centralized root workflow.** `STATUS.md`, `TODO.md`, `ROADMAP.md`, `HISTORY.md`, `INBOX.md`, `AGENT-INBOX.md`, and `docs/specs.md` are the canonical workflow files.
 - **A design.md-inspired diagram language spec now exists.** `DIAGRAM.md` holds the canonical tokens, prose rules, output constraints, and redraw workflow for diagram work instead of keeping that material in `TODO.md`.
