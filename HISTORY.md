@@ -9,6 +9,9 @@ Completed work belongs here so `TODO.md` stays lean.
 - **7-bug audit (commit 51535bf):** Fixed icon re-anchor regex (double-escaped `\\d` → `\d`), arrow points regex (same pattern), Escape key clearing guides/drag/resize, onResizeUp preserving user-set overrides via `propagatedIds` Set, guide viewport reading actual SVG dimensions, icon delta using `getOwnDelta()` not accumulated effective delta.
 - **Grid layout propagation (commit dec8160):** `propagateResize()` now distributes width delta equally across columns and height delta equally across rows for grid-layout panels, snapped to 4px baseline. Previously returned no-op `{dw:0, dh:0}`.
 - **Browser verification:** All 4 features confirmed working via Playwright: snap guides (4 lines appear during drag, cleared on release), layout metadata in inspector, icon re-anchor on resize, parent→child resize propagation for grid panels.
+- **Horizontal layout fix (commit b732988, Bug 6):** Single-row panels (cols == children count, 1 row) now classified as "horizontal" for proportional width distribution on resize; multi-row panels keep "grid" for equal per-column distribution.
+- **StackedBlock component (commit 3aa0642):** New component type for icon-primary layouts — icon centred above text, auto-height from content, snapped to 4px baseline. Added to model, layout engine, and `Component` union.
+- **Review-copy workflow piloted:** Full prepare→promote→discard cycle verified on `gpu-waiting-scheduler-onbrand.drawio` (manually-edited) and `memory-wall-onbrand-edited-in-drawio.drawio`. Checkpoints created correctly, review copies cleaned up.
 
 ### 2026-05-01 – Interaction manager migration + component swap
 
