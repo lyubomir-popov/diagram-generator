@@ -540,6 +540,8 @@ function applyAllOverrides() {
   svg.querySelectorAll("rect[data-orig-fill]").forEach(r => {
     r.setAttribute("fill", r.getAttribute("data-orig-fill"));
   });
+  // Reset icon filters (style overrides may have set invert(1))
+  svg.querySelectorAll(".dg-icon").forEach(icon => { icon.style.filter = ""; });
   // Save original tspan text on first pass, restore on subsequent passes
   svg.querySelectorAll("[data-component-id] text").forEach(textEl => {
     if (!textEl.hasAttribute("data-orig-inner")) {
