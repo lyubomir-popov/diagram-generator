@@ -56,6 +56,150 @@ const GUIDE_MODES = ["off", "composition", "baseline"];
 let guideMode = "off";
 let gridInfo = null;
 
+// ---- Alignment snap guides ----
+const SNAP_THRESHOLD = 6; // px — distance to snap to an edge
+const GUIDE_COLOR = "#E95420";
+const GUIDE_OPACITY = "0.5";
+
+/**
+ * Collect snap targets from peer components (siblings or all top-level).
+ * Returns arrays of { x, label } and { y, label } targets.
+ */
+function collectSnapTargets(dragCid) {
+  const node = model.get(dragCid);
+  if (!node) return { xs: [], ys: [] };
+  // Collect from siblings (same parent) or all top-level nodes
+  const peers = node.parent
+    ? node.parent.children.filter(n => n.id !== dragCid && n.type !== "arrow" && n.type !== "separator")
+    : model._roots.filter(n => n.id !== dragCid && n.type !== "arrow" && n.type !== "separator");
+  const xs = [];
+  const ys = [];
+  for (const peer of peers) {
+    const eff = model.getEffectiveDelta(peer.id);
+    const own = model.getOwnDelta(peer.id);
+    const px = peer.data.x + eff.dx;
+    const py = peer.data.y + eff.dy;
+    const pw = peer.data.width + own.dw;
+    const ph = peer.data.height + own.dh;
+    xs.push(px);           // left edge
+    xs.push(px + pw);      // right edge
+    xs.push(px + pw / 2);  // center
+    ys.push(py);           // top edge
+    ys.push(py + ph);      // bottom edge
+    ys.push(py + ph / 2);  // center
+  }
+  return { xs, ys };
+}
+
+/**
+ * Find which snap targets the dragged component is close to.
+ * Returns { snapX: number|null, snapY: number|null, guideLines: [{x1,y1,x2,y2}] }
+ */
+function findSnaps(cid, proposedDx, proposedDy, targets) {
+  const node = model.get(cid);
+  if (!node) return { snapDx: proposedDx, snapDy: proposedDy, lines: [] };
+  const own = model.getOwnDelta(cid);
+  const w = node.data.width + own.dw;
+  const h = node.data.height + own.dh;
+  const left = node.data.x + proposedDx;
+  const top = node.data.y + proposedDy;
+  const right = left + w;
+  const bottom = top + h;
+  const cx = left + w / 2;
+  const cy = top + h / 2;
+
+  let bestDx = proposedDx;
+  let bestDy = proposedDy;
+  let bestDistX = SNAP_THRESHOLD + 1;
+  let bestDistY = SNAP_THRESHOLD + 1;
+  const lines = [];
+
+  // Check each edge and center against snap targets
+  for (const tx of targets.xs) {
+    for (const edge of [left, right, cx]) {
+      const dist = Math.abs(edge - tx);
+      if (dist < bestDistX) {
+        bestDistX = dist;
+        bestDx = proposedDx + (tx - edge);
+      }
+    }
+  }
+  for (const ty of targets.ys) {
+    for (const edge of [top, bottom, cy]) {
+      const dist = Math.abs(edge - ty);
+      if (dist < bestDistY) {
+        bestDistY = dist;
+        bestDy = proposedDy + (ty - edge);
+      }
+    }
+  }
+
+  // Snap to 4px grid
+  bestDx = Math.round(bestDx / 4) * 4;
+  bestDy = Math.round(bestDy / 4) * 4;
+
+  // Build guide lines for the snapped position
+  const snapLeft = node.data.x + bestDx;
+  const snapTop = node.data.y + bestDy;
+  const snapRight = snapLeft + w;
+  const snapBottom = snapTop + h;
+  const snapCx = snapLeft + w / 2;
+  const snapCy = snapTop + h / 2;
+
+  // Only draw lines if we actually snapped (within threshold)
+  if (bestDistX <= SNAP_THRESHOLD) {
+    // Find which x we snapped to
+    for (const tx of targets.xs) {
+      const edges = [snapLeft, snapRight, snapCx];
+      for (const edge of edges) {
+        if (Math.abs(edge - tx) < 2) {
+          lines.push({ x1: tx, y1: Math.min(snapTop, 0), x2: tx, y2: Math.max(snapBottom, 2000) });
+        }
+      }
+    }
+  }
+  if (bestDistY <= SNAP_THRESHOLD) {
+    for (const ty of targets.ys) {
+      const edges = [snapTop, snapBottom, snapCy];
+      for (const edge of edges) {
+        if (Math.abs(edge - ty) < 2) {
+          lines.push({ x1: Math.min(snapLeft, 0), y1: ty, x2: Math.max(snapRight, 2000), y2: ty });
+        }
+      }
+    }
+  }
+
+  return { snapDx: bestDx, snapDy: bestDy, lines };
+}
+
+/** Render alignment guide lines on the SVG. */
+function renderGuideLines(lines) {
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+  clearGuideLines();
+  const ns = "http://www.w3.org/2000/svg";
+  for (const ln of lines) {
+    const line = document.createElementNS(ns, "line");
+    line.setAttribute("x1", ln.x1);
+    line.setAttribute("y1", ln.y1);
+    line.setAttribute("x2", ln.x2);
+    line.setAttribute("y2", ln.y2);
+    line.setAttribute("stroke", GUIDE_COLOR);
+    line.setAttribute("stroke-width", "1");
+    line.setAttribute("stroke-opacity", GUIDE_OPACITY);
+    line.setAttribute("stroke-dasharray", "4 4");
+    line.setAttribute("class", "dg-snap-guide");
+    line.setAttribute("pointer-events", "none");
+    svg.appendChild(line);
+  }
+}
+
+/** Remove all alignment guide lines. */
+function clearGuideLines() {
+  const svg = document.querySelector("#stage svg");
+  if (svg) svg.querySelectorAll(".dg-snap-guide").forEach(el => el.remove());
+}
+
 // ---- Undo/Redo stack ----
 let undoStack = [];
 let redoStack = [];
@@ -962,7 +1106,8 @@ function onSvgMouseDown(e) {
     origDeltas[id] = { dx: own.dx, dy: own.dy };
   }
   mgr.startDrag({ cid: finalCid, cids: dragCids, startX: e.clientX, startY: e.clientY,
-                   origDeltas, hasMoved: false, snapshotRecorded: false });
+                   origDeltas, hasMoved: false, snapshotRecorded: false,
+                   snapTargets: dragCids.length === 1 ? collectSnapTargets(finalCid) : null });
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragUp);
   e.preventDefault();
@@ -984,6 +1129,14 @@ function onDragMove(e) {
     const orig = s.origDeltas[id];
     let newDx = Math.round((orig.dx + dx) / 4) * 4;
     let newDy = Math.round((orig.dy + dy) / 4) * 4;
+
+    // Alignment snap guides (single-component drag only)
+    if (s.snapTargets && s.cids.length === 1) {
+      const snap = findSnaps(id, newDx, newDy, s.snapTargets);
+      newDx = snap.snapDx;
+      newDy = snap.snapDy;
+      renderGuideLines(snap.lines);
+    }
 
     // Clamp to parent bounds if nested
     const parent = getParentNode(id);
@@ -1015,6 +1168,7 @@ function onDragMove(e) {
 function onDragUp() {
   document.removeEventListener("mousemove", onDragMove);
   document.removeEventListener("mouseup", onDragUp);
+  clearGuideLines();
   const s = mgr.state;
   if (s && s.hasMoved) {
     for (const id of s.cids) cleanOverride(id);
@@ -1728,11 +1882,27 @@ function startResize(e) {
   const cid = handle.getAttribute("data-resize-cid");
   const axis = handle.getAttribute("data-resize-axis");
   const own = getOwnDelta(cid);
+  // Capture original overrides for children and parent (for propagation)
+  const origChildOverrides = {};
+  const node = model.get(cid);
+  if (node) {
+    // Children's original overrides
+    for (const child of node.children) {
+      const co = getOwnDelta(child.id);
+      origChildOverrides[child.id] = { dw: co.dw, dh: co.dh };
+    }
+    // Parent's original overrides (for auto-layout fill)
+    if (node.parent) {
+      const po = getOwnDelta(node.parent.id);
+      origChildOverrides[node.parent.id] = { dw: po.dw, dh: po.dh };
+    }
+  }
   mgr.startResize({
     cid, axis,
     startX: e.clientX, startY: e.clientY,
     origDx: own.dx, origDy: own.dy,
     origDw: own.dw, origDh: own.dh,
+    origChildOverrides,
     hasMoved: false, snapshotRecorded: false,
   });
   document.addEventListener("mousemove", onResizeMove);
@@ -1820,6 +1990,31 @@ function onResizeMove(e) {
   }
 
   setOverride(s.cid, { dx: newDx, dy: newDy, dw: newDw, dh: newDh });
+
+  // Propagate resize to children (auto-layout): parent resize → children resize
+  const resizedNode = model.get(s.cid);
+  if (resizedNode && resizedNode.children.length > 0 && resizedNode.layout) {
+    const deltaDw = newDw - s.origDw;
+    const deltaDh = newDh - s.origDh;
+    const childDeltas = model.propagateResize(s.cid, deltaDw, deltaDh);
+    for (const [childId, delta] of Object.entries(childDeltas)) {
+      const origChild = s.origChildOverrides[childId] || { dw: 0, dh: 0 };
+      setOverride(childId, { dw: origChild.dw + delta.dw, dh: origChild.dh + delta.dh });
+    }
+  }
+
+  // Auto-layout fill: child resize → parent grows
+  if (resizedNode && resizedNode.parent && resizedNode.parent.layout) {
+    const deltaDw = newDw - s.origDw;
+    const deltaDh = newDh - s.origDh;
+    const parentAdj = model.redistributeAfterChildResize(s.cid, deltaDw, deltaDh);
+    for (const [adjId, delta] of Object.entries(parentAdj)) {
+      const origAdj = s.origChildOverrides[adjId] || { dw: 0, dh: 0 };
+      if (delta.dw) setOverride(adjId, { dw: origAdj.dw + delta.dw });
+      if (delta.dh) setOverride(adjId, { dh: origAdj.dh + delta.dh });
+    }
+  }
+
   applyAllOverrides();
   if (selectedIds.has(s.cid)) updateInspector(s.cid);
 }
@@ -1833,6 +2028,12 @@ function onResizeUp() {
   const s = mgr.state;
   if (s && s.hasMoved) {
     cleanOverride(s.cid);
+    // Clean propagated child/parent overrides
+    if (s.origChildOverrides) {
+      for (const childId of Object.keys(s.origChildOverrides)) {
+        cleanOverride(childId);
+      }
+    }
     selectComponent(s.cid);
   } else {
     // No move happened: re-show handles that were hidden
@@ -1979,6 +2180,12 @@ function updateInspector(cid) {
     '<span class="value">' + Math.round(minX) + ', ' + Math.round(minY) + '</span></div>';
   html += '<div class="field"><span class="label">Size</span><br>' +
     '<span class="value">' + Math.round(maxX - minX) + ' &#x00d7; ' + Math.round(maxY - minY) + '</span></div>';
+  // Show layout type if this component has children
+  const inspNode = model.get(cid);
+  if (inspNode && inspNode.layout) {
+    html += '<div class="field"><span class="label">Layout</span><br>' +
+      '<span class="value">' + inspNode.layout + (inspNode.layoutGap ? ' (gap ' + inspNode.layoutGap + 'px)' : '') + '</span></div>';
+  }
   if (hasMoveOverride) {
     html += '<div class="field"><span class="label">Position override</span><br>' +
       '<span class="value override">dx=' + own.dx + '  dy=' + own.dy + '</span></div>';

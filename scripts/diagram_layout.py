@@ -202,6 +202,9 @@ class ComponentInfo:
     source: str = ""   # arrow only: "component_id.side"
     target: str = ""   # arrow only: "component_id.side"
     waypoints: list[list[float]] = field(default_factory=list)  # arrow only: [[x,y], ...]
+    # Layout metadata for interactive editing
+    layout: str = ""  # "vertical", "horizontal", "grid", or "" (leaf)
+    layout_gap: float = 0  # gap between children
 
 
 @dataclass
@@ -1278,11 +1281,27 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
         ci = _bounds_to_component_info(child)
         if ci:
             children.append(ci)
+    # Derive layout metadata from the component
+    layout_str = ""
+    layout_gap = 0.0
+    if hasattr(comp, "children") and len(getattr(comp, "children", [])) > 0:
+        if hasattr(comp, "cols"):
+            cols = getattr(comp, "effective_cols", None) or getattr(comp, "cols", 1)
+            if cols > 1:
+                layout_str = "grid"
+            else:
+                layout_str = "vertical"
+            layout_gap = float(getattr(comp, "effective_row_gap", None)
+                               or getattr(comp, "row_gap", None) or 0)
+        else:
+            layout_str = "vertical"
     return ComponentInfo(
         id=cid, type=ctype,
         x=bounds.x, y=bounds.y,
         width=bounds.width, height=bounds.height,
         children=children,
+        layout=layout_str,
+        layout_gap=layout_gap,
     )
 
 

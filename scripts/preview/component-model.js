@@ -13,6 +13,8 @@ class ComponentNode {
     this.data = data;            // raw server JSON
     this.parent = parent;        // ComponentNode | null
     this.children = [];          // ComponentNode[]
+    this.layout = data.layout || "";        // "vertical", "horizontal", "grid", ""
+    this.layoutGap = data.layout_gap || 0;  // gap between children
     if (data.children) {
       for (const child of data.children) {
         this.children.push(new ComponentNode(child, this));
@@ -203,6 +205,97 @@ class ComponentModel {
       }
     }
     visit(this._roots, 0);
+  }
+
+  /** Get sibling nodes of a component (same parent, excludes self). */
+  getSiblings(id) {
+    const node = this.get(id);
+    if (!node) return [];
+    const siblings = node.parent ? node.parent.children : this._roots;
+    return siblings.filter(n => n.id !== id);
+  }
+
+  /** Get the layout-eligible children of a node (non-arrow, non-separator). */
+  getLayoutChildren(id) {
+    const node = this.get(id);
+    if (!node) return [];
+    return node.children.filter(n => n.type !== "arrow" && n.type !== "separator");
+  }
+
+  /**
+   * Propagate a parent's resize delta to its children proportionally.
+   * Returns an object { childId: { dw, dh } } of deltas to apply.
+   */
+  propagateResize(parentId, parentDw, parentDh) {
+    const node = this.get(parentId);
+    if (!node || node.children.length === 0) return {};
+    const layoutChildren = this.getLayoutChildren(parentId);
+    if (layoutChildren.length === 0) return {};
+
+    const result = {};
+    const layout = node.layout || "";
+
+    if (layout === "vertical") {
+      // Vertical layout: all children get the full width delta,
+      // height delta distributed proportionally by original height
+      const totalH = layoutChildren.reduce((s, c) => s + c.data.height, 0);
+      for (const child of layoutChildren) {
+        const hFrac = totalH > 0 ? child.data.height / totalH : 1 / layoutChildren.length;
+        result[child.id] = {
+          dw: parentDw,
+          dh: Math.round(parentDh * hFrac / 4) * 4,
+        };
+      }
+    } else if (layout === "horizontal") {
+      // Horizontal layout: all children get the full height delta,
+      // width delta distributed proportionally by original width
+      const totalW = layoutChildren.reduce((s, c) => s + c.data.width, 0);
+      for (const child of layoutChildren) {
+        const wFrac = totalW > 0 ? child.data.width / totalW : 1 / layoutChildren.length;
+        result[child.id] = {
+          dw: Math.round(parentDw * wFrac / 4) * 4,
+          dh: parentDh,
+        };
+      }
+    } else if (layout === "grid") {
+      // Grid: distribute width across columns, height across rows
+      // For now, give each child the full delta (simple case)
+      for (const child of layoutChildren) {
+        result[child.id] = { dw: 0, dh: 0 };
+      }
+    } else {
+      // Unknown layout — no propagation
+      return {};
+    }
+    return result;
+  }
+
+  /**
+   * When a child in a vertical/horizontal layout is resized, compute
+   * the sibling adjustments needed to keep siblings filling the parent.
+   * Returns { siblingId: { dh or dw } } deltas for siblings,
+   * and { parentId: { dh or dw } } if the parent should grow.
+   */
+  redistributeAfterChildResize(childId, childDw, childDh) {
+    const node = this.get(childId);
+    if (!node || !node.parent) return {};
+    const parent = node.parent;
+    const layout = parent.layout || "";
+    const layoutChildren = this.getLayoutChildren(parent.id);
+    if (layoutChildren.length <= 1) return {};
+
+    const result = {};
+    const siblings = layoutChildren.filter(n => n.id !== childId);
+
+    if (layout === "vertical" && childDh !== 0) {
+      // Child grew/shrank vertically — the parent grows by the same amount
+      // so siblings don't need to change (preserves their size)
+      result[parent.id] = { dh: childDh };
+    } else if (layout === "horizontal" && childDw !== 0) {
+      // Child grew/shrank horizontally — grow the parent
+      result[parent.id] = { dw: childDw };
+    }
+    return result;
   }
 
   /** Serialise overrides for saving. */
