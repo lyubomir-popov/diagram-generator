@@ -139,6 +139,39 @@ class Box:
 
 
 @dataclass
+class StackedBlock:
+    """Icon above label, both centred — for icon-primary layouts.
+
+    Avoids the keyline breaks caused by side-by-side icon+text placement
+    in standard ``Box`` when alignment with peers matters more than density.
+    """
+    label: list[Line]
+    icon: str                           # filename in assets/icons/
+    style: BoxStyle | None = None
+    fill: Fill = Fill.WHITE
+    icon_fill: str | None = None
+    width: int | None = None            # override col_width
+    height: int | None = None           # override computed height
+    border: Border = Border.SOLID
+    # Grid position
+    col: int = 0
+    row: int = 0
+    col_span: int = 1
+    row_span: int = 1
+    id: str = ""
+
+    def __post_init__(self) -> None:
+        if self.style is not None:
+            self.fill = _BOXSTYLE_FILL[self.style]
+            if self.icon_fill is None:
+                self.icon_fill = _BOXSTYLE_ICON[self.style]
+
+    @property
+    def effective_border(self) -> Border:
+        return self.border
+
+
+@dataclass
 class BarSegment:
     """One segment in a segmented bar."""
     width_fraction: float | None = None   # proportion of bar width (0–1)
@@ -386,7 +419,7 @@ class Panel:
 # ---------------------------------------------------------------------------
 
 Component = Union[
-    Box, Panel, Bar, Terminal, Arrow, Helper, Annotation,
+    Box, StackedBlock, Panel, Bar, Terminal, Arrow, Helper, Annotation,
     MatrixWidget, JaggedPanel, RequestCluster, Legend,
     IconComponent, IconCluster, Separator,
 ]
