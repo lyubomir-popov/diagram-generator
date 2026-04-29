@@ -76,9 +76,6 @@ The project has evolved from a batch diagram generator into a **constrained inte
 - `scripts/preview_server.py` – pure API server (485 lines), no embedded JS
 
 **Remaining interactive editor work** (post-refactor):
-- Parent-child constraint propagation (resize parent → resize children)
-- Auto-layout fill (resize one child → redistribute siblings)
-- Baseline alignment guide (visual snap targets during drag)
 - Command pattern for granular undo/redo (deferred; snapshot approach works)
 
 **Current TODO categorisation:** All Category 1 (defects) and Category 2 (safe features) items are now complete. Remaining open items are Category 3 – features that require the JS extraction (Stage 11) before they can be implemented cleanly.

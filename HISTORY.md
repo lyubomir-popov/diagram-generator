@@ -9,6 +9,15 @@ Completed work belongs here so `TODO.md` stays lean.
 - **Full interaction manager adoption (commit 47d0760):** Migrated all 4 legacy state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) to `InteractionManager`. All interaction flows now use `mgr.startXxx()`/`mgr.endInteraction()` with typed `InteractionMode` enum. Hover suppression unified via `mgr.suppressHover`.
 - **Bug fixes (commit c8949d1):** Gutter save-button – grid overrides (col_gap, row_gap, outer_margin) now persist via override JSON and mark dirty on change. Ctrl+Z text undo – text edits store overrides with `data-orig-inner` and restore via `applyAllOverrides`.
 - **Component swap / style picker (commit b5d7d91):** Added `BOX_STYLES` constant (default/accent/highlight), `applyStyleOverride()` function, and style picker dropdown in inspector panel. Overrides persist in JSON, undo/redo works, constraint system validates highlight limit. Fixed case-sensitivity bug in `getComponentType()` comparison.
+- **Icon filter regression fix (commit 01419ae):** `applyAllOverrides()` now resets `.dg-icon` CSS filters in the restore phase so icons don't stay white after undoing a highlight style.
+
+### 2026-04-29 – Parenting architecture, auto-layout fill, snap alignment guides
+
+- **Layout metadata (commit 23e3a17):** `ComponentInfo` now carries `layout` ("vertical"/"horizontal"/"grid") and `layout_gap` from the Python model to the client. `_bounds_to_component_info` derives these from the component's children count and column config.
+- **Parenting architecture:** `ComponentModel` gains `getSiblings()`, `getLayoutChildren()`, `propagateResize()`, and `redistributeAfterChildResize()`. Inspector shows layout type and gap for container components.
+- **Parent resize propagates:** When a parent panel is resized, children in vertical layout get the full width delta and proportional height delta; horizontal layout distributes width proportionally.
+- **Auto-layout fill:** When a child in a layout container is resized, the parent auto-grows (vertical: grows height; horizontal: grows width) so siblings keep their original size.
+- **Baseline alignment guide:** During single-component drag, snap guides appear at peer edges/centers (left, right, center-x, top, bottom, center-y). Snaps within 6px threshold, renders dashed orange guide lines, cleans up on drop.
 
 ### 2026-05-01 – Architectural refactor (Phases A–D)
 

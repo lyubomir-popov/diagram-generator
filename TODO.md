@@ -174,11 +174,11 @@ The architectural refactor is complete. See `STATUS.md` for the full summary. Ke
 
 These items are now unblocked by the completed refactor:
 
-- [ ] **Parenting architecture.** ★★★ complex — True parent-child element relationships governing resize, move, and constraint behavior. `ComponentModel` has the tree; needs propagation logic.
-- [ ] **Auto-layout fill container.** ★★★ complex — Figma-style auto-layout redistribution when one child is resized.
-- [ ] **Parent resize propagates to autolayout children.** ★★★ complex — Resizing a parent panel resizes auto-layout children proportionally.
+- [x] **Parenting architecture.** Done — layout metadata (vertical/horizontal/grid + gap) flows from Python to client. `ComponentModel` gains `getSiblings`, `getLayoutChildren`, `propagateResize`, `redistributeAfterChildResize`. Inspector shows layout type.
+- [x] **Auto-layout fill container.** Done — child resize in a vertical/horizontal layout auto-grows the parent so siblings keep their size.
+- [x] **Parent resize propagates to autolayout children.** Done — resizing a parent proportionally distributes delta among children (width in vertical, height in horizontal).
 - [x] **Component swap.** Done — style picker in inspector (default/accent/highlight). Overrides persist, undo/redo works, constraint system validates.
-- [ ] **Baseline alignment guide.** ★★★ complex — Visual guide showing snap targets during drag. Needs interaction manager state.
+- [x] **Baseline alignment guide.** Done — snap guides show during single-component drag. Collects peer edges/centers, snaps within 6px threshold, renders dashed orange guide lines, cleans up on drop.
 - [x] **Full interaction manager adoption.** Done — all 4 state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) replaced with `mgr.startXxx()`/`mgr.endInteraction()` and `mgr.state` access.
 - [ ] **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
 - [x] **Ctrl+Z does not undo typed text in inline editor.** Fixed — text edits now store override, record undo snapshot, and restore via `applyAllOverrides`.
