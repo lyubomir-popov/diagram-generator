@@ -41,11 +41,6 @@ Object.defineProperty(window, "selectionDepth", {
   set(v) { mgr.selectionDepth = v; },
 });
 
-// Interaction state shims
-let dragState = null;
-let resizeState = null;
-let wpDragState = null;
-let textEditState = null;
 let isDirty = false;
 const HANDLE_SIZE = 8;
 
@@ -837,7 +832,7 @@ function bindInteraction() {
   svg.addEventListener("mousedown", onSvgMouseDown);
   svg.addEventListener("dblclick", onSvgDblClick);
   svg.addEventListener("mouseover", (e) => {
-    if (dragState || resizeState) return;
+    if (mgr.suppressHover) return;
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
     pt.y = e.clientY;
@@ -850,7 +845,7 @@ function bindInteraction() {
     }
   });
   svg.addEventListener("mouseout", () => {
-    if (!dragState && !resizeState) {
+    if (!mgr.suppressHover) {
       svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
     }
   });
@@ -861,7 +856,7 @@ function bindInteraction() {
 function onSvgDblClick(e) {
   if (e.target.classList.contains("dg-handle")) return;
   if (e.target.classList.contains("dg-wp-handle")) return;
-  if (textEditState) return;
+  if (mgr.isMode(InteractionMode.TEXT_EDITING)) return;
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
   const pt = svg.createSVGPoint();
@@ -942,26 +937,27 @@ function onSvgMouseDown(e) {
     const own = getOwnDelta(id);
     origDeltas[id] = { dx: own.dx, dy: own.dy };
   }
-  dragState = { cid: finalCid, cids: dragCids, startX: e.clientX, startY: e.clientY,
-                origDeltas, hasMoved: false, snapshotRecorded: false };
+  mgr.startDrag({ cid: finalCid, cids: dragCids, startX: e.clientX, startY: e.clientY,
+                   origDeltas, hasMoved: false, snapshotRecorded: false });
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragUp);
   e.preventDefault();
 }
 
 function onDragMove(e) {
-  if (!dragState) return;
-  const dx = e.clientX - dragState.startX;
-  const dy = e.clientY - dragState.startY;
-  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragState.hasMoved = true;
-  if (!dragState.hasMoved) return;
+  if (!mgr.isMode(InteractionMode.DRAGGING)) return;
+  const s = mgr.state;
+  const dx = e.clientX - s.startX;
+  const dy = e.clientY - s.startY;
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) s.hasMoved = true;
+  if (!s.hasMoved) return;
   // Record pre-drag snapshot on first actual move
-  if (!dragState.snapshotRecorded) {
+  if (!s.snapshotRecorded) {
     recordSnapshot();
-    dragState.snapshotRecorded = true;
+    s.snapshotRecorded = true;
   }
-  for (const id of dragState.cids) {
-    const orig = dragState.origDeltas[id];
+  for (const id of s.cids) {
+    const orig = s.origDeltas[id];
     let newDx = Math.round((orig.dx + dx) / 4) * 4;
     let newDy = Math.round((orig.dy + dy) / 4) * 4;
 
@@ -989,23 +985,24 @@ function onDragMove(e) {
     setOverride(id, { dx: newDx, dy: newDy });
   }
   applyAllOverrides();
-  if (selectedIds.has(dragState.cid) && selectedIds.size === 1) updateInspector(dragState.cid);
+  if (selectedIds.has(s.cid) && selectedIds.size === 1) updateInspector(s.cid);
 }
 
 function onDragUp() {
   document.removeEventListener("mousemove", onDragMove);
   document.removeEventListener("mouseup", onDragUp);
-  if (dragState && dragState.hasMoved) {
-    for (const id of dragState.cids) cleanOverride(id);
-    if (dragState.cids.length === 1) {
-      selectComponent(dragState.cid);
+  const s = mgr.state;
+  if (s && s.hasMoved) {
+    for (const id of s.cids) cleanOverride(id);
+    if (s.cids.length === 1) {
+      selectComponent(s.cid);
     } else {
       reapplySelection();
     }
-  } else if (dragState) {
-    selectComponent(dragState.cid);
+  } else if (s) {
+    selectComponent(s.cid);
   }
-  dragState = null;
+  mgr.endInteraction();
 }
 
 // ---- Resize ----
@@ -1158,14 +1155,14 @@ function startWpDrag(e) {
   const node = getArrowNode(cid);
   if (!node || !node.waypoints || !node.waypoints[idx]) return;
 
-  wpDragState = {
+  mgr.startWaypointDrag({
     cid, idx,
     startX: e.clientX, startY: e.clientY,
     origX: node.waypoints[idx][0],
     origY: node.waypoints[idx][1],
     hasMoved: false,
     axis: null,  // will be set on first move
-  };
+  });
   document.addEventListener("mousemove", onWpDragMove);
   document.addEventListener("mouseup", onWpDragUp);
   e.preventDefault();
@@ -1173,46 +1170,47 @@ function startWpDrag(e) {
 }
 
 function onWpDragMove(e) {
-  if (!wpDragState) return;
-  const dx = e.clientX - wpDragState.startX;
-  const dy = e.clientY - wpDragState.startY;
-  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) wpDragState.hasMoved = true;
-  if (!wpDragState.hasMoved) return;
+  if (!mgr.isMode(InteractionMode.WAYPOINT_DRAGGING)) return;
+  const s = mgr.state;
+  const dx = e.clientX - s.startX;
+  const dy = e.clientY - s.startY;
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) s.hasMoved = true;
+  if (!s.hasMoved) return;
 
-  const node = getArrowNode(wpDragState.cid);
+  const node = getArrowNode(s.cid);
   if (!node || !node.waypoints) return;
 
   const wps = node.waypoints;
-  const idx = wpDragState.idx;
+  const idx = s.idx;
 
   // Determine axis constraint from adjacent segments on first move.
   // For orthogonal arrows, a waypoint that sits on a straight horizontal
   // or vertical run should only move perpendicular to that run.
-  if (wpDragState.axis === null) {
-    const pts = getArrowPoints(wpDragState.cid);
+  if (s.axis === null) {
+    const pts = getArrowPoints(s.cid);
     if (pts.start) {
       const all = [pts.start, ...wps, pts.end];
       const ai = idx + 1;  // offset for start point
       const prev = all[ai - 1];
       const next = all[ai + 1];
-      const inH = Math.abs(prev[1] - wpDragState.origY) < 2;  // prev segment horizontal
-      const inV = Math.abs(prev[0] - wpDragState.origX) < 2;  // prev segment vertical
-      const outH = Math.abs(next[1] - wpDragState.origY) < 2; // next segment horizontal
-      const outV = Math.abs(next[0] - wpDragState.origX) < 2; // next segment vertical
-      if (inH && outH) wpDragState.axis = "y";       // on horizontal run → move vertically
-      else if (inV && outV) wpDragState.axis = "x";  // on vertical run → move horizontally
-      else wpDragState.axis = "free";                 // corner → free movement
+      const inH = Math.abs(prev[1] - s.origY) < 2;  // prev segment horizontal
+      const inV = Math.abs(prev[0] - s.origX) < 2;  // prev segment vertical
+      const outH = Math.abs(next[1] - s.origY) < 2; // next segment horizontal
+      const outV = Math.abs(next[0] - s.origX) < 2; // next segment vertical
+      if (inH && outH) s.axis = "y";       // on horizontal run → move vertically
+      else if (inV && outV) s.axis = "x";  // on vertical run → move horizontally
+      else s.axis = "free";                 // corner → free movement
     } else {
-      wpDragState.axis = "free";
+      s.axis = "free";
     }
   }
 
-  let newX = wpDragState.origX + dx;
-  let newY = wpDragState.origY + dy;
+  let newX = s.origX + dx;
+  let newY = s.origY + dy;
 
   // Apply axis constraint
-  if (wpDragState.axis === "x") newY = wpDragState.origY;
-  if (wpDragState.axis === "y") newX = wpDragState.origX;
+  if (s.axis === "x") newY = s.origY;
+  if (s.axis === "y") newX = s.origX;
 
   // Snap to 4px grid
   const snapX = Math.round(newX / 4) * 4;
@@ -1222,20 +1220,21 @@ function onWpDragMove(e) {
   wps[idx] = [snapX, snapY];
 
   // Visually update the SVG lines and waypoint handle
-  updateArrowVisual(wpDragState.cid);
+  updateArrowVisual(s.cid);
   e.preventDefault();
 }
 
 function onWpDragUp(e) {
   document.removeEventListener("mousemove", onWpDragMove);
   document.removeEventListener("mouseup", onWpDragUp);
-  if (wpDragState && wpDragState.hasMoved) {
+  const s = mgr.state;
+  if (s && s.hasMoved) {
     // Prune collinear waypoints (dragged onto a straight line between neighbours)
-    pruneCollinearWaypoints(wpDragState.cid);
+    pruneCollinearWaypoints(s.cid);
     recordSnapshot();
-    setWaypointOverride(wpDragState.cid);
+    setWaypointOverride(s.cid);
   }
-  wpDragState = null;
+  mgr.endInteraction();
 }
 
 // Remove any waypoint that sits on a straight line between its neighbours.
@@ -1611,7 +1610,7 @@ function startTextEdit(cid, e) {
   // Hide the original text while editing
   textEl.style.opacity = "0";
 
-  textEditState = { cid, textEl, ta, originalLines: lines, styles };
+  mgr.startTextEdit({ cid, textEl, ta, originalLines: lines, styles });
 
   ta.addEventListener("keydown", (ev) => {
     if (ev.key === "Escape") {
@@ -1625,15 +1624,15 @@ function startTextEdit(cid, e) {
   });
   ta.addEventListener("blur", () => {
     // Small delay to avoid race with Escape
-    setTimeout(() => { if (textEditState) commitTextEdit(); }, 100);
+    setTimeout(() => { if (mgr.isMode(InteractionMode.TEXT_EDITING)) commitTextEdit(); }, 100);
   });
   // Prevent SVG interactions while editing
   e.stopPropagation();
 }
 
 function commitTextEdit() {
-  if (!textEditState) return;
-  const { cid, textEl, ta, originalLines, styles } = textEditState;
+  if (!mgr.isMode(InteractionMode.TEXT_EDITING)) return;
+  const { cid, textEl, ta, originalLines, styles } = mgr.state;
   const newLines = ta.value.split("\\n");
 
   // Check if text actually changed
@@ -1690,14 +1689,14 @@ function commitTextEdit() {
   // Remove the textarea
   ta.remove();
 
-  textEditState = null;
+  mgr.endInteraction();
 }
 
 function cancelTextEdit() {
-  if (!textEditState) return;
-  textEditState.textEl.style.opacity = "";
-  textEditState.ta.remove();
-  textEditState = null;
+  if (!mgr.isMode(InteractionMode.TEXT_EDITING)) return;
+  mgr.state.textEl.style.opacity = "";
+  mgr.state.ta.remove();
+  mgr.endInteraction();
 }
 
 function startResize(e) {
@@ -1705,13 +1704,13 @@ function startResize(e) {
   const cid = handle.getAttribute("data-resize-cid");
   const axis = handle.getAttribute("data-resize-axis");
   const own = getOwnDelta(cid);
-  resizeState = {
+  mgr.startResize({
     cid, axis,
     startX: e.clientX, startY: e.clientY,
     origDx: own.dx, origDy: own.dy,
     origDw: own.dw, origDh: own.dh,
     hasMoved: false, snapshotRecorded: false,
-  };
+  });
   document.addEventListener("mousemove", onResizeMove);
   document.addEventListener("mouseup", onResizeUp);
   e.preventDefault();
@@ -1719,50 +1718,51 @@ function startResize(e) {
 }
 
 function onResizeMove(e) {
-  if (!resizeState) return;
-  const dx = e.clientX - resizeState.startX;
-  const dy = e.clientY - resizeState.startY;
-  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) resizeState.hasMoved = true;
-  if (!resizeState.hasMoved) return;
+  if (!mgr.isMode(InteractionMode.RESIZING)) return;
+  const s = mgr.state;
+  const dx = e.clientX - s.startX;
+  const dy = e.clientY - s.startY;
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) s.hasMoved = true;
+  if (!s.hasMoved) return;
   // Record pre-resize snapshot on first actual move
-  if (!resizeState.snapshotRecorded) {
+  if (!s.snapshotRecorded) {
     recordSnapshot();
     // Hide handles during drag so stale positions don't overlap icons
     const svg = document.querySelector("#stage svg");
     if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "none");
-    resizeState.snapshotRecorded = true;
+    s.snapshotRecorded = true;
   }
-  let newDx = resizeState.origDx;
-  let newDy = resizeState.origDy;
-  let newDw = resizeState.origDw;
-  let newDh = resizeState.origDh;
+  let newDx = s.origDx;
+  let newDy = s.origDy;
+  let newDw = s.origDw;
+  let newDh = s.origDh;
   
-  const axis = resizeState.axis;
+  const axis = s.axis;
   // Handle horizontal resizing
   if (axis === "l" || axis === "tl" || axis === "bl") {
     // Left side: move left edge, right edge stays anchored
     const delta = Math.round(dx / 4) * 4;
-    newDx = resizeState.origDx + delta;
-    newDw = resizeState.origDw - delta;
+    newDx = s.origDx + delta;
+    newDw = s.origDw - delta;
   } else if (axis === "r" || axis === "tr" || axis === "br") {
     // Right side: left edge stays anchored, grow rightward
-    newDw = Math.round((resizeState.origDw + dx) / 4) * 4;
+    newDw = Math.round((s.origDw + dx) / 4) * 4;
   }
   
   // Handle vertical resizing
   if (axis === "t" || axis === "tl" || axis === "tr") {
     // Top side: move top edge, bottom edge stays anchored
     const delta = Math.round(dy / 4) * 4;
-    newDy = resizeState.origDy + delta;
-    newDh = resizeState.origDh - delta;
+    newDy = s.origDy + delta;
+    newDh = s.origDh - delta;
   } else if (axis === "b" || axis === "bl" || axis === "br") {
     // Bottom side: top edge stays anchored, grow downward
-    newDh = Math.round((resizeState.origDh + dy) / 4) * 4;
+    newDh = Math.round((s.origDh + dy) / 4) * 4;
   }
 
   // Clamp to parent bounds if nested
-  const parent = getParentNode(resizeState.cid);
-  const node = getComponentNode(resizeState.cid);
+  const parent = getParentNode(s.cid);
+  const node = getComponentNode(s.cid);
   if (parent && node && parent.type !== "arrow") {
     const pEff = getEffectiveDelta(parent.id);
     const pOwn = getOwnDelta(parent.id);
@@ -1795,9 +1795,9 @@ function onResizeMove(e) {
     }
   }
 
-  setOverride(resizeState.cid, { dx: newDx, dy: newDy, dw: newDw, dh: newDh });
+  setOverride(s.cid, { dx: newDx, dy: newDy, dw: newDw, dh: newDh });
   applyAllOverrides();
-  if (selectedIds.has(resizeState.cid)) updateInspector(resizeState.cid);
+  if (selectedIds.has(s.cid)) updateInspector(s.cid);
 }
 
 function onResizeUp() {
@@ -1806,14 +1806,15 @@ function onResizeUp() {
   // Clear any hover effects that accumulated during the drag
   const svg = document.querySelector("#stage svg");
   if (svg) svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
-  if (resizeState && resizeState.hasMoved) {
-    cleanOverride(resizeState.cid);
-    selectComponent(resizeState.cid);
+  const s = mgr.state;
+  if (s && s.hasMoved) {
+    cleanOverride(s.cid);
+    selectComponent(s.cid);
   } else {
     // No move happened: re-show handles that were hidden
     if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "");
   }
-  resizeState = null;
+  mgr.endInteraction();
 }
 
 // ---- Override helpers ----
@@ -2078,7 +2079,7 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault();
     performRedo();
   } else if (e.key === "Escape") {
-    if (textEditState) {
+    if (mgr.isMode(InteractionMode.TEXT_EDITING)) {
       cancelTextEdit();
     } else {
       deselectAll();
