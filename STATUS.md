@@ -60,9 +60,26 @@ There are now **two diagram generation pipelines**. On a cold start, ask the use
 
 ## Architecture status
 
-The project has evolved from a batch diagram generator into a **constrained interactive diagram editor** – a lean Figma/draw.io that enforces brand rules while allowing targeted polish. The backend (declarative model, layout engine, dual renderers) is well-architected. The frontend (preview server) is a 2300-line Python-embedded JS monolith that needs extraction before the next wave of features.
+The project has evolved from a batch diagram generator into a **constrained interactive diagram editor** – a lean Figma/draw.io that enforces brand rules while allowing targeted polish. The 4-phase architectural refactor is complete:
 
-**Next architectural milestone:** Stage 11 – extract JS/CSS from the Python f-string template into static files. This is the prerequisite for the client-side model (Stage 12) and brand constraint enforcement (Stage 13). See the architecture review in `TODO.md` and the updated `ROADMAP.md` stages 11–13.
+- **Phase A (done, commit 2eff23d):** `BoxStyle` enum, YAML/JSON diagram loader, JSON schema for agent-generated definitions.
+- **Phase B (done, commit 6b7ba57):** Viewer JS/CSS/HTML extracted from the Python f-string monolith into `scripts/preview/`. Server is now 485 lines (was 2672). Static files served at `/preview/*`.
+- **Phase C (done, commit d763e3a):** `ComponentModel` class with indexed tree, parent/child navigation, override management. `InteractionManager` state machine skeleton. Old globals backed by model/manager.
+- **Phase D (done, commit 35cfb85):** Constraint enforcement system with 6 built-in brand constraints (grid alignment, approved fills, highlight limit, orange reservation, containment). Violations shown in sidebar and per-component inspector.
+
+**Current frontend architecture:**
+- `scripts/preview/component-model.js` – `ComponentModel` + `ComponentNode` tree with indexed lookup, `InteractionManager` state machine
+- `scripts/preview/constraints.js` – `ConstraintRegistry` with pluggable constraint functions
+- `scripts/preview/editor.js` – interaction handlers, DOM sync, sidebar UI
+- `scripts/preview/editor.css` – all viewer styles
+- `scripts/preview/viewer.html` – HTML template with `%TITLE%`, `%NAV_LINKS%`, `%CONFIG_SCRIPT%` placeholders
+- `scripts/preview_server.py` – pure API server (485 lines), no embedded JS
+
+**Remaining interactive editor work** (post-refactor):
+- Full interaction manager state machine adoption (replace remaining `dragState`/`resizeState` shims)
+- Parent-child constraint propagation (resize parent → resize children)
+- Auto-layout fill (resize one child → redistribute siblings)
+- Command pattern for granular undo/redo
 
 **Current TODO categorisation:** All Category 1 (defects) and Category 2 (safe features) items are now complete. Remaining open items are Category 3 – features that require the JS extraction (Stage 11) before they can be implemented cleanly.
 

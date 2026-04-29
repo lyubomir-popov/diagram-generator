@@ -154,98 +154,35 @@ Layers 1–4 are done. Layer 5 (rollout) and the typography weight audit are sup
 
 ### Interactive preview server – architecture review (April 2026)
 
-#### What has the project become?
+#### Completed refactor (4 phases)
 
-The project started as a batch SVG/draw.io generator with a declarative diagram model. It has evolved into something substantially more ambitious: a **constrained interactive diagram editor** – a lean Figma/draw.io that auto-generates on-brand diagrams and allows a targeted polish pass on layout while enforcing brand rules (approved colours, arrow styles, icon sources, typography).
+The architectural refactor is complete. See `STATUS.md` for the full summary. Key outcomes:
 
-This is a meaningful product concept. But the current implementation is reaching the point where patching individual features onto a monolithic preview server will create diminishing returns and increasing bug surface. The architectural review below identifies what's sound, what needs restructuring, and proposes a layered plan.
+- **Phase A:** BoxStyle enum, YAML/JSON loader, JSON schema – agents can generate diagrams without Python.
+- **Phase B:** JS/CSS/HTML extracted from Python f-string – `preview_server.py` is 485 lines (was 2672).
+- **Phase C:** `ComponentModel` with indexed tree and `InteractionManager` state machine.
+- **Phase D:** `ConstraintRegistry` with 6 built-in brand constraints running client-side.
 
-#### What's sound
+#### What's sound (unchanged)
 
-1. **Declarative model + layout engine** (`diagram_model.py` / `diagram_layout.py`). This is well-separated. Component types are pure data, layout is output-agnostic, renderers consume computed geometry. This architecture is correct and scales.
+1. Declarative model + layout engine – clean separation, scales well.
+2. Dual renderers – output-format agnostic.
+3. Override persistence – deltas from generated layout.
+4. Token system – centralised brand tokens flow into both renderers and preview UI.
 
-2. **Dual renderers** (`diagram_render_svg.py` / `diagram_render_drawio.py`). Clean separation of layout from output format. Adding new renderers (e.g. HTML canvas, PDF) would be straightforward.
+### Interactive preview server – remaining items
 
-3. **Override persistence** (JSON sidecar files). Storing user edits as deltas from the generated layout is the right model – it means regenerating a diagram from updated data preserves the user's polish without code conflicts.
+These items are now unblocked by the completed refactor:
 
-4. **Token system** (`diagram_shared.py`). Centralised brand tokens that flow into both renderers and the preview UI.
-
-#### What needs restructuring
-
-1. **`preview_server.py` is a 2300-line monolith.** It embeds HTML, CSS, and ~1500 lines of JavaScript as Python f-string templates. This makes the JS:
-   - Hard to lint, format, or get IDE support for (it's all inside triple-quoted Python strings with `{{` escaping)
-   - Impossible to unit-test in isolation
-   - Painful to refactor – every `{` in JS must be `{{`
-   - Growing toward the limit of what an LLM agent can hold in context
-
-2. **No client-side model.** The JS manipulates SVG DOM directly with scattered per-feature functions. There's no component tree on the client side that mirrors `componentTree` structurally – it's a flat list of overrides against a server-provided tree. This means:
-   - Parent-child constraint propagation (resize parent → resize children) requires walking the tree manually for each feature
-   - Features like auto-layout fill, component swap, and inline property editing each need bespoke tree traversal code
-   - The "parenting" problem the user identified is a symptom of this missing layer
-
-3. **Interaction state management is ad-hoc.** Drag, resize, waypoint drag, text edit, and multi-select each have their own state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) with guard clauses scattered across event handlers. This will not scale to the next 5 interaction modes.
-
-4. **No command pattern.** Undo/redo records JSON snapshots of the entire override set. This works today but means undo granularity is all-or-nothing, and semantic undo (e.g. "undo the resize but keep the move") is impossible.
-
-#### Proposed restructuring
-
-**Phase 1 – Extract JS from Python** (prerequisite for everything else)
-- Move the viewer HTML/CSS/JS to a static file served by the Python server (e.g. `scripts/preview_viewer.html` or a small `scripts/preview/` directory with `index.html`, `editor.js`, `editor.css`)
-- The Python server becomes a pure API: serve SVGs, layout data, grid info, overrides, and relayout requests
-- JS talks to the API via fetch – no more f-string template coupling
-- This immediately enables: IDE JS support, ESLint, browser devtools source mapping, faster iteration
-
-**Phase 2 – Client-side model** (unlocks parenting, auto-layout, constraints)
-- Build a lightweight client-side tree model mirroring the server's `componentTree`
-- Each node knows: its parent, its children, its base geometry, its overrides, its constraints (resizable? movable? fill-parent?)
-- All constraint logic (parent bounds clamping, auto-layout redistribution, sibling awareness) operates on this model
-- DOM updates are driven by model changes, not ad-hoc SVG manipulation
-
-**Phase 3 – Interaction manager** (unlocks clean feature addition)
-- Replace scattered state variables with a state machine or interaction-mode manager
-- Modes: idle, selecting, dragging, resizing, editing-text, routing-arrow, adding-component
-- Each mode has clean enter/exit/handle-event methods
-- New interaction modes plug in without touching existing code
-
-**Phase 4 – Brand constraint enforcement** (the product differentiator)
-- The model enforces brand rules: only approved fills, only approved arrow styles, only approved icon sources
-- The UI reflects this: colour picker shows only brand palette, shape picker shows only approved shapes
-- Overrides that would violate brand rules are rejected at the model level, not the UI level
-
-#### What this means for the TODO list
-
-The current flat TODO mixes three different categories that should be tracked separately:
-
-1. **Defects and QA** – things that are broken now (ghost affordances, children not selectable). These should be fixed immediately on the current codebase.
-2. **Feature work on current architecture** – things that can be done without restructuring (sticky port, waypoint persistence, orthogonal constraint). Worth doing now if they don't create tech debt.
-3. **Features that require restructuring** – parenting architecture, auto-layout fill, parent resize propagation, component swap, baseline alignment guide. These should wait for Phase 1–2 or they'll be implemented twice.
-
-### Interactive preview server – open items
-
-Items are categorised per the architecture review above.
-
-#### Category 1 – Defects and QA (fix now on current codebase)
-
-- [x] **Internal boxes not selectable.** ★★ medium — Fixed: auto-ID assignment ensures all components appear in the interactive tree.
-- [x] **Sticky preview port.** ★ simple — Fixed: auto-kills process on target port before binding.
-
-#### Category 2 – Features safe on current architecture (won't need rewriting)
-
-- [x] **Gutter controls affect internal box spacing.** ★★ medium — Relayout propagates gap overrides into nested panels that rely on defaults.
-- [x] **Persist waypoint overrides in override JSON files.** ★★ medium — Waypoints saved/loaded/undone alongside position/size overrides.
-- [x] **Orthogonal constraint on waypoint drag.** ★★ medium — Axis locked based on adjacent segment geometry.
-- [x] **Collinear waypoint auto-pruning.** ★ simple — Done.
-- [x] **Add waypoint by double-clicking segment.** ★ simple — Done.
-
-#### Category 3 – Features that require restructuring (defer to Stage 11–12)
-
-These features touch parent-child relationships, constraint propagation, or interaction mode management. Implementing them on the current monolithic JS will produce fragile code that must be rewritten during extraction.
-
-- [ ] **Parenting architecture.** ★★★ complex — True parent-child element relationships governing resize, move, and constraint behavior. → Stage 12 (client-side model).
-- [ ] **Auto-layout fill container.** ★★★ complex — Figma-style auto-layout redistribution when one child is resized. → Stage 12.
-- [ ] **Parent resize propagates to autolayout children.** ★★★ complex — Resizing a parent panel resizes auto-layout children proportionally. → Stage 12.
-- [ ] **Component swap.** ★★★ complex — Change a box's fill/border style or shape type from the UI. → Stage 12–13 (needs model + brand constraints).
-- [ ] **Baseline alignment guide.** ★★★ complex — Visual guide showing snap targets during drag. → Stage 12 (needs interaction manager).
+- [ ] **Parenting architecture.** ★★★ complex — True parent-child element relationships governing resize, move, and constraint behavior. `ComponentModel` has the tree; needs propagation logic.
+- [ ] **Auto-layout fill container.** ★★★ complex — Figma-style auto-layout redistribution when one child is resized.
+- [ ] **Parent resize propagates to autolayout children.** ★★★ complex — Resizing a parent panel resizes auto-layout children proportionally.
+- [ ] **Component swap.** ★★★ complex — Change a box's fill/border style or shape type from the UI. Constraint system can enforce brand palette.
+- [ ] **Baseline alignment guide.** ★★★ complex — Visual guide showing snap targets during drag. Needs interaction manager state.
+- [ ] **Full interaction manager adoption.** ★★ medium — Replace remaining `dragState`/`resizeState` shims with `InteractionManager` methods.
+- [ ] **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects.
+- [ ] **Ctrl+Z does not undo typed text in inline editor.** ★★ medium — Text edits are not captured in the undo stack; undo only reverts position/size overrides.
+- [ ] **Gutter value changes don't activate save button.** ★★ medium — Investigate: changing gutter values via grid controls doesn't mark the diagram dirty, and some diagrams still render with 32px gutters despite `GRID_GUTTER=16`.
 
 ### Completed interactive preview items
 

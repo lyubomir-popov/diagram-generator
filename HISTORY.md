@@ -4,6 +4,20 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-01 – Architectural refactor (Phases A–D)
+
+Four-phase refactor completing Roadmap Stages 11–13:
+
+- **Phase A (commit 2eff23d):** Added `BoxStyle` enum (DEFAULT/ACCENT/HIGHLIGHT) to `diagram_model.py` with auto-derived fill/text/icon colours. Created YAML/JSON diagram loader (`diagram_loader.py`), JSON schema (`docs/diagram-schema.json`), and 2 example YAML definitions. Migrated 6 diagram definitions from manual `Fill.BLACK` to `BoxStyle.HIGHLIGHT`.
+- **Phase B (commit 6b7ba57):** Extracted 2200 lines of JS/CSS/HTML from `preview_server.py`'s Python f-string into `scripts/preview/editor.js` (2096 lines), `editor.css` (83 lines), and `viewer.html` (50 lines). Server dropped from 2672 to 485 lines. Config injected via `window.__DG_CONFIG`. Static files served at `/preview/*` with path-traversal protection. Fixed escaped-quote syntax error from f-string de-escaping.
+- **Phase C (commit d763e3a):** Created `ComponentModel` class with indexed tree, parent/child navigation, override management, hit-testing, and effective delta computation. Created `InteractionManager` state machine skeleton. Replaced 6 tree-walking functions in `editor.js` with model delegations. Old globals backed by model/manager via property shims. Validated with Playwright across all diagrams.
+- **Phase D (commit 35cfb85):** Created `ConstraintRegistry` with 6 built-in brand constraints: grid alignment, override grid alignment, approved fills, highlight box limit (max 1), orange fill prohibition (error severity), and box containment. Violations shown in sidebar "Constraints" panel and per-component in the inspector. Constraints run on load and after each override change.
+
+Bug fixes included in the session:
+- Auto-invert: layout engine auto-flips text/icons to white on `#000000` backgrounds.
+- `GRID_GUTTER=16`: fixed gutter propagation into nested panels.
+- Inset clamping: prevented negative insets.
+
 ### 2026-04-29 – Waypoint cleanup and architecture review
 
 - **Collinear waypoint auto-pruning:** after a waypoint drag, any waypoint that sits on a straight line between its neighbours (within 2px tolerance) is automatically removed. Arrow SVG and handles are rebuilt.
