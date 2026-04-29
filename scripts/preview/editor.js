@@ -153,7 +153,9 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
       const edges = [snapLeft, snapRight, snapCx];
       for (const edge of edges) {
         if (Math.abs(edge - tx) < 2) {
-          lines.push({ x1: tx, y1: Math.min(snapTop, 0), x2: tx, y2: Math.max(snapBottom, 2000) });
+          const svgEl = document.querySelector("#stage svg");
+          const svgH = svgEl ? parseFloat(svgEl.getAttribute("height") || "2000") : 2000;
+          lines.push({ x1: tx, y1: 0, x2: tx, y2: svgH });
         }
       }
     }
@@ -163,7 +165,9 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
       const edges = [snapTop, snapBottom, snapCy];
       for (const edge of edges) {
         if (Math.abs(edge - ty) < 2) {
-          lines.push({ x1: Math.min(snapLeft, 0), y1: ty, x2: Math.max(snapRight, 2000), y2: ty });
+          const svgElH = document.querySelector("#stage svg");
+          const svgW = svgElH ? parseFloat(svgElH.getAttribute("width") || "2000") : 2000;
+          lines.push({ x1: 0, y1: ty, x2: svgW, y2: ty });
         }
       }
     }
@@ -721,7 +725,8 @@ function applyAllOverrides() {
             }
             const otx = parseFloat(icon.getAttribute("data-orig-tx") || "0");
             const oty = parseFloat(icon.getAttribute("data-orig-ty") || "0");
-            icon.setAttribute("transform", "translate(" + (otx + eff.dw) + " " + oty + ")");
+            const ownDw = getOwnDelta(cid).dw;
+            icon.setAttribute("transform", "translate(" + (otx + ownDw) + " " + oty + ")");
           });
         }
       }
@@ -1507,7 +1512,7 @@ function getArrowPoints(cid) {
   let ex, ey;
   if (poly) {
     const ptsStr = (poly.getAttribute("data-orig-points") || poly.getAttribute("points")).trim();
-    const ptsArr = ptsStr.split(/\\s+/).map(s => s.split(",").map(Number));
+    const ptsArr = ptsStr.split(/\s+/).map(s => s.split(",").map(Number));
     if (ptsArr.length >= 3) { ex = ptsArr[1][0]; ey = ptsArr[1][1]; }
     else { ex = sx; ey = sy; }
   } else {
@@ -1993,6 +1998,7 @@ function onResizeMove(e) {
 
   // Propagate resize to children (auto-layout): parent resize → children resize
   const resizedNode = model.get(s.cid);
+  if (!s.propagatedIds) s.propagatedIds = new Set();
   if (resizedNode && resizedNode.children.length > 0 && resizedNode.layout) {
     const deltaDw = newDw - s.origDw;
     const deltaDh = newDh - s.origDh;
@@ -2000,6 +2006,7 @@ function onResizeMove(e) {
     for (const [childId, delta] of Object.entries(childDeltas)) {
       const origChild = s.origChildOverrides[childId] || { dw: 0, dh: 0 };
       setOverride(childId, { dw: origChild.dw + delta.dw, dh: origChild.dh + delta.dh });
+      s.propagatedIds.add(childId);
     }
   }
 
@@ -2012,6 +2019,7 @@ function onResizeMove(e) {
       const origAdj = s.origChildOverrides[adjId] || { dw: 0, dh: 0 };
       if (delta.dw) setOverride(adjId, { dw: origAdj.dw + delta.dw });
       if (delta.dh) setOverride(adjId, { dh: origAdj.dh + delta.dh });
+      s.propagatedIds.add(adjId);
     }
   }
 
@@ -2022,15 +2030,16 @@ function onResizeMove(e) {
 function onResizeUp() {
   document.removeEventListener("mousemove", onResizeMove);
   document.removeEventListener("mouseup", onResizeUp);
+  clearGuideLines();
   // Clear any hover effects that accumulated during the drag
   const svg = document.querySelector("#stage svg");
   if (svg) svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
   const s = mgr.state;
   if (s && s.hasMoved) {
     cleanOverride(s.cid);
-    // Clean propagated child/parent overrides
-    if (s.origChildOverrides) {
-      for (const childId of Object.keys(s.origChildOverrides)) {
+    // Clean propagated child/parent overrides (only zero-valued fields)
+    if (s.propagatedIds) {
+      for (const childId of s.propagatedIds) {
         cleanOverride(childId);
       }
     }
@@ -2344,6 +2353,18 @@ document.addEventListener("keydown", (e) => {
   } else if (e.key === "Escape") {
     if (mgr.isMode(InteractionMode.TEXT_EDITING)) {
       cancelTextEdit();
+    } else if (mgr.isMode(InteractionMode.DRAGGING)) {
+      clearGuideLines();
+      document.removeEventListener("mousemove", onDragMove);
+      document.removeEventListener("mouseup", onDragUp);
+      mgr.endInteraction();
+    } else if (mgr.isMode(InteractionMode.RESIZING)) {
+      clearGuideLines();
+      document.removeEventListener("mousemove", onResizeMove);
+      document.removeEventListener("mouseup", onResizeUp);
+      const svg = document.querySelector("#stage svg");
+      if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "");
+      mgr.endInteraction();
     } else {
       deselectAll();
     }
