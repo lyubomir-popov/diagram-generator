@@ -55,6 +55,7 @@ class ComponentModel {
     this._roots = [];       // ComponentNode[] – top-level nodes
     this._index = new Map(); // id → ComponentNode
     this.overrides = {};     // id → { dx?, dy?, dw?, dh?, waypoints?, text? }
+    this.gridOverrides = {}; // { col_gap?, row_gap?, outer_margin? }
     this.definitionHash = "";
     this.isStale = false;
   }
@@ -206,11 +207,15 @@ class ComponentModel {
 
   /** Serialise overrides for saving. */
   toOverridePayload() {
-    return {
+    const payload = {
       definition_hash: this.definitionHash,
       overrides: this.overrides,
       format_version: 1,
     };
+    if (this.gridOverrides && Object.keys(this.gridOverrides).length > 0) {
+      payload.grid_overrides = this.gridOverrides;
+    }
+    return payload;
   }
 
   /** Load overrides from server response. */
@@ -218,6 +223,7 @@ class ComponentModel {
     this.overrides = serverData.overrides || {};
     this.definitionHash = serverData.definition_hash || "";
     this.isStale = !!serverData.stale;
+    this.gridOverrides = serverData.grid_overrides || {};
   }
 }
 

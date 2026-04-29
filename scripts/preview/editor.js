@@ -60,6 +60,11 @@ let redoStack = [];
 let lastSavedState = null;
 const MAX_UNDO_STACK_SIZE = 50;
 
+/** Serialise the full dirty-trackable state (overrides + grid overrides). */
+function _serializeDirtyState() {
+  return JSON.stringify({ o: overrides, g: model.gridOverrides || {} });
+}
+
 async function loadSVG() {
   const suffix = GRID ? "-v2-grid.svg" : "-v2.svg";
   const resp = await fetch("/svg/" + SLUG + "-onbrand" + suffix + "?t=" + Date.now());
@@ -69,6 +74,11 @@ async function loadSVG() {
   await loadGridInfo();
   populateGridControls();
   await loadOverrides();
+  // Apply saved grid overrides (gutter/margin changes) before rendering
+  if (model.gridOverrides && Object.keys(model.gridOverrides).length > 0) {
+    const go = model.gridOverrides;
+    await requestRelayout(go.col_gap, go.row_gap, go.outer_margin);
+  }
   applyWaypointOverrides();
   applyAllOverrides();
   bindInteraction();
@@ -249,6 +259,10 @@ function onGridControlChange() {
   const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
   const margin = Math.max(0, parseInt(document.getElementById("grid-margin").value) || 0);
 
+  // Track grid overrides for persistence
+  model.gridOverrides = { col_gap: colGap, row_gap: rowGap, outer_margin: margin };
+  setDirty(true);
+
   // Debounce the relayout call so rapid typing doesn't flood the server
   if (relayoutTimer) clearTimeout(relayoutTimer);
   relayoutTimer = setTimeout(() => requestRelayout(colGap, rowGap, margin), 200);
@@ -337,7 +351,7 @@ async function loadOverrides() {
   // Initialize undo stack and saved state
   undoStack = [];
   redoStack = [];
-  lastSavedState = JSON.stringify(overrides);
+  lastSavedState = _serializeDirtyState();
   updateUndoRedoButtons();
 }
 
@@ -399,7 +413,7 @@ function performUndo() {
   refreshTreeColors();
   
   // Update dirty flag
-  const currentStateStr = JSON.stringify(overrides);
+  const currentStateStr = _serializeDirtyState();
   setDirty(currentStateStr !== lastSavedState);
   
   updateUndoRedoButtons();
@@ -424,7 +438,7 @@ function performRedo() {
   refreshTreeColors();
   
   // Update dirty flag
-  const currentStateStr = JSON.stringify(overrides);
+  const currentStateStr = _serializeDirtyState();
   setDirty(currentStateStr !== lastSavedState);
   
   updateUndoRedoButtons();
@@ -519,6 +533,14 @@ function applyAllOverrides() {
       r.setAttribute("data-orig-height", r.getAttribute("height") || "0");
     }
   });
+  // Save original tspan text on first pass, restore on subsequent passes
+  svg.querySelectorAll("[data-component-id] text").forEach(textEl => {
+    if (!textEl.hasAttribute("data-orig-inner")) {
+      textEl.setAttribute("data-orig-inner", textEl.innerHTML);
+    } else {
+      textEl.innerHTML = textEl.getAttribute("data-orig-inner");
+    }
+  });
 
   function applyToComponent(cid) {
     const eff = getEffectiveDelta(cid);
@@ -548,6 +570,45 @@ function applyAllOverrides() {
             const oty = parseFloat(icon.getAttribute("data-orig-ty") || "0");
             icon.setAttribute("transform", "translate(" + (otx + eff.dw) + " " + oty + ")");
           });
+        }
+      }
+      // Apply text overrides
+      const ovr = overrides[cid];
+      if (ovr && ovr.text) {
+        const textEl = g.querySelector("text");
+        if (textEl) {
+          const tspans = textEl.querySelectorAll("tspan");
+          const newLines = ovr.text;
+          const minLen = Math.min(newLines.length, tspans.length);
+          for (let i = 0; i < minLen; i++) {
+            tspans[i].textContent = newLines[i];
+          }
+          // Add tspans for extra lines
+          if (newLines.length > tspans.length && tspans.length > 0) {
+            const lastTs = tspans[tspans.length - 1];
+            const x = lastTs.getAttribute("x");
+            const lastY = parseFloat(lastTs.getAttribute("y"));
+            const lineStep = tspans.length >= 2
+              ? parseFloat(tspans[1].getAttribute("y")) - parseFloat(tspans[0].getAttribute("y"))
+              : 20;
+            const ns = "http://www.w3.org/2000/svg";
+            for (let ti = tspans.length; ti < newLines.length; ti++) {
+              const ts = document.createElementNS(ns, "tspan");
+              ts.setAttribute("x", x);
+              ts.setAttribute("y", lastY + lineStep * (ti - tspans.length + 1));
+              ts.setAttribute("font-size", lastTs.getAttribute("font-size") || "14");
+              ts.setAttribute("font-weight", lastTs.getAttribute("font-weight") || "400");
+              ts.setAttribute("fill", lastTs.getAttribute("fill") || "#000");
+              ts.textContent = newLines[ti];
+              textEl.appendChild(ts);
+            }
+          }
+          // Remove excess tspans
+          if (newLines.length < tspans.length) {
+            for (let ti = tspans.length - 1; ti >= newLines.length; ti--) {
+              tspans[ti].remove();
+            }
+          }
         }
       }
     });
@@ -1575,6 +1636,17 @@ function commitTextEdit() {
   const { cid, textEl, ta, originalLines, styles } = textEditState;
   const newLines = ta.value.split("\\n");
 
+  // Check if text actually changed
+  const changed = newLines.join("\\n") !== originalLines.join("\\n");
+
+  if (changed) {
+    // Record undo snapshot BEFORE applying the change
+    recordSnapshot();
+
+    // Store text override so undo/redo can restore it
+    setOverride(cid, { text: newLines });
+  }
+
   // Update the tspan content
   const tspans = textEl.querySelectorAll("tspan");
   const minLen = Math.min(newLines.length, tspans.length);
@@ -1617,12 +1689,6 @@ function commitTextEdit() {
 
   // Remove the textarea
   ta.remove();
-
-  // Check if text actually changed
-  const changed = newLines.join("\\n") !== originalLines.join("\\n");
-  if (changed) {
-    setDirty(true);
-  }
 
   textEditState = null;
 }
@@ -1914,7 +1980,7 @@ async function saveOverrides() {
   });
   setDirty(false);
   // Update saved state for dirty flag comparison
-  lastSavedState = JSON.stringify(overrides);
+  lastSavedState = _serializeDirtyState();
   updateOverrideSummary();
   refreshTreeColors();
 }

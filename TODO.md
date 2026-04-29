@@ -181,8 +181,8 @@ These items are now unblocked by the completed refactor:
 - [ ] **Baseline alignment guide.** ★★★ complex — Visual guide showing snap targets during drag. Needs interaction manager state.
 - [ ] **Full interaction manager adoption.** ★★ medium — Replace remaining `dragState`/`resizeState` shims with `InteractionManager` methods.
 - [ ] **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects.
-- [ ] **Ctrl+Z does not undo typed text in inline editor.** ★★ medium — Text edits are not captured in the undo stack; undo only reverts position/size overrides.
-- [ ] **Gutter value changes don't activate save button.** ★★ medium — Investigate: changing gutter values via grid controls doesn't mark the diagram dirty, and some diagrams still render with 32px gutters despite `GRID_GUTTER=16`.
+- [x] **Ctrl+Z does not undo typed text in inline editor.** Fixed — text edits now store override, record undo snapshot, and restore via `applyAllOverrides`.
+- [x] **Gutter value changes don't activate save button.** Fixed — grid overrides (col_gap, row_gap, outer_margin) now persist via override JSON and mark dirty on change. 32px gutters in some diagrams are intentional (`ARROW_GAP=32` for arrow routing clearance).
 
 ### Completed interactive preview items
 

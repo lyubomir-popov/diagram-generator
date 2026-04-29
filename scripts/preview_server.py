@@ -372,6 +372,7 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         response = {
             "definition_hash": current_hash,
             "overrides": data.get("overrides", {}),
+            "grid_overrides": data.get("grid_overrides", {}),
             "stale": stale,
         }
         self._respond(200, "application/json", json.dumps(response, indent=2).encode())
