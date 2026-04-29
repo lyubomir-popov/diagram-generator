@@ -13,6 +13,15 @@ Completed work belongs here so `TODO.md` stays lean.
 - **Architecture review:** wrote a comprehensive review of the preview server's evolution from batch generator to constrained interactive editor. Identified the 2300-line monolithic JS-in-Python as the key structural risk. Proposed 4-phase restructuring plan (extract JS → client-side model → interaction manager → brand constraint enforcement).
 - **Roadmap retriage:** updated ROADMAP.md with new Stages 11–13 (viewer extraction, client-side model, brand constraints). Reorganised TODO into 3 categories: defects, safe-on-current-arch features, and features requiring restructuring.
 
+### 2026-04-30 – Category 1+2 completion and preview server hardening
+
+- **Auto-ID assignment:** layout engine now auto-assigns IDs to components that lack explicit ones, ensuring all boxes, panels, annotations, and arrows appear in the interactive preview's component tree.
+- **Internal boxes selectable:** boxes inside nested panels (e.g. `left` panel in logic-data-vram) are now discoverable via double-click drill-in because they have auto-generated IDs.
+- **Waypoint override persistence:** waypoint edits (drag, add, remove, prune) are now saved to the override JSON files alongside position/size deltas. Waypoints are restored from overrides on page load, undo/redo, and relayout. Inspector shows waypoint count and override status for arrows. Clearing an arrow override restores layout-engine waypoints.
+- **Orthogonal constraint on waypoint drag:** when dragging a waypoint, movement is locked to the perpendicular axis if both adjacent segments are aligned (horizontal run → vertical-only drag; vertical run → horizontal-only drag). Corner waypoints retain free movement.
+- **Gutter controls propagate to nested panels:** the relayout endpoint now recursively patches `col_gap` and `row_gap` on nested panels that rely on defaults, so adjusting the grid controls affects internal spacing throughout the diagram hierarchy.
+- **Sticky preview port:** server startup auto-kills any process holding the target port before binding (Windows `Get-NetTCPConnection`).
+
 ### 2026-04-30 – Preview server interaction improvements
 
 - **Selection color:** changed selection outline, drop-shadow, and tree-item highlight from orange (#E95420) to golden-amber (#F6B73C) matching resize handles.

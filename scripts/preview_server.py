@@ -153,6 +153,22 @@ def _relayout(slug: str, grid_overrides: dict) -> dict | None:
         for key in ("col_gap", "row_gap", "outer_margin"):
             if key in grid_overrides:
                 setattr(diagram_obj, key, grid_overrides[key])
+
+        # Propagate gap overrides into nested panels that rely on defaults.
+        # Panels with explicit col_gap/row_gap keep their values; panels
+        # with None inherit the diagram-level override.
+        from diagram_model import Panel as _Panel
+        def _patch_panel_gaps(children):
+            for comp in children:
+                if isinstance(comp, _Panel):
+                    if comp.col_gap is None and "col_gap" in grid_overrides:
+                        comp.col_gap = grid_overrides["col_gap"]
+                    if comp.row_gap is None and "row_gap" in grid_overrides:
+                        comp.row_gap = grid_overrides["row_gap"]
+                    if hasattr(comp, "children") and comp.children:
+                        _patch_panel_gaps(comp.children)
+        _patch_panel_gaps(diagram_obj.components)
+
         import diagram_layout
         result = diagram_layout.layout(diagram_obj)
         import diagram_render_svg
@@ -372,6 +388,7 @@ async function loadSVG() {{
   await loadGridInfo();
   populateGridControls();
   await loadOverrides();
+  applyWaypointOverrides();
   applyAllOverrides();
   bindInteraction();
   renderGridOverlay();
@@ -608,6 +625,7 @@ async function requestRelayout(colGap, rowGap, margin) {{
       populateGridControls();
     }}
     // Re-apply overrides and interaction on the new SVG
+    applyWaypointOverrides();
     applyAllOverrides();
     bindInteraction();
     renderGridOverlay();
@@ -638,6 +656,20 @@ async function loadOverrides() {{
   redoStack = [];
   lastSavedState = JSON.stringify(overrides);
   updateUndoRedoButtons();
+}}
+
+function applyWaypointOverrides() {{
+  // Patch arrow waypoints in the component tree from saved overrides,
+  // then rebuild the arrow SVG to reflect the new paths.
+  for (const cid of Object.keys(overrides)) {{
+    const o = overrides[cid];
+    if (!o || !o.waypoints) continue;
+    const node = getArrowNode(cid);
+    if (node) {{
+      node.waypoints = JSON.parse(JSON.stringify(o.waypoints));
+      rebuildArrowSVG(cid);
+    }}
+  }}
 }}
 
 // ---- Undo/Redo functions ----
@@ -677,6 +709,7 @@ function performUndo() {{
   overrides = JSON.parse(previousState);
   
   // Update UI
+  applyWaypointOverrides();
   applyAllOverrides();
   if (selectedIds.size === 1) updateInspector([...selectedIds][0]);
   updateOverrideSummary();
@@ -701,6 +734,7 @@ function performRedo() {{
   overrides = JSON.parse(nextState);
   
   // Update UI
+  applyWaypointOverrides();
   applyAllOverrides();
   if (selectedIds.size === 1) updateInspector([...selectedIds][0]);
   updateOverrideSummary();
@@ -1447,6 +1481,7 @@ function startWpDrag(e) {{
     origX: node.waypoints[idx][0],
     origY: node.waypoints[idx][1],
     hasMoved: false,
+    axis: null,  // will be set on first move
   }};
   document.addEventListener("mousemove", onWpDragMove);
   document.addEventListener("mouseup", onWpDragUp);
@@ -1463,15 +1498,38 @@ function onWpDragMove(e) {{
 
   const node = getArrowNode(wpDragState.cid);
   if (!node || !node.waypoints) return;
-  const wp = node.waypoints[wpDragState.idx];
 
-  // Determine axis constraint from adjacent segments
-  // A waypoint connects two segments; constrain movement to
-  // the axis perpendicular to the shared direction
   const wps = node.waypoints;
   const idx = wpDragState.idx;
-  const newX = wpDragState.origX + dx;
-  const newY = wpDragState.origY + dy;
+
+  // Determine axis constraint from adjacent segments on first move.
+  // For orthogonal arrows, a waypoint that sits on a straight horizontal
+  // or vertical run should only move perpendicular to that run.
+  if (wpDragState.axis === null) {{
+    const pts = getArrowPoints(wpDragState.cid);
+    if (pts.start) {{
+      const all = [pts.start, ...wps, pts.end];
+      const ai = idx + 1;  // offset for start point
+      const prev = all[ai - 1];
+      const next = all[ai + 1];
+      const inH = Math.abs(prev[1] - wpDragState.origY) < 2;  // prev segment horizontal
+      const inV = Math.abs(prev[0] - wpDragState.origX) < 2;  // prev segment vertical
+      const outH = Math.abs(next[1] - wpDragState.origY) < 2; // next segment horizontal
+      const outV = Math.abs(next[0] - wpDragState.origX) < 2; // next segment vertical
+      if (inH && outH) wpDragState.axis = "y";       // on horizontal run → move vertically
+      else if (inV && outV) wpDragState.axis = "x";  // on vertical run → move horizontally
+      else wpDragState.axis = "free";                 // corner → free movement
+    }} else {{
+      wpDragState.axis = "free";
+    }}
+  }}
+
+  let newX = wpDragState.origX + dx;
+  let newY = wpDragState.origY + dy;
+
+  // Apply axis constraint
+  if (wpDragState.axis === "x") newY = wpDragState.origY;
+  if (wpDragState.axis === "y") newX = wpDragState.origX;
 
   // Snap to 4px grid
   const snapX = Math.round(newX / 4) * 4;
@@ -1491,7 +1549,8 @@ function onWpDragUp(e) {{
   if (wpDragState && wpDragState.hasMoved) {{
     // Prune collinear waypoints (dragged onto a straight line between neighbours)
     pruneCollinearWaypoints(wpDragState.cid);
-    setDirty(true);
+    recordSnapshot();
+    setWaypointOverride(wpDragState.cid);
   }}
   wpDragState = null;
 }}
@@ -1546,16 +1605,18 @@ function addWaypoint(cid, segIdx, x, y) {{
   node.waypoints.splice(segIdx, 0, [snapX, snapY]);
   rebuildArrowSVG(cid);
   showArrowWaypointHandles(cid);
-  setDirty(true);
+  recordSnapshot();
+  setWaypointOverride(cid);
 }}
 
 function removeWaypoint(cid, idx) {{
   const node = getArrowNode(cid);
   if (!node || !node.waypoints || node.waypoints.length <= 1) return;
+  recordSnapshot();
   node.waypoints.splice(idx, 1);
   rebuildArrowSVG(cid);
   showArrowWaypointHandles(cid);
-  setDirty(true);
+  setWaypointOverride(cid);
 }}
 
 function getArrowPoints(cid) {{
@@ -2075,10 +2136,22 @@ function setOverride(cid, partial) {{
   setDirty(true);
 }}
 
+function setWaypointOverride(cid) {{
+  // Persist current waypoints from the component tree into overrides
+  const node = getArrowNode(cid);
+  if (!node) return;
+  const prev = overrides[cid] || {{}};
+  prev.waypoints = node.waypoints ? JSON.parse(JSON.stringify(node.waypoints)) : [];
+  overrides[cid] = prev;
+  setDirty(true);
+}}
+
 function cleanOverride(cid) {{
   const o = overrides[cid];
   if (!o) return;
-  if ((o.dx || 0) === 0 && (o.dy || 0) === 0 && (o.dw || 0) === 0 && (o.dh || 0) === 0) {{
+  const posClean = (o.dx || 0) === 0 && (o.dy || 0) === 0 && (o.dw || 0) === 0 && (o.dh || 0) === 0;
+  const wpClean = !o.waypoints;
+  if (posClean && wpClean) {{
     delete overrides[cid];
   }}
 }}
@@ -2171,7 +2244,9 @@ function updateInspector(cid) {{
   const eff = getEffectiveDelta(cid);
   const hasMoveOverride = own.dx !== 0 || own.dy !== 0;
   const hasSizeOverride = own.dw !== 0 || own.dh !== 0;
-  const hasOverride = hasMoveOverride || hasSizeOverride;
+  const arrowNode = getArrowNode(cid);
+  const hasWpOverride = !!(overrides[cid] && overrides[cid].waypoints);
+  const hasOverride = hasMoveOverride || hasSizeOverride || hasWpOverride;
   const hasParentOverride = eff.dx !== own.dx || eff.dy !== own.dy;
 
   let html = '<div class="field"><span class="label">Component</span><br>' +
@@ -2191,6 +2266,12 @@ function updateInspector(cid) {{
   if (hasParentOverride) {{
     html += '<div class="field"><span class="label">Effective (incl. parents)</span><br>' +
       '<span class="value override">dx=' + eff.dx + '  dy=' + eff.dy + '</span></div>';
+  }}
+  if (arrowNode) {{
+    const wpCount = arrowNode.waypoints ? arrowNode.waypoints.length : 0;
+    html += '<div class="field"><span class="label">Waypoints</span><br>' +
+      '<span class="value' + (hasWpOverride ? ' override' : '') + '">' + wpCount +
+      (hasWpOverride ? ' (overridden)' : '') + '</span></div>';
   }}
   if (hasOverride) {{
     html += '<button class="danger" onclick="clearOverride(\\''+cid+'\\')">Clear override</button>';
@@ -2217,10 +2298,20 @@ async function saveOverrides() {{
 function clearOverride(cid) {{
   // Record snapshot before clearing override
   recordSnapshot();
+  const hadWaypoints = overrides[cid] && overrides[cid].waypoints;
   delete overrides[cid];
   setDirty(true);
-  applyAllOverrides();
-  if (selectedIds.has(cid)) updateInspector(cid);
+  if (hadWaypoints) {{
+    // Reload tree to restore original arrow waypoints from the layout engine
+    loadTree().then(() => {{
+      rebuildArrowSVG(cid);
+      applyAllOverrides();
+      if (selectedIds.has(cid)) updateInspector(cid);
+    }});
+  }} else {{
+    applyAllOverrides();
+    if (selectedIds.has(cid)) updateInspector(cid);
+  }}
 }}
 
 function updateOverrideSummary() {{
@@ -2242,13 +2333,14 @@ function refreshTreeColors() {{
 
 document.getElementById("btn-export").addEventListener("click", () => {{
   const entries = Object.entries(overrides).filter(([,d]) =>
-    (d.dx||0) !== 0 || (d.dy||0) !== 0 || (d.dw||0) !== 0 || (d.dh||0) !== 0);
+    (d.dx||0) !== 0 || (d.dy||0) !== 0 || (d.dw||0) !== 0 || (d.dh||0) !== 0 || d.waypoints);
   if (entries.length === 0) {{ alert("No overrides to export."); return; }}
   const lines = ["# Overrides for " + SLUG, ""];
   for (const [cid, d] of entries) {{
     let parts = [];
     if (d.dx || d.dy) parts.push("move x+" + (d.dx||0) + " y+" + (d.dy||0));
     if (d.dw || d.dh) parts.push("resize w+" + (d.dw||0) + " h+" + (d.dh||0));
+    if (d.waypoints) parts.push("waypoints: " + d.waypoints.length);
     lines.push("# " + cid + ": " + parts.join(", "));
   }}
   navigator.clipboard.writeText(lines.join("\\n")).then(() => alert("Copied to clipboard."));
@@ -2531,6 +2623,18 @@ def main():
     parser.add_argument("--grid", action="store_true", help="Show grid overlay")
     parser.add_argument("--no-watch", action="store_true", help="Disable file watching")
     args = parser.parse_args()
+
+    # Auto-kill any process holding the port (Windows)
+    if sys.platform == "win32":
+        try:
+            out = subprocess.check_output(
+                ["powershell", "-NoProfile", "-Command",
+                 f"Get-NetTCPConnection -LocalPort {args.port} -ErrorAction SilentlyContinue"
+                 f" | ForEach-Object {{ Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }}"],
+                stderr=subprocess.DEVNULL,
+            )
+        except subprocess.CalledProcessError:
+            pass
 
     PreviewHandler.grid = args.grid
 

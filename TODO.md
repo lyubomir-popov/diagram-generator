@@ -226,16 +226,16 @@ Items are categorised per the architecture review above.
 
 #### Category 1 – Defects and QA (fix now on current codebase)
 
-- [ ] **Internal boxes not selectable.** ★★ medium — Boxes inside nested panels/wrappers cannot be clicked to select; only the parent container responds.
-- [ ] **Sticky preview port.** ★ simple — Pick a fixed port for the preview server (e.g. 8100) and auto-kill any process holding it before binding. Store in `.env.local` or hard-code in git.
+- [x] **Internal boxes not selectable.** ★★ medium — Fixed: auto-ID assignment ensures all components appear in the interactive tree.
+- [x] **Sticky preview port.** ★ simple — Fixed: auto-kills process on target port before binding.
 
 #### Category 2 – Features safe on current architecture (won't need rewriting)
 
-- [ ] **Gutter controls affect internal box spacing.** ★★ medium — Changing gutter values in the grid controls should also adjust spacing inside nested panels, not just top-level gaps. (Server-side relayout, minimal JS impact.)
-- [ ] **Persist waypoint overrides in override JSON files.** ★★ medium — Save/load waypoint edits alongside position/size overrides.
-- [ ] **Orthogonal constraint on waypoint drag.** ★★ medium — Lock waypoint movement to axis of adjacent segments.
-- [ ] **Collinear waypoint auto-pruning.** ★ simple — Done: waypoints dragged onto a straight line between neighbours are auto-removed.
-- [ ] **Add waypoint by double-clicking segment.** ★ simple — Done: double-click anywhere on a selected arrow's segment body to add a waypoint at that position.
+- [x] **Gutter controls affect internal box spacing.** ★★ medium — Relayout propagates gap overrides into nested panels that rely on defaults.
+- [x] **Persist waypoint overrides in override JSON files.** ★★ medium — Waypoints saved/loaded/undone alongside position/size overrides.
+- [x] **Orthogonal constraint on waypoint drag.** ★★ medium — Axis locked based on adjacent segment geometry.
+- [x] **Collinear waypoint auto-pruning.** ★ simple — Done.
+- [x] **Add waypoint by double-clicking segment.** ★ simple — Done.
 
 #### Category 3 – Features that require restructuring (defer to Stage 11–12)
 
@@ -258,6 +258,12 @@ These features touch parent-child relationships, constraint propagation, or inte
 - [x] Ghost affordances on resize (handles hidden during drag, hover suppressed)
 - [x] Inline text editing with text-icon gutter enforcement
 - [x] Waypoint handles: drag, add (double-click segment), remove (double-click handle)
+- [x] Collinear waypoint auto-pruning
+- [x] Sticky preview port (auto-kill stale process on target port)
+- [x] Internal boxes selectable via auto-ID assignment
+- [x] Waypoint overrides persisted in override JSON files
+- [x] Orthogonal constraint on waypoint drag (axis-locked by adjacent segments)
+- [x] Gutter controls propagate to nested panel spacing
 - [x] Collinear waypoint auto-pruning
 - [x] Arrow SVG rebuild on waypoint count change
 

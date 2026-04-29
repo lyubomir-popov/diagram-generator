@@ -1271,6 +1271,25 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
 
 def layout(diagram: Diagram) -> LayoutResult:
     """Walk the diagram tree and compute all positions."""
+
+    # ── Auto-assign IDs to components that lack them ──
+    # This ensures every box, panel, etc. appears in the interactive preview's
+    # component tree even when the diagram definition omits explicit IDs.
+    _auto_counter = 0
+
+    def _ensure_ids(components, prefix=""):
+        nonlocal _auto_counter
+        for comp in components:
+            if hasattr(comp, "id") and not comp.id:
+                _auto_counter += 1
+                comp.id = f"_auto_{prefix}{_auto_counter}"
+            # Recurse into panel children
+            if hasattr(comp, "children") and comp.children:
+                child_prefix = (comp.id + "_") if hasattr(comp, "id") and comp.id else prefix
+                _ensure_ids(comp.children, child_prefix)
+
+    _ensure_ids(diagram.components)
+
     outer = diagram.outer_margin if diagram.outer_margin is not None else OUTER_MARGIN
     col_gap = diagram.col_gap if diagram.col_gap is not None else GRID_GUTTER
     row_gap = diagram.row_gap if diagram.row_gap is not None else GRID_GUTTER

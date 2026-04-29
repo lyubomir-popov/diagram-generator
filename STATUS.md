@@ -64,7 +64,7 @@ The project has evolved from a batch diagram generator into a **constrained inte
 
 **Next architectural milestone:** Stage 11 – extract JS/CSS from the Python f-string template into static files. This is the prerequisite for the client-side model (Stage 12) and brand constraint enforcement (Stage 13). See the architecture review in `TODO.md` and the updated `ROADMAP.md` stages 11–13.
 
-**Current TODO categorisation:** open items are split into three tiers: (1) defects to fix now, (2) features safe on the current architecture, (3) features that should wait for extraction. See `TODO.md` for the full breakdown.
+**Current TODO categorisation:** All Category 1 (defects) and Category 2 (safe features) items are now complete. Remaining open items are Category 3 – features that require the JS extraction (Stage 11) before they can be implemented cleanly.
 
 - **The repo now uses the centralized root workflow.** `STATUS.md`, `TODO.md`, `ROADMAP.md`, `HISTORY.md`, `INBOX.md`, `AGENT-INBOX.md`, and `docs/specs.md` are the canonical workflow files.
 - **A design.md-inspired diagram language spec now exists.** `DIAGRAM.md` holds the canonical tokens, prose rules, output constraints, and redraw workflow for diagram work instead of keeping that material in `TODO.md`.
