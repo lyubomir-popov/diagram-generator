@@ -179,8 +179,8 @@ These items are now unblocked by the completed refactor:
 - [ ] **Parent resize propagates to autolayout children.** ★★★ complex — Resizing a parent panel resizes auto-layout children proportionally.
 - [ ] **Component swap.** ★★★ complex — Change a box's fill/border style or shape type from the UI. Constraint system can enforce brand palette.
 - [ ] **Baseline alignment guide.** ★★★ complex — Visual guide showing snap targets during drag. Needs interaction manager state.
-- [ ] **Full interaction manager adoption.** ★★ medium — Replace remaining `dragState`/`resizeState` shims with `InteractionManager` methods.
-- [ ] **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects.
+- [x] **Full interaction manager adoption.** Done — all 4 state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) replaced with `mgr.startXxx()`/`mgr.endInteraction()` and `mgr.state` access.
+- [ ] **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
 - [x] **Ctrl+Z does not undo typed text in inline editor.** Fixed — text edits now store override, record undo snapshot, and restore via `applyAllOverrides`.
 - [x] **Gutter value changes don't activate save button.** Fixed — grid overrides (col_gap, row_gap, outer_margin) now persist via override JSON and mark dirty on change. 32px gutters in some diagrams are intentional (`ARROW_GAP=32` for arrow routing clearance).
 
