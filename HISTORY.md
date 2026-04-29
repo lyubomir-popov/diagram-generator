@@ -4,6 +4,15 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-04-29 – Waypoint cleanup and architecture review
+
+- **Collinear waypoint auto-pruning:** after a waypoint drag, any waypoint that sits on a straight line between its neighbours (within 2px tolerance) is automatically removed. Arrow SVG and handles are rebuilt.
+- **Add waypoint by double-clicking segment:** replaced the old midpoint-circle approach with direct double-click on any point along a selected arrow's segment body. Click position is snapped to 4px grid.
+- **Ghost affordances on resize:** fixed stale resize handles overlapping child icons during container resize (handles hidden during drag, hover effects suppressed during resize, hover cleared on mouseup).
+- **INBOX triage:** 5 items drained into TODO (parenting audit, component swap, parent resize propagation, sticky port, children not selectable).
+- **Architecture review:** wrote a comprehensive review of the preview server's evolution from batch generator to constrained interactive editor. Identified the 2300-line monolithic JS-in-Python as the key structural risk. Proposed 4-phase restructuring plan (extract JS → client-side model → interaction manager → brand constraint enforcement).
+- **Roadmap retriage:** updated ROADMAP.md with new Stages 11–13 (viewer extraction, client-side model, brand constraints). Reorganised TODO into 3 categories: defects, safe-on-current-arch features, and features requiring restructuring.
+
 ### 2026-04-30 – Preview server interaction improvements
 
 - **Selection color:** changed selection outline, drop-shadow, and tree-item highlight from orange (#E95420) to golden-amber (#F6B73C) matching resize handles.

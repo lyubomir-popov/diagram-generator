@@ -58,6 +58,14 @@ There are now **two diagram generation pipelines**. On a cold start, ask the use
 | request-to-hardware-stack | OK |
 | rise-of-inference-economy | OK |
 
+## Architecture status
+
+The project has evolved from a batch diagram generator into a **constrained interactive diagram editor** – a lean Figma/draw.io that enforces brand rules while allowing targeted polish. The backend (declarative model, layout engine, dual renderers) is well-architected. The frontend (preview server) is a 2300-line Python-embedded JS monolith that needs extraction before the next wave of features.
+
+**Next architectural milestone:** Stage 11 – extract JS/CSS from the Python f-string template into static files. This is the prerequisite for the client-side model (Stage 12) and brand constraint enforcement (Stage 13). See the architecture review in `TODO.md` and the updated `ROADMAP.md` stages 11–13.
+
+**Current TODO categorisation:** open items are split into three tiers: (1) defects to fix now, (2) features safe on the current architecture, (3) features that should wait for extraction. See `TODO.md` for the full breakdown.
+
 - **The repo now uses the centralized root workflow.** `STATUS.md`, `TODO.md`, `ROADMAP.md`, `HISTORY.md`, `INBOX.md`, `AGENT-INBOX.md`, and `docs/specs.md` are the canonical workflow files.
 - **A design.md-inspired diagram language spec now exists.** `DIAGRAM.md` holds the canonical tokens, prose rules, output constraints, and redraw workflow for diagram work instead of keeping that material in `TODO.md`.
 - **Optional workflow skills now have a clear home.** `.github/skills/` is the repo location for on-demand workflow skills such as redraw, build-and-validate, and protected draw.io review procedures.

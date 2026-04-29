@@ -41,6 +41,7 @@ from diagram_model import (
 from diagram_shared import (
     ARROW_CLEARANCE,
     ARROW_EXIT_CLEARANCE,
+    ARROW_GAP,
     BASELINE_UNIT,
     BLOCK_WIDTH,
     BODY_LINE_STEP,
@@ -200,6 +201,7 @@ class ComponentInfo:
     children: list["ComponentInfo"] = field(default_factory=list)
     source: str = ""   # arrow only: "component_id.side"
     target: str = ""   # arrow only: "component_id.side"
+    waypoints: list[list[float]] = field(default_factory=list)  # arrow only: [[x,y], ...]
 
 
 @dataclass
@@ -865,6 +867,230 @@ def _render_component(
 # Arrow resolution
 # ---------------------------------------------------------------------------
 
+# -- Obstacle helpers -------------------------------------------------------
+
+def _collect_obstacles(
+    bounds_map: dict[str, "_Bounds"],
+    exclude_ids: set[str],
+    pad: float = ARROW_GAP / 2,
+) -> list[tuple[float, float, float, float]]:
+    """Return a list of (x, y, x2, y2) obstacle rectangles.
+
+    Each rectangle is the axis-aligned bounding box of a component,
+    inflated by *pad* on all sides.  Components whose id is in
+    *exclude_ids* (source/target of the arrow being routed) are skipped
+    so the arrow can actually reach them.
+    """
+    obstacles: list[tuple[float, float, float, float]] = []
+    for cid, b in bounds_map.items():
+        if cid in exclude_ids:
+            continue
+        obstacles.append((
+            b.x - pad,
+            b.y - pad,
+            b.x + b.width + pad,
+            b.y + b.height + pad,
+        ))
+    return obstacles
+
+
+def _seg_hits_obstacle(
+    ax: float, ay: float, bx: float, by: float,
+    obstacles: list[tuple[float, float, float, float]],
+) -> bool:
+    """Return True if the axis-aligned segment (ax,ay)→(bx,by) passes
+    through any obstacle rectangle (interior intersection, not just
+    touching the boundary).
+    """
+    for ox, oy, ox2, oy2 in obstacles:
+        if ax == bx:
+            # Vertical segment
+            if ox < ax < ox2:
+                lo, hi = (min(ay, by), max(ay, by))
+                if lo < oy2 and hi > oy:
+                    return True
+        elif ay == by:
+            # Horizontal segment
+            if oy < ay < oy2:
+                lo, hi = (min(ax, bx), max(ax, bx))
+                if lo < ox2 and hi > ox:
+                    return True
+    return False
+
+
+def _path_hits_obstacle(
+    pts: list[tuple[float, float]],
+    obstacles: list[tuple[float, float, float, float]],
+) -> bool:
+    """Check if any segment in a polyline hits an obstacle."""
+    for i in range(len(pts) - 1):
+        if _seg_hits_obstacle(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], obstacles):
+            return True
+    return False
+
+
+def _route_around_obstacles(
+    src: tuple[float, float],
+    tgt: tuple[float, float],
+    src_side: str,
+    tgt_side: str,
+    waypoints: list[tuple[float, float]],
+    obstacles: list[tuple[float, float, float, float]],
+) -> list[tuple[float, float]]:
+    """Attempt to re-route an arrow's waypoints to avoid obstacles.
+
+    Strategy:
+    1. If the initial path (src → waypoints → tgt) is clear, keep it.
+    2. Otherwise, try routing via the edges of the blocking obstacle(s),
+       using a U-bend around the nearest blocking rectangle.
+
+    Returns the (possibly modified) waypoints list.
+    """
+    pts = [src] + waypoints + [tgt]
+    if not _path_hits_obstacle(pts, obstacles):
+        return waypoints
+
+    # Find which obstacles are hit and attempt a detour
+    sx, sy = src
+    tx, ty = tgt
+    vertical_src = src_side in ("top", "bottom")
+    vertical_tgt = tgt_side in ("top", "bottom")
+
+    # Gather all obstacles that the current path intersects
+    blocking = []
+    for obs in obstacles:
+        for i in range(len(pts) - 1):
+            if _seg_hits_obstacle(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], [obs]):
+                blocking.append(obs)
+                break
+
+    if not blocking:
+        return waypoints
+
+    # Use the union bounding box of all blocking obstacles to route around
+    union_x = min(o[0] for o in blocking)
+    union_y = min(o[1] for o in blocking)
+    union_x2 = max(o[2] for o in blocking)
+    union_y2 = max(o[3] for o in blocking)
+
+    # Determine which side to detour around based on source/target positions
+    # relative to the blocking area
+    clearance = ARROW_EXIT_CLEARANCE
+
+    if vertical_src and vertical_tgt:
+        # Both vertical sides — try routing around left or right
+        center_x = (union_x + union_x2) / 2
+        # Route via the side closer to both endpoints
+        left_dist = abs(sx - union_x) + abs(tx - union_x)
+        right_dist = abs(sx - union_x2) + abs(tx - union_x2)
+
+        if left_dist <= right_dist:
+            # Route left of the obstacle
+            detour_x = round((union_x - clearance) / BASELINE_UNIT) * BASELINE_UNIT
+        else:
+            # Route right of the obstacle
+            detour_x = round((union_x2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+
+        if src_side == "bottom" and tgt_side == "top" and sy < ty:
+            # Normal downward flow — U-bend: down, sideways, sideways, down
+            exit_y = round((sy + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            entry_y = round((ty - MIN_ARROW_SEGMENT) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [
+                (sx, exit_y),
+                (detour_x, exit_y),
+                (detour_x, entry_y),
+                (tx, entry_y),
+            ]
+        elif src_side == "top" and tgt_side == "bottom" and sy > ty:
+            exit_y = round((sy - clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            entry_y = round((ty + MIN_ARROW_SEGMENT) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [
+                (sx, exit_y),
+                (detour_x, exit_y),
+                (detour_x, entry_y),
+                (tx, entry_y),
+            ]
+        else:
+            # Fallback: Z-bend around
+            mid_y = round(((sy + ty) / 2) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [
+                (sx, mid_y),
+                (detour_x, mid_y),
+                (detour_x, round(ty / BASELINE_UNIT) * BASELINE_UNIT),
+                (tx, round(ty / BASELINE_UNIT) * BASELINE_UNIT),
+            ]
+
+    elif not vertical_src and not vertical_tgt:
+        # Both horizontal sides — try routing above or below
+        top_dist = abs(sy - union_y) + abs(ty - union_y)
+        bottom_dist = abs(sy - union_y2) + abs(ty - union_y2)
+
+        if top_dist <= bottom_dist:
+            detour_y = round((union_y - clearance) / BASELINE_UNIT) * BASELINE_UNIT
+        else:
+            detour_y = round((union_y2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+
+        if src_side == "right" and tgt_side == "left" and sx < tx:
+            exit_x = round((sx + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            entry_x = round((tx - MIN_ARROW_SEGMENT) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [
+                (exit_x, sy),
+                (exit_x, detour_y),
+                (entry_x, detour_y),
+                (entry_x, ty),
+            ]
+        else:
+            mid_x = round(((sx + tx) / 2) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [
+                (mid_x, sy),
+                (mid_x, detour_y),
+                (round(tx / BASELINE_UNIT) * BASELINE_UNIT, detour_y),
+            ]
+    else:
+        # Mixed vertical/horizontal — L-bend shouldn't usually hit obstacles,
+        # but if it does, add a detour segment
+        if vertical_src:
+            # bottom/top → left/right: try routing around
+            detour_y = round(ty / BASELINE_UNIT) * BASELINE_UNIT
+            if sx < tx:
+                detour_x = round((union_x2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            else:
+                detour_x = round((union_x - clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [(sx, detour_y), (detour_x, detour_y), (detour_x, ty)]
+        else:
+            detour_x = round(tx / BASELINE_UNIT) * BASELINE_UNIT
+            if sy < ty:
+                detour_y = round((union_y2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            else:
+                detour_y = round((union_y - clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [(detour_x, sy), (detour_x, detour_y), (tx, detour_y)]
+
+    # Verify the new path is clear; if not, return original (best effort)
+    new_pts = [src] + new_wps + [tgt]
+    if not _path_hits_obstacle(new_pts, obstacles):
+        # Simplify: remove collinear waypoints
+        return _simplify_waypoints(new_wps, src, tgt)
+    return waypoints
+
+
+def _simplify_waypoints(
+    wps: list[tuple[float, float]],
+    src: tuple[float, float],
+    tgt: tuple[float, float],
+) -> list[tuple[float, float]]:
+    """Remove redundant collinear waypoints from an orthogonal path."""
+    pts = [src] + wps + [tgt]
+    simplified: list[tuple[float, float]] = []
+    for i in range(1, len(pts) - 1):
+        prev, cur, nxt = pts[i - 1], pts[i], pts[i + 1]
+        # Keep the point only if it's a real bend (direction changes)
+        h_same = (prev[1] == cur[1] == nxt[1])  # all on same Y
+        v_same = (prev[0] == cur[0] == nxt[0])  # all on same X
+        if not h_same and not v_same:
+            simplified.append(cur)
+    return simplified
+
+
 def _resolve_arrows(
     arrows: list[Arrow],
     bounds_map: dict[str, _Bounds],
@@ -879,6 +1105,10 @@ def _resolve_arrows(
     The Z-bend placement ensures the final approach segment is at least
     MIN_ARROW_SEGMENT long (arrowhead + visible shaft) and the exit
     segment is at least ARROW_EXIT_CLEARANCE long.
+
+    After initial routing, each arrow is checked for obstacle intersections.
+    If the path crosses any component box, it is re-routed around the
+    obstacle(s) using ``_route_around_obstacles``.
     """
     prims = []
     for idx, arrow in enumerate(arrows):
@@ -891,13 +1121,13 @@ def _resolve_arrows(
         arrow_id = arrow.id if arrow.id else f"arrow_{idx}"
 
         waypoints = list(arrow.waypoints)
+        src_side = arrow.source.split(".")[-1]
+        tgt_side = arrow.target.split(".")[-1]
 
         # Auto-route orthogonal if no explicit waypoints
         if not waypoints:
             sx, sy = src
             tx, ty = tgt
-            src_side = arrow.source.split(".")[-1]
-            tgt_side = arrow.target.split(".")[-1]
 
             vertical_src = src_side in ("top", "bottom")
             vertical_tgt = tgt_side in ("top", "bottom")
@@ -938,6 +1168,15 @@ def _resolve_arrows(
             elif not vertical_src and vertical_tgt:
                 # e.g. right→top: L-bend
                 waypoints = [(tx, sy)]
+
+        # Obstacle avoidance: re-route if path crosses any component box
+        src_comp_id = arrow.source.split(".")[0]
+        tgt_comp_id = arrow.target.split(".")[0]
+        exclude = {src_comp_id, tgt_comp_id}
+        obstacles = _collect_obstacles(bounds_map, exclude)
+        waypoints = _route_around_obstacles(
+            src, tgt, src_side, tgt_side, waypoints, obstacles,
+        )
 
         # Determine direction from last segment
         pts = [src] + waypoints + [tgt]
@@ -1237,6 +1476,7 @@ def layout(diagram: Diagram) -> LayoutResult:
                 height=max(ys) - min(ys),
                 source=ap.source_ref,
                 target=ap.target_ref,
+                waypoints=[[wp[0], wp[1]] for wp in ap.waypoints],
             ))
 
     return LayoutResult(width=width, height=height, background=bg,

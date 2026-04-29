@@ -206,6 +206,11 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
         for s in all_slugs
     )
     grid_js = "true" if grid else "false"
+    from diagram_shared import ARROW_HEAD_LENGTH, ARROW_HEAD_HALF_WIDTH, ICON_SIZE, GRID_GUTTER
+    head_len = ARROW_HEAD_LENGTH
+    head_half = ARROW_HEAD_HALF_WIDTH
+    icon_size = ICON_SIZE
+    col_gap = GRID_GUTTER
     # NOTE: all JS { } are doubled to {{ }} because this is a Python f-string.
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -268,6 +273,11 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 .dg-handle.dg-handle-b {{ cursor: ns-resize; }}
 .dg-handle.dg-handle-bl {{ cursor: nesw-resize; }}
 .dg-handle.dg-handle-l {{ cursor: ew-resize; }}
+.dg-wp-handle {{ fill: #F6B73C; stroke: #fff; stroke-width: 1.5; cursor: move; pointer-events: all; }}
+.dg-wp-handle:hover {{ fill: #e0a030; stroke: #fff; stroke-width: 2; }}
+.dg-text-editor {{ position: fixed; z-index: 10000; background: #fff; border: 2px solid #F6B73C;
+  font-family: 'Ubuntu Sans', sans-serif; padding: 4px; resize: none; overflow: hidden;
+  outline: none; box-sizing: border-box; line-height: 1.43; white-space: pre-wrap; }}
 .btn {{ font-size: 11px; padding: 3px 8px; border: 1px solid #555;
        background: #2a2a2a; color: #e0e0e0; border-radius: 3px; cursor: pointer; }}
 .btn:hover {{ background: #3a3a3a; }}
@@ -337,6 +347,8 @@ let selectedIds = new Set();
 let selectionDepth = 0;
 let dragState = null;
 let resizeState = null;
+let wpDragState = null;
+let textEditState = null;
 let isDirty = false;
 const HANDLE_SIZE = 8;
 
@@ -752,6 +764,33 @@ function getAncestors(cid) {{
   return path;
 }}
 
+function getParentNode(cid) {{
+  function walk(nodes) {{
+    for (const node of nodes) {{
+      if (node.children) {{
+        for (const ch of node.children) {{
+          if (ch.id === cid) return node;
+        }}
+        const r = walk(node.children);
+        if (r) return r;
+      }}
+    }}
+    return null;
+  }}
+  return walk(componentTree);
+}}
+
+function getComponentNode(cid) {{
+  function walk(nodes) {{
+    for (const n of nodes) {{
+      if (n.id === cid) return n;
+      if (n.children) {{ const r = walk(n.children); if (r) return r; }}
+    }}
+    return null;
+  }}
+  return walk(componentTree);
+}}
+
 function getDescendantIds(cid) {{
   const result = [];
   function findNode(nodes) {{
@@ -1065,7 +1104,7 @@ function bindInteraction() {{
   svg.addEventListener("mousedown", onSvgMouseDown);
   svg.addEventListener("dblclick", onSvgDblClick);
   svg.addEventListener("mouseover", (e) => {{
-    if (dragState) return;
+    if (dragState || resizeState) return;
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
     pt.y = e.clientY;
@@ -1078,7 +1117,7 @@ function bindInteraction() {{
     }}
   }});
   svg.addEventListener("mouseout", () => {{
-    if (!dragState) {{
+    if (!dragState && !resizeState) {{
       svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
     }}
   }});
@@ -1088,6 +1127,8 @@ function bindInteraction() {{
 
 function onSvgDblClick(e) {{
   if (e.target.classList.contains("dg-handle")) return;
+  if (e.target.classList.contains("dg-wp-handle")) return;
+  if (textEditState) return;
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
   const pt = svg.createSVGPoint();
@@ -1098,6 +1139,12 @@ function onSvgDblClick(e) {{
   if (deeper) {{
     selectionDepth++;
     selectComponent(deeper, false);
+  }} else {{
+    // No deeper child — try entering text edit on the current selection
+    const current = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
+    if (current && selectedIds.has(current)) {{
+      startTextEdit(current, e);
+    }}
   }}
 }}
 
@@ -1119,7 +1166,11 @@ function onSvgMouseDown(e) {{
   // Fall back: if nothing at current depth, try top-level
   const effectiveCid = cid || findComponentAtDepth(svgPt.x, svgPt.y, 0);
   
-  if (!effectiveCid || e.button !== 0) return;
+  if (e.button !== 0) return;
+  if (!effectiveCid) {{
+    deselectAll();
+    return;
+  }}
   
   // If clicking a different top-level group, reset to depth 0
   const clickedTopLevel = findComponentAtDepth(svgPt.x, svgPt.y, 0);
@@ -1178,8 +1229,30 @@ function onDragMove(e) {{
   }}
   for (const id of dragState.cids) {{
     const orig = dragState.origDeltas[id];
-    const newDx = Math.round((orig.dx + dx) / 4) * 4;
-    const newDy = Math.round((orig.dy + dy) / 4) * 4;
+    let newDx = Math.round((orig.dx + dx) / 4) * 4;
+    let newDy = Math.round((orig.dy + dy) / 4) * 4;
+
+    // Clamp to parent bounds if nested
+    const parent = getParentNode(id);
+    const node = getComponentNode(id);
+    if (parent && node && parent.type !== "arrow") {{
+      const pEff = getEffectiveDelta(parent.id);
+      const pOwn = getOwnDelta(parent.id);
+      const pLeft = parent.x + pEff.dx;
+      const pTop = parent.y + pEff.dy;
+      const pRight = pLeft + parent.width + pOwn.dw;
+      const pBottom = pTop + parent.height + pOwn.dh;
+      const own = getOwnDelta(id);
+      const cW = node.width + own.dw;
+      const cH = node.height + own.dh;
+      const cLeft = node.x + newDx;
+      const cTop = node.y + newDy;
+      if (cLeft < pLeft) newDx = pLeft - node.x;
+      if (cTop < pTop) newDy = pTop - node.y;
+      if (cLeft + cW > pRight) newDx = pRight - cW - node.x;
+      if (cTop + cH > pBottom) newDy = pBottom - cH - node.y;
+    }}
+
     setOverride(id, {{ dx: newDx, dy: newDy }});
   }}
   applyAllOverrides();
@@ -1260,18 +1333,8 @@ function showResizeHandles(cid) {{
     mkHandle(minX, (minY + maxY) / 2, "dg-handle-l", "l");
     mkHandle(maxX, (minY + maxY) / 2, "dg-handle-r", "r");
   }} else if (isArrow) {{
-    // Arrow: resize along primary axis only
-    const w = maxX - minX;
-    const h = maxY - minY;
-    if (w > h) {{
-      // Primarily horizontal
-      mkHandle(minX, (minY + maxY) / 2, "dg-handle-l", "l");
-      mkHandle(maxX, (minY + maxY) / 2, "dg-handle-r", "r");
-    }} else {{
-      // Primarily vertical
-      mkHandle((minX + maxX) / 2, minY, "dg-handle-t", "t");
-      mkHandle((minX + maxX) / 2, maxY, "dg-handle-b", "b");
-    }}
+    // Arrow: show draggable waypoint handles (circles at each bend)
+    showArrowWaypointHandles(cid);
   }} else {{
     // 2D component: all 8 handles
     mkHandle(minX, minY, "dg-handle-tl", "tl");
@@ -1287,7 +1350,605 @@ function showResizeHandles(cid) {{
 
 function removeResizeHandles() {{
   const svg = document.querySelector("#stage svg");
-  if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.remove());
+  if (svg) {{
+    svg.querySelectorAll(".dg-handle").forEach(h => h.remove());
+    svg.querySelectorAll(".dg-wp-handle").forEach(h => h.remove());
+  }}
+}}
+
+// ---- Arrow waypoint handles ----
+
+function getArrowNode(cid) {{
+  function find(nodes) {{
+    for (const n of nodes) {{
+      if (n.id === cid && n.type === "arrow") return n;
+      if (n.children) {{
+        const r = find(n.children);
+        if (r) return r;
+      }}
+    }}
+    return null;
+  }}
+  return find(componentTree);
+}}
+
+function showArrowWaypointHandles(cid) {{
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+  // Remove old waypoint handles
+  svg.querySelectorAll(".dg-wp-handle").forEach(h => h.remove());
+  svg.querySelectorAll(".dg-wp-add").forEach(h => h.remove());
+
+  const node = getArrowNode(cid);
+  if (!node) return;
+
+  const wps = node.waypoints || [];
+  if (wps.length === 0) return;
+
+  const ns = "http://www.w3.org/2000/svg";
+  const eff = getEffectiveDelta(cid);
+
+  // Show a circle handle at each waypoint
+  wps.forEach((wp, idx) => {{
+    const cx = wp[0] + eff.dx;
+    const cy = wp[1] + eff.dy;
+    const circle = document.createElementNS(ns, "circle");
+    circle.setAttribute("cx", cx);
+    circle.setAttribute("cy", cy);
+    circle.setAttribute("r", 5);
+    circle.setAttribute("class", "dg-wp-handle");
+    circle.setAttribute("data-wp-cid", cid);
+    circle.setAttribute("data-wp-idx", idx);
+    circle.addEventListener("mousedown", startWpDrag);
+    circle.addEventListener("dblclick", (e) => {{
+      e.stopPropagation();
+      removeWaypoint(cid, idx);
+    }});
+    svg.appendChild(circle);
+  }});
+
+  // Make arrow segments clickable to add waypoints at click position.
+  // We attach listeners to the transparent hit-area lines in the arrow group
+  // so clicks anywhere on the segment body (not just a midpoint) work.
+  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+  let segIdx = 0;
+  groups.forEach(g => {{
+    g.querySelectorAll("line").forEach(ln => {{
+      if (ln.style.pointerEvents !== "stroke") return; // only hit-area lines
+      const idx = segIdx++;
+      // Tag for cleanup
+      ln.setAttribute("data-wp-seg-cid", cid);
+      ln.setAttribute("data-wp-seg-idx", idx);
+      ln.addEventListener("dblclick", function wpSegClick(e) {{
+        e.stopPropagation();
+        const svg = document.querySelector("#stage svg");
+        if (!svg) return;
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX; pt.y = e.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        // Snap to 4px grid
+        const snapX = Math.round(svgPt.x / 4) * 4;
+        const snapY = Math.round(svgPt.y / 4) * 4;
+        addWaypoint(cid, idx, snapX - eff.dx, snapY - eff.dy);
+      }});
+    }});
+  }});
+}}
+
+function startWpDrag(e) {{
+  const cid = e.target.getAttribute("data-wp-cid");
+  const idx = parseInt(e.target.getAttribute("data-wp-idx"), 10);
+  const node = getArrowNode(cid);
+  if (!node || !node.waypoints || !node.waypoints[idx]) return;
+
+  wpDragState = {{
+    cid, idx,
+    startX: e.clientX, startY: e.clientY,
+    origX: node.waypoints[idx][0],
+    origY: node.waypoints[idx][1],
+    hasMoved: false,
+  }};
+  document.addEventListener("mousemove", onWpDragMove);
+  document.addEventListener("mouseup", onWpDragUp);
+  e.preventDefault();
+  e.stopPropagation();
+}}
+
+function onWpDragMove(e) {{
+  if (!wpDragState) return;
+  const dx = e.clientX - wpDragState.startX;
+  const dy = e.clientY - wpDragState.startY;
+  if (Math.abs(dx) > 2 || Math.abs(dy) > 2) wpDragState.hasMoved = true;
+  if (!wpDragState.hasMoved) return;
+
+  const node = getArrowNode(wpDragState.cid);
+  if (!node || !node.waypoints) return;
+  const wp = node.waypoints[wpDragState.idx];
+
+  // Determine axis constraint from adjacent segments
+  // A waypoint connects two segments; constrain movement to
+  // the axis perpendicular to the shared direction
+  const wps = node.waypoints;
+  const idx = wpDragState.idx;
+  const newX = wpDragState.origX + dx;
+  const newY = wpDragState.origY + dy;
+
+  // Snap to 4px grid
+  const snapX = Math.round(newX / 4) * 4;
+  const snapY = Math.round(newY / 4) * 4;
+
+  // Update the waypoint position in the component tree
+  wps[idx] = [snapX, snapY];
+
+  // Visually update the SVG lines and waypoint handle
+  updateArrowVisual(wpDragState.cid);
+  e.preventDefault();
+}}
+
+function onWpDragUp(e) {{
+  document.removeEventListener("mousemove", onWpDragMove);
+  document.removeEventListener("mouseup", onWpDragUp);
+  if (wpDragState && wpDragState.hasMoved) {{
+    // Prune collinear waypoints (dragged onto a straight line between neighbours)
+    pruneCollinearWaypoints(wpDragState.cid);
+    setDirty(true);
+  }}
+  wpDragState = null;
+}}
+
+// Remove any waypoint that sits on a straight line between its neighbours.
+// Tolerance in px – if the perpendicular distance from the waypoint to the
+// line through its neighbours is below this, the waypoint is redundant.
+function pruneCollinearWaypoints(cid) {{
+  const node = getArrowNode(cid);
+  if (!node || !node.waypoints || node.waypoints.length === 0) return;
+
+  const pts = getArrowPoints(cid);
+  if (!pts.start) return;
+
+  // Full ordered point list: start → waypoints → end
+  const all = [pts.start, ...node.waypoints, pts.end];
+  const TOLERANCE = 2; // px
+
+  // Walk backwards so splicing doesn't shift indices of points still to check
+  let changed = false;
+  for (let i = node.waypoints.length - 1; i >= 0; i--) {{
+    // Index inside `all` is i + 1 (offset by the start point)
+    const ai = i + 1;
+    const prev = all[ai - 1];
+    const cur  = all[ai];
+    const next = all[ai + 1];
+    // Perpendicular distance of cur from line prev→next
+    const dx = next[0] - prev[0];
+    const dy = next[1] - prev[1];
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len === 0) {{ node.waypoints.splice(i, 1); changed = true; continue; }}
+    const dist = Math.abs(dx * (prev[1] - cur[1]) - dy * (prev[0] - cur[0])) / len;
+    if (dist < TOLERANCE) {{
+      node.waypoints.splice(i, 1);
+      all.splice(ai, 1);
+      changed = true;
+    }}
+  }}
+
+  if (changed) {{
+    rebuildArrowSVG(cid);
+    showArrowWaypointHandles(cid);
+  }}
+}}
+
+function addWaypoint(cid, segIdx, x, y) {{
+  const node = getArrowNode(cid);
+  if (!node) return;
+  if (!node.waypoints) node.waypoints = [];
+  const snapX = Math.round(x / 4) * 4;
+  const snapY = Math.round(y / 4) * 4;
+  node.waypoints.splice(segIdx, 0, [snapX, snapY]);
+  rebuildArrowSVG(cid);
+  showArrowWaypointHandles(cid);
+  setDirty(true);
+}}
+
+function removeWaypoint(cid, idx) {{
+  const node = getArrowNode(cid);
+  if (!node || !node.waypoints || node.waypoints.length <= 1) return;
+  node.waypoints.splice(idx, 1);
+  rebuildArrowSVG(cid);
+  showArrowWaypointHandles(cid);
+  setDirty(true);
+}}
+
+function getArrowPoints(cid) {{
+  // Build the full point list for an arrow: start → waypoints → end
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return [];
+  const node = getArrowNode(cid);
+  if (!node) return [];
+
+  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+  let visLines = [];
+  let poly = null;
+  groups.forEach(g => {{
+    g.querySelectorAll("line").forEach(ln => {{
+      if (ln.getAttribute("stroke") !== "transparent") visLines.push(ln);
+    }});
+    const p = g.querySelector("polygon");
+    if (p) poly = p;
+  }});
+
+  if (visLines.length === 0) return [];
+
+  // Start point from first line
+  const sx = parseFloat(visLines[0].getAttribute("data-orig-x1") || visLines[0].getAttribute("x1"));
+  const sy = parseFloat(visLines[0].getAttribute("data-orig-y1") || visLines[0].getAttribute("y1"));
+
+  // End point: arrowhead tip from polygon
+  let ex, ey;
+  if (poly) {{
+    const ptsStr = (poly.getAttribute("data-orig-points") || poly.getAttribute("points")).trim();
+    const ptsArr = ptsStr.split(/\\s+/).map(s => s.split(",").map(Number));
+    if (ptsArr.length >= 3) {{ ex = ptsArr[1][0]; ey = ptsArr[1][1]; }}
+    else {{ ex = sx; ey = sy; }}
+  }} else {{
+    const last = visLines[visLines.length - 1];
+    ex = parseFloat(last.getAttribute("data-orig-x2") || last.getAttribute("x2"));
+    ey = parseFloat(last.getAttribute("data-orig-y2") || last.getAttribute("y2"));
+  }}
+
+  return {{ start: [sx, sy], end: [ex, ey] }};
+}}
+
+function updateArrowVisual(cid) {{
+  // Update SVG line coordinates to match current waypoints in componentTree
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+  const node = getArrowNode(cid);
+  if (!node) return;
+
+  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+  const wps = node.waypoints || [];
+  const eff = getEffectiveDelta(cid);
+
+  let visLines = [];
+  let hitLines = [];
+  let poly = null;
+  groups.forEach(g => {{
+    g.querySelectorAll("line").forEach(ln => {{
+      if (ln.getAttribute("stroke") === "transparent") hitLines.push(ln);
+      else visLines.push(ln);
+    }});
+    const p = g.querySelector("polygon");
+    if (p) poly = p;
+  }});
+
+  if (visLines.length === 0) return;
+
+  // Get the original start/end points
+  const pts = getArrowPoints(cid);
+  if (!pts.start) return;
+
+  // Build full point list: start → waypoints → end
+  const allPts = [pts.start, ...wps, pts.end];
+
+  // Arrow head geometry constants
+  const HEAD_LEN = {head_len};
+  const HEAD_HALF = {head_half};
+
+  // Update each visible line segment
+  // There should be (waypoints.length + 1) segments = (allPts.length - 1) segments
+  // But SVG may have different count if waypoints were added/removed
+  // If counts match, update in place; otherwise rebuild is needed
+  if (visLines.length === allPts.length - 1) {{
+    for (let i = 0; i < visLines.length; i++) {{
+      visLines[i].setAttribute("x1", allPts[i][0]);
+      visLines[i].setAttribute("y1", allPts[i][1]);
+      if (i < visLines.length - 1) {{
+        // Intermediate segment: end at next waypoint
+        visLines[i].setAttribute("x2", allPts[i + 1][0]);
+        visLines[i].setAttribute("y2", allPts[i + 1][1]);
+      }} else {{
+        // Last segment: end at arrowhead base (not tip)
+        const tipX = allPts[i + 1][0];
+        const tipY = allPts[i + 1][1];
+        const prevX = allPts[i][0];
+        const prevY = allPts[i][1];
+        // Calculate arrowhead base
+        const segDx = tipX - prevX;
+        const segDy = tipY - prevY;
+        const segLen = Math.sqrt(segDx * segDx + segDy * segDy);
+        if (segLen > HEAD_LEN) {{
+          const baseX = tipX - (segDx / segLen) * HEAD_LEN;
+          const baseY = tipY - (segDy / segLen) * HEAD_LEN;
+          visLines[i].setAttribute("x2", baseX);
+          visLines[i].setAttribute("y2", baseY);
+        }} else {{
+          visLines[i].setAttribute("x2", tipX);
+          visLines[i].setAttribute("y2", tipY);
+        }}
+      }}
+    }}
+
+    // Update hit-area lines to match
+    for (let i = 0; i < hitLines.length && i < visLines.length; i++) {{
+      hitLines[i].setAttribute("x1", visLines[i].getAttribute("x1"));
+      hitLines[i].setAttribute("y1", visLines[i].getAttribute("y1"));
+      hitLines[i].setAttribute("x2", visLines[i].getAttribute("x2"));
+      hitLines[i].setAttribute("y2", visLines[i].getAttribute("y2"));
+    }}
+
+    // Update arrowhead polygon
+    if (poly && allPts.length >= 2) {{
+      const tipX = allPts[allPts.length - 1][0];
+      const tipY = allPts[allPts.length - 1][1];
+      const prevX = allPts[allPts.length - 2][0];
+      const prevY = allPts[allPts.length - 2][1];
+      const segDx = tipX - prevX;
+      const segDy = tipY - prevY;
+      const segLen = Math.sqrt(segDx * segDx + segDy * segDy);
+      if (segLen > 0) {{
+        const ux = segDx / segLen;
+        const uy = segDy / segLen;
+        const baseX = tipX - ux * HEAD_LEN;
+        const baseY = tipY - uy * HEAD_LEN;
+        const perpX = -uy * HEAD_HALF;
+        const perpY = ux * HEAD_HALF;
+        const p1 = (baseX + perpX) + "," + (baseY + perpY);
+        const p2 = tipX + "," + tipY;
+        const p3 = (baseX - perpX) + "," + (baseY - perpY);
+        poly.setAttribute("points", p1 + " " + p2 + " " + p3);
+      }}
+    }}
+  }}
+
+  // Update waypoint handles positions
+  svg.querySelectorAll('.dg-wp-handle[data-wp-cid="' + cid + '"]').forEach(h => {{
+    const idx = parseInt(h.getAttribute("data-wp-idx"), 10);
+    if (wps[idx]) {{
+      h.setAttribute("cx", wps[idx][0] + eff.dx);
+      h.setAttribute("cy", wps[idx][1] + eff.dy);
+    }}
+  }});
+}}
+
+function rebuildArrowSVG(cid) {{
+  // When waypoint count changes (add/remove), rebuild the arrow SVG elements
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+  const node = getArrowNode(cid);
+  if (!node) return;
+  const wps = node.waypoints || [];
+  const pts = getArrowPoints(cid);
+  if (!pts.start) return;
+
+  const allPts = [pts.start, ...wps, pts.end];
+  const HEAD_LEN = {head_len};
+  const HEAD_HALF = {head_half};
+  const color = "#E95420";
+
+  // Find the existing arrow group and rebuild its contents
+  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+  if (groups.length === 0) return;
+  const g = groups[0];
+
+  // Clear existing lines and polygon
+  g.querySelectorAll("line, polygon").forEach(el => el.remove());
+
+  const ns = "http://www.w3.org/2000/svg";
+
+  // Build line segments
+  for (let i = 0; i < allPts.length - 1; i++) {{
+    const x1 = allPts[i][0];
+    const y1 = allPts[i][1];
+    let x2, y2;
+
+    if (i < allPts.length - 2) {{
+      x2 = allPts[i + 1][0];
+      y2 = allPts[i + 1][1];
+    }} else {{
+      // Last segment: end at arrowhead base
+      const tipX = allPts[i + 1][0];
+      const tipY = allPts[i + 1][1];
+      const segDx = tipX - x1;
+      const segDy = tipY - y1;
+      const segLen = Math.sqrt(segDx * segDx + segDy * segDy);
+      if (segLen > HEAD_LEN) {{
+        x2 = tipX - (segDx / segLen) * HEAD_LEN;
+        y2 = tipY - (segDy / segLen) * HEAD_LEN;
+      }} else {{
+        x2 = tipX; y2 = tipY;
+      }}
+    }}
+
+    // Visible line
+    const ln = document.createElementNS(ns, "line");
+    ln.setAttribute("x1", x1); ln.setAttribute("y1", y1);
+    ln.setAttribute("x2", x2); ln.setAttribute("y2", y2);
+    ln.setAttribute("stroke", color); ln.setAttribute("stroke-width", "1");
+    g.appendChild(ln);
+
+    // Hit-area line (transparent, fat)
+    const hit = document.createElementNS(ns, "line");
+    hit.setAttribute("x1", x1); hit.setAttribute("y1", y1);
+    hit.setAttribute("x2", x2); hit.setAttribute("y2", y2);
+    hit.setAttribute("stroke", "transparent"); hit.setAttribute("stroke-width", "12");
+    hit.style.pointerEvents = "stroke";
+    g.appendChild(hit);
+  }}
+
+  // Build arrowhead polygon
+  if (allPts.length >= 2) {{
+    const tipX = allPts[allPts.length - 1][0];
+    const tipY = allPts[allPts.length - 1][1];
+    const prevX = allPts[allPts.length - 2][0];
+    const prevY = allPts[allPts.length - 2][1];
+    const segDx = tipX - prevX;
+    const segDy = tipY - prevY;
+    const segLen = Math.sqrt(segDx * segDx + segDy * segDy);
+    if (segLen > 0) {{
+      const ux = segDx / segLen;
+      const uy = segDy / segLen;
+      const baseX = tipX - ux * HEAD_LEN;
+      const baseY = tipY - uy * HEAD_LEN;
+      const perpX = -uy * HEAD_HALF;
+      const perpY = ux * HEAD_HALF;
+      const poly = document.createElementNS(ns, "polygon");
+      poly.setAttribute("points",
+        (baseX + perpX) + "," + (baseY + perpY) + " " +
+        tipX + "," + tipY + " " +
+        (baseX - perpX) + "," + (baseY - perpY));
+      poly.setAttribute("fill", color);
+      g.appendChild(poly);
+    }}
+  }}
+}}
+
+// ---- Inline text editing ----
+
+function startTextEdit(cid, e) {{
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+
+  // Find the <text> element(s) inside this component's group
+  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+  let textEl = null;
+  groups.forEach(g => {{
+    const t = g.querySelector("text");
+    if (t && !textEl) textEl = t;
+  }});
+  if (!textEl) return;
+
+  // Get the text element's bounding box in screen coordinates
+  const tspans = textEl.querySelectorAll("tspan");
+  if (tspans.length === 0) return;
+
+  // Collect existing text content (one line per tspan)
+  const lines = [];
+  const styles = [];
+  tspans.forEach(ts => {{
+    lines.push(ts.textContent);
+    styles.push({{
+      fontSize: ts.getAttribute("font-size") || "14",
+      fontWeight: ts.getAttribute("font-weight") || "400",
+      fill: ts.getAttribute("fill") || "#000",
+    }});
+  }});
+
+  // Get bounding rect of the text element in page coordinates
+  const textBBox = textEl.getBoundingClientRect();
+  // Also get the parent component's bounding rect for width constraint
+  let containerRect = textBBox;
+  let hasIcon = false;
+  groups.forEach(g => {{
+    const rect = g.querySelector("rect");
+    if (rect) containerRect = rect.getBoundingClientRect();
+    if (g.querySelector(".dg-icon")) hasIcon = true;
+  }});
+
+  // Width: container minus insets, minus icon area + gutter if icon present
+  const iconGutter = hasIcon ? ({icon_size} + {col_gap}) : 0;
+  const editorW = Math.max(containerRect.width - 16 - iconGutter, 60);
+
+  // Create textarea overlay
+  const ta = document.createElement("textarea");
+  ta.className = "dg-text-editor";
+  ta.value = lines.join("\\n");
+  ta.style.left = textBBox.left + "px";
+  ta.style.top = textBBox.top + "px";
+  ta.style.width = editorW + "px";
+  ta.style.minHeight = textBBox.height + "px";
+  ta.style.fontSize = (styles[0] ? styles[0].fontSize : "14") + "px";
+  ta.style.fontWeight = styles[0] ? styles[0].fontWeight : "400";
+  ta.style.color = styles[0] ? styles[0].fill : "#000";
+
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+
+  // Hide the original text while editing
+  textEl.style.opacity = "0";
+
+  textEditState = {{ cid, textEl, ta, originalLines: lines, styles }};
+
+  ta.addEventListener("keydown", (ev) => {{
+    if (ev.key === "Escape") {{
+      ev.stopPropagation();
+      cancelTextEdit();
+    }} else if (ev.key === "Enter" && ev.ctrlKey) {{
+      ev.preventDefault();
+      commitTextEdit();
+    }}
+    // Regular Enter inserts a line break (default textarea behavior)
+  }});
+  ta.addEventListener("blur", () => {{
+    // Small delay to avoid race with Escape
+    setTimeout(() => {{ if (textEditState) commitTextEdit(); }}, 100);
+  }});
+  // Prevent SVG interactions while editing
+  e.stopPropagation();
+}}
+
+function commitTextEdit() {{
+  if (!textEditState) return;
+  const {{ cid, textEl, ta, originalLines, styles }} = textEditState;
+  const newLines = ta.value.split("\\n");
+
+  // Update the tspan content
+  const tspans = textEl.querySelectorAll("tspan");
+  const minLen = Math.min(newLines.length, tspans.length);
+
+  // Update existing tspans
+  for (let i = 0; i < minLen; i++) {{
+    tspans[i].textContent = newLines[i];
+  }}
+
+  // If more lines than tspans, add new tspans
+  if (newLines.length > tspans.length) {{
+    const lastTs = tspans[tspans.length - 1];
+    const x = lastTs.getAttribute("x");
+    const lastY = parseFloat(lastTs.getAttribute("y"));
+    const lineStep = tspans.length >= 2
+      ? parseFloat(tspans[1].getAttribute("y")) - parseFloat(tspans[0].getAttribute("y"))
+      : 20;
+    const ns = "http://www.w3.org/2000/svg";
+    for (let i = tspans.length; i < newLines.length; i++) {{
+      const ts = document.createElementNS(ns, "tspan");
+      ts.setAttribute("x", x);
+      ts.setAttribute("y", lastY + lineStep * (i - tspans.length + 1));
+      ts.setAttribute("font-size", lastTs.getAttribute("font-size") || "14");
+      ts.setAttribute("font-weight", lastTs.getAttribute("font-weight") || "400");
+      ts.setAttribute("fill", lastTs.getAttribute("fill") || "#000");
+      ts.textContent = newLines[i];
+      textEl.appendChild(ts);
+    }}
+  }}
+
+  // If fewer lines, remove extra tspans
+  if (newLines.length < tspans.length) {{
+    for (let i = tspans.length - 1; i >= newLines.length; i--) {{
+      tspans[i].remove();
+    }}
+  }}
+
+  // Show the text again
+  textEl.style.opacity = "";
+
+  // Remove the textarea
+  ta.remove();
+
+  // Check if text actually changed
+  const changed = newLines.join("\\n") !== originalLines.join("\\n");
+  if (changed) {{
+    setDirty(true);
+  }}
+
+  textEditState = null;
+}}
+
+function cancelTextEdit() {{
+  if (!textEditState) return;
+  textEditState.textEl.style.opacity = "";
+  textEditState.ta.remove();
+  textEditState = null;
 }}
 
 function startResize(e) {{
@@ -1317,6 +1978,9 @@ function onResizeMove(e) {{
   // Record pre-resize snapshot on first actual move
   if (!resizeState.snapshotRecorded) {{
     recordSnapshot();
+    // Hide handles during drag so stale positions don't overlap icons
+    const svg = document.querySelector("#stage svg");
+    if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "none");
     resizeState.snapshotRecorded = true;
   }}
   let newDx = resizeState.origDx;
@@ -1346,7 +2010,42 @@ function onResizeMove(e) {{
     // Bottom side: top edge stays anchored, grow downward
     newDh = Math.round((resizeState.origDh + dy) / 4) * 4;
   }}
-  
+
+  // Clamp to parent bounds if nested
+  const parent = getParentNode(resizeState.cid);
+  const node = getComponentNode(resizeState.cid);
+  if (parent && node && parent.type !== "arrow") {{
+    const pEff = getEffectiveDelta(parent.id);
+    const pOwn = getOwnDelta(parent.id);
+    const pLeft = parent.x + pEff.dx;
+    const pTop = parent.y + pEff.dy;
+    const pRight = pLeft + parent.width + pOwn.dw;
+    const pBottom = pTop + parent.height + pOwn.dh;
+
+    // Compute the child's effective box with proposed overrides
+    const cLeft = node.x + newDx;
+    const cTop = node.y + newDy;
+    const cRight = cLeft + node.width + newDw;
+    const cBottom = cTop + node.height + newDh;
+
+    // Clamp: child edges cannot exceed parent edges
+    // Adjust position-based overrides (left/top edges)
+    if (cLeft < pLeft) newDx += (pLeft - cLeft);
+    if (cTop < pTop) newDy += (pTop - cTop);
+    // Adjust size-based overrides (right/bottom edges)
+    if (cRight > pRight) newDw -= (cRight - pRight);
+    if (cBottom > pBottom) newDh -= (cBottom - pBottom);
+    // Re-check left/top after size clamp for left/top resize axes
+    if (axis === "l" || axis === "tl" || axis === "bl") {{
+      const adjRight = node.x + newDx + node.width + newDw;
+      if (adjRight > pRight) newDw = pRight - node.x - newDx - node.width;
+    }}
+    if (axis === "t" || axis === "tl" || axis === "tr") {{
+      const adjBottom = node.y + newDy + node.height + newDh;
+      if (adjBottom > pBottom) newDh = pBottom - node.y - newDy - node.height;
+    }}
+  }}
+
   setOverride(resizeState.cid, {{ dx: newDx, dy: newDy, dw: newDw, dh: newDh }});
   applyAllOverrides();
   if (selectedIds.has(resizeState.cid)) updateInspector(resizeState.cid);
@@ -1355,9 +2054,15 @@ function onResizeMove(e) {{
 function onResizeUp() {{
   document.removeEventListener("mousemove", onResizeMove);
   document.removeEventListener("mouseup", onResizeUp);
+  // Clear any hover effects that accumulated during the drag
+  const svg = document.querySelector("#stage svg");
+  if (svg) svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
   if (resizeState && resizeState.hasMoved) {{
     cleanOverride(resizeState.cid);
     selectComponent(resizeState.cid);
+  }} else {{
+    // No move happened: re-show handles that were hidden
+    if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "");
   }}
   resizeState = null;
 }}
@@ -1379,6 +2084,19 @@ function cleanOverride(cid) {{
 }}
 
 // ---- Selection & Inspector ----
+
+function deselectAll() {{
+  selectedIds.clear();
+  selectionDepth = 0;
+  const svg = document.querySelector("#stage svg");
+  if (svg) {{
+    svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
+  }}
+  removeResizeHandles();
+  document.querySelectorAll(".tree-item").forEach(el => el.classList.remove("selected"));
+  document.getElementById("inspector").innerHTML =
+    '<div style="color:#555">Click a component to inspect it.</div>';
+}}
 
 function selectComponent(cid, additive) {{
   if (additive) {{
@@ -1576,6 +2294,12 @@ document.addEventListener("keydown", (e) => {{
   }} else if ((e.ctrlKey && e.shiftKey && e.key === "Z") || (e.ctrlKey && e.key === "y")) {{
     e.preventDefault();
     performRedo();
+  }} else if (e.key === "Escape") {{
+    if (textEditState) {{
+      cancelTextEdit();
+    }} else {{
+      deselectAll();
+    }}
   }} else if ((e.key === "w" || e.key === "W") && !e.ctrlKey && !e.metaKey && !e.altKey) {{
     cycleGuideMode();
   }} else if (selectedIds.size > 0 && !e.ctrlKey && !e.metaKey && !e.altKey &&

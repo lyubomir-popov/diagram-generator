@@ -152,32 +152,114 @@ Layers 1–4 are done. Layer 5 (rollout) and the typography weight audit are sup
 - [—] Layer 5 – roll out to remaining functions → superseded by Step 6
 - [—] Typography weight audit → handled automatically by declarative model
 
-### Interactive preview server – defects and missing features
+### Interactive preview server – architecture review (April 2026)
 
-Component IDs, drag-to-move, resize handles, and override persistence are working. The following issues were identified during user testing:
+#### What has the project become?
 
-- [x] **Click targeting selects parent instead of child.** Fixed: uses `elementsFromPoint()` to find deepest nested component at click coordinates.
-- [x] **Cannot select nested items.** Fixed: same `elementsFromPoint()` approach applied to both click and hover handlers.
-- [x] **No undo.** Fixed: full undo/redo stack (50 entries), Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y, toolbar buttons.
-- [x] **Resize in all directions.** Fixed: 8 resize handles (all edges + corners), top/left handles adjust position to keep opposite edge anchored.
-- [x] **Explicit save button.** Fixed: dirty flag, Save button (turns orange when dirty), Ctrl+S, beforeunload warning.
-- [x] **Top/left resize inverted.** Fixed: corrected sign logic so left/top handles move position and shrink/grow width/height in the correct direction.
-- [x] **Undo records post-change state.** Fixed: snapshot is now recorded before the first actual drag/resize move, not after the action completes.
-- [x] **Text and icons block mouse selection.** Fixed: CSS `pointer-events: none` on `<text>`, `<image>`, and `<tspan>` children of component groups so clicks pass through to the parent `<g>`.
-- [x] **Arrows not selectable or moveable.** Fixed: arrows now carry `component_id` in layout, `data-component-id` in SVG, and invisible 12px-wide hit-area lines in the preview for easy click targeting. All component types (Helper, JaggedPanel, MatrixWidget, IconCluster, Terminal, Separator, Legend) now emit `component_id`.
-- [x] **Icon anchoring on resize.** Fixed: icons re-anchor to top-right corner when a box is resized via `dw` override. `.dg-icon` class on SVG icon groups enables JS targeting.
-- [x] **Icons and dashed lines not selectable.** Fixed: auto-generated separator IDs, transparent hit-area rects for icon clusters, wider hit-area lines for separators, CSS selection/hover feedback for non-rect components.
-- [x] **1D resize handles.** Fixed: arrows show handles along primary axis only (vertical: top/bottom, horizontal: left/right). Separators show left/right only.
-- [x] **Arrow attachment to boxes.** Fixed: arrows track their source/target box positions when boxes are dragged or resized. `source_ref`/`target_ref` fields on `ArrowPrimitive`, `source`/`target` on `ComponentInfo`, side-aware endpoint shifting in the preview JS.
-- [x] **Grid overlay toggle (W key).** Cycles off → composition → baseline → off. Composition mode shows columns, rows, gutters, margins, and content boundary. Baseline mode adds 4px horizontal grid lines. Grid data served via `/api/grid/<slug>` endpoint.
-- [x] **Editable grid controls.** Sidebar inputs for columns, rows, col gutter, row gutter, and margin. Changing gutter or margin re-runs layout via `/api/relayout/<slug>` so elements reflow in real-time.
-- [x] **Selection color.** Changed selection outline, drop-shadow, and tree-item highlight from orange (#E95420) to golden-amber (#F6B73C) matching resize handles.
-- [x] **Keyboard nudging.** ★ simple — Arrow keys nudge selected element by 1px; Shift+Arrow nudges by baseline grid unit (8px).
-- [x] **Multi-select.** ★★ medium — Shift+click to select multiple elements; move them together.
-- [x] **Double-click nested selection.** ★★ medium — Double-click drills into groups to select nested children, Figma-style.
-- [ ] **Baseline alignment guide.** ★★★ complex — Visual guide that moves with a dragged box showing which baseline it snaps to (see brand-layout-ops parity).
-- [ ] **Component swap.** ★★★ complex — Select a component and swap it for another type from the shape library (like Figma component swap).
-- [ ] **Orthogonal arrow routing.** ★★★ complex — Draw.io-style arrows that bend at 90° angles. Research draw.io arrow behavior first: bendable waypoints, adding/removing control points, always-orthogonal constraint. Build a feature list before implementing.
+The project started as a batch SVG/draw.io generator with a declarative diagram model. It has evolved into something substantially more ambitious: a **constrained interactive diagram editor** – a lean Figma/draw.io that auto-generates on-brand diagrams and allows a targeted polish pass on layout while enforcing brand rules (approved colours, arrow styles, icon sources, typography).
+
+This is a meaningful product concept. But the current implementation is reaching the point where patching individual features onto a monolithic preview server will create diminishing returns and increasing bug surface. The architectural review below identifies what's sound, what needs restructuring, and proposes a layered plan.
+
+#### What's sound
+
+1. **Declarative model + layout engine** (`diagram_model.py` / `diagram_layout.py`). This is well-separated. Component types are pure data, layout is output-agnostic, renderers consume computed geometry. This architecture is correct and scales.
+
+2. **Dual renderers** (`diagram_render_svg.py` / `diagram_render_drawio.py`). Clean separation of layout from output format. Adding new renderers (e.g. HTML canvas, PDF) would be straightforward.
+
+3. **Override persistence** (JSON sidecar files). Storing user edits as deltas from the generated layout is the right model – it means regenerating a diagram from updated data preserves the user's polish without code conflicts.
+
+4. **Token system** (`diagram_shared.py`). Centralised brand tokens that flow into both renderers and the preview UI.
+
+#### What needs restructuring
+
+1. **`preview_server.py` is a 2300-line monolith.** It embeds HTML, CSS, and ~1500 lines of JavaScript as Python f-string templates. This makes the JS:
+   - Hard to lint, format, or get IDE support for (it's all inside triple-quoted Python strings with `{{` escaping)
+   - Impossible to unit-test in isolation
+   - Painful to refactor – every `{` in JS must be `{{`
+   - Growing toward the limit of what an LLM agent can hold in context
+
+2. **No client-side model.** The JS manipulates SVG DOM directly with scattered per-feature functions. There's no component tree on the client side that mirrors `componentTree` structurally – it's a flat list of overrides against a server-provided tree. This means:
+   - Parent-child constraint propagation (resize parent → resize children) requires walking the tree manually for each feature
+   - Features like auto-layout fill, component swap, and inline property editing each need bespoke tree traversal code
+   - The "parenting" problem the user identified is a symptom of this missing layer
+
+3. **Interaction state management is ad-hoc.** Drag, resize, waypoint drag, text edit, and multi-select each have their own state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) with guard clauses scattered across event handlers. This will not scale to the next 5 interaction modes.
+
+4. **No command pattern.** Undo/redo records JSON snapshots of the entire override set. This works today but means undo granularity is all-or-nothing, and semantic undo (e.g. "undo the resize but keep the move") is impossible.
+
+#### Proposed restructuring
+
+**Phase 1 – Extract JS from Python** (prerequisite for everything else)
+- Move the viewer HTML/CSS/JS to a static file served by the Python server (e.g. `scripts/preview_viewer.html` or a small `scripts/preview/` directory with `index.html`, `editor.js`, `editor.css`)
+- The Python server becomes a pure API: serve SVGs, layout data, grid info, overrides, and relayout requests
+- JS talks to the API via fetch – no more f-string template coupling
+- This immediately enables: IDE JS support, ESLint, browser devtools source mapping, faster iteration
+
+**Phase 2 – Client-side model** (unlocks parenting, auto-layout, constraints)
+- Build a lightweight client-side tree model mirroring the server's `componentTree`
+- Each node knows: its parent, its children, its base geometry, its overrides, its constraints (resizable? movable? fill-parent?)
+- All constraint logic (parent bounds clamping, auto-layout redistribution, sibling awareness) operates on this model
+- DOM updates are driven by model changes, not ad-hoc SVG manipulation
+
+**Phase 3 – Interaction manager** (unlocks clean feature addition)
+- Replace scattered state variables with a state machine or interaction-mode manager
+- Modes: idle, selecting, dragging, resizing, editing-text, routing-arrow, adding-component
+- Each mode has clean enter/exit/handle-event methods
+- New interaction modes plug in without touching existing code
+
+**Phase 4 – Brand constraint enforcement** (the product differentiator)
+- The model enforces brand rules: only approved fills, only approved arrow styles, only approved icon sources
+- The UI reflects this: colour picker shows only brand palette, shape picker shows only approved shapes
+- Overrides that would violate brand rules are rejected at the model level, not the UI level
+
+#### What this means for the TODO list
+
+The current flat TODO mixes three different categories that should be tracked separately:
+
+1. **Defects and QA** – things that are broken now (ghost affordances, children not selectable). These should be fixed immediately on the current codebase.
+2. **Feature work on current architecture** – things that can be done without restructuring (sticky port, waypoint persistence, orthogonal constraint). Worth doing now if they don't create tech debt.
+3. **Features that require restructuring** – parenting architecture, auto-layout fill, parent resize propagation, component swap, baseline alignment guide. These should wait for Phase 1–2 or they'll be implemented twice.
+
+### Interactive preview server – open items
+
+Items are categorised per the architecture review above.
+
+#### Category 1 – Defects and QA (fix now on current codebase)
+
+- [ ] **Internal boxes not selectable.** ★★ medium — Boxes inside nested panels/wrappers cannot be clicked to select; only the parent container responds.
+- [ ] **Sticky preview port.** ★ simple — Pick a fixed port for the preview server (e.g. 8100) and auto-kill any process holding it before binding. Store in `.env.local` or hard-code in git.
+
+#### Category 2 – Features safe on current architecture (won't need rewriting)
+
+- [ ] **Gutter controls affect internal box spacing.** ★★ medium — Changing gutter values in the grid controls should also adjust spacing inside nested panels, not just top-level gaps. (Server-side relayout, minimal JS impact.)
+- [ ] **Persist waypoint overrides in override JSON files.** ★★ medium — Save/load waypoint edits alongside position/size overrides.
+- [ ] **Orthogonal constraint on waypoint drag.** ★★ medium — Lock waypoint movement to axis of adjacent segments.
+- [ ] **Collinear waypoint auto-pruning.** ★ simple — Done: waypoints dragged onto a straight line between neighbours are auto-removed.
+- [ ] **Add waypoint by double-clicking segment.** ★ simple — Done: double-click anywhere on a selected arrow's segment body to add a waypoint at that position.
+
+#### Category 3 – Features that require restructuring (defer to Stage 11–12)
+
+These features touch parent-child relationships, constraint propagation, or interaction mode management. Implementing them on the current monolithic JS will produce fragile code that must be rewritten during extraction.
+
+- [ ] **Parenting architecture.** ★★★ complex — True parent-child element relationships governing resize, move, and constraint behavior. → Stage 12 (client-side model).
+- [ ] **Auto-layout fill container.** ★★★ complex — Figma-style auto-layout redistribution when one child is resized. → Stage 12.
+- [ ] **Parent resize propagates to autolayout children.** ★★★ complex — Resizing a parent panel resizes auto-layout children proportionally. → Stage 12.
+- [ ] **Component swap.** ★★★ complex — Change a box's fill/border style or shape type from the UI. → Stage 12–13 (needs model + brand constraints).
+- [ ] **Baseline alignment guide.** ★★★ complex — Visual guide showing snap targets during drag. → Stage 12 (needs interaction manager).
+
+### Completed interactive preview items
+
+- [x] Click targeting, nested selection, undo/redo, 8-direction resize, explicit save
+- [x] Arrow selectability and attachment tracking
+- [x] Grid overlay toggle, editable grid controls, live relayout
+- [x] Selection colour, keyboard nudging, multi-select, double-click drill-in
+- [x] Deselect (Escape / empty canvas click)
+- [x] Resize constraints (parent bounds clamping)
+- [x] Ghost affordances on resize (handles hidden during drag, hover suppressed)
+- [x] Inline text editing with text-icon gutter enforcement
+- [x] Waypoint handles: drag, add (double-click segment), remove (double-click handle)
+- [x] Collinear waypoint auto-pruning
+- [x] Arrow SVG rebuild on waypoint count change
 
 ### Previously active
 

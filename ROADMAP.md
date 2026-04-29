@@ -66,31 +66,52 @@ Add lightweight checks or generation helpers only if they reduce repetition with
 
 The preview server (`scripts/preview_server.py`) provides hot-reload, click-to-select, drag-to-move, resize, undo/redo, and override persistence. This stage extends it toward a Figma-like editing experience layered over the declarative diagram model.
 
-**Near-term (implemented or in progress):**
+**Implemented:**
 - Component selection, move, resize with per-component override persistence
-- Undo/redo stack, explicit save, keyboard shortcuts
-- 8-direction resize handles
+- Undo/redo stack, explicit save, keyboard shortcuts (nudge, multi-select, deselect)
+- 8-direction resize handles with parent-bounds clamping
 - Arrow and annotation selection and repositioning
 - Arrow attachment: endpoints track source/target box movement and resize
-- Grid overlay toggle (W key): cycles off → composition (columns, rows, gutters, margins) → baseline (4px grid lines) → off
+- Grid overlay toggle (W key): composition grid + baseline grid
+- Editable grid controls with live relayout
+- Interactive waypoint editing: drag, add (double-click segment), remove (double-click handle)
+- Collinear waypoint auto-pruning on drag
+- Inline text editing (double-click to edit, Enter for newlines, Ctrl+Enter to commit)
+- Text-icon gutter enforcement during editing
 
-**Medium-term:**
-- Nested grid controls: set panel grid dimensions (rows, cols), gutters, and padding interactively
-- Auto-fill children: add/remove boxes in a panel and have the grid re-flow like Figma auto-layout
+### Stage 11 — Viewer extraction (architecture prerequisite)
+
+Extract the 1500+ lines of embedded JS/CSS from the Python f-string template into static files served by the Python API server. This:
+- Enables IDE support, linting, and browser source mapping for the JS
+- Decouples the viewer from the server so they can evolve independently
+- Makes the JS testable in isolation
+- Is the prerequisite for Stages 12–13
+
+### Stage 12 — Client-side model and interaction manager
+
+Build a lightweight client-side tree model mirroring the server's component tree. Each node knows its parent, children, base geometry, overrides, and constraints. Replace scattered interaction state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) with a mode-based interaction manager. This unlocks:
+- Parent-child constraint propagation (resize parent → resize children)
+- Auto-layout fill-container redistribution
+- Nested component selection
+- Clean addition of new interaction modes
+
+### Stage 13 — Brand constraint enforcement
+
+The product differentiator: the editor enforces brand rules at the model level, not just the UI level. Only approved fills, arrow styles, icon sources, and typography are available. The UI reflects constraints (e.g. colour picker shows only brand palette). Overrides that violate brand rules are rejected.
+
+**Medium-term (requires Stage 11–12):**
+- Nested grid controls: set panel grid dimensions interactively
+- Auto-fill children: add/remove boxes and have the grid re-flow
 - Resize a panel and have children redistribute proportionally
-- Snap-to-grid visual guides during drag (snap feedback lines, snap-to-column/row edges)
-- Grid field snapping: constrain drag destinations to grid cells rather than free 4px steps
-- Multi-select and group move
-- Property panel for editing text, fill, border style on selected component
+- Snap-to-grid visual guides during drag
+- Property panel for editing fill, border style, text on selected component
+- Component swap from shape library (like Figma component swap)
 
 **Longer-term:**
-- Visual arrow routing: drag arrow waypoints, add/remove bends
 - Create new components from the UI (add box, add panel, add arrow)
-- Export edited layout back to the Python definition or a YAML/JSON format
-- Collaborative editing or at least conflict-free override merging
+- Export edited layout back to Python definition or YAML/JSON format
 - Theming controls: switch colour palette, typography tier, spacing scale
-- Component swap from shape library (like Figma component swap)
-- brand-layout-ops parity audit: baseline alignment guide, field snapping, text overlay positioning feature set
+- brand-layout-ops parity audit: baseline alignment guide, field snapping
 
 ## Long-term direction
 
