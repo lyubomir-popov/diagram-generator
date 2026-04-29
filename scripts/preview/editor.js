@@ -3,12 +3,43 @@ const SLUG = window.__DG_CONFIG.slug;
 const GRID = window.__DG_CONFIG.grid;
 const INSET = window.__DG_CONFIG.inset;
 let generation = 0;
-let componentTree = [];
-let overrides = {};
-let definitionHash = "";
-let isStale = false;
-let selectedIds = new Set();
-let selectionDepth = 0;
+
+// ---- Component model & interaction manager ----
+const model = new ComponentModel();
+const mgr = new InteractionManager();
+
+// Legacy accessors – thin wrappers that delegate to model/mgr so the rest of
+// the file can be migrated incrementally.
+function _getOverrides() { return model.overrides; }
+
+// Compatibility shims – these expose the old global variable interface
+// while storing state in the model/manager objects.
+Object.defineProperty(window, "componentTree", {
+  get() { return model._roots.map(n => n.data); },
+  set(v) { model.loadTree(v); },
+});
+Object.defineProperty(window, "overrides", {
+  get() { return model.overrides; },
+  set(v) { model.overrides = v; },
+});
+Object.defineProperty(window, "definitionHash", {
+  get() { return model.definitionHash; },
+  set(v) { model.definitionHash = v; },
+});
+Object.defineProperty(window, "isStale", {
+  get() { return model.isStale; },
+  set(v) { model.isStale = v; },
+});
+Object.defineProperty(window, "selectedIds", {
+  get() { return mgr.selectedIds; },
+  set(v) { mgr.selectedIds = v; },
+});
+Object.defineProperty(window, "selectionDepth", {
+  get() { return mgr.selectionDepth; },
+  set(v) { mgr.selectionDepth = v; },
+});
+
+// Interaction state shims
 let dragState = null;
 let resizeState = null;
 let wpDragState = null;
@@ -46,7 +77,10 @@ async function loadSVG() {
 async function loadTree() {
   try {
     const resp = await fetch("/api/tree/" + SLUG);
-    if (resp.ok) componentTree = await resp.json();
+    if (resp.ok) {
+      const data = await resp.json();
+      model.loadTree(data);
+    }
   } catch (e) { /* ignore */ }
 }
 
@@ -293,9 +327,7 @@ async function loadOverrides() {
     const resp = await fetch("/api/overrides/" + SLUG);
     if (resp.ok) {
       const data = await resp.json();
-      overrides = data.overrides || {};
-      definitionHash = data.definition_hash || "";
-      isStale = data.stale || false;
+      model.loadOverrides(data);
     }
   } catch (e) { /* ignore */ }
   updateOverrideSummary();
@@ -405,8 +437,7 @@ function updateUndoRedoButtons() {
 // ---- Override application ----
 
 function getOwnDelta(cid) {
-  const o = overrides[cid] || {};
-  return { dx: o.dx || 0, dy: o.dy || 0, dw: o.dw || 0, dh: o.dh || 0 };
+  return model.getOwnDelta(cid);
 }
 
 function findComponentAtDepth(x, y, targetDepth) {
@@ -428,76 +459,30 @@ function findComponentAtDepth(x, y, targetDepth) {
     }
     return null;
   }
-  return walk(componentTree, 0);
+  const roots = model._roots.map(n => n.data);
+  return walk(roots, 0);
 }
 
 function getAncestors(cid) {
-  const path = [];
-  function walk(nodes, trail) {
-    for (const node of nodes) {
-      if (node.id === cid) { path.push(...trail); return true; }
-      if (node.children && node.children.length > 0) {
-        if (walk(node.children, [...trail, node.id])) return true;
-      }
-    }
-    return false;
-  }
-  walk(componentTree, []);
-  return path;
+  return model.getAncestors(cid);
 }
 
 function getParentNode(cid) {
-  function walk(nodes) {
-    for (const node of nodes) {
-      if (node.children) {
-        for (const ch of node.children) {
-          if (ch.id === cid) return node;
-        }
-        const r = walk(node.children);
-        if (r) return r;
-      }
-    }
-    return null;
-  }
-  return walk(componentTree);
+  const parent = model.getParent(cid);
+  return parent ? parent.data : null;
 }
 
 function getComponentNode(cid) {
-  function walk(nodes) {
-    for (const n of nodes) {
-      if (n.id === cid) return n;
-      if (n.children) { const r = walk(n.children); if (r) return r; }
-    }
-    return null;
-  }
-  return walk(componentTree);
+  const node = model.get(cid);
+  return node ? node.data : null;
 }
 
 function getDescendantIds(cid) {
-  const result = [];
-  function findNode(nodes) {
-    for (const node of nodes) {
-      if (node.id === cid) { collectAll(node.children || [], result); return true; }
-      if (node.children && findNode(node.children)) return true;
-    }
-    return false;
-  }
-  function collectAll(nodes, acc) {
-    for (const node of nodes) { acc.push(node.id); if (node.children) collectAll(node.children, acc); }
-  }
-  findNode(componentTree);
-  return result;
+  return model.getDescendants(cid);
 }
 
 function getEffectiveDelta(cid) {
-  let dx = 0, dy = 0;
-  for (const aid of getAncestors(cid)) {
-    const d = overrides[aid];
-    if (d) { dx += (d.dx || 0); dy += (d.dy || 0); }
-  }
-  const own = overrides[cid];
-  if (own) { dx += (own.dx || 0); dy += (own.dy || 0); }
-  return { dx, dy, dw: own ? (own.dw || 0) : 0, dh: own ? (own.dh || 0) : 0 };
+  return model.getEffectiveDelta(cid);
 }
 
 function applyAllOverrides() {
@@ -734,10 +719,12 @@ function buildTreeUI() {
       if (overrides[node.id]) item.style.color = "#E95420";
       item.onclick = (e) => { e.stopPropagation(); selectComponent(node.id, e.shiftKey); };
       container.appendChild(item);
-      if (node.children && node.children.length > 0) buildTree(node.children, container, depth + 1);
+      if (node.children && node.children.length > 0) {
+        buildTree(node.children, container, depth + 1);
+      }
     }
   }
-  buildTree(componentTree, treeEl, 0);
+  buildTree(model._roots.map(n => n.data), treeEl, 0);
 }
 
 function bindInteraction() {
@@ -960,14 +947,7 @@ function onDragUp() {
 // ---- Resize ----
 
 function getComponentType(cid) {
-  function find(nodes) {
-    for (const n of nodes) {
-      if (n.id === cid) return n.type;
-      if (n.children) { const r = find(n.children); if (r) return r; }
-    }
-    return null;
-  }
-  return find(componentTree) || "Box";
+  return model.getType(cid) || "Box";
 }
 
 function showResizeHandles(cid) {
@@ -1041,17 +1021,8 @@ function removeResizeHandles() {
 // ---- Arrow waypoint handles ----
 
 function getArrowNode(cid) {
-  function find(nodes) {
-    for (const n of nodes) {
-      if (n.id === cid && n.type === "arrow") return n;
-      if (n.children) {
-        const r = find(n.children);
-        if (r) return r;
-      }
-    }
-    return null;
-  }
-  return find(componentTree);
+  const node = model.get(cid);
+  return (node && node.type === "arrow") ? node.data : null;
 }
 
 function showArrowWaypointHandles(cid) {
@@ -1779,8 +1750,7 @@ function onResizeUp() {
 // ---- Override helpers ----
 
 function setOverride(cid, partial) {
-  const prev = overrides[cid] || {};
-  overrides[cid] = { dx: prev.dx || 0, dy: prev.dy || 0, dw: prev.dw || 0, dh: prev.dh || 0, ...partial };
+  model.setOverride(cid, partial);
   setDirty(true);
 }
 
@@ -1788,20 +1758,13 @@ function setWaypointOverride(cid) {
   // Persist current waypoints from the component tree into overrides
   const node = getArrowNode(cid);
   if (!node) return;
-  const prev = overrides[cid] || {};
-  prev.waypoints = node.waypoints ? JSON.parse(JSON.stringify(node.waypoints)) : [];
-  overrides[cid] = prev;
+  const wps = node.waypoints ? JSON.parse(JSON.stringify(node.waypoints)) : [];
+  model.setWaypointOverride(cid, wps);
   setDirty(true);
 }
 
 function cleanOverride(cid) {
-  const o = overrides[cid];
-  if (!o) return;
-  const posClean = (o.dx || 0) === 0 && (o.dy || 0) === 0 && (o.dw || 0) === 0 && (o.dh || 0) === 0;
-  const wpClean = !o.waypoints;
-  if (posClean && wpClean) {
-    delete overrides[cid];
-  }
+  model.cleanOverride(cid);
 }
 
 // ---- Selection & Inspector ----
@@ -1922,7 +1885,7 @@ function updateInspector(cid) {
       (hasWpOverride ? ' (overridden)' : '') + '</span></div>';
   }
   if (hasOverride) {
-    html += '<button class="danger" onclick="clearOverride(\\''+cid+'\\')">Clear override</button>';
+    html += '<button class="danger" onclick="clearOverride(\''+cid+'\')">Clear override</button>';
   }
   html += '<div style="margin-top:8px;font-size:10px;color:#555">Drag to move &#xb7; handles to resize (4px grid) &#xb7; W to toggle grid overlay.</div>';
   document.getElementById("inspector").innerHTML = html;
@@ -1934,7 +1897,7 @@ async function saveOverrides() {
   await fetch("/api/overrides/" + SLUG, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ format_version: 1, definition_hash: definitionHash, overrides }),
+    body: JSON.stringify(model.toOverridePayload()),
   });
   setDirty(false);
   // Update saved state for dirty flag comparison
@@ -1947,7 +1910,7 @@ function clearOverride(cid) {
   // Record snapshot before clearing override
   recordSnapshot();
   const hadWaypoints = overrides[cid] && overrides[cid].waypoints;
-  delete overrides[cid];
+  model.clearOverride(cid);
   setDirty(true);
   if (hadWaypoints) {
     // Reload tree to restore original arrow waypoints from the layout engine
