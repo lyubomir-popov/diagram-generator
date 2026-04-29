@@ -19,8 +19,7 @@ ORANGE = "#E95420"
 
 BASELINE_UNIT = 4
 RHYTHM_STEP = 8
-GRID_GUTTER = 32          # canonical gutter — matches ARROW_GAP so arrows
-                           # can route through any structural gap
+GRID_GUTTER = 16          # canonical gutter between components
 OUTER_MARGIN = 32
 
 BLOCK_WIDTH = 192

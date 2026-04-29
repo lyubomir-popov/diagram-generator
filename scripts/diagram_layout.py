@@ -248,6 +248,26 @@ def _lines_to_dicts(lines: list[Line]) -> list[dict]:
     return [_line_to_dict(ln) for ln in lines]
 
 
+def _auto_invert_lines(lines: list[dict], bg_fill: str) -> list[dict]:
+    """If the background is dark, flip any default-black text to white."""
+    if bg_fill != "#000000":
+        return lines
+    out = []
+    for d in lines:
+        if d.get("fill") == "#000000":
+            d = {**d, "fill": "#FFFFFF"}
+        out.append(d)
+    return out
+
+
+def _auto_invert_icon(icon_fill: str | None, bg_fill: str) -> str:
+    """If the background is dark, flip a default-black icon to white."""
+    explicit = icon_fill or "#000000"
+    if bg_fill == "#000000" and explicit == "#000000":
+        return "#FFFFFF"
+    return explicit
+
+
 def _stamp(prims: list[Primitive], cid: str | None) -> list[Primitive]:
     """Set component_id on every primitive in the list (in place)."""
     if cid:
@@ -403,14 +423,14 @@ def _layout_panel(
             fg.append(Rect(bx_x, bx_y, bx_w, bx_h, fill=bx_fill, stroke=bx_stroke,
                            component_id=bx_cid))
             fg.append(TextBlock(bx_x + INSET, bx_y + INSET,
-                                _lines_to_dicts(bx.label),
+                                _auto_invert_lines(_lines_to_dicts(bx.label), bx_fill),
                                 component_id=bx_cid))
             if bx.icon:
                 fg.append(Icon(
                     bx_x + bx_w - INSET - ICON_SIZE,
                     bx_y + INSET,
                     bx.icon,
-                    fill=bx.icon_fill or "#000000",
+                    fill=_auto_invert_icon(bx.icon_fill, bx_fill),
                     component_id=bx_cid,
                 ))
             child_bounds.append(_Bounds(bx_x, bx_y, bx_w, bx_h, bx))
@@ -768,11 +788,12 @@ def _render_component(
         stroke = "none" if comp.effective_border == Border.NONE else "#000000"
         cid = comp.id or None
         fg.append(Rect(x, y, bw, bh, fill=fill, stroke=stroke, component_id=cid))
-        fg.append(TextBlock(x + INSET, y + INSET, _lines_to_dicts(comp.label),
+        fg.append(TextBlock(x + INSET, y + INSET,
+                            _auto_invert_lines(_lines_to_dicts(comp.label), fill),
                             component_id=cid))
         if comp.icon:
             fg.append(Icon(x + bw - INSET - ICON_SIZE, y + INSET, comp.icon,
-                           fill=comp.icon_fill or "#000000", component_id=cid))
+                           fill=_auto_invert_icon(comp.icon_fill, fill), component_id=cid))
         return _Bounds(x, y, bw, bh, comp), fg, bg
 
     elif isinstance(comp, Annotation):

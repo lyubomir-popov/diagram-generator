@@ -154,17 +154,24 @@ def _relayout(slug: str, grid_overrides: dict) -> dict | None:
             if key in grid_overrides:
                 setattr(diagram_obj, key, grid_overrides[key])
 
-        # Propagate gap overrides into nested panels that rely on defaults.
-        # Panels with explicit col_gap/row_gap keep their values; panels
-        # with None inherit the diagram-level override.
+        # Propagate gap overrides into nested panels.  Patch panels whose
+        # gap matches the diagram's original default (i.e. they were set to
+        # the same value as the diagram level) as well as panels with None.
+        # Panels with intentionally different gaps (e.g. COMPACT_GAP inside
+        # dense sub-panels) keep their values.
         from diagram_model import Panel as _Panel
+        orig_col_gap = getattr(mod, mod_name).col_gap
+        orig_row_gap = getattr(mod, mod_name).row_gap
+
         def _patch_panel_gaps(children):
             for comp in children:
                 if isinstance(comp, _Panel):
-                    if comp.col_gap is None and "col_gap" in grid_overrides:
-                        comp.col_gap = grid_overrides["col_gap"]
-                    if comp.row_gap is None and "row_gap" in grid_overrides:
-                        comp.row_gap = grid_overrides["row_gap"]
+                    if "col_gap" in grid_overrides:
+                        if comp.col_gap is None or comp.col_gap == orig_col_gap:
+                            comp.col_gap = grid_overrides["col_gap"]
+                    if "row_gap" in grid_overrides:
+                        if comp.row_gap is None or comp.row_gap == orig_row_gap:
+                            comp.row_gap = grid_overrides["row_gap"]
                     if hasattr(comp, "children") and comp.children:
                         _patch_panel_gaps(comp.children)
         _patch_panel_gaps(diagram_obj.components)
@@ -222,11 +229,12 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
         for s in all_slugs
     )
     grid_js = "true" if grid else "false"
-    from diagram_shared import ARROW_HEAD_LENGTH, ARROW_HEAD_HALF_WIDTH, ICON_SIZE, GRID_GUTTER
+    from diagram_shared import ARROW_HEAD_LENGTH, ARROW_HEAD_HALF_WIDTH, ICON_SIZE, GRID_GUTTER, INSET
     head_len = ARROW_HEAD_LENGTH
     head_half = ARROW_HEAD_HALF_WIDTH
     icon_size = ICON_SIZE
     col_gap = GRID_GUTTER
+    inset = INSET
     # NOTE: all JS { } are doubled to {{ }} because this is a Python f-string.
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -354,6 +362,7 @@ body {{ font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a;
 "use strict";
 const SLUG = "{slug}";
 const GRID = {grid_js};
+const INSET = {inset};
 let generation = 0;
 let componentTree = [];
 let overrides = {{}};
@@ -1272,10 +1281,10 @@ function onDragMove(e) {{
     if (parent && node && parent.type !== "arrow") {{
       const pEff = getEffectiveDelta(parent.id);
       const pOwn = getOwnDelta(parent.id);
-      const pLeft = parent.x + pEff.dx;
-      const pTop = parent.y + pEff.dy;
-      const pRight = pLeft + parent.width + pOwn.dw;
-      const pBottom = pTop + parent.height + pOwn.dh;
+      const pLeft = parent.x + pEff.dx + INSET;
+      const pTop = parent.y + pEff.dy + INSET;
+      const pRight = pLeft + parent.width + pOwn.dw - 2 * INSET;
+      const pBottom = pTop + parent.height + pOwn.dh - 2 * INSET;
       const own = getOwnDelta(id);
       const cW = node.width + own.dw;
       const cH = node.height + own.dh;
@@ -2078,10 +2087,10 @@ function onResizeMove(e) {{
   if (parent && node && parent.type !== "arrow") {{
     const pEff = getEffectiveDelta(parent.id);
     const pOwn = getOwnDelta(parent.id);
-    const pLeft = parent.x + pEff.dx;
-    const pTop = parent.y + pEff.dy;
-    const pRight = pLeft + parent.width + pOwn.dw;
-    const pBottom = pTop + parent.height + pOwn.dh;
+    const pLeft = parent.x + pEff.dx + INSET;
+    const pTop = parent.y + pEff.dy + INSET;
+    const pRight = pLeft + parent.width + pOwn.dw - 2 * INSET;
+    const pBottom = pTop + parent.height + pOwn.dh - 2 * INSET;
 
     // Compute the child's effective box with proposed overrides
     const cLeft = node.x + newDx;
