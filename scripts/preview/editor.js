@@ -4,9 +4,11 @@ const GRID = window.__DG_CONFIG.grid;
 const INSET = window.__DG_CONFIG.inset;
 let generation = 0;
 
-// ---- Component model & interaction manager ----
+// ---- Component model, interaction manager & constraints ----
 const model = new ComponentModel();
 const mgr = new InteractionManager();
+const constraints = createDefaultRegistry();
+let lastViolations = [];
 
 // Legacy accessors – thin wrappers that delegate to model/mgr so the rest of
 // the file can be migrated incrementally.
@@ -72,6 +74,7 @@ async function loadSVG() {
   bindInteraction();
   renderGridOverlay();
   reapplySelection();
+  runConstraints();
 }
 
 async function loadTree() {
@@ -1887,6 +1890,16 @@ function updateInspector(cid) {
   if (hasOverride) {
     html += '<button class="danger" onclick="clearOverride(\''+cid+'\')">Clear override</button>';
   }
+  // Show constraint violations for this component
+  const cv = getViolationsForComponent(cid);
+  if (cv.length > 0) {
+    html += '<div style="margin-top:8px"><span class="label">Violations</span>';
+    for (const v of cv) {
+      const color = v.severity === "error" ? "#c66" : "#cc6";
+      html += '<div style="font-size:11px;color:' + color + '">&#x26a0; ' + v.message + '</div>';
+    }
+    html += '</div>';
+  }
   html += '<div style="margin-top:8px;font-size:10px;color:#555">Drag to move &#xb7; handles to resize (4px grid) &#xb7; W to toggle grid overlay.</div>';
   document.getElementById("inspector").innerHTML = html;
 }
@@ -1963,6 +1976,7 @@ function setDirty(dirty) {
   saveBtn.disabled = !dirty;
   if (dirty) {
     saveBtn.classList.add("dirty");
+    runConstraints();
   } else {
     saveBtn.classList.remove("dirty");
   }
@@ -2037,6 +2051,36 @@ window.addEventListener("beforeunload", (e) => {
     return "You have unsaved changes. Are you sure you want to leave?";
   }
 });
+
+// ---- Constraint validation ----
+
+function runConstraints() {
+  const svg = document.querySelector("#stage svg");
+  lastViolations = constraints.validate(model, svg);
+  updateConstraintUI();
+}
+
+function updateConstraintUI() {
+  const summary = constraints.summarise(lastViolations);
+  const el = document.getElementById("constraint-status");
+  if (!el) return;
+  if (summary.total === 0) {
+    el.textContent = "No violations";
+    el.className = "build-status build-ok";
+  } else if (summary.errors > 0) {
+    el.textContent = `${summary.errors} error(s), ${summary.warnings} warning(s)`;
+    el.className = "build-status build-err";
+  } else {
+    el.textContent = `${summary.warnings} warning(s)`;
+    el.className = "build-status";
+    el.style.background = "#3a3a1a";
+    el.style.color = "#cc6";
+  }
+}
+
+function getViolationsForComponent(cid) {
+  return constraints.forComponent(lastViolations, cid);
+}
 
 // ---- SSE ----
 
