@@ -421,8 +421,12 @@ def _layout_panel(
         for bx in boxes:
             bx_x = x + col_xs[bx.col]
             bx_y = y + row_ys[bx.row]
-            bx_w = bx.width or col_width
-            bx_h = bx.height or row_heights[bx.row]
+            cs = getattr(bx, "col_span", 1) or 1
+            rs = getattr(bx, "row_span", 1) or 1
+            span_w = cs * col_width + (cs - 1) * col_gap if cs > 1 else col_width
+            span_h = sum(row_heights[bx.row:bx.row + rs]) + (rs - 1) * row_gap if rs > 1 else row_heights[bx.row]
+            bx_w = bx.width or span_w
+            bx_h = bx.height or span_h
             bx_fill = bx.fill.value
             bx_stroke = "none" if bx.effective_border == Border.NONE else "#000000"
             bx_cid = bx.id or None
@@ -786,8 +790,10 @@ def _render_component(
 
     elif isinstance(comp, Box):
         bw = comp.width or default_width
-        # In a spanned cell the box can be wider than default_width
-        if w > bw:
+        # The parent layout may resolve a different width (e.g. content-
+        # width alignment in VERTICAL mode).  Honour the parent when it
+        # provides a concrete w, stretching *or* shrinking.
+        if w > 0 and int(w) != bw:
             bw = int(w)
         has_icon = comp.icon is not None
         bh = comp.height or tight_box_height(_lines_to_dicts(comp.label), has_icon=has_icon)
@@ -861,6 +867,9 @@ def _render_component(
 
     elif isinstance(comp, Terminal):
         tw = comp.width or default_width
+        # Honour parent-resolved width (same as Box)
+        if w > 0 and int(w) != tw:
+            tw = int(w)
         th = BOX_MIN_HEIGHT
         cid = comp.id or None
         fg.append(TerminalBar(x, y, tw, th, comp.command, comp.font_family, component_id=cid))
@@ -1490,8 +1499,12 @@ def layout(diagram: Diagram) -> LayoutResult:
         #
         # Two-pass layout (like Figma "Fill container"):
         #   Pass 1 — measure natural widths/heights of all components.
-        #   Pass 2 — render each component at the resolved column width
-        #            so every sibling fills the same parent column.
+        #            Separate CONTENT width from OUTER width.  Panels have
+        #            padding (INSET) around their content; standalone boxes
+        #            do not.  The resolved column is based on the widest
+        #            CONTENT, so standalone boxes and panel children share
+        #            the same right edge.
+        #   Pass 2 — render each component at the resolved width.
 
         # Pass 1: measure
         nat_sizes: list[tuple[float, float]] = []
@@ -1504,9 +1517,39 @@ def layout(diagram: Diagram) -> LayoutResult:
             col_width_resolved = BLOCK_WIDTH
             row_height_resolved = max((nh for _, nh in nat_sizes), default=BOX_MIN_HEIGHT)
         else:
-            # Vertical: unify column width across siblings
-            col_width_resolved = max((int(nw) for nw, _ in nat_sizes), default=BLOCK_WIDTH)
-            col_width_resolved = round_up_to_grid(col_width_resolved)
+            # Vertical: resolve a CONTENT width that gives all boxes and
+            # panel children the same right edge.
+            #
+            # A panel's natural width already includes 2 * INSET of padding.
+            # Strip that padding to get its content width, take the max
+            # across all siblings, then re-add padding for panels.
+            #
+            # When standalone boxes sit next to padded panels, their
+            # explicit width was typically set to match the panel's OUTER
+            # width.  Treat them the same way: strip 2*INSET so that the
+            # content-width resolution uses the inner corridor.
+            has_padded_sibling = any(
+                isinstance(c, Panel) and c.effective_border != Border.NONE
+                for c in components if not isinstance(c, Arrow)
+            )
+            content_widths: list[int] = []
+            for comp, (nw, _) in zip(components, nat_sizes):
+                if isinstance(comp, Panel):
+                    if comp.effective_border == Border.NONE:
+                        # Borderless panels (e.g. horizontal rows) follow
+                        # the resolved width rather than driving it.
+                        pass
+                    else:
+                        content_widths.append(int(nw) - 2 * INSET)
+                elif isinstance(comp, Arrow):
+                    pass  # arrows don't participate in width resolution
+                else:
+                    cw = int(nw)
+                    if has_padded_sibling:
+                        cw = cw - 2 * INSET
+                    content_widths.append(cw)
+            content_w_resolved = max(content_widths, default=BLOCK_WIDTH)
+            content_w_resolved = round_up_to_grid(content_w_resolved)
             row_height_resolved = BOX_MIN_HEIGHT
 
         # Pass 2: render at resolved dimensions
@@ -1518,12 +1561,29 @@ def layout(diagram: Diagram) -> LayoutResult:
             if diagram.arrangement == Diagram.Arrangement.HORIZONTAL:
                 render_w = int(nw)
                 render_h = row_height_resolved
+                render_x = x
             else:
-                render_w = col_width_resolved
+                # Panels: wrap content width with their own padding
+                if isinstance(comp, Panel):
+                    panel_pad = 0 if comp.effective_border == Border.NONE else INSET
+                    render_w = content_w_resolved + 2 * panel_pad
+                    render_x = x
+                elif isinstance(comp, Arrow):
+                    render_w = 0
+                    render_x = x
+                else:
+                    # Standalone boxes: content width, inset to align
+                    # with panel children
+                    if has_padded_sibling:
+                        render_w = content_w_resolved
+                        render_x = x + INSET
+                    else:
+                        render_w = content_w_resolved
+                        render_x = x
                 render_h = int(nh)
 
             bounds, comp_fg, comp_bg = _render_component(
-                comp, x, y, render_w, render_h,
+                comp, render_x, y, render_w, render_h,
                 default_width=render_w,
                 bounds_map=bounds_map,
                 min_height=render_h,
