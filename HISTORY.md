@@ -4,6 +4,15 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2025-05-01 – Auto-layout engine rewrite
+
+- Replaced `propagateResize()` and `redistributeAfterChildResize()` with `relayoutChildren()` and `relayoutSiblingsAfterChildResize()` in `component-model.js`.
+- `relayoutChildren()` computes child positions and sizes from the parent's content area with fixed gutters — no more proportional delta passing.
+- Added recursive relayout: when a parent resizes, nested panels relayout their children too via `_applyRelayoutRecursive()`.
+- Added `pad`, `heading_height`, `layout_col_gap`, `layout_row_gap` to `ComponentInfo` (Python) and `ComponentNode` (JS) so the JS engine knows about panel padding, headings, and separate column/row gaps.
+- Child resize now shifts later siblings to maintain gutter invariant (no more proportional shrinking).
+- Gutter is always the Python-defined `layout_gap` value — never a proportional guess.
+
 ### 2025-05-01 – StackedBlock removal + alignment hardening
 
 - Removed `StackedBlock` component type — it centred icons above text, violating the "text top-left, icon top-right" design language rule.

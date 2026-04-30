@@ -15,6 +15,10 @@ class ComponentNode {
     this.children = [];          // ComponentNode[]
     this.layout = data.layout || "";        // "vertical", "horizontal", "grid", ""
     this.layoutGap = data.layout_gap || 0;  // gap between children
+    this.layoutColGap = data.layout_col_gap || data.layout_gap || 0;
+    this.layoutRowGap = data.layout_row_gap || data.layout_gap || 0;
+    this.pad = data.pad || 0;               // internal padding (INSET for bordered, 0 for borderless)
+    this.headingHeight = data.heading_height || 0; // panel heading height incl gap
     if (data.children) {
       for (const child of data.children) {
         this.children.push(new ComponentNode(child, this));
@@ -223,72 +227,137 @@ class ComponentModel {
   }
 
   /**
-   * Propagate a parent's resize delta to its children proportionally.
-   * Returns an object { childId: { dw, dh } } of deltas to apply.
+   * Gutter-preserving auto-layout: recompute child positions and sizes
+   * so they fill the parent's content area with fixed gutters.
+   *
+   * Given the parent's effective bounds (base + overrides), this function:
+   * 1. Computes the content area (parent size - 2×pad - heading)
+   * 2. Distributes available space among children with fixed gutters
+   * 3. Returns overrides { childId: { dx, dy, dw, dh } } to apply
+   *
+   * The gutter between children is ALWAYS node.layoutGap — never proportional.
+   *
+   * @param {string} parentId — the parent whose children to relayout
+   * @param {number} parentDw — the parent's dw override (0 = unchanged)
+   * @param {number} parentDh — the parent's dh override (0 = unchanged)
+   * @returns {{ [childId: string]: { dx?: number, dy?: number, dw?: number, dh?: number } }}
    */
-  propagateResize(parentId, parentDw, parentDh) {
+  relayoutChildren(parentId, parentDw, parentDh) {
     const node = this.get(parentId);
     if (!node || node.children.length === 0) return {};
     const layoutChildren = this.getLayoutChildren(parentId);
     if (layoutChildren.length === 0) return {};
 
-    const result = {};
     const layout = node.layout || "";
+    if (!layout) return {};
+
+    const colGap = node.layoutColGap;
+    const rowGap = node.layoutRowGap;
+    const pad = node.pad;
+    const headingH = node.headingHeight;
+    const result = {};
+
+    // Parent's effective content area
+    const parentW = node.data.width + parentDw;
+    const parentH = node.data.height + parentDh;
+    const contentW = parentW - 2 * pad;
+    const contentH = parentH - 2 * pad - headingH;
+
+    // Content area origin relative to parent's original position
+    const contentX0 = node.data.x + pad;
+    const contentY0 = node.data.y + pad + headingH;
 
     if (layout === "vertical") {
-      // Vertical layout: all children get the full width delta,
-      // height delta distributed proportionally by original height
-      const totalH = layoutChildren.reduce((s, c) => s + c.data.height, 0);
+      // Vertical: all children get full width, height distributed equally
+      const n = layoutChildren.length;
+      const availH = contentH - (n - 1) * rowGap;
+      const childH = Math.round(availH / n / 8) * 8;
+
+      let cy = contentY0;
       for (const child of layoutChildren) {
-        const hFrac = totalH > 0 ? child.data.height / totalH : 1 / layoutChildren.length;
+        const dx = contentX0 - child.data.x;
+        const dy = cy - child.data.y;
+        const dw = contentW - child.data.width;
+        const dh = childH - child.data.height;
         result[child.id] = {
-          dw: parentDw,
-          dh: Math.round(parentDh * hFrac / 8) * 8,
+          dx: Math.round(dx / 8) * 8,
+          dy: Math.round(dy / 8) * 8,
+          dw: Math.round(dw / 8) * 8,
+          dh: Math.round(dh / 8) * 8,
         };
+        cy += childH + rowGap;
       }
     } else if (layout === "horizontal") {
-      // Horizontal layout: all children get the full height delta,
-      // width delta distributed proportionally by original width
-      const totalW = layoutChildren.reduce((s, c) => s + c.data.width, 0);
+      // Horizontal: all children get full height, width distributed equally
+      const n = layoutChildren.length;
+      const availW = contentW - (n - 1) * colGap;
+      const childW = Math.round(availW / n / 8) * 8;
+
+      let cx = contentX0;
       for (const child of layoutChildren) {
-        const wFrac = totalW > 0 ? child.data.width / totalW : 1 / layoutChildren.length;
+        const dx = cx - child.data.x;
+        const dy = contentY0 - child.data.y;
+        const dw = childW - child.data.width;
+        const dh = contentH - child.data.height;
         result[child.id] = {
-          dw: Math.round(parentDw * wFrac / 8) * 8,
-          dh: parentDh,
+          dx: Math.round(dx / 8) * 8,
+          dy: Math.round(dy / 8) * 8,
+          dw: Math.round(dw / 8) * 8,
+          dh: Math.round(dh / 8) * 8,
         };
+        cx += childW + colGap;
       }
     } else if (layout === "grid") {
-      // Grid: group children by unique x-position (columns) and y-position (rows).
-      // Distribute width delta equally across columns, height across rows.
+      // Grid: identify columns and rows from children's original positions.
+      // Distribute width equally among columns, height equally among rows.
       const colXs = [...new Set(layoutChildren.map(c => c.data.x))].sort((a, b) => a - b);
       const rowYs = [...new Set(layoutChildren.map(c => c.data.y))].sort((a, b) => a - b);
       const numCols = colXs.length || 1;
       const numRows = rowYs.length || 1;
-      const perColDw = Math.round(parentDw / numCols / 8) * 8;
-      const perRowDh = Math.round(parentDh / numRows / 8) * 8;
-      for (const child of layoutChildren) {
-        result[child.id] = { dw: perColDw, dh: perRowDh };
+
+      const availW = contentW - (numCols - 1) * colGap;
+      const availH = contentH - (numRows - 1) * rowGap;
+      const cellW = Math.round(availW / numCols / 8) * 8;
+      const cellH = Math.round(availH / numRows / 8) * 8;
+
+      // Build column X positions and row Y positions
+      const newColXs = [];
+      for (let c = 0; c < numCols; c++) {
+        newColXs.push(contentX0 + c * (cellW + colGap));
       }
-    } else {
-      // Unknown layout — no propagation
-      return {};
+      const newRowYs = [];
+      for (let r = 0; r < numRows; r++) {
+        newRowYs.push(contentY0 + r * (cellH + rowGap));
+      }
+
+      for (const child of layoutChildren) {
+        const colIdx = colXs.indexOf(child.data.x);
+        const rowIdx = rowYs.indexOf(child.data.y);
+        const ci = colIdx >= 0 ? colIdx : 0;
+        const ri = rowIdx >= 0 ? rowIdx : 0;
+        const dx = newColXs[ci] - child.data.x;
+        const dy = newRowYs[ri] - child.data.y;
+        const dw = cellW - child.data.width;
+        const dh = cellH - child.data.height;
+        result[child.id] = {
+          dx: Math.round(dx / 8) * 8,
+          dy: Math.round(dy / 8) * 8,
+          dw: Math.round(dw / 8) * 8,
+          dh: Math.round(dh / 8) * 8,
+        };
+      }
     }
     return result;
   }
 
   /**
-   * When a child in a vertical/horizontal/grid layout is resized, compute
-   * the sibling adjustments needed so siblings fill the remaining space
-   * and the parent stays the same size.
+   * Relayout after a child is resized: keep sibling sizes the same,
+   * but shift siblings that come after the resized child so gutters
+   * stay exactly at layoutGap.
    *
-   * Returns { siblingId: { dw?, dh?, dx?, dy? } } deltas to apply.
-   *
-   * - Vertical:   child dh is distributed inversely among siblings (they shrink/grow).
-   * - Horizontal: child dw is distributed inversely among siblings.
-   * - Grid:       child dw is distributed among same-row siblings;
-   *               child dh is distributed among same-column siblings.
+   * Returns { siblingId: { dx?, dy?, dw?, dh? } } deltas to apply.
    */
-  redistributeAfterChildResize(childId, childDw, childDh) {
+  relayoutSiblingsAfterChildResize(childId, childDw, childDh) {
     const node = this.get(childId);
     if (!node || !node.parent) return {};
     const parent = node.parent;
@@ -297,72 +366,45 @@ class ComponentModel {
     if (layoutChildren.length <= 1) return {};
 
     const result = {};
-    const siblings = layoutChildren.filter(n => n.id !== childId);
+    const childIdx = layoutChildren.indexOf(node);
 
     if (layout === "vertical" && childDh !== 0) {
-      // Vertical: distribute -childDh among siblings proportionally by height.
-      // Siblings after the resized child also shift vertically.
-      const totalSibH = siblings.reduce((s, c) => s + c.data.height, 0);
-      const childIdx = layoutChildren.indexOf(node);
-      let cumulativeShift = 0;
-      for (let i = 0; i < layoutChildren.length; i++) {
+      // Shift all siblings below the resized child by childDh
+      for (let i = childIdx + 1; i < layoutChildren.length; i++) {
         const sib = layoutChildren[i];
-        if (sib.id === childId) {
-          cumulativeShift = childDh;  // everything after shifts by this
-          continue;
-        }
-        const hFrac = totalSibH > 0 ? sib.data.height / totalSibH : 1 / siblings.length;
-        const sibDh = -Math.round(childDh * hFrac / 8) * 8;
-        result[sib.id] = { dh: sibDh };
-        if (i > childIdx) {
-          // Shift siblings below the resized child
-          result[sib.id].dy = (result[sib.id].dy || 0) + cumulativeShift;
-          cumulativeShift += sibDh;
-        }
+        result[sib.id] = { dy: childDh };
       }
     } else if (layout === "horizontal" && childDw !== 0) {
-      // Horizontal: distribute -childDw among siblings proportionally by width.
-      // Siblings after the resized child also shift horizontally.
-      const totalSibW = siblings.reduce((s, c) => s + c.data.width, 0);
-      const childIdx = layoutChildren.indexOf(node);
-      let cumulativeShift = 0;
-      for (let i = 0; i < layoutChildren.length; i++) {
+      // Shift all siblings to the right of the resized child by childDw
+      for (let i = childIdx + 1; i < layoutChildren.length; i++) {
         const sib = layoutChildren[i];
-        if (sib.id === childId) {
-          cumulativeShift = childDw;
-          continue;
-        }
-        const wFrac = totalSibW > 0 ? sib.data.width / totalSibW : 1 / siblings.length;
-        const sibDw = -Math.round(childDw * wFrac / 8) * 8;
-        result[sib.id] = { dw: sibDw };
-        if (i > childIdx) {
-          result[sib.id].dx = (result[sib.id].dx || 0) + cumulativeShift;
-          cumulativeShift += sibDw;
-        }
+        result[sib.id] = { dx: childDw };
       }
     } else if (layout === "grid") {
-      // Grid: distribute width delta among same-row peers,
-      //        height delta among same-column peers.
+      // Grid: shift same-row siblings after resized child horizontally,
+      // shift same-column siblings after resized child vertically.
       const childX = node.data.x;
       const childY = node.data.y;
-      if (childDw !== 0) {
-        const sameRow = siblings.filter(s => s.data.y === childY);
-        if (sameRow.length > 0) {
-          const perSib = -Math.round(childDw / sameRow.length / 8) * 8;
-          for (const s of sameRow) {
-            if (!result[s.id]) result[s.id] = {};
-            result[s.id].dw = perSib;
-          }
+      const colXs = [...new Set(layoutChildren.map(c => c.data.x))].sort((a, b) => a - b);
+      const rowYs = [...new Set(layoutChildren.map(c => c.data.y))].sort((a, b) => a - b);
+      const childColIdx = colXs.indexOf(childX);
+      const childRowIdx = rowYs.indexOf(childY);
+
+      for (const sib of layoutChildren) {
+        if (sib.id === childId) continue;
+        const sibColIdx = colXs.indexOf(sib.data.x);
+        const sibRowIdx = rowYs.indexOf(sib.data.y);
+        const patch = {};
+        // Same row, later column → shift right
+        if (sibRowIdx === childRowIdx && sibColIdx > childColIdx && childDw !== 0) {
+          patch.dx = childDw;
         }
-      }
-      if (childDh !== 0) {
-        const sameCol = siblings.filter(s => s.data.x === childX);
-        if (sameCol.length > 0) {
-          const perSib = -Math.round(childDh / sameCol.length / 8) * 8;
-          for (const s of sameCol) {
-            if (!result[s.id]) result[s.id] = {};
-            result[s.id].dh = perSib;
-          }
+        // Same column, later row → shift down
+        if (sibColIdx === childColIdx && sibRowIdx > childRowIdx && childDh !== 0) {
+          patch.dy = childDh;
+        }
+        if (Object.keys(patch).length > 0) {
+          result[sib.id] = patch;
         }
       }
     }
