@@ -308,6 +308,8 @@ class ComponentModel {
     } else if (layout === "grid") {
       // Grid: identify columns and rows from children's original positions.
       // Distribute width equally among columns, height equally among rows.
+      // Detect spanning children by comparing their original width/height
+      // against the base cell size.
       const colXs = [...new Set(layoutChildren.map(c => c.data.x))].sort((a, b) => a - b);
       const rowYs = [...new Set(layoutChildren.map(c => c.data.y))].sort((a, b) => a - b);
       const numCols = colXs.length || 1;
@@ -333,10 +335,28 @@ class ComponentModel {
         const rowIdx = rowYs.indexOf(child.data.y);
         const ci = colIdx >= 0 ? colIdx : 0;
         const ri = rowIdx >= 0 ? rowIdx : 0;
+
+        // Detect column span: how many original column starts does
+        // this child's width cover?  A child wider than one cell
+        // spans into adjacent columns.
+        let colSpan = 1;
+        for (let c = ci + 1; c < numCols; c++) {
+          if (child.data.x + child.data.width > colXs[c]) colSpan++;
+          else break;
+        }
+        let rowSpan = 1;
+        for (let r = ri + 1; r < numRows; r++) {
+          if (child.data.y + child.data.height > rowYs[r]) rowSpan++;
+          else break;
+        }
+
+        const spanW = colSpan * cellW + (colSpan - 1) * colGap;
+        const spanH = rowSpan * cellH + (rowSpan - 1) * rowGap;
+
         const dx = newColXs[ci] - child.data.x;
         const dy = newRowYs[ri] - child.data.y;
-        const dw = cellW - child.data.width;
-        const dh = cellH - child.data.height;
+        const dw = spanW - child.data.width;
+        const dh = spanH - child.data.height;
         result[child.id] = {
           dx: Math.round(dx / 8) * 8,
           dy: Math.round(dy / 8) * 8,
