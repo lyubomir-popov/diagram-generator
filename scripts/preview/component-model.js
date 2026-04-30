@@ -277,10 +277,16 @@ class ComponentModel {
   }
 
   /**
-   * When a child in a vertical/horizontal layout is resized, compute
-   * the sibling adjustments needed to keep siblings filling the parent.
-   * Returns { siblingId: { dh or dw } } deltas for siblings,
-   * and { parentId: { dh or dw } } if the parent should grow.
+   * When a child in a vertical/horizontal/grid layout is resized, compute
+   * the sibling adjustments needed so siblings fill the remaining space
+   * and the parent stays the same size.
+   *
+   * Returns { siblingId: { dw?, dh?, dx?, dy? } } deltas to apply.
+   *
+   * - Vertical:   child dh is distributed inversely among siblings (they shrink/grow).
+   * - Horizontal: child dw is distributed inversely among siblings.
+   * - Grid:       child dw is distributed among same-row siblings;
+   *               child dh is distributed among same-column siblings.
    */
   redistributeAfterChildResize(childId, childDw, childDh) {
     const node = this.get(childId);
@@ -294,12 +300,71 @@ class ComponentModel {
     const siblings = layoutChildren.filter(n => n.id !== childId);
 
     if (layout === "vertical" && childDh !== 0) {
-      // Child grew/shrank vertically — the parent grows by the same amount
-      // so siblings don't need to change (preserves their size)
-      result[parent.id] = { dh: childDh };
+      // Vertical: distribute -childDh among siblings proportionally by height.
+      // Siblings after the resized child also shift vertically.
+      const totalSibH = siblings.reduce((s, c) => s + c.data.height, 0);
+      const childIdx = layoutChildren.indexOf(node);
+      let cumulativeShift = 0;
+      for (let i = 0; i < layoutChildren.length; i++) {
+        const sib = layoutChildren[i];
+        if (sib.id === childId) {
+          cumulativeShift = childDh;  // everything after shifts by this
+          continue;
+        }
+        const hFrac = totalSibH > 0 ? sib.data.height / totalSibH : 1 / siblings.length;
+        const sibDh = -Math.round(childDh * hFrac / 4) * 4;
+        result[sib.id] = { dh: sibDh };
+        if (i > childIdx) {
+          // Shift siblings below the resized child
+          result[sib.id].dy = (result[sib.id].dy || 0) + cumulativeShift;
+          cumulativeShift += sibDh;
+        }
+      }
     } else if (layout === "horizontal" && childDw !== 0) {
-      // Child grew/shrank horizontally — grow the parent
-      result[parent.id] = { dw: childDw };
+      // Horizontal: distribute -childDw among siblings proportionally by width.
+      // Siblings after the resized child also shift horizontally.
+      const totalSibW = siblings.reduce((s, c) => s + c.data.width, 0);
+      const childIdx = layoutChildren.indexOf(node);
+      let cumulativeShift = 0;
+      for (let i = 0; i < layoutChildren.length; i++) {
+        const sib = layoutChildren[i];
+        if (sib.id === childId) {
+          cumulativeShift = childDw;
+          continue;
+        }
+        const wFrac = totalSibW > 0 ? sib.data.width / totalSibW : 1 / siblings.length;
+        const sibDw = -Math.round(childDw * wFrac / 4) * 4;
+        result[sib.id] = { dw: sibDw };
+        if (i > childIdx) {
+          result[sib.id].dx = (result[sib.id].dx || 0) + cumulativeShift;
+          cumulativeShift += sibDw;
+        }
+      }
+    } else if (layout === "grid") {
+      // Grid: distribute width delta among same-row peers,
+      //        height delta among same-column peers.
+      const childX = node.data.x;
+      const childY = node.data.y;
+      if (childDw !== 0) {
+        const sameRow = siblings.filter(s => s.data.y === childY);
+        if (sameRow.length > 0) {
+          const perSib = -Math.round(childDw / sameRow.length / 4) * 4;
+          for (const s of sameRow) {
+            if (!result[s.id]) result[s.id] = {};
+            result[s.id].dw = perSib;
+          }
+        }
+      }
+      if (childDh !== 0) {
+        const sameCol = siblings.filter(s => s.data.x === childX);
+        if (sameCol.length > 0) {
+          const perSib = -Math.round(childDh / sameCol.length / 4) * 4;
+          for (const s of sameCol) {
+            if (!result[s.id]) result[s.id] = {};
+            result[s.id].dh = perSib;
+          }
+        }
+      }
     }
     return result;
   }

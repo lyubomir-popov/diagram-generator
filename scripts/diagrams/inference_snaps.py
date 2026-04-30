@@ -28,8 +28,8 @@ def _heading(text: str) -> Line:
 inference_snaps = Diagram(
     title="Inference snaps",
     arrangement=Diagram.Arrangement.VERTICAL,
-    row_gap=32,  # ARROW_GAP: fan-out arrows route between rows
-    outer_margin=32,
+    row_gap=24,  # ARROW_GAP: fan-out arrows route between rows
+    outer_margin=24,
     components=[
         # Title bar
         Box(

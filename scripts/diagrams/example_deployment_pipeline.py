@@ -26,9 +26,9 @@ example_deployment_pipeline = Diagram(
     cols=1,
     col_width=192,
     row_height=64,
-    col_gap=32,
-    row_gap=32,
-    outer_margin=32,
+    col_gap=24,
+    row_gap=24,
+    outer_margin=24,
     components=[
         Box(id="commit", label=[_body("Developer"), _body("commit")],
             icon="Laptop with code.svg", col=0, row=0),

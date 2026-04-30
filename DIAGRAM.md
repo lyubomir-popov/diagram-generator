@@ -91,8 +91,8 @@ spacing:
   panel-padding: 8px
   icon-inset: 8px
   compact-gap: 8px
-  grid-gutter: 32px
-  outer-margin: 32px
+  grid-gutter: 24px
+  outer-margin: 24px
   body-line-step: 24px
   heading-line-step: 24px
   title-line-step: 32px
@@ -103,7 +103,7 @@ grid:
   column-counts: [4, 8, 16]
   span-rule: power-of-2 fractions only
   application-gutter: 24px
-  application-outer-margin: 32px
+  application-outer-margin: 24px
   default-box-width: 192px
   default-box-min-height: 64px
   default-box-growth-step: 4px
@@ -142,10 +142,10 @@ components:
     strokeWidth: 1px
     arrowHeadLength: 10.8408px
     arrowHeadHalfWidth: 2.9053px
-    arrowClearance: 12px
-    minArrowSegment: 24px
+    arrowClearance: 8px
+    minArrowSegment: 16px
     arrowExitClearance: 8px
-    arrowGap: 32px
+    arrowGap: 24px
   terminal-bar:
     height: 64px
     chromeHeight: 20px
@@ -427,20 +427,20 @@ All three mechanisms are automatic — no opt-in flag is needed. Content stays t
 
 ### Spacing tokens
 
-The system uses exactly two gap scales. There is no middle ground — 16px and 24px gaps have been eliminated.
+The system uses exactly two gap scales.
 
 | Token | Value | Use |
 |-------|-------|-----|
 | `baseline-unit` | `4px` | Atomic grid step; all dimensions must be multiples |
 | `inset` | `8px` | Padding inside boxes, panels, and all containers |
 | `compact-gap` | `8px` | Gap between tightly grouped peer boxes within a panel (no arrows) |
-| `grid-gutter` | `32px` | Structural gap between columns/rows at any nesting level; equals `arrow-gap` so arrows can route through any structural gutter |
-| `outer-margin` | `32px` | Margin from diagram edge to first content |
+| `grid-gutter` | `24px` | Structural gap between columns/rows at any nesting level; equals `arrow-gap` so arrows can route through any structural gutter |
+| `outer-margin` | `24px` | Margin from diagram edge to first content |
 | `default-box-width` | `192px` | Standard box width |
 | `icon-size` | `48px` | Standard icon artboard |
 | `body-line-step` | `24px` | Line height for `18px` body text |
 
-**Gutter consistency rule:** the same `grid-gutter` value (32px) must be used at every nesting level for structural column and row gaps. A nested wrapper's internal `col_gap` between sub-panels must match the outer grid's `col_gap`. This keeps the vertical gutter lane continuous through the entire diagram. Only use `compact-gap` (8px) for tightly packed boxes within a single panel where no arrows route.
+**Gutter consistency rule:** the same `grid-gutter` value (24px) must be used at every nesting level for structural column and row gaps. A nested wrapper's internal `col_gap` between sub-panels must match the outer grid's `col_gap`. This keeps the vertical gutter lane continuous through the entire diagram. Only use `compact-gap` (8px) for tightly packed boxes within a single panel where no arrows route.
 
 ### Text containment
 
@@ -472,18 +472,18 @@ Connectors are part of the language, not decoration.
 
 ### Arrow clearance
 
-Every arrow's **last segment** (the one carrying the arrowhead) must be at least `MIN_ARROW_SEGMENT` (`24px`) long. This guarantees a visible shaft at least as long as the arrowhead before the arrow reaches the target box. Without this clearance the arrowhead overlaps the destination box edge and the diagram looks broken.
+Every arrow's **last segment** (the one carrying the arrowhead) must be at least `MIN_ARROW_SEGMENT` (`16px`) long. This guarantees a visible shaft at least as long as the arrowhead before the arrow reaches the target box. Without this clearance the arrowhead overlaps the destination box edge and the diagram looks broken.
 
 The **first segment** (exiting the source box) must be at least `ARROW_EXIT_CLEARANCE` (`8px`) so the shaft is visibly departing the source edge.
 
 | Token | Value | Purpose |
 |-------|-------|---------|
-| `ARROW_CLEARANCE` | `12px` | Minimum visible shaft on approach (box edge → arrowhead base) |
-| `MIN_ARROW_SEGMENT` | `24px` | Minimum last-segment length (`ARROW_CLEARANCE` + head) |
+| `ARROW_CLEARANCE` | `8px` | Minimum visible shaft on approach (box edge → arrowhead base) |
+| `MIN_ARROW_SEGMENT` | `16px` | Minimum last-segment length (`ARROW_CLEARANCE` + head) |
 | `ARROW_EXIT_CLEARANCE` | `8px` | Minimum first segment leaving the source |
-| `ARROW_GAP` | `32px` | Minimum gap between rows/columns where arrows route (`MIN_ARROW_SEGMENT` + `ARROW_EXIT_CLEARANCE`) |
+| `ARROW_GAP` | `24px` | Minimum gap between rows/columns where arrows route (`MIN_ARROW_SEGMENT` + `ARROW_EXIT_CLEARANCE`) |
 
-**Practical rule:** any `row_gap` or `col_gap` through which an arrow routes must be ≥ `ARROW_GAP` (`32px`). For panels that only have straight (same-column) arrows, `24px` is sufficient. For fan-out or Z-bend arrows (different source and target columns), use `32px`.
+**Practical rule:** any `row_gap` or `col_gap` through which an arrow routes must be ≥ `ARROW_GAP` (`24px`).
 
 The layout engine auto-routes Z-bends with the bend biased toward the source so the approach segment gets the full `MIN_ARROW_SEGMENT`. The `validate_arrows()` post-layout check catches any segment that is still too short.
 

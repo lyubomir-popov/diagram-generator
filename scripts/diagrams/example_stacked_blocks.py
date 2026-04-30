@@ -33,9 +33,9 @@ example_stacked_blocks = Diagram(
     cols=3,
     col_width=192,
     row_height=64,
-    col_gap=32,
-    row_gap=32,
-    outer_margin=32,
+    col_gap=24,
+    row_gap=24,
+    outer_margin=24,
     components=[
         # Row 0: three stacked blocks (icon-primary)
         StackedBlock(

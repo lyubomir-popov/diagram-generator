@@ -54,9 +54,9 @@ attention_qkv = Diagram(
     title="Attention QKV",
     arrangement=Diagram.Arrangement.GRID,
     cols=2,
-    col_gap=32,
-    row_gap=32,
-    outer_margin=32,
+    col_gap=24,
+    row_gap=24,
+    outer_margin=24,
     components=[
         # ── (0,0) Query panel – frameless ──
         Panel(
@@ -227,7 +227,7 @@ attention_qkv = Diagram(
             heading=_heading('The value (V): the "knowledge transfer"'),
             cols=3,
             col_width=192,
-            col_gap=32,
+            col_gap=24,
             row_gap=ARROW_GAP,  # arrows route between matrix and box rows
             fill=Fill.WHITE,
             border=Border.NONE,

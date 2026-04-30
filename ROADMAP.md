@@ -72,12 +72,15 @@ The preview server (`scripts/preview_server.py`) provides hot-reload, click-to-s
 - 8-direction resize handles with parent-bounds clamping
 - Arrow and annotation selection and repositioning
 - Arrow attachment: endpoints track source/target box movement and resize
-- Grid overlay toggle (W key): composition grid + baseline grid
+- Grid overlay toggle (W key): composition grid + baseline grid (mutually exclusive)
 - Editable grid controls with live relayout
 - Interactive waypoint editing: drag, add (double-click segment), remove (double-click handle)
 - Collinear waypoint auto-pruning on drag
 - Inline text editing (double-click to edit, Enter for newlines, Ctrl+Enter to commit)
 - Text-icon gutter enforcement during editing
+- Auto-layout: parent resize propagates proportionally to children
+- Auto-layout: child resize redistributes delta to siblings (fill container)
+- Gutter change re-fits children (relayout clears stale position overrides)
 
 ### Stage 11 — Viewer extraction (architecture prerequisite)
 
