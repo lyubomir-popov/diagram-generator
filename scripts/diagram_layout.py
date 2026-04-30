@@ -316,7 +316,7 @@ def _uniform_row_height(items: list[Box], cols: int, rows: int) -> list[int]:
                 has_icon = b.icon is not None
                 h = tight_box_height(_lines_to_dicts(b.label), has_icon=has_icon)
                 max_h = max(max_h, h)
-        heights.append(max_h if max_h > 0 else BOX_MIN_HEIGHT)
+        heights.append(max(max_h, BOX_MIN_HEIGHT))
     return heights
 
 
