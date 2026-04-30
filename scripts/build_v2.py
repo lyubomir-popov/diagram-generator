@@ -35,6 +35,7 @@ _REGISTRY: list[tuple[str, str, str]] = [
     ("example-deployment-pipeline-onbrand", "diagrams.example_deployment_pipeline", "example_deployment_pipeline"),
     ("example-platform-architecture-onbrand", "diagrams.example_platform_architecture", "example_platform_architecture"),
     ("example-data-processing-onbrand", "diagrams.example_data_processing", "example_data_processing"),
+    ("example-stacked-blocks-onbrand", "diagrams.example_stacked_blocks", "example_stacked_blocks"),
 ]
 
 
