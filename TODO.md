@@ -174,9 +174,9 @@ The architectural refactor is complete. See `STATUS.md` for the full summary. Ke
 
 These items are now unblocked by the completed refactor:
 
-- [x] **Parenting architecture.** Done — layout metadata (vertical/horizontal/grid + gap) flows from Python to client. `ComponentModel` gains `getSiblings`, `getLayoutChildren`, `propagateResize`, `redistributeAfterChildResize`. Inspector shows layout type.
-- [x] **Auto-layout fill container.** Done — sibling fill: when one child resizes, siblings absorb the delta proportionally so the parent stays the same size. Vertical distributes height, horizontal distributes width, grid distributes among same-row/column peers.
-- [x] **Parent resize propagates to autolayout children.** Done — resizing a parent proportionally distributes delta among children (width in vertical, height in horizontal).
+- [x] **Parenting architecture.** Done — layout metadata (vertical/horizontal/grid + col_gap + row_gap + pad + heading_height) flows from Python to client. `ComponentModel` gains `getSiblings`, `getLayoutChildren`, `relayoutChildren`, `relayoutSiblingsAfterChildResize`. Inspector shows layout type.
+- [x] **Auto-layout engine.** Done — gutter-preserving relayout: parent resize recomputes child positions and sizes from fixed gutters, not proportional delta passing. Recursive: nested panels relayout their children too. Child resize shifts later siblings to maintain gutter invariant.
+- [x] **Parent resize propagates to autolayout children.** Done — `relayoutChildren()` distributes available space equally with fixed gutters (col_gap/row_gap from Python metadata).
 - [x] **Component swap.** Done — style picker in inspector (default/accent/highlight). Overrides persist, undo/redo works, constraint system validates.
 - [x] **Baseline alignment guide.** Done — snap guides show during single-component drag. Collects peer edges/centers, snaps within 6px threshold, renders dashed orange guide lines, cleans up on drop.
 - [x] **Full interaction manager adoption.** Done — all 4 state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) replaced with `mgr.startXxx()`/`mgr.endInteraction()` and `mgr.state` access.

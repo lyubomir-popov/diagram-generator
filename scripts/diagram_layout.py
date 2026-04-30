@@ -204,7 +204,11 @@ class ComponentInfo:
     waypoints: list[list[float]] = field(default_factory=list)  # arrow only: [[x,y], ...]
     # Layout metadata for interactive editing
     layout: str = ""  # "vertical", "horizontal", "grid", or "" (leaf)
-    layout_gap: float = 0  # gap between children
+    layout_gap: float = 0  # gap between children (col_gap for horizontal, row_gap for vertical)
+    layout_col_gap: float = 0  # column gap (for grid layouts)
+    layout_row_gap: float = 0  # row gap (for grid layouts)
+    pad: float = 0  # internal padding (INSET for bordered panels, 0 for borderless)
+    heading_height: float = 0  # height of panel heading (includes heading gap)
 
 
 @dataclass
@@ -1284,7 +1288,30 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
     # Derive layout metadata from the component
     layout_str = ""
     layout_gap = 0.0
+    layout_col_gap = 0.0
+    layout_row_gap = 0.0
+    comp_pad = 0.0
+    comp_heading_height = 0.0
     if hasattr(comp, "children") and len(getattr(comp, "children", [])) > 0:
+        # Compute padding from border
+        border = getattr(comp, "effective_border", None)
+        if border is not None:
+            comp_pad = 0.0 if border == Border.NONE else float(INSET)
+        # Compute heading height
+        heading = getattr(comp, "heading", None)
+        if heading:
+            heading_lines = _lines_to_dicts([heading])
+            hh = tight_box_height(heading_lines)
+            row_gap_val = float(getattr(comp, "effective_row_gap", None)
+                                or getattr(comp, "row_gap", None) or 0)
+            comp_heading_height = float(hh + row_gap_val)
+        # Extract col_gap and row_gap
+        cg = float(getattr(comp, "effective_col_gap", None)
+                    or getattr(comp, "col_gap", None) or 0)
+        rg = float(getattr(comp, "effective_row_gap", None)
+                    or getattr(comp, "row_gap", None) or 0)
+        layout_col_gap = cg
+        layout_row_gap = rg
         if hasattr(comp, "cols"):
             cols = getattr(comp, "effective_cols", None) or getattr(comp, "cols", 1)
             num_children = len(getattr(comp, "children", []))
@@ -1296,17 +1323,16 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
                     rows = -(-num_children // cols)  # ceil division
                 if rows == 1 and cols == num_children:
                     layout_str = "horizontal"
-                    layout_gap = float(getattr(comp, "effective_col_gap", None)
-                                       or getattr(comp, "col_gap", None) or 0)
+                    layout_gap = cg
                 else:
                     layout_str = "grid"
+                    layout_gap = cg  # primary gap for grid
             else:
                 layout_str = "vertical"
-            if not layout_gap:
-                layout_gap = float(getattr(comp, "effective_row_gap", None)
-                                   or getattr(comp, "row_gap", None) or 0)
+                layout_gap = rg
         else:
             layout_str = "vertical"
+            layout_gap = rg
     return ComponentInfo(
         id=cid, type=ctype,
         x=bounds.x, y=bounds.y,
@@ -1314,6 +1340,10 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
         children=children,
         layout=layout_str,
         layout_gap=layout_gap,
+        layout_col_gap=layout_col_gap,
+        layout_row_gap=layout_row_gap,
+        pad=comp_pad,
+        heading_height=comp_heading_height,
     )
 
 

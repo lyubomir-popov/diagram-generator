@@ -1904,25 +1904,24 @@ function startResize(e) {
   const cid = handle.getAttribute("data-resize-cid");
   const axis = handle.getAttribute("data-resize-axis");
   const own = getOwnDelta(cid);
-  // Capture original overrides for children, parent, and siblings (for propagation)
-  const origChildOverrides = {};
+  // Capture original overrides for ALL nodes that may be affected
+  const origOverrides = {};
+  function captureSubtree(nodeId) {
+    const n = model.get(nodeId);
+    if (!n) return;
+    const o = getOwnDelta(nodeId);
+    origOverrides[nodeId] = { dx: o.dx, dy: o.dy, dw: o.dw, dh: o.dh };
+    for (const child of n.children) captureSubtree(child.id);
+  }
   const node = model.get(cid);
   if (node) {
-    // Children's original overrides
-    for (const child of node.children) {
-      const co = getOwnDelta(child.id);
-      origChildOverrides[child.id] = { dx: co.dx, dy: co.dy, dw: co.dw, dh: co.dh };
-    }
-    // Parent's original overrides (for auto-layout fill)
+    captureSubtree(cid);
+    // Capture parent + siblings for child-in-layout resize
     if (node.parent) {
       const po = getOwnDelta(node.parent.id);
-      origChildOverrides[node.parent.id] = { dx: po.dx, dy: po.dy, dw: po.dw, dh: po.dh };
-      // Siblings' original overrides (for sibling fill redistribution)
+      origOverrides[node.parent.id] = { dx: po.dx, dy: po.dy, dw: po.dw, dh: po.dh };
       const siblings = model.getSiblings(cid);
-      for (const sib of siblings) {
-        const so = getOwnDelta(sib.id);
-        origChildOverrides[sib.id] = { dx: so.dx, dy: so.dy, dw: so.dw, dh: so.dh };
-      }
+      for (const sib of siblings) captureSubtree(sib.id);
     }
   }
   mgr.startResize({
@@ -1930,13 +1929,38 @@ function startResize(e) {
     startX: e.clientX, startY: e.clientY,
     origDx: own.dx, origDy: own.dy,
     origDw: own.dw, origDh: own.dh,
-    origChildOverrides,
+    origOverrides,
     hasMoved: false, snapshotRecorded: false,
   });
   document.addEventListener("mousemove", onResizeMove);
   document.addEventListener("mouseup", onResizeUp);
   e.preventDefault();
   e.stopPropagation();
+}
+
+/**
+ * Recursively apply relayoutChildren down the tree.
+ * For each child that is itself a layout parent, relayout its children too.
+ */
+function _applyRelayoutRecursive(parentId, parentDw, parentDh, origOverrides, propagatedIds) {
+  const childDeltas = model.relayoutChildren(parentId, parentDw, parentDh);
+  for (const [childId, delta] of Object.entries(childDeltas)) {
+    const orig = origOverrides[childId] || { dx: 0, dy: 0, dw: 0, dh: 0 };
+    setOverride(childId, {
+      dx: orig.dx + delta.dx,
+      dy: orig.dy + delta.dy,
+      dw: orig.dw + delta.dw,
+      dh: orig.dh + delta.dh,
+    });
+    propagatedIds.add(childId);
+    // Recurse: if this child has layout children, relayout them too
+    const childNode = model.get(childId);
+    if (childNode && childNode.layout && childNode.children.length > 0) {
+      const childEffDw = orig.dw + delta.dw;
+      const childEffDh = orig.dh + delta.dh;
+      _applyRelayoutRecursive(childId, childEffDw, childEffDh, origOverrides, propagatedIds);
+    }
+  }
 }
 
 function onResizeMove(e) {
@@ -1949,7 +1973,6 @@ function onResizeMove(e) {
   // Record pre-resize snapshot on first actual move
   if (!s.snapshotRecorded) {
     recordSnapshot();
-    // Hide handles during drag so stale positions don't overlap icons
     const svg = document.querySelector("#stage svg");
     if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "none");
     s.snapshotRecorded = true;
@@ -1962,89 +1985,45 @@ function onResizeMove(e) {
   const axis = s.axis;
   // Handle horizontal resizing
   if (axis === "l" || axis === "tl" || axis === "bl") {
-    // Left side: move left edge, right edge stays anchored
     const delta = Math.round(dx / 8) * 8;
     newDx = s.origDx + delta;
     newDw = s.origDw - delta;
   } else if (axis === "r" || axis === "tr" || axis === "br") {
-    // Right side: left edge stays anchored, grow rightward
     newDw = Math.round((s.origDw + dx) / 8) * 8;
   }
   
   // Handle vertical resizing
   if (axis === "t" || axis === "tl" || axis === "tr") {
-    // Top side: move top edge, bottom edge stays anchored
     const delta = Math.round(dy / 8) * 8;
     newDy = s.origDy + delta;
     newDh = s.origDh - delta;
   } else if (axis === "b" || axis === "bl" || axis === "br") {
-    // Bottom side: top edge stays anchored, grow downward
     newDh = Math.round((s.origDh + dy) / 8) * 8;
-  }
-
-  // Clamp to parent bounds if nested
-  const parent = getParentNode(s.cid);
-  const node = getComponentNode(s.cid);
-  if (parent && node && parent.type !== "arrow") {
-    const pEff = getEffectiveDelta(parent.id);
-    const pOwn = getOwnDelta(parent.id);
-    const pLeft = parent.x + pEff.dx + INSET;
-    const pTop = parent.y + pEff.dy + INSET;
-    const pRight = pLeft + parent.width + pOwn.dw - 2 * INSET;
-    const pBottom = pTop + parent.height + pOwn.dh - 2 * INSET;
-
-    // Compute the child's effective box with proposed overrides
-    const cLeft = node.x + newDx;
-    const cTop = node.y + newDy;
-    const cRight = cLeft + node.width + newDw;
-    const cBottom = cTop + node.height + newDh;
-
-    // Clamp: child edges cannot exceed parent edges
-    // Adjust position-based overrides (left/top edges)
-    if (cLeft < pLeft) newDx += (pLeft - cLeft);
-    if (cTop < pTop) newDy += (pTop - cTop);
-    // Adjust size-based overrides (right/bottom edges)
-    if (cRight > pRight) newDw -= (cRight - pRight);
-    if (cBottom > pBottom) newDh -= (cBottom - pBottom);
-    // Re-check left/top after size clamp for left/top resize axes
-    if (axis === "l" || axis === "tl" || axis === "bl") {
-      const adjRight = node.x + newDx + node.width + newDw;
-      if (adjRight > pRight) newDw = pRight - node.x - newDx - node.width;
-    }
-    if (axis === "t" || axis === "tl" || axis === "tr") {
-      const adjBottom = node.y + newDy + node.height + newDh;
-      if (adjBottom > pBottom) newDh = pBottom - node.y - newDy - node.height;
-    }
   }
 
   setOverride(s.cid, { dx: newDx, dy: newDy, dw: newDw, dh: newDh });
 
-  // Propagate resize to children (auto-layout): parent resize → children resize
-  const resizedNode = model.get(s.cid);
+  // --- Auto-layout engine ---
   if (!s.propagatedIds) s.propagatedIds = new Set();
-  if (resizedNode && resizedNode.children.length > 0 && resizedNode.layout) {
-    const deltaDw = newDw - s.origDw;
-    const deltaDh = newDh - s.origDh;
-    const childDeltas = model.propagateResize(s.cid, deltaDw, deltaDh);
-    for (const [childId, delta] of Object.entries(childDeltas)) {
-      const origChild = s.origChildOverrides[childId] || { dw: 0, dh: 0 };
-      setOverride(childId, { dw: origChild.dw + delta.dw, dh: origChild.dh + delta.dh });
-      s.propagatedIds.add(childId);
-    }
+
+  // 1) Parent resize → relayout all children with fixed gutters, recursively
+  const resizedNode = model.get(s.cid);
+  if (resizedNode && resizedNode.layout && resizedNode.children.length > 0) {
+    _applyRelayoutRecursive(s.cid, newDw, newDh, s.origOverrides, s.propagatedIds);
   }
 
-  // Auto-layout fill: child resize → siblings absorb the delta
+  // 2) Child resize → shift siblings to maintain gutters
   if (resizedNode && resizedNode.parent && resizedNode.parent.layout) {
     const deltaDw = newDw - s.origDw;
     const deltaDh = newDh - s.origDh;
-    const siblingAdj = model.redistributeAfterChildResize(s.cid, deltaDw, deltaDh);
+    const siblingAdj = model.relayoutSiblingsAfterChildResize(s.cid, deltaDw, deltaDh);
     for (const [adjId, delta] of Object.entries(siblingAdj)) {
-      const origAdj = s.origChildOverrides[adjId] || { dx: 0, dy: 0, dw: 0, dh: 0 };
+      const origAdj = s.origOverrides[adjId] || { dx: 0, dy: 0, dw: 0, dh: 0 };
       const patch = {};
-      if (delta.dw !== undefined) patch.dw = origAdj.dw + delta.dw;
-      if (delta.dh !== undefined) patch.dh = origAdj.dh + delta.dh;
       if (delta.dx !== undefined) patch.dx = origAdj.dx + delta.dx;
       if (delta.dy !== undefined) patch.dy = origAdj.dy + delta.dy;
+      if (delta.dw !== undefined) patch.dw = origAdj.dw + delta.dw;
+      if (delta.dh !== undefined) patch.dh = origAdj.dh + delta.dh;
       setOverride(adjId, patch);
       s.propagatedIds.add(adjId);
     }
