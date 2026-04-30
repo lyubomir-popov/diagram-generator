@@ -288,7 +288,7 @@ class ComponentModel {
         cy += childH + rowGap;
       }
     } else if (layout === "horizontal") {
-      // Horizontal: all children get full height, width distributed equally
+      // Horizontal: width distributed equally, height unchanged (cross-axis)
       const n = layoutChildren.length;
       const availW = contentW - (n - 1) * colGap;
       const childW = Math.round(availW / n / 8) * 8;
@@ -296,14 +296,12 @@ class ComponentModel {
       let cx = contentX0;
       for (const child of layoutChildren) {
         const dx = cx - child.data.x;
-        const dy = contentY0 - child.data.y;
         const dw = childW - child.data.width;
-        const dh = contentH - child.data.height;
         result[child.id] = {
           dx: Math.round(dx / 8) * 8,
-          dy: Math.round(dy / 8) * 8,
+          dy: 0,
           dw: Math.round(dw / 8) * 8,
-          dh: Math.round(dh / 8) * 8,
+          dh: 0,
         };
         cx += childW + colGap;
       }
