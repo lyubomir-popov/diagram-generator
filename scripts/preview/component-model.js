@@ -243,7 +243,7 @@ class ComponentModel {
         const hFrac = totalH > 0 ? child.data.height / totalH : 1 / layoutChildren.length;
         result[child.id] = {
           dw: parentDw,
-          dh: Math.round(parentDh * hFrac / 4) * 4,
+          dh: Math.round(parentDh * hFrac / 8) * 8,
         };
       }
     } else if (layout === "horizontal") {
@@ -253,7 +253,7 @@ class ComponentModel {
       for (const child of layoutChildren) {
         const wFrac = totalW > 0 ? child.data.width / totalW : 1 / layoutChildren.length;
         result[child.id] = {
-          dw: Math.round(parentDw * wFrac / 4) * 4,
+          dw: Math.round(parentDw * wFrac / 8) * 8,
           dh: parentDh,
         };
       }
@@ -264,8 +264,8 @@ class ComponentModel {
       const rowYs = [...new Set(layoutChildren.map(c => c.data.y))].sort((a, b) => a - b);
       const numCols = colXs.length || 1;
       const numRows = rowYs.length || 1;
-      const perColDw = Math.round(parentDw / numCols / 4) * 4;
-      const perRowDh = Math.round(parentDh / numRows / 4) * 4;
+      const perColDw = Math.round(parentDw / numCols / 8) * 8;
+      const perRowDh = Math.round(parentDh / numRows / 8) * 8;
       for (const child of layoutChildren) {
         result[child.id] = { dw: perColDw, dh: perRowDh };
       }
@@ -312,7 +312,7 @@ class ComponentModel {
           continue;
         }
         const hFrac = totalSibH > 0 ? sib.data.height / totalSibH : 1 / siblings.length;
-        const sibDh = -Math.round(childDh * hFrac / 4) * 4;
+        const sibDh = -Math.round(childDh * hFrac / 8) * 8;
         result[sib.id] = { dh: sibDh };
         if (i > childIdx) {
           // Shift siblings below the resized child
@@ -333,7 +333,7 @@ class ComponentModel {
           continue;
         }
         const wFrac = totalSibW > 0 ? sib.data.width / totalSibW : 1 / siblings.length;
-        const sibDw = -Math.round(childDw * wFrac / 4) * 4;
+        const sibDw = -Math.round(childDw * wFrac / 8) * 8;
         result[sib.id] = { dw: sibDw };
         if (i > childIdx) {
           result[sib.id].dx = (result[sib.id].dx || 0) + cumulativeShift;
@@ -348,7 +348,7 @@ class ComponentModel {
       if (childDw !== 0) {
         const sameRow = siblings.filter(s => s.data.y === childY);
         if (sameRow.length > 0) {
-          const perSib = -Math.round(childDw / sameRow.length / 4) * 4;
+          const perSib = -Math.round(childDw / sameRow.length / 8) * 8;
           for (const s of sameRow) {
             if (!result[s.id]) result[s.id] = {};
             result[s.id].dw = perSib;
@@ -358,7 +358,7 @@ class ComponentModel {
       if (childDh !== 0) {
         const sameCol = siblings.filter(s => s.data.x === childX);
         if (sameCol.length > 0) {
-          const perSib = -Math.round(childDh / sameCol.length / 4) * 4;
+          const perSib = -Math.round(childDh / sameCol.length / 8) * 8;
           for (const s of sameCol) {
             if (!result[s.id]) result[s.id] = {};
             result[s.id].dh = perSib;

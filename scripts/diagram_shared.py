@@ -17,8 +17,7 @@ GREY = "#F3F3F3"
 HELPER = "#666666"
 ORANGE = "#E95420"
 
-BASELINE_UNIT = 4
-RHYTHM_STEP = 8
+BASELINE_UNIT = 8
 GRID_GUTTER = 24          # canonical gutter between components
 OUTER_MARGIN = 24
 

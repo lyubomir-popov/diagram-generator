@@ -139,7 +139,7 @@ These gaps were discovered in the logic-data-vram audit and are now handled by t
 - [x] GRID col_span: panels can span multiple columns in a GRID arrangement.
 - [x] Bar auto-fill: last segment without explicit width fills to the remaining panel width.
 - [x] Bar auto-height: bars auto-size from content (INSET + text_height + INSET), never shorter than needed for balanced padding.
-- [x] Baseline grid validator: `validate_grid(result)` checks all layout coordinates land on the 4px grid; bar segment `width_px` values must be multiples of 4.
+- [x] Baseline grid validator: `validate_grid(result)` checks all layout coordinates land on the 8px grid; bar segment `width_px` values must be multiples of 8.
 
 ### Previous grid engine items (partially done, superseded by declarative model)
 
@@ -183,10 +183,10 @@ These items are now unblocked by the completed refactor:
 - [ ] `[H]` **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
 - [x] **Ctrl+Z does not undo typed text in inline editor.** Fixed — text edits now store override, record undo snapshot, and restore via `applyAllOverrides`.
 - [x] **Gutter value changes don't activate save button.** Fixed — grid overrides persist via override JSON and mark dirty on change.
-- [x] **Baseline grid overlay turns pink.** Fixed — composition and baseline modes are now mutually exclusive. Baseline shows a clean 4px grid without the column/row band fills.
+- [x] **Baseline grid overlay turns pink.** Fixed — composition and baseline modes are now mutually exclusive. Baseline shows a clean 8px grid without the column/row band fills.
 - [x] **Save flakiness.** Fixed — relayout clears stale position overrides, load sequence re-baselines dirty state after initial relayout, save errors logged to console.
 - [ ] `[S]` **Distribute and align.** Select multiple boxes, click distribute, spaces them at equal gutters with a configurable gutter input value.
-- [ ] `[S]` **Gutter standardization.** All gaps, margins, and arrow clearance tokens standardized to 24px (was 32). `GRID_GUTTER=24`, `OUTER_MARGIN=24`, `ARROW_GAP=24`, `MIN_ARROW_SEGMENT=16`. Compact nested panel gaps remain 8px.
+- [x] **Gutter standardization.** All gaps, margins, and arrow clearance tokens standardized to 24px (was 32). `GRID_GUTTER=24`, `OUTER_MARGIN=24`, `ARROW_GAP=24`, `MIN_ARROW_SEGMENT=16`. Compact nested panel gaps remain 8px. Baseline unit changed from 4px to 8px — all tokens are multiples of 8.
 
 ### Completed interactive preview items
 

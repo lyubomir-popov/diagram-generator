@@ -26,14 +26,14 @@ class Violation {
 // Built-in constraints
 // ---------------------------------------------------------------------------
 
-const BASELINE_UNIT = 4;
+const BASELINE_UNIT = 8;
 const APPROVED_FILLS = new Set(["#FFFFFF", "#ffffff", "#F3F3F3", "#f3f3f3", "#000000", "transparent"]);
 const APPROVED_STROKES = new Set(["#000000", "#E95420", "none"]);
 const ARROW_COLOR = "#E95420";
 const MAX_HIGHLIGHT_BOXES = 1;
 
 /**
- * Grid alignment: all component positions should land on the 4px baseline grid.
+ * Grid alignment: all component positions should land on the 8px baseline grid.
  */
 function constraintGridAlignment(model, svgEl) {
   const violations = [];
@@ -60,7 +60,7 @@ function constraintGridAlignment(model, svgEl) {
 }
 
 /**
- * Override grid alignment: overridden positions should stay on the 4px grid.
+ * Override grid alignment: overridden positions should stay on the 8px grid.
  */
 function constraintOverrideGridAlignment(model) {
   const violations = [];
@@ -216,8 +216,8 @@ class ConstraintRegistry {
 
 function createDefaultRegistry() {
   const reg = new ConstraintRegistry();
-  reg.add("grid-align", constraintGridAlignment, "Component positions on 4px baseline grid");
-  reg.add("override-grid", constraintOverrideGridAlignment, "Override deltas on 4px baseline grid");
+  reg.add("grid-align", constraintGridAlignment, "Component positions on 8px baseline grid");
+  reg.add("override-grid", constraintOverrideGridAlignment, "Override deltas on 8px baseline grid");
   reg.add("approved-fill", constraintApprovedFills, "Only brand-approved background fills");
   reg.add("highlight-limit", constraintHighlightLimit, "At most 1 highlight (black) box per diagram");
   reg.add("no-orange-fill", constraintNoOrangeFill, "Orange is reserved for arrows");

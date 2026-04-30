@@ -4,6 +4,24 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2025-05-01 – Baseline unit 4→8px
+
+- Changed `BASELINE_UNIT` from 4 to 8 in `diagram_shared.py`. Removed redundant `RHYTHM_STEP`.
+- Updated all snap rounding in `component-model.js` and `editor.js` from `/ 4) * 4` to `/ 8) * 8`.
+- Updated baseline grid overlay step, nudge step (8px default, 24px with shift), and UI text.
+- Updated `constraints.js` constant and comment labels.
+- Updated `DIAGRAM.md` frontmatter and token table.
+- Keyboard nudge now uses baseline unit (8px) as default step, gutter (24px) as shift step.
+- Removed dead `RHYTHM_STEP` constant.
+- All 14 diagrams rebuild clean.
+
+### 2025-05-01 – Gutter standardization + auto-layout + save fix
+
+- Standardized all gap/margin tokens to 24px (was 32). Updated 14 diagram definitions.
+- Rewrote `redistributeAfterChildResize()` for sibling-fill auto-layout.
+- Fixed save flakiness (3 root causes), baseline overlay pink wash.
+- INBOX drained: gutter request → implemented, distribute/align → TODO.
+
 ### 2025-05-01 – 7-bug audit + grid propagation fix
 
 - **7-bug audit (commit 51535bf):** Fixed icon re-anchor regex (double-escaped `\\d` → `\d`), arrow points regex (same pattern), Escape key clearing guides/drag/resize, onResizeUp preserving user-set overrides via `propagatedIds` Set, guide viewport reading actual SVG dimensions, icon delta using `getOwnDelta()` not accumulated effective delta.

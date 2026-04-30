@@ -135,8 +135,8 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
   }
 
   // Snap to 4px grid
-  bestDx = Math.round(bestDx / 4) * 4;
-  bestDy = Math.round(bestDy / 4) * 4;
+  bestDx = Math.round(bestDx / 8) * 8;
+  bestDy = Math.round(bestDy / 8) * 8;
 
   // Build guide lines for the snapped position
   const snapLeft = node.data.x + bestDx;
@@ -362,7 +362,7 @@ function renderGridOverlay() {
 
   // -- Baseline grid (4px lines, only in "baseline" mode) --
   if (guideMode === "baseline") {
-    const baselineStep = 4;
+    const baselineStep = 8;
     // Content area boundary
     const boundary = document.createElementNS(ns, "rect");
     boundary.setAttribute("x", margin);
@@ -1149,8 +1149,8 @@ function onDragMove(e) {
   }
   for (const id of s.cids) {
     const orig = s.origDeltas[id];
-    let newDx = Math.round((orig.dx + dx) / 4) * 4;
-    let newDy = Math.round((orig.dy + dy) / 4) * 4;
+    let newDx = Math.round((orig.dx + dx) / 8) * 8;
+    let newDy = Math.round((orig.dy + dy) / 8) * 8;
 
     // Alignment snap guides (single-component drag only)
     if (s.snapTargets && s.cids.length === 1) {
@@ -1341,8 +1341,8 @@ function showArrowWaypointHandles(cid) {
         pt.x = e.clientX; pt.y = e.clientY;
         const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
         // Snap to 4px grid
-        const snapX = Math.round(svgPt.x / 4) * 4;
-        const snapY = Math.round(svgPt.y / 4) * 4;
+        const snapX = Math.round(svgPt.x / 8) * 8;
+        const snapY = Math.round(svgPt.y / 8) * 8;
         addWaypoint(cid, idx, snapX - eff.dx, snapY - eff.dy);
       });
     });
@@ -1413,8 +1413,8 @@ function onWpDragMove(e) {
   if (s.axis === "y") newX = s.origX;
 
   // Snap to 4px grid
-  const snapX = Math.round(newX / 4) * 4;
-  const snapY = Math.round(newY / 4) * 4;
+  const snapX = Math.round(newX / 8) * 8;
+  const snapY = Math.round(newY / 8) * 8;
 
   // Update the waypoint position in the component tree
   wps[idx] = [snapX, snapY];
@@ -1482,8 +1482,8 @@ function addWaypoint(cid, segIdx, x, y) {
   const node = getArrowNode(cid);
   if (!node) return;
   if (!node.waypoints) node.waypoints = [];
-  const snapX = Math.round(x / 4) * 4;
-  const snapY = Math.round(y / 4) * 4;
+  const snapX = Math.round(x / 8) * 8;
+  const snapY = Math.round(y / 8) * 8;
   node.waypoints.splice(segIdx, 0, [snapX, snapY]);
   rebuildArrowSVG(cid);
   showArrowWaypointHandles(cid);
@@ -1963,23 +1963,23 @@ function onResizeMove(e) {
   // Handle horizontal resizing
   if (axis === "l" || axis === "tl" || axis === "bl") {
     // Left side: move left edge, right edge stays anchored
-    const delta = Math.round(dx / 4) * 4;
+    const delta = Math.round(dx / 8) * 8;
     newDx = s.origDx + delta;
     newDw = s.origDw - delta;
   } else if (axis === "r" || axis === "tr" || axis === "br") {
     // Right side: left edge stays anchored, grow rightward
-    newDw = Math.round((s.origDw + dx) / 4) * 4;
+    newDw = Math.round((s.origDw + dx) / 8) * 8;
   }
   
   // Handle vertical resizing
   if (axis === "t" || axis === "tl" || axis === "tr") {
     // Top side: move top edge, bottom edge stays anchored
-    const delta = Math.round(dy / 4) * 4;
+    const delta = Math.round(dy / 8) * 8;
     newDy = s.origDy + delta;
     newDh = s.origDh - delta;
   } else if (axis === "b" || axis === "bl" || axis === "br") {
     // Bottom side: top edge stays anchored, grow downward
-    newDh = Math.round((s.origDh + dy) / 4) * 4;
+    newDh = Math.round((s.origDh + dy) / 8) * 8;
   }
 
   // Clamp to parent bounds if nested
@@ -2266,7 +2266,7 @@ function updateInspector(cid) {
     }
     html += '</div>';
   }
-  html += '<div style="margin-top:8px;font-size:10px;color:#555">Drag to move &#xb7; handles to resize (4px grid) &#xb7; W to toggle grid overlay.</div>';
+  html += '<div style="margin-top:8px;font-size:10px;color:#555">Drag to move &#xb7; handles to resize (8px grid) &#xb7; W to toggle grid overlay.</div>';
   document.getElementById("inspector").innerHTML = html;
 }
 
@@ -2409,7 +2409,7 @@ document.addEventListener("keydown", (e) => {
   } else if (selectedIds.size > 0 && !e.ctrlKey && !e.metaKey && !e.altKey &&
              ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
     e.preventDefault();
-    const step = e.shiftKey ? 8 : 1;
+    const step = e.shiftKey ? 24 : 8;
     recordSnapshot();
     selectedIds.forEach(id => {
       const own = getOwnDelta(id);

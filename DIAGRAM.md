@@ -24,7 +24,7 @@ typography:
     fontFamily: Ubuntu Sans
     fontSize: 14px
     fontSizeRem: 0.875rem
-    baselineUnit: 4px
+    baselineUnit: 8px
     nudge: 0px
   body:
     fontFamily: Ubuntu Sans
@@ -84,8 +84,8 @@ typography:
     fontWeight: 400
     lineHeight: 20px
 spacing:
-  baseline-unit: 4px
-  unit: 4px
+  baseline-unit: 8px
+  unit: 8px
   rhythm-step: 8px
   inset: 8px
   panel-padding: 8px
@@ -97,8 +97,8 @@ spacing:
   heading-line-step: 24px
   title-line-step: 32px
 grid:
-  baseline-unit: 4px
-  unit: 4px
+  baseline-unit: 8px
+  unit: 8px
   rhythm-step: 8px
   column-counts: [4, 8, 16]
   span-rule: power-of-2 fractions only
@@ -431,7 +431,7 @@ The system uses exactly two gap scales.
 
 | Token | Value | Use |
 |-------|-------|-----|
-| `baseline-unit` | `4px` | Atomic grid step; all dimensions must be multiples |
+| `baseline-unit` | `8px` | Atomic grid step; all dimensions must be multiples |
 | `inset` | `8px` | Padding inside boxes, panels, and all containers |
 | `compact-gap` | `8px` | Gap between tightly grouped peer boxes within a panel (no arrows) |
 | `grid-gutter` | `24px` | Structural gap between columns/rows at any nesting level; equals `arrow-gap` so arrows can route through any structural gutter |
