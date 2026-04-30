@@ -30,7 +30,7 @@ request_to_hardware_stack = Diagram(
     outer_margin=24,
     components=[
         # Top box
-        Box(id="user", label=[_body("User request")], icon="Cloud.svg", width=408),
+        Box(id="user", label=[_body("User request")], icon="Cloud.svg"),
 
         Arrow(source="user.bottom", target="orch.top"),
 
@@ -45,7 +45,7 @@ request_to_hardware_stack = Diagram(
             children=[
                 Box(label=[_body("Ollama")], col=0, row=0),
                 Box(label=[_body("Lemonade"), _body("Server")], col=1, row=0),
-                Box(label=[_body("vLLM")], col=0, row=1, width=392),
+                Box(label=[_body("vLLM")], col=0, row=1, col_span=2),
             ],
         ),
 
@@ -64,7 +64,7 @@ request_to_hardware_stack = Diagram(
                 Box(label=[_body("OpenVINO")], fill=Fill.GREY, col=1, row=0),
                 Box(label=[_body("vLLM")], fill=Fill.GREY, col=0, row=1),
                 Box(label=[_body("TensorRT-"), _body("LLM")], fill=Fill.GREY, col=1, row=1),
-                Box(label=[_body("ONNX Runtime")], fill=Fill.GREY, col=0, row=2, width=392),
+                Box(label=[_body("ONNX Runtime")], fill=Fill.GREY, col=0, row=2, col_span=2),
             ],
         ),
 
