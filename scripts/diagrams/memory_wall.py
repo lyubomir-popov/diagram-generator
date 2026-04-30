@@ -39,9 +39,9 @@ memory_wall = Diagram(
     cols=2,
     col_width=192,
     row_height=64,
-    col_gap=32,  # arrow routes horizontally between columns
-    row_gap=32,  # arrows route vertically between rows
-    outer_margin=32,
+    col_gap=24,  # arrow routes horizontally between columns
+    row_gap=24,  # arrows route vertically between rows
+    outer_margin=24,
     components=[
         # ── Row 0: User request + request cluster ──
         Box(id="user", label=[_body("User request")], width=192,

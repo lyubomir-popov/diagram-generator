@@ -35,8 +35,8 @@ def _helper(text: str) -> Line:
 diagram_intake_workflow = Diagram(
     title="Diagram intake workflow",
     arrangement=Diagram.Arrangement.VERTICAL,
-    row_gap=32,  # arrows route vertically between rows
-    outer_margin=32,
+    row_gap=24,  # arrows route vertically between rows
+    outer_margin=24,
     components=[
         # ── Dashed header frame ──
         # Wrapper: outer width must match peer boxes (608).

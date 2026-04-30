@@ -32,9 +32,9 @@ rise_of_inference_economy = Diagram(
     title="Rise of the inference economy",
     arrangement=Diagram.Arrangement.GRID,
     cols=2,
-    col_gap=32,
-    row_gap=32,  # arrows route vertically between rows
-    outer_margin=32,
+    col_gap=24,
+    row_gap=24,  # arrows route vertically between rows
+    outer_margin=24,
     components=[
         # ── Row 0: full-width title ──
         Box(
@@ -93,7 +93,7 @@ rise_of_inference_economy = Diagram(
             icon="Globe.svg",
             cols=2,
             rows=2,
-            col_gap=32,
+            col_gap=24,
             fill=Fill.GREY,
             col=0, row=3,
             children=[
@@ -108,7 +108,7 @@ rise_of_inference_economy = Diagram(
             icon="Financial data.svg",
             cols=2,
             rows=2,
-            col_gap=32,
+            col_gap=24,
             fill=Fill.GREY,
             col=1, row=3,
             children=[

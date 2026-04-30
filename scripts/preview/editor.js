@@ -235,6 +235,9 @@ async function loadSVG() {
   renderGridOverlay();
   reapplySelection();
   runConstraints();
+  // Re-baseline dirty state after initial load + relayout
+  lastSavedState = _serializeDirtyState();
+  setDirty(false);
 }
 
 async function loadTree() {
@@ -292,91 +295,101 @@ function renderGridOverlay() {
   const rowGap = gridInfo.row_gap || 0;
   const margin = gridInfo.outer_margin || 0;
 
-  // -- Margin overlays --
-  const marginColor = "rgba(235,180,65,0.06)";
-  // top
-  if (margin > 0) {
-    addRect(g, ns, 0, 0, svgW, margin, marginColor);
-    // bottom
-    addRect(g, ns, 0, svgH - margin, svgW, margin, marginColor);
-    // left
-    addRect(g, ns, 0, margin, margin, svgH - 2 * margin, marginColor);
-    // right
-    addRect(g, ns, svgW - margin, margin, margin, svgH - 2 * margin, marginColor);
-  }
+  if (guideMode === "composition") {
+    // -- Margin overlays --
+    const marginColor = "rgba(235,180,65,0.06)";
+    if (margin > 0) {
+      addRect(g, ns, 0, 0, svgW, margin, marginColor);
+      addRect(g, ns, 0, svgH - margin, svgW, margin, marginColor);
+      addRect(g, ns, 0, margin, margin, svgH - 2 * margin, marginColor);
+      addRect(g, ns, svgW - margin, margin, margin, svgH - 2 * margin, marginColor);
+    }
 
-  // -- Content area dashed boundary --
-  const boundary = document.createElementNS(ns, "rect");
-  boundary.setAttribute("x", margin);
-  boundary.setAttribute("y", margin);
-  boundary.setAttribute("width", svgW - 2 * margin);
-  boundary.setAttribute("height", svgH - 2 * margin);
-  boundary.setAttribute("fill", "none");
-  boundary.setAttribute("stroke", "rgba(255,255,255,0.18)");
-  boundary.setAttribute("stroke-dasharray", "6 4");
-  boundary.setAttribute("stroke-width", "1");
-  g.appendChild(boundary);
+    // -- Content area dashed boundary --
+    const boundary = document.createElementNS(ns, "rect");
+    boundary.setAttribute("x", margin);
+    boundary.setAttribute("y", margin);
+    boundary.setAttribute("width", svgW - 2 * margin);
+    boundary.setAttribute("height", svgH - 2 * margin);
+    boundary.setAttribute("fill", "none");
+    boundary.setAttribute("stroke", "rgba(255,255,255,0.18)");
+    boundary.setAttribute("stroke-dasharray", "6 4");
+    boundary.setAttribute("stroke-width", "1");
+    g.appendChild(boundary);
 
-  // -- Column bands --
-  const colFill = "rgba(100,160,255,0.04)";
-  const keylineColor = "rgba(100,160,255,0.22)";
-  for (let c = 0; c < colXs.length; c++) {
-    const cx = colXs[c];
-    const cw = c < colWidths.length ? colWidths[c] : colWidths[colWidths.length - 1];
-    // Column fill
-    addRect(g, ns, cx, margin, cw, svgH - 2 * margin, colFill);
-    // Left keyline
-    const kl = document.createElementNS(ns, "line");
-    kl.setAttribute("x1", cx); kl.setAttribute("y1", margin);
-    kl.setAttribute("x2", cx); kl.setAttribute("y2", svgH - margin);
-    kl.setAttribute("stroke", keylineColor); kl.setAttribute("stroke-width", "0.5");
-    g.appendChild(kl);
-    // Right keyline
-    const kr = document.createElementNS(ns, "line");
-    kr.setAttribute("x1", cx + cw); kr.setAttribute("y1", margin);
-    kr.setAttribute("x2", cx + cw); kr.setAttribute("y2", svgH - margin);
-    kr.setAttribute("stroke", keylineColor); kr.setAttribute("stroke-width", "0.5");
-    g.appendChild(kr);
-    // Column gutter highlight (between columns)
-    if (c < colXs.length - 1 && colGap > 0) {
-      addRect(g, ns, cx + cw, margin, colGap, svgH - 2 * margin, "rgba(255,100,100,0.03)");
+    // -- Column bands --
+    const colFill = "rgba(100,160,255,0.04)";
+    const keylineColor = "rgba(100,160,255,0.22)";
+    for (let c = 0; c < colXs.length; c++) {
+      const cx = colXs[c];
+      const cw = c < colWidths.length ? colWidths[c] : colWidths[colWidths.length - 1];
+      addRect(g, ns, cx, margin, cw, svgH - 2 * margin, colFill);
+      const kl = document.createElementNS(ns, "line");
+      kl.setAttribute("x1", cx); kl.setAttribute("y1", margin);
+      kl.setAttribute("x2", cx); kl.setAttribute("y2", svgH - margin);
+      kl.setAttribute("stroke", keylineColor); kl.setAttribute("stroke-width", "0.5");
+      g.appendChild(kl);
+      const kr = document.createElementNS(ns, "line");
+      kr.setAttribute("x1", cx + cw); kr.setAttribute("y1", margin);
+      kr.setAttribute("x2", cx + cw); kr.setAttribute("y2", svgH - margin);
+      kr.setAttribute("stroke", keylineColor); kr.setAttribute("stroke-width", "0.5");
+      g.appendChild(kr);
+      if (c < colXs.length - 1 && colGap > 0) {
+        addRect(g, ns, cx + cw, margin, colGap, svgH - 2 * margin, "rgba(255,100,100,0.06)");
+      }
+    }
+
+    // -- Row bands --
+    const rowLine = "rgba(100,255,160,0.15)";
+    for (let r = 0; r < rowYs.length; r++) {
+      const ry = rowYs[r];
+      const rh = r < rowHeights.length ? rowHeights[r] : rowHeights[rowHeights.length - 1];
+      const rl = document.createElementNS(ns, "line");
+      rl.setAttribute("x1", margin); rl.setAttribute("y1", ry);
+      rl.setAttribute("x2", svgW - margin); rl.setAttribute("y2", ry);
+      rl.setAttribute("stroke", rowLine); rl.setAttribute("stroke-width", "0.5");
+      g.appendChild(rl);
+      const rb = document.createElementNS(ns, "line");
+      rb.setAttribute("x1", margin); rb.setAttribute("y1", ry + rh);
+      rb.setAttribute("x2", svgW - margin); rb.setAttribute("y2", ry + rh);
+      rb.setAttribute("stroke", rowLine); rb.setAttribute("stroke-width", "0.5");
+      g.appendChild(rb);
+      if (r < rowYs.length - 1 && rowGap > 0) {
+        addRect(g, ns, margin, ry + rh, svgW - 2 * margin, rowGap, "rgba(255,100,100,0.06)");
+      }
     }
   }
 
-  // -- Row bands --
-  const rowFill = "rgba(100,255,160,0.03)";
-  const rowLine = "rgba(100,255,160,0.15)";
-  for (let r = 0; r < rowYs.length; r++) {
-    const ry = rowYs[r];
-    const rh = r < rowHeights.length ? rowHeights[r] : rowHeights[rowHeights.length - 1];
-    // Row top line
-    const rl = document.createElementNS(ns, "line");
-    rl.setAttribute("x1", margin); rl.setAttribute("y1", ry);
-    rl.setAttribute("x2", svgW - margin); rl.setAttribute("y2", ry);
-    rl.setAttribute("stroke", rowLine); rl.setAttribute("stroke-width", "0.5");
-    g.appendChild(rl);
-    // Row bottom line
-    const rb = document.createElementNS(ns, "line");
-    rb.setAttribute("x1", margin); rb.setAttribute("y1", ry + rh);
-    rb.setAttribute("x2", svgW - margin); rb.setAttribute("y2", ry + rh);
-    rb.setAttribute("stroke", rowLine); rb.setAttribute("stroke-width", "0.5");
-    g.appendChild(rb);
-    // Row gutter highlight (between rows)
-    if (r < rowYs.length - 1 && rowGap > 0) {
-      addRect(g, ns, margin, ry + rh, svgW - 2 * margin, rowGap, "rgba(255,100,100,0.03)");
-    }
-  }
-
-  // -- Baseline grid (4px lines, shown only in "baseline" mode) --
+  // -- Baseline grid (4px lines, only in "baseline" mode) --
   if (guideMode === "baseline") {
     const baselineStep = 4;
-    const baselineColor = "rgba(255,255,255,0.07)";
+    // Content area boundary
+    const boundary = document.createElementNS(ns, "rect");
+    boundary.setAttribute("x", margin);
+    boundary.setAttribute("y", margin);
+    boundary.setAttribute("width", svgW - 2 * margin);
+    boundary.setAttribute("height", svgH - 2 * margin);
+    boundary.setAttribute("fill", "none");
+    boundary.setAttribute("stroke", "rgba(255,255,255,0.12)");
+    boundary.setAttribute("stroke-dasharray", "6 4");
+    boundary.setAttribute("stroke-width", "1");
+    g.appendChild(boundary);
+    // Horizontal 4px baseline grid
+    const baselineColor = "rgba(255,100,100,0.08)";
     for (let y = margin; y <= svgH - margin; y += baselineStep) {
       const bl = document.createElementNS(ns, "line");
       bl.setAttribute("x1", margin); bl.setAttribute("y1", y);
       bl.setAttribute("x2", svgW - margin); bl.setAttribute("y2", y);
-      bl.setAttribute("stroke", baselineColor); bl.setAttribute("stroke-width", "0.25");
+      bl.setAttribute("stroke", baselineColor); bl.setAttribute("stroke-width", "0.5");
       g.appendChild(bl);
+    }
+    // Vertical 4px baseline grid
+    for (let x = margin; x <= svgW - margin; x += baselineStep) {
+      const vl = document.createElementNS(ns, "line");
+      vl.setAttribute("x1", x); vl.setAttribute("y1", margin);
+      vl.setAttribute("x2", x); vl.setAttribute("y2", svgH - margin);
+      vl.setAttribute("stroke", baselineColor); vl.setAttribute("stroke-width", "0.25");
+      g.appendChild(vl);
     }
   }
 
@@ -466,21 +479,25 @@ async function requestRelayout(colGap, rowGap, margin) {
     const data = await resp.json();
     // Replace SVG in stage
     document.getElementById("stage").innerHTML = data.svg;
-    // Update component tree
+    // Update component tree — positions changed, so clear stale position overrides
+    // but preserve grid_overrides (they are the source of the relayout).
+    const savedGridOverrides = Object.assign({}, model.gridOverrides);
+    model.overrides = {};
+    model.gridOverrides = savedGridOverrides;
     if (data.tree) componentTree = data.tree;
     // Update grid info from the actual layout result
     if (data.grid_info) {
       gridInfo = data.grid_info;
       populateGridControls();
     }
-    // Re-apply overrides and interaction on the new SVG
-    applyWaypointOverrides();
-    applyAllOverrides();
+    // Re-apply interaction on the new SVG (no position overrides to apply)
     bindInteraction();
     renderGridOverlay();
     reapplySelection();
     // Rebuild component tree in sidebar
     buildTreeUI();
+    runConstraints();
+    updateOverrideSummary();
   } catch (e) { /* ignore relayout errors */ }
 }
 
@@ -1887,19 +1904,25 @@ function startResize(e) {
   const cid = handle.getAttribute("data-resize-cid");
   const axis = handle.getAttribute("data-resize-axis");
   const own = getOwnDelta(cid);
-  // Capture original overrides for children and parent (for propagation)
+  // Capture original overrides for children, parent, and siblings (for propagation)
   const origChildOverrides = {};
   const node = model.get(cid);
   if (node) {
     // Children's original overrides
     for (const child of node.children) {
       const co = getOwnDelta(child.id);
-      origChildOverrides[child.id] = { dw: co.dw, dh: co.dh };
+      origChildOverrides[child.id] = { dx: co.dx, dy: co.dy, dw: co.dw, dh: co.dh };
     }
     // Parent's original overrides (for auto-layout fill)
     if (node.parent) {
       const po = getOwnDelta(node.parent.id);
-      origChildOverrides[node.parent.id] = { dw: po.dw, dh: po.dh };
+      origChildOverrides[node.parent.id] = { dx: po.dx, dy: po.dy, dw: po.dw, dh: po.dh };
+      // Siblings' original overrides (for sibling fill redistribution)
+      const siblings = model.getSiblings(cid);
+      for (const sib of siblings) {
+        const so = getOwnDelta(sib.id);
+        origChildOverrides[sib.id] = { dx: so.dx, dy: so.dy, dw: so.dw, dh: so.dh };
+      }
     }
   }
   mgr.startResize({
@@ -2010,15 +2033,19 @@ function onResizeMove(e) {
     }
   }
 
-  // Auto-layout fill: child resize → parent grows
+  // Auto-layout fill: child resize → siblings absorb the delta
   if (resizedNode && resizedNode.parent && resizedNode.parent.layout) {
     const deltaDw = newDw - s.origDw;
     const deltaDh = newDh - s.origDh;
-    const parentAdj = model.redistributeAfterChildResize(s.cid, deltaDw, deltaDh);
-    for (const [adjId, delta] of Object.entries(parentAdj)) {
-      const origAdj = s.origChildOverrides[adjId] || { dw: 0, dh: 0 };
-      if (delta.dw) setOverride(adjId, { dw: origAdj.dw + delta.dw });
-      if (delta.dh) setOverride(adjId, { dh: origAdj.dh + delta.dh });
+    const siblingAdj = model.redistributeAfterChildResize(s.cid, deltaDw, deltaDh);
+    for (const [adjId, delta] of Object.entries(siblingAdj)) {
+      const origAdj = s.origChildOverrides[adjId] || { dx: 0, dy: 0, dw: 0, dh: 0 };
+      const patch = {};
+      if (delta.dw !== undefined) patch.dw = origAdj.dw + delta.dw;
+      if (delta.dh !== undefined) patch.dh = origAdj.dh + delta.dh;
+      if (delta.dx !== undefined) patch.dx = origAdj.dx + delta.dx;
+      if (delta.dy !== undefined) patch.dy = origAdj.dy + delta.dy;
+      setOverride(adjId, patch);
       s.propagatedIds.add(adjId);
     }
   }
@@ -2246,11 +2273,20 @@ function updateInspector(cid) {
 // ---- Override persistence ----
 
 async function saveOverrides() {
-  await fetch("/api/overrides/" + SLUG, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(model.toOverridePayload()),
-  });
+  try {
+    const resp = await fetch("/api/overrides/" + SLUG, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(model.toOverridePayload()),
+    });
+    if (!resp.ok) {
+      console.error("Save failed:", resp.status, resp.statusText);
+      return;
+    }
+  } catch (e) {
+    console.error("Save failed:", e);
+    return;
+  }
   setDirty(false);
   // Update saved state for dirty flag comparison
   lastSavedState = _serializeDirtyState();

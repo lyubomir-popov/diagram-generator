@@ -35,8 +35,8 @@ def _helper(text: str) -> Line:
 diagram_language_workflow = Diagram(
     title="Diagram language workflow",
     arrangement=Diagram.Arrangement.VERTICAL,
-    row_gap=32,  # arrows route vertically between rows
-    outer_margin=32,
+    row_gap=24,  # arrows route vertically between rows
+    outer_margin=24,
     components=[
         # ── Dashed input frame ──
         Panel(

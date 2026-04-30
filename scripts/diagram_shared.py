@@ -19,8 +19,8 @@ ORANGE = "#E95420"
 
 BASELINE_UNIT = 4
 RHYTHM_STEP = 8
-GRID_GUTTER = 16          # canonical gutter between components
-OUTER_MARGIN = 32
+GRID_GUTTER = 24          # canonical gutter between components
+OUTER_MARGIN = 24
 
 BLOCK_WIDTH = 192
 ICON_SIZE = 48
@@ -91,10 +91,10 @@ ARROW_HEAD_HALF_WIDTH = 2.9053
 #                         (no arrowhead, just enough to see the shaft depart).
 #   ARROW_GAP:            minimum gap between rows/columns where arrows route.
 #                         = MIN_ARROW_SEGMENT + ARROW_EXIT_CLEARANCE.
-ARROW_CLEARANCE = 12
-MIN_ARROW_SEGMENT = 24          # ARROW_CLEARANCE + ceil(ARROW_HEAD_LENGTH) on 4px grid
+ARROW_CLEARANCE = 8
+MIN_ARROW_SEGMENT = 16          # ARROW_CLEARANCE + ceil(ARROW_HEAD_LENGTH) on 4px grid
 ARROW_EXIT_CLEARANCE = 8
-ARROW_GAP = 32                  # MIN_ARROW_SEGMENT + ARROW_EXIT_CLEARANCE
+ARROW_GAP = 24                  # MIN_ARROW_SEGMENT + ARROW_EXIT_CLEARANCE
 
 
 def fmt(value: float) -> str:

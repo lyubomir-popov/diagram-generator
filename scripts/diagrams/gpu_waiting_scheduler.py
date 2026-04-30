@@ -41,7 +41,7 @@ gpu_waiting_scheduler = Diagram(
     row_height=48,
     col_gap=8,
     row_gap=8,
-    outer_margin=32,
+    outer_margin=24,
     components=[
         # Scheduler box – top right, spanning 3 columns
         Box(

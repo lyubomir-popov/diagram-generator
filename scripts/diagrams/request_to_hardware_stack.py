@@ -26,8 +26,8 @@ def _heading(text: str) -> Line:
 request_to_hardware_stack = Diagram(
     title="Request to hardware stack",
     arrangement=Diagram.Arrangement.VERTICAL,
-    row_gap=32,  # arrows route vertically between rows
-    outer_margin=32,
+    row_gap=24,  # arrows route vertically between rows
+    outer_margin=24,
     components=[
         # Top box
         Box(id="user", label=[_body("User request")], icon="Cloud.svg", width=408),

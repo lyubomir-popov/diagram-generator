@@ -37,7 +37,7 @@ logic_data_vram = Diagram(
     arrangement=Diagram.Arrangement.GRID,
     cols=2,
     # col_gap and row_gap default to GRID_GUTTER (32)
-    outer_margin=32,
+    outer_margin=24,
     components=[
         # ── Row 0: two top panels ──
         Panel(
@@ -61,7 +61,7 @@ logic_data_vram = Diagram(
             heading=_heading("AI inference"),
             cols=2,
             rows=3,
-            row_gap=32,  # structural: arrows route between rows
+            row_gap=24,  # structural: arrows route between rows
             fill=Fill.WHITE,
             col=1, row=0,
             children=[
@@ -98,7 +98,7 @@ logic_data_vram = Diagram(
             heading=_heading("VRAM fragmentation"),
             cols=2,
             col_span=2,
-            col_gap=32,  # structural: arrow routes between sub-panels
+            col_gap=24,  # structural: arrow routes between sub-panels
             fill=Fill.WHITE,
             col=0, row=2,
             children=[

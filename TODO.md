@@ -175,14 +175,18 @@ The architectural refactor is complete. See `STATUS.md` for the full summary. Ke
 These items are now unblocked by the completed refactor:
 
 - [x] **Parenting architecture.** Done — layout metadata (vertical/horizontal/grid + gap) flows from Python to client. `ComponentModel` gains `getSiblings`, `getLayoutChildren`, `propagateResize`, `redistributeAfterChildResize`. Inspector shows layout type.
-- [x] **Auto-layout fill container.** Done — child resize in a vertical/horizontal layout auto-grows the parent so siblings keep their size.
+- [x] **Auto-layout fill container.** Done — sibling fill: when one child resizes, siblings absorb the delta proportionally so the parent stays the same size. Vertical distributes height, horizontal distributes width, grid distributes among same-row/column peers.
 - [x] **Parent resize propagates to autolayout children.** Done — resizing a parent proportionally distributes delta among children (width in vertical, height in horizontal).
 - [x] **Component swap.** Done — style picker in inspector (default/accent/highlight). Overrides persist, undo/redo works, constraint system validates.
 - [x] **Baseline alignment guide.** Done — snap guides show during single-component drag. Collects peer edges/centers, snaps within 6px threshold, renders dashed orange guide lines, cleans up on drop.
 - [x] **Full interaction manager adoption.** Done — all 4 state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) replaced with `mgr.startXxx()`/`mgr.endInteraction()` and `mgr.state` access.
 - [ ] `[H]` **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
 - [x] **Ctrl+Z does not undo typed text in inline editor.** Fixed — text edits now store override, record undo snapshot, and restore via `applyAllOverrides`.
-- [x] **Gutter value changes don't activate save button.** Fixed — grid overrides (col_gap, row_gap, outer_margin) now persist via override JSON and mark dirty on change. 32px gutters in some diagrams are intentional (`ARROW_GAP=32` for arrow routing clearance).
+- [x] **Gutter value changes don't activate save button.** Fixed — grid overrides persist via override JSON and mark dirty on change.
+- [x] **Baseline grid overlay turns pink.** Fixed — composition and baseline modes are now mutually exclusive. Baseline shows a clean 4px grid without the column/row band fills.
+- [x] **Save flakiness.** Fixed — relayout clears stale position overrides, load sequence re-baselines dirty state after initial relayout, save errors logged to console.
+- [ ] `[S]` **Distribute and align.** Select multiple boxes, click distribute, spaces them at equal gutters with a configurable gutter input value.
+- [ ] `[S]` **Gutter standardization.** All gaps, margins, and arrow clearance tokens standardized to 24px (was 32). `GRID_GUTTER=24`, `OUTER_MARGIN=24`, `ARROW_GAP=24`, `MIN_ARROW_SEGMENT=16`. Compact nested panel gaps remain 8px.
 
 ### Completed interactive preview items
 
@@ -203,6 +207,7 @@ These items are now unblocked by the completed refactor:
 - [x] Gutter controls propagate to nested panel spacing
 - [x] Collinear waypoint auto-pruning
 - [x] Arrow SVG rebuild on waypoint count change
+- [x] Gutter change re-fits children (relayout clears stale overrides)
 
 ### Previously active
 
