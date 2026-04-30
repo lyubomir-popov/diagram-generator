@@ -180,7 +180,7 @@ These items are now unblocked by the completed refactor:
 - [x] **Component swap.** Done — style picker in inspector (default/accent/highlight). Overrides persist, undo/redo works, constraint system validates.
 - [x] **Baseline alignment guide.** Done — snap guides show during single-component drag. Collects peer edges/centers, snaps within 6px threshold, renders dashed orange guide lines, cleans up on drop.
 - [x] **Full interaction manager adoption.** Done — all 4 state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) replaced with `mgr.startXxx()`/`mgr.endInteraction()` and `mgr.state` access.
-- [ ] **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
+- [ ] `[H]` **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
 - [x] **Ctrl+Z does not undo typed text in inline editor.** Fixed — text edits now store override, record undo snapshot, and restore via `applyAllOverrides`.
 - [x] **Gutter value changes don't activate save button.** Fixed — grid overrides (col_gap, row_gap, outer_margin) now persist via override JSON and mark dirty on change. 32px gutters in some diagrams are intentional (`ARROW_GAP=32` for arrow routing clearance).
 
@@ -214,11 +214,11 @@ These items are now unblocked by the completed refactor:
 - [x] Add a style-sync tool that can batch-rewrite tokenized properties such as `spacingTop`, text spacing, connector styles, dash patterns, and related draw.io style fields across existing diagrams.
 - [x] Pilot the scripted review-copy workflow on `diagrams/2.output/draw.io/memory-wall-onbrand-edited-in-drawio.drawio` and one file under `diagrams/2.output/draw.io/manually-edited/`, including a documented revert procedure.
 - [x] 3-way compare pages (Before / Agent / Refined): extend `scripts/build_compare_pages.py` so each compare page shows the source input, the agent-generated SVG, and the manually refined raster from `diagrams/2.output/draw.io/manually-edited/raster/` side by side, with a graceful "no manual edit yet" panel when the refined asset is missing.
-- [ ] Re-audit the refreshed starter-block batch in Illustrator: `diagrams/2.output/svg/memory-wall-onbrand.svg`, `diagrams/2.output/svg/request-to-hardware-stack-onbrand.svg`, `diagrams/2.output/svg/inference-snaps-onbrand.svg`, `diagrams/2.output/svg/attention-qkv-onbrand.svg`, `diagrams/2.output/svg/logic-data-vram-onbrand.svg`, `diagrams/2.output/svg/rise-of-inference-economy-onbrand.svg`, and `diagrams/2.output/svg/gpu-waiting-scheduler-onbrand.svg`.
-- [ ] Import-test the current `diagrams/2.output/draw.io/*-onbrand.drawio` batch in draw.io and note any renderer mismatches versus the SVG canonicals.
-- [ ] Keep refining `DIAGRAM.md` as more diagram types appear.
-- [ ] Re-audit the generator helpers whenever the user adjusts the starter block so the output set does not drift back into mixed inset or line-height rules.
-- [ ] Make the repo PM-shareable by tracking a curated exemplar pack of at least `3` to `5` real before/after pairs plus their compare assets.
-- [ ] Track the governing visual references currently excluded by gitignore: `diagrams/0.reference/_BRND-3284.drawio.svg`, `diagrams/0.reference/onbrand-reference.png`, and at least one canonical output exemplar beyond the workflow explainer.
+- [ ] `[X]` Re-audit the refreshed starter-block batch in Illustrator: `diagrams/2.output/svg/memory-wall-onbrand.svg`, `diagrams/2.output/svg/request-to-hardware-stack-onbrand.svg`, `diagrams/2.output/svg/inference-snaps-onbrand.svg`, `diagrams/2.output/svg/attention-qkv-onbrand.svg`, `diagrams/2.output/svg/logic-data-vram-onbrand.svg`, `diagrams/2.output/svg/rise-of-inference-economy-onbrand.svg`, and `diagrams/2.output/svg/gpu-waiting-scheduler-onbrand.svg`.
+- [ ] `[X]` Import-test the current `diagrams/2.output/draw.io/*-onbrand.drawio` batch in draw.io and note any renderer mismatches versus the SVG canonicals.
+- [ ] `[S]` Keep refining `DIAGRAM.md` as more diagram types appear.
+- [ ] `[S]` Re-audit the generator helpers whenever the user adjusts the starter block so the output set does not drift back into mixed inset or line-height rules.
+- [ ] `[H]` Make the repo PM-shareable by tracking a curated exemplar pack of at least `3` to `5` real before/after pairs plus their compare assets.
+- [ ] `[L]` Track the governing visual references currently excluded by gitignore: `diagrams/0.reference/_BRND-3284.drawio.svg`, `diagrams/0.reference/onbrand-reference.png`, and at least one canonical output exemplar beyond the workflow explainer.
 - [x] New component: stacked icon+text block (icon above label, both grid-aligned) to avoid keyline breaks from side-by-side icon placement pushing text out of alignment.
 - [x] Reconcile `README.md`, `STATUS.md`, `docs/specs.md`, and `.github/copilot-instructions.md` with the actually tracked corpus so cold-start instructions do not point at ignored files.
