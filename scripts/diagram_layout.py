@@ -1487,15 +1487,46 @@ def layout(diagram: Diagram) -> LayoutResult:
 
     else:
         # ── VERTICAL / HORIZONTAL: sequential placement ──
+        #
+        # Two-pass layout (like Figma "Fill container"):
+        #   Pass 1 — measure natural widths/heights of all components.
+        #   Pass 2 — render each component at the resolved column width
+        #            so every sibling fills the same parent column.
+
+        # Pass 1: measure
+        nat_sizes: list[tuple[float, float]] = []
+        for comp in components:
+            nw, nh = _natural_size(comp, BLOCK_WIDTH, bounds_map)
+            nat_sizes.append((nw, nh))
+
+        if diagram.arrangement == Diagram.Arrangement.HORIZONTAL:
+            # Horizontal: unify row height across siblings
+            col_width_resolved = BLOCK_WIDTH
+            row_height_resolved = max((nh for _, nh in nat_sizes), default=BOX_MIN_HEIGHT)
+        else:
+            # Vertical: unify column width across siblings
+            col_width_resolved = max((int(nw) for nw, _ in nat_sizes), default=BLOCK_WIDTH)
+            col_width_resolved = round_up_to_grid(col_width_resolved)
+            row_height_resolved = BOX_MIN_HEIGHT
+
+        # Pass 2: render at resolved dimensions
         x = outer
         y = outer
         max_row_height = 0
 
-        for comp in components:
+        for comp, (nw, nh) in zip(components, nat_sizes):
+            if diagram.arrangement == Diagram.Arrangement.HORIZONTAL:
+                render_w = int(nw)
+                render_h = row_height_resolved
+            else:
+                render_w = col_width_resolved
+                render_h = int(nh)
+
             bounds, comp_fg, comp_bg = _render_component(
-                comp, x, y, BLOCK_WIDTH, BOX_MIN_HEIGHT,
-                default_width=BLOCK_WIDTH,
+                comp, x, y, render_w, render_h,
+                default_width=render_w,
                 bounds_map=bounds_map,
+                min_height=render_h,
             )
             fg.extend(comp_fg)
             bg.extend(comp_bg)
