@@ -36,7 +36,6 @@ from diagram_model import (
     Panel,
     RequestCluster,
     Separator,
-    StackedBlock,
     Terminal,
 )
 from diagram_shared import (
@@ -662,56 +661,6 @@ def _layout_box(
 
 
 # ---------------------------------------------------------------------------
-# Stacked block layout (icon above text, both centred)
-# ---------------------------------------------------------------------------
-
-def _stacked_block_height(lines: list[dict], has_icon: bool) -> int:
-    """Compute height for a stacked block: INSET + icon + gap + text + INSET."""
-    n = len(lines)
-    line_step = int(lines[0]["line_step"]) if lines else BODY_LINE_STEP
-    text_h = n * line_step
-    if has_icon:
-        # icon + 8px gap + text
-        content_h = ICON_SIZE + INSET + text_h
-    else:
-        content_h = text_h
-    raw = INSET + content_h + INSET
-    return round_up_to_grid(max(raw, BOX_MIN_HEIGHT))
-
-
-def _layout_stacked_block(
-    sb: StackedBlock,
-    x: float,
-    y: float,
-    default_width: int,
-) -> tuple[_Bounds, list[Primitive]]:
-    w = sb.width or default_width
-    lines = _lines_to_dicts(sb.label)
-    h = sb.height or _stacked_block_height(lines, has_icon=True)
-    fill = sb.fill.value
-    stroke = "none" if sb.effective_border == Border.NONE else "#000000"
-    cid = sb.id or None
-    prims: list[Primitive] = []
-    prims.append(Rect(x, y, w, h, fill=fill, stroke=stroke, component_id=cid))
-
-    # Icon centred horizontally, INSET from top
-    icon_x = x + (w - ICON_SIZE) / 2
-    icon_y = y + INSET
-    prims.append(Icon(icon_x, icon_y, sb.icon,
-                      fill=sb.icon_fill or "#000000", component_id=cid))
-
-    # Text centred horizontally below icon
-    text_y = icon_y + ICON_SIZE + INSET
-    # Centre-align text: compute max text width and offset
-    n = len(lines)
-    line_step = int(lines[0]["line_step"]) if lines else BODY_LINE_STEP
-    # Place text block at left inset (text alignment handled by renderer)
-    prims.append(TextBlock(x + INSET, text_y, lines, component_id=cid))
-
-    return _Bounds(x, y, w, h, sb), prims
-
-
-# ---------------------------------------------------------------------------
 # Helper layout
 # ---------------------------------------------------------------------------
 
@@ -742,11 +691,6 @@ def _natural_size(
         w = comp.width or default_width
         has_icon = comp.icon is not None
         h = comp.height or tight_box_height(_lines_to_dicts(comp.label), has_icon=has_icon)
-        return (w, h)
-    elif isinstance(comp, StackedBlock):
-        w = comp.width or default_width
-        lines = _lines_to_dicts(comp.label)
-        h = comp.height or _stacked_block_height(lines, has_icon=True)
         return (w, h)
     elif isinstance(comp, Panel):
         # Need to actually lay out the panel to know its size
@@ -854,27 +798,6 @@ def _render_component(
             fg.append(Icon(x + bw - INSET - ICON_SIZE, y + INSET, comp.icon,
                            fill=_auto_invert_icon(comp.icon_fill, fill), component_id=cid))
         return _Bounds(x, y, bw, bh, comp), fg, bg
-
-    elif isinstance(comp, StackedBlock):
-        sbw = comp.width or default_width
-        if w > sbw:
-            sbw = int(w)
-        lines = _lines_to_dicts(comp.label)
-        sbh = comp.height or _stacked_block_height(lines, has_icon=True)
-        fill = comp.fill.value
-        stroke = "none" if comp.effective_border == Border.NONE else "#000000"
-        cid = comp.id or None
-        fg.append(Rect(x, y, sbw, sbh, fill=fill, stroke=stroke, component_id=cid))
-        # Icon centred horizontally
-        icon_x = x + (sbw - ICON_SIZE) / 2
-        icon_y = y + INSET
-        fg.append(Icon(icon_x, icon_y, comp.icon,
-                       fill=_auto_invert_icon(comp.icon_fill, fill), component_id=cid))
-        # Text below icon
-        text_y = icon_y + ICON_SIZE + INSET
-        fg.append(TextBlock(x + INSET, text_y,
-                            _auto_invert_lines(lines, fill), component_id=cid))
-        return _Bounds(x, y, sbw, sbh, comp), fg, bg
 
     elif isinstance(comp, Annotation):
         # Annotation: anchored text box that participates in grid sizing.

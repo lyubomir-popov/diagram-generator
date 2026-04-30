@@ -1,8 +1,7 @@
-"""Example: stacked blocks – icon-above-text layout demo.
+"""Example: infrastructure overview – standard box layout.
 
-Demonstrates the StackedBlock component type alongside standard Box
-and Panel components. StackedBlock centres the icon above the label,
-avoiding keyline breaks from side-by-side icon placement.
+Demonstrates Box and Panel components in a 3-column grid with a
+dashed wrapper panel spanning all columns.
 """
 
 from __future__ import annotations
@@ -15,7 +14,6 @@ from diagram_model import (
     Fill,
     Line,
     Panel,
-    StackedBlock,
 )
 
 
@@ -37,22 +35,22 @@ example_stacked_blocks = Diagram(
     row_gap=24,
     outer_margin=24,
     components=[
-        # Row 0: three stacked blocks (icon-primary)
-        StackedBlock(
+        # Row 0: three standard boxes
+        Box(
             label=[_body("Cloud")],
             icon="Cloud.svg",
             fill=Fill.WHITE,
             id="cloud",
             col=0, row=0,
         ),
-        StackedBlock(
+        Box(
             label=[_body("Container")],
             icon="Container.svg",
             fill=Fill.WHITE,
             id="container",
             col=1, row=0,
         ),
-        StackedBlock(
+        Box(
             label=[_body("Server")],
             icon="Server.svg",
             fill=Fill.WHITE,
@@ -60,12 +58,11 @@ example_stacked_blocks = Diagram(
             col=2, row=0,
         ),
 
-        # Row 1: a panel with standard boxes for comparison
+        # Row 1: dashed wrapper panel spanning all 3 columns
         Panel(
             id="services",
             cols=3,
-            col_width=192,
-            col_gap=8,
+            col_gap=24,
             row_gap=8,
             border=Border.DASHED,
             heading=_heading("Managed services"),
@@ -92,8 +89,8 @@ example_stacked_blocks = Diagram(
             ],
         ),
 
-        # Row 2: mixed – stacked block + regular box
-        StackedBlock(
+        # Row 2: standard boxes
+        Box(
             label=[_body("Lock"), _body("manager")],
             icon="Lock.svg",
             fill=Fill.WHITE,

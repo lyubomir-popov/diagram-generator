@@ -2245,7 +2245,7 @@ function updateInspector(cid) {
   }
   // Style picker for box-type components
   const ctype = getComponentType(cid).toLowerCase();
-  if (ctype === "box" || ctype === "stackedblock" || ctype === "panel" || ctype === "terminal") {
+  if (ctype === "box" || ctype === "panel" || ctype === "terminal") {
     const currentStyle = (overrides[cid] && overrides[cid].style) || "";
     html += '<div class="field" style="margin-top:6px"><span class="label">Style</span><br>';
     html += '<select class="style-picker" onchange="applyStyleOverride(\'' + cid + '\', this.value)">';

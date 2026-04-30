@@ -140,10 +140,11 @@ class Box:
 
 @dataclass
 class StackedBlock:
-    """Icon above label, both centred — for icon-primary layouts.
+    """DEPRECATED – removed from the Component union.
 
-    Avoids the keyline breaks caused by side-by-side icon+text placement
-    in standard ``Box`` when alignment with peers matters more than density.
+    This component centred icons above text, violating the design language
+    rule that text is always top-left and icons are always top-right.
+    Use ``Box`` instead.  Kept only so old imports don't crash on load.
     """
     label: list[Line]
     icon: str                           # filename in assets/icons/
@@ -419,7 +420,7 @@ class Panel:
 # ---------------------------------------------------------------------------
 
 Component = Union[
-    Box, StackedBlock, Panel, Bar, Terminal, Arrow, Helper, Annotation,
+    Box, Panel, Bar, Terminal, Arrow, Helper, Annotation,
     MatrixWidget, JaggedPanel, RequestCluster, Legend,
     IconComponent, IconCluster, Separator,
 ]

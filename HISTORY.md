@@ -4,6 +4,16 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2025-05-01 – StackedBlock removal + alignment hardening
+
+- Removed `StackedBlock` component type — it centred icons above text, violating the "text top-left, icon top-right" design language rule.
+- Removed `StackedBlock` from `Component` union, layout engine (`_layout_stacked_block`, `_stacked_block_height`, `_render_component`, `_natural_size`), and editor style picker.
+- Rewrote `example_stacked_blocks.py` to use standard `Box` components. Fixed wrapper panel `col_gap` from 8 to 24 so the dashed frame spans its full grid cell.
+- Added "Box anatomy – non-negotiable spatial contract" section to `DIAGRAM.md` with explicit anti-centering rules and ASCII box diagram.
+- Added explicit `StackedBlock` prohibition to `.github/copilot-instructions.md`.
+- Fixed stale `4px` baseline references in `DIAGRAM.md` (should be `8px` after prior session's change).
+- Updated `copilot-instructions.md` box-height growth step from `4px` to `8px`.
+
 ### 2025-05-01 – Baseline unit 4→8px
 
 - Changed `BASELINE_UNIT` from 4 to 8 in `diagram_shared.py`. Removed redundant `RHYTHM_STEP`.
@@ -28,7 +38,7 @@ Completed work belongs here so `TODO.md` stays lean.
 - **Grid layout propagation (commit dec8160):** `propagateResize()` now distributes width delta equally across columns and height delta equally across rows for grid-layout panels, snapped to 4px baseline. Previously returned no-op `{dw:0, dh:0}`.
 - **Browser verification:** All 4 features confirmed working via Playwright: snap guides (4 lines appear during drag, cleared on release), layout metadata in inspector, icon re-anchor on resize, parent→child resize propagation for grid panels.
 - **Horizontal layout fix (commit b732988, Bug 6):** Single-row panels (cols == children count, 1 row) now classified as "horizontal" for proportional width distribution on resize; multi-row panels keep "grid" for equal per-column distribution.
-- **StackedBlock component (commit 3aa0642):** New component type for icon-primary layouts — icon centred above text, auto-height from content, snapped to 4px baseline. Added to model, layout engine, and `Component` union.
+- **StackedBlock component (commit 3aa0642):** Added then later removed — it centred icons above text, violating the design language. See removal entry above.
 - **Review-copy workflow piloted:** Full prepare→promote→discard cycle verified on `gpu-waiting-scheduler-onbrand.drawio` (manually-edited) and `memory-wall-onbrand-edited-in-drawio.drawio`. Checkpoints created correctly, review copies cleaned up.
 
 ### 2026-05-01 – Interaction manager migration + component swap

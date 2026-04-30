@@ -209,6 +209,7 @@ Several references below point to locally generated outputs under `diagrams/2.ou
 - Default non-highlight fill is white; standard accent fill is `#F3F3F3`; at most one black-filled box with white text is allowed when a true highlight is needed.
 - Do not use orange-filled boxes. Orange is reserved for arrows and arrowheads.
 - For new work, the canonical block is `192px` wide and at least `64px` tall with top-left-aligned live text and a natural-size local `48x48` icon embedded with `8px` padding on all sides.
+- **No centred layouts.** Text is always top-left, icon is always top-right. Do not centre text horizontally, do not centre icons, do not place icons above text. The `StackedBlock` component was removed for violating this rule — do not reintroduce centred icon arrangements under any name.
 - Use `14px` regular text with `20px` line height for the main block copy unless the user explicitly asks for another scale.
 - Prefer hierarchy by weight before hierarchy by size: move from `14px` regular to `14px` semi-bold, then `14px` small-caps with `0.05em` tracking before introducing another size; when a larger size is truly needed use `18px/24px`, then `24px/32px`.
 - Keep text top-left aligned whether the label is one line or multiple lines; use an `8px` inset on both X and Y, and do not vertically center single-line labels just because there is extra box height.
@@ -219,8 +220,8 @@ Several references below point to locally generated outputs under `diagrams/2.ou
 - Right-side in-box icons should be embedded directly from `assets/icons/` at their natural `48x48` size rather than visually thinned down through scaling.
 - Align those icons by their artboard to the top-right corner with an `8px` inset rather than centering them vertically.
 - If a diagram uses a side icon cluster rather than a single in-box icon, keep those icons on the same natural-size treatment instead of shrinking them to a secondary scale.
-- The current box-height rule is icon height plus `2 * 8px` internal padding, with the border on the outside; for the current icon set that means `64px`-tall boxes, and taller boxes should be derived from the text stack and snapped to whole `4px` baseline units rather than hard-coded per diagram.
-- Keep growing taller boxes in `4px` baseline steps when copy runs longer than the default height; do not trade away inset, helper-text size, or icon size to force a box to stay short.
+- The current box-height rule is icon height plus `2 * 8px` internal padding, with the border on the outside; for the current icon set that means `64px`-tall boxes, and taller boxes should be derived from the text stack and snapped to whole `8px` baseline units rather than hard-coded per diagram.
+- Keep growing taller boxes in `8px` baseline steps when copy runs longer than the default height; do not trade away inset, helper-text size, or icon size to force a box to stay short.
 - Orange connectors use `#E95420` and should behave like draw.io `blockThin` arrows: explicit `1px` shaft + filled head, tip touching the destination edge, no shaft visibly protruding through the arrowhead, and no overlap that breaks black box outlines.
 - Reuse the exact arrow proportions from `diagrams/0.reference/sample.svg`, `diagrams/0.reference/onbrand-svg-starter.svg`, or `diagrams/2.output/svg/memory-wall-onbrand.svg`; do not freehand a larger or smaller variant for a one-off diagram.
 - Draw orange connectors behind the boxes they connect to so the destination box edge remains visually continuous.

@@ -106,7 +106,7 @@ grid:
   application-outer-margin: 24px
   default-box-width: 192px
   default-box-min-height: 64px
-  default-box-growth-step: 4px
+  default-box-growth-step: 8px
   icon-size: 48px
 components:
   box-default:
@@ -228,11 +228,34 @@ Bold at the same font size is a hierarchical level above regular. Do not make ev
 
 Text is positioned by ascent, not by raw baseline guessing. The visible top of the text sits `INSET` (`8px`) below the top edge of the box.
 
+### Box anatomy – non-negotiable spatial contract
+
+Every text-bearing box follows exactly one layout: **text top-left, icon top-right**. There are no alternative arrangements, no "icon-primary" variants, and no centred layouts.
+
+```
+┌─────────────────────────────────┐
+│ 8px                        8px  │
+│   Label text         [48×48]    │
+│   (top-left,          icon      │
+│    regular weight)   (top-right)│
+│                            8px  │
+│ 8px                             │
+└─────────────────────────────────┘
+```
+
+- **Text anchor:** top-left corner, `INSET` (`8px`) from both the top and left edges. Text is always left-aligned. Never centre, never right-align.
+- **Icon anchor:** top-right corner, `INSET` (`8px`) from both the top and right edges. Icons sit at their natural `48×48` size. Never centre an icon horizontally or vertically within the box.
+- **No icon-above-text layouts.** The `StackedBlock` component type was removed because it violated this rule. Do not reintroduce centred icon arrangements under any name.
+- **No centring of any kind.** Do not vertically centre single-line labels. Do not horizontally centre text. Do not centre icons. The top-left / top-right anchor is the only permitted placement.
+- **Multi-line labels** stay top-left aligned. Extra box height grows downward; the text anchor does not move.
+
+When a box has no icon, the text still anchors top-left — the right side of the box is simply empty.
+
 ## Layout & spacing
 
 ### Baseline grid
 
-Every dimension in a diagram — positions, sizes, padding, gaps — must be an exact multiple of the `4px` baseline unit. No exceptions. No "close enough." If a value does not land on the grid, snap it up to the nearest multiple.
+Every dimension in a diagram — positions, sizes, padding, gaps — must be an exact multiple of the `8px` baseline unit. No exceptions. No "close enough." If a value does not land on the grid, snap it up to the nearest multiple.
 
 This is a non-negotiable constraint. It replaces all previous guidance about "preserving a grid feeling" or "stepping in rhythm increments." The grid is not a suggestion — it is the coordinate system.
 
@@ -394,7 +417,7 @@ A bar with `18px` text: `max(32, 8 + 21.6 + 8) = max(32, 40) = 40px`. The model'
 
 ### Grid validation
 
-After layout, run `validate_grid(result)` to verify every coordinate and dimension is a multiple of the `4px` baseline unit. The validator checks:
+After layout, run `validate_grid(result)` to verify every coordinate and dimension is a multiple of the `8px` baseline unit. The validator checks:
 
 - All `Rect` positions and sizes (boxes, bars, panel frames)
 - All `TextBlock` anchor positions (but not font-metric-derived baselines)
@@ -533,7 +556,7 @@ Use icons from `assets/icons/` only. If no local icon matches the concept, omit 
 
 ### Internal spacing consistency
 
-Every text-bearing component – boxes, terminal bars, grouped panels, and stacked tiles – must use the same `8px` inset from the nearest visible edge. Do not introduce component-specific inset overrides unless the visual structure genuinely requires it. When a component has a non-text header band (such as the terminal chrome strip), the text area begins at the bottom of that band, and the `8px` inset is measured from there.
+Every text-bearing component – boxes, terminal bars, and grouped panels – must use the same `8px` inset from the nearest visible edge. Do not introduce component-specific inset overrides unless the visual structure genuinely requires it. When a component has a non-text header band (such as the terminal chrome strip), the text area begins at the bottom of that band, and the `8px` inset is measured from there.
 
 ## Editability & outputs
 
@@ -571,7 +594,7 @@ Do:
 
 - Use the local icon library only.
 - Keep text live and editable.
-- Use the `4px` baseline unit consistently, with `8px` rhythm steps for most block geometry.
+- Use the `8px` baseline unit consistently.
 - Prefer hierarchy by weight before size.
 - Keep box and arrow geometry explicit and inspectable.
 
