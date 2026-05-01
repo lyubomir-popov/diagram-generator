@@ -31,7 +31,7 @@ my_diagram = Diagram(
     title="My diagram",
     arrangement=Diagram.Arrangement.GRID,
     cols=1, col_width=192, row_height=64,
-    col_gap=32, row_gap=32, outer_margin=32,
+    col_gap=24, row_gap=24, outer_margin=24,
     components=[
         Box(id="step1", label=[Line("First step")],
             icon="Document.svg", col=0, row=0),
@@ -56,14 +56,14 @@ Three generic examples ship with the repo for reference:
 
 ### Interactive preview (in development)
 
-A hot-reload preview server is available for visual drafting. **This feature is experimental** – expect rough edges around selection targeting and undo support.
+A hot-reload preview server is available for visual drafting. It is still an active editor surface rather than a finished product, but the current build already supports the core authoring loop.
 
 ```bash
 python scripts/preview_server.py              # all diagrams, port 8100
 python scripts/preview_server.py --slug memory-wall --grid  # single diagram with grid overlay
 ```
 
-Features: component tree sidebar, click-to-select inspector, drag-to-move (4px snap), resize handles, override persistence to JSON. Overrides are a drafting aid – the agent reads them and applies fixes to the Python definition.
+Features: component tree sidebar, click-to-select inspector, drag-and-resize with 8px snap, waypoint editing, grid overlay controls, undo/redo snapshots, and override persistence to JSON. Overrides are a drafting aid – the agent reads them and applies fixes to the Python definition.
 
 ### Available icons
 
@@ -75,7 +75,7 @@ Features: component tree sidebar, click-to-select inspector, drag-to-move (4px s
 - **Orange** `#E95420`: arrows and arrowheads only – never boxes
 - **Icons**: from `assets/icons/` only – omit rather than invent
 - **Text**: top-left aligned, 8px inset, 18px/24px body
-- **Grid**: 4px baseline, 32px gutters, 192px default box width
+- **Grid**: 8px baseline, 24px gutters, 192px default box width
 
 Full spec: [`DIAGRAM.md`](DIAGRAM.md)
 
@@ -259,7 +259,7 @@ A newer declarative system where diagrams are defined as data (model → layout 
 | **Layout engine** | `scripts/diagram_layout.py` + `scripts/diagram_model.py` |
 | **Entry point** | `python scripts/build_v2.py` |
 | **Outputs** | `*-onbrand-v2.svg`, `*-onbrand-v2.drawio` |
-| **Maturity** | Experimental. Several diagrams still have missing content, broken arrows, or layout issues vs their v1 equivalents. |
+| **Maturity** | Experimental but much closer to parity. All 9 diagrams are converted, and the currently audited batch is green; the open work is PM-shareable authoring, command-pattern undo, and further workflow hardening rather than basic rendering gaps. |
 
 ### 3-way visual comparison
 

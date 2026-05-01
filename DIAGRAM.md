@@ -112,7 +112,7 @@ components:
   box-default:
     width: 192px
     minHeight: 64px
-    growthStep: 4px
+    growthStep: 8px
     paddingX: 8px
     paddingY: 8px
     fill: "{colors.surface-default}"
@@ -121,7 +121,7 @@ components:
   box-accent:
     width: 192px
     minHeight: 64px
-    growthStep: 4px
+    growthStep: 8px
     paddingX: 8px
     paddingY: 8px
     fill: "{colors.surface-accent}"
@@ -130,7 +130,7 @@ components:
   box-emphasis:
     width: 192px
     minHeight: 64px
-    growthStep: 4px
+    growthStep: 8px
     fill: "{colors.emphasis-surface}"
     textColor: "{colors.emphasis-text}"
   icon-default:
@@ -374,7 +374,7 @@ box_height = INSET + (line_count × line_step) + INSET
 A 1-line box at `18px/24px`: `8 + 24 + 8 = 40px` → `40px` (already on grid).
 A 2-line box: `8 + 48 + 8 = 64px` → `64px`.
 
-There must be no dead space below the last text line. If the text only needs `36px`, the box is `36px`, not `64px`.
+The current engine still clamps text-only boxes to the canonical `BOX_MIN_HEIGHT` of `64px`, so a 1-line no-icon box stays `64px` for consistency with the rest of the current block system.
 
 **For a text box with icon:**
 
