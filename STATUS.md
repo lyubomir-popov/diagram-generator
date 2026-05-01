@@ -46,17 +46,25 @@ There are now **two diagram generation pipelines**. On a cold start, ask the use
 - `python scripts/_audit_v2.py` — SVG element count audit (orange elements, texts, rects, icons)
 - `python scripts/_compare_all.py` — v1 vs v2 side-by-side comparisons
 
-### v2 defect summary (April 2026)
+### v2 defect summary (April–May 2026)
 
 | Diagram | Status |
 |---|---|
 | attention-qkv | OK – matrix tiles + fan-out arrows rendering |
-| gpu-waiting-scheduler | MINOR – 1 orange element short |
-| inference-snaps | OK |
-| logic-data-vram | MINOR – missing "GPU" label |
+| gpu-waiting-scheduler | OK |
+| inference-snaps | OK – content-width alignment verified |
+| logic-data-vram | OK |
 | memory-wall | OK |
-| request-to-hardware-stack | OK |
+| request-to-hardware-stack | OK – content-width alignment verified |
 | rise-of-inference-economy | OK |
+
+### Layout engine (May 2026)
+
+- **Content-width alignment:** Two-pass VERTICAL layout separates content width from outer width. Panels with borders wrap content with INSET padding; standalone boxes align to the panel's inner content corridor. All 4 vertical diagrams (request-to-hardware-stack, inference-snaps, diagram-intake-workflow, diagram-language-workflow) have flush right edges.
+- **col_span/row_span:** Boxes inside panels can span multiple grid columns without explicit width overrides.
+- **BOX_MIN_HEIGHT enforcement:** Single-line boxes without icons are clamped to 64px minimum.
+- **Grid spanning detection:** Client-side relayout detects spanning children from geometry.
+- **BASELINE_UNIT = 8px**, **GRID_GUTTER = 24px**, **OUTER_MARGIN = 24px**, **BODY_SIZE = 18px**.
 
 ## Architecture status
 
@@ -105,14 +113,12 @@ The project has evolved from a batch diagram generator into a **constrained inte
 
 ## Current execution plan
 
-- Ingest typography, spacing, and grid specs from the broader design language into `DIAGRAM.md`, then map them into `scripts/diagram_shared.py` and draw.io style sync.
-- Current sync slice: keep the imported dense application/doc baseline for grid and spacing, but evaluate whether the new diagram-tier pilot should replace the `14px` reference body size with `16px` / `20px` main copy for diagram labels that sit beside `48px` icons.
-- Current sync slice: replace the hard-coded `8px` grid assumptions in the shared helpers with spec-derived tokens and derived box-height math so text, icons, and borders land on whole baseline units.
-- Import-test the current `diagrams/2.output/draw.io/*-onbrand.drawio` batch and the tracked `assets/drawio/diagram-generator-primitives.mxlibrary` in draw.io, and note any renderer mismatches versus the SVG canonicals.
-- Pilot the protected review-copy workflow on one or two manually edited draw.io files.
+- Content-width alignment engine is complete and committed — all vertical diagrams have flush right edges.
+- Next: distribute-and-align feature for the interactive preview (multi-select → equal spacing).
+- Ingest remaining typography, spacing, and grid specs from the broader design language into `DIAGRAM.md`, then map them into `scripts/diagram_shared.py` and draw.io style sync.
+- Import-test the current draw.io batch and the tracked `assets/drawio/diagram-generator-primitives.mxlibrary` in draw.io.
 - Re-audit the refreshed starter-block SVG batch in Illustrator.
 - Keep refining `DIAGRAM.md` as more diagram types appear.
-- Re-audit the shared generator helpers whenever the starter block changes so the outputs do not drift.
 
 ## Draw.io evolution plan
 
@@ -176,13 +182,13 @@ The project has evolved from a batch diagram generator into a **constrained inte
 - Final SVG deliverables must stay Illustrator-safe: no `<symbol>`, no `<use>`, no external `<image href="...">`, and no marker refs.
 - Final SVGs should reference `font-family: 'Ubuntu Sans', sans-serif` by family name only rather than shipping a file-path `@font-face` dependency.
 - Use icons from `assets/icons/` only; if no suitable icon exists, omit the icon rather than sourcing a new one implicitly.
-- For new work, keep the `192px` / `64px` / `8px` / `48x48` block system and the imported dense spacing baseline, but treat `14px` / `20px` as the current reference tier and `16px` / `20px` as the active pilot tier for grouped layouts where text-to-icon proportion needs retuning.
+- For new work, keep the `192px` / `64px` / `8px` / `48x48` block system and the imported dense spacing baseline, but treat `18px` / `24px` as the current body text size.
 - Prefer hierarchy by weight before hierarchy by size; move from `14px` regular to `14px` strong and small-caps, then `18px/24px`, then `24px/32px` only when the smaller ladder is not enough.
 - Orange is reserved for connectors and arrowheads only; boxes stay white or `#F3F3F3`, with at most one black emphasis box when clearly justified.
 - Orange connectors should run edge-to-edge, midpoint-to-midpoint, behind the destination box, using literal line-plus-triangle geometry.
 - `diagrams/2.output/svg/memory-wall-onbrand.svg` is the canonical implementation checkpoint for palette, icon placement, side-icon clusters, and overall scale.
 - The `Memory wall` node remains the one semantic exception that keeps jagged top and bottom edges.
-- Use a `4px` baseline unit for snapping heights and line steps; most visible block geometry still moves in `8px` rhythm increments.
+- Use an `8px` baseline unit for snapping heights and line steps.
 
 ## Next session should
 

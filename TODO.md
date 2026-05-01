@@ -66,8 +66,8 @@ SVG element audit (v1 vs v2, April 2026). Use `python scripts/_compare_3way.py` 
 | Diagram | Status | Orange | Texts | Details |
 |---|---|---|---|---|
 | attention-qkv | OK | 30→50 | 55=55 | Matrix tiles + fan-out arrows now rendering. v2 has more orange segments due to individual Z-bend arrows vs v1 shared trunks; visual coverage is equivalent. Frameless panels, correct box heights, white text on black boxes. |
-| gpu-waiting-scheduler | OK | 4→4 | 6=6 | Fixed: added explicit waypoints to match v1 orthogonal path. |
-| inference-snaps | OK | 8→12 | 17=17 | Wrapper alignment fixed (dashed frame and inner pad col_width derived from peer box width). |
+| gpu-waiting-scheduler | OK | 4=4 | 6=6 | Fixed: added explicit waypoints to match v1 orthogonal path. |
+| inference-snaps | OK | 8→12 | 17=17 | Content-width alignment verified. |
 | logic-data-vram | OK | 8→9 | 27=27 | Fixed: added missing "GPU" annotation labels under both sub-panels. |
 | memory-wall | OK | 12=12 | 11=11 | All elements match. Dashed separator present. |
 | request-to-hardware-stack | OK | 10=10 | 27=27 | All elements match. |
