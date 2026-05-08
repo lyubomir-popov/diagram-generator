@@ -1,0 +1,363 @@
+<mxfile host="app.diagrams.net" agent="diagram-generator" version="29.3.7">
+  <diagram name="Page-1" id="attention-qkv">
+    <mxGraphModel grid="1" gridSize="8" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1840" pageHeight="1200" background="light-dark(#ffffff, #ffffff)" adaptiveColors="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;The query (Q): the &amp;quot;question&amp;quot;&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="48" y="48" width="520" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-widget" data-dg-style-tokens="matrix-widget" connectable="1">
+          <mxGeometry x="144" y="96" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="4" parent="3" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="20" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5" parent="3" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="16" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="6" parent="3" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="32" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="7" parent="3" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="29" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="8" parent="3" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="38" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9" parent="3" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=12;fontColor=#000000;" value="&lt;span style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Q&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-matrix" data-dg-style-tokens="label-matrix" connectable="0">
+          <mxGeometry x="0" y="2" width="48" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
+          <mxGeometry x="48" y="184" width="240" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="11" parent="10" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;Ubuntu:&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="224" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;I am a noun at the start of a&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;sentence followed by a colon.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="312" y="192" width="320" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;I am a noun at the start of a sentence followed&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;by a colon. I am likely a subject being defined.&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;What in this sentence explains what I am?&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="48" y="280" width="560" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="14" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="3" target="10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="168" y="144" as="sourcePoint" />
+            <mxPoint x="168" y="184" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;The keys (K): the &amp;quot;advertisements&amp;quot;&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="912" y="48" width="600" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-widget" data-dg-style-tokens="matrix-widget" connectable="1">
+          <mxGeometry x="1296" y="96" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="17" parent="16" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="20" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="18" parent="16" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="16" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="19" parent="16" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="32" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="20" parent="16" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="29" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="21" parent="16" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="38" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="22" parent="16" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=12;fontColor=#000000;" value="&lt;span style=&quot;font-size:12px&quot;&gt;&lt;b&gt;K&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-matrix" data-dg-style-tokens="label-matrix" connectable="0">
+          <mxGeometry x="0" y="2" width="48" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-highlight" data-dg-style-tokens="box-highlight" connectable="1">
+          <mxGeometry x="912" y="184" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="24" parent="23" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#FFFFFF&quot;&gt;Linux&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
+          <mxGeometry x="1120" y="184" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="26" parent="25" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;for&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="27" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
+          <mxGeometry x="1328" y="184" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="28" parent="27" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;human&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="29" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
+          <mxGeometry x="1536" y="184" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="30" parent="29" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;beings&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="31" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;I am a technical&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;OS kernel&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;category.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="912" y="280" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="32" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;I am a preposition&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;indicating a target&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;audience.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="1120" y="280" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;I am the adjective&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;that narrows the&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;species or type.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="1328" y="280" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="34" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;I am the plural noun,&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;the object of the&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;audience.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="1536" y="280" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="35" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="16" target="23">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1320" y="144" as="sourcePoint" />
+            <mxPoint x="1008" y="184" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1320" y="160" />
+              <mxPoint x="1008" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="36" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="16" target="25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1320" y="144" as="sourcePoint" />
+            <mxPoint x="1216" y="184" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1320" y="160" />
+              <mxPoint x="1216" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="37" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="16" target="27">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1320" y="144" as="sourcePoint" />
+            <mxPoint x="1424" y="184" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1320" y="160" />
+              <mxPoint x="1424" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="38" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="16" target="29">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1320" y="144" as="sourcePoint" />
+            <mxPoint x="1632" y="184" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1320" y="160" />
+              <mxPoint x="1632" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="39" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;The match (QK^T): the &amp;quot;relevance check&amp;quot;&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="48" y="600" width="620" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="40" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-widget" data-dg-style-tokens="matrix-widget" connectable="1">
+          <mxGeometry x="432" y="648" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="41" parent="40" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="20" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="42" parent="40" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="16" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="43" parent="40" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="32" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="44" parent="40" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="29" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="45" parent="40" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="38" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="46" parent="40" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=12;fontColor=#000000;" value="&lt;span style=&quot;font-size:12px&quot;&gt;&lt;b&gt;QK&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-matrix" data-dg-style-tokens="label-matrix" connectable="0">
+          <mxGeometry x="0" y="2" width="48" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="47" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-highlight" data-dg-style-tokens="box-highlight" connectable="1">
+          <mxGeometry x="48" y="744" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="48" parent="47" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#FFFFFF&quot;&gt;Linux&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="49" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
+          <mxGeometry x="256" y="744" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="50" parent="49" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;for&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="51" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
+          <mxGeometry x="464" y="744" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="52" parent="51" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;human&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="53" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
+          <mxGeometry x="672" y="744" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="54" parent="53" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;beings&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Best semantic match:&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;the likely subject&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;being defined.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="48" y="840" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="56" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Relevant as context,&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;but not the thing&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;being defined.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="256" y="840" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="57" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Useful modifier,&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;but not stronger than&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;the main noun.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="464" y="840" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="58" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Part of the phrase,&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;yet less direct than&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;the kernel word.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="672" y="840" width="176" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="59" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="40" target="47">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="456" y="696" as="sourcePoint" />
+            <mxPoint x="144" y="744" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="456" y="720" />
+              <mxPoint x="144" y="720" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="60" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="40" target="49">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="456" y="696" as="sourcePoint" />
+            <mxPoint x="352" y="744" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="456" y="720" />
+              <mxPoint x="352" y="720" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="61" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="40" target="51">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="456" y="696" as="sourcePoint" />
+            <mxPoint x="560" y="744" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="456" y="720" />
+              <mxPoint x="560" y="720" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="62" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="40" target="53">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="456" y="696" as="sourcePoint" />
+            <mxPoint x="768" y="744" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="456" y="720" />
+              <mxPoint x="768" y="720" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="63" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;shadow=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="marker" tags="dg-generated dg-role-marker dg-token-legend-marker" data-dg-style-tokens="legend-marker" connectable="0">
+          <mxGeometry x="68" y="996" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="64" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Low&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="100" y="1000" width="96" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="65" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;shadow=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="marker" tags="dg-generated dg-role-marker dg-token-legend-marker" data-dg-style-tokens="legend-marker" connectable="0">
+          <mxGeometry x="200" y="996" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="66" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Medium&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="232" y="1000" width="96" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="67" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;strokeWidth=1;shadow=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="marker" tags="dg-generated dg-role-marker dg-token-legend-marker" data-dg-style-tokens="legend-marker" connectable="0">
+          <mxGeometry x="376" y="996" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="68" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;High&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="408" y="1000" width="96" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="69" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;The value (V): the &amp;quot;knowledge transfer&amp;quot;&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="912" y="600" width="620" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="70" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-widget" data-dg-style-tokens="matrix-widget" connectable="1">
+          <mxGeometry x="912" y="648" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="71" parent="70" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="20" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="72" parent="70" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="16" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="73" parent="70" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="32" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="74" parent="70" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="29" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="75" parent="70" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="38" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="76" parent="70" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=12;fontColor=#000000;" value="&lt;span style=&quot;font-size:12px&quot;&gt;&lt;b&gt;Q&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-matrix" data-dg-style-tokens="label-matrix" connectable="0">
+          <mxGeometry x="0" y="2" width="48" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="77" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-widget" data-dg-style-tokens="matrix-widget" connectable="1">
+          <mxGeometry x="1136" y="648" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="78" parent="77" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="20" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="79" parent="77" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="16" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="80" parent="77" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="32" y="20" width="1" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="81" parent="77" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="29" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="82" parent="77" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=none;strokeWidth=0;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="rect" tags="dg-generated dg-role-rect dg-token-matrix-divider" data-dg-style-tokens="matrix-divider" connectable="0">
+          <mxGeometry x="0" y="38" width="48" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="83" parent="77" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=12;fontColor=#000000;" value="&lt;span style=&quot;font-size:12px&quot;&gt;&lt;b&gt;K&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-matrix" data-dg-style-tokens="label-matrix" connectable="0">
+          <mxGeometry x="0" y="2" width="48" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="84" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
+          <mxGeometry x="912" y="744" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="85" parent="84" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;Ubuntu:&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="86" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#000000;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-highlight" data-dg-style-tokens="box-highlight" connectable="1">
+          <mxGeometry x="1136" y="744" width="192" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="87" parent="86" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#FFFFFF&quot;&gt;Linux&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="176" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="88" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Strongest meaning comes from &amp;quot;Linux&amp;quot;,&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;with extra audience context from&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;&amp;quot;human beings&amp;quot;.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="1360" y="752" width="320" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="89" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
+          <mxGeometry x="960" y="848" width="336" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="90" parent="89" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;Value transfer (V)&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
+          <mxGeometry x="8" y="8" width="320" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="91" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;fontSize=18;fontColor=#000000;" value="&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;Now that the model knows &amp;quot;Linux&amp;quot; is the most relevant&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;word, it takes the value step to transfer the actual&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;semantic meaning of &amp;quot;Linux&amp;quot; and &amp;quot;human beings&amp;quot; into&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px;color:#666666&quot;&gt;the representation of &amp;quot;Ubuntu&amp;quot;.&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-free" data-dg-style-tokens="label-free" connectable="0">
+          <mxGeometry x="912" y="944" width="520" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="92" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="70" target="84">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="936" y="696" as="sourcePoint" />
+            <mxPoint x="1008" y="744" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="93" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="77" target="86">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1160" y="696" as="sourcePoint" />
+            <mxPoint x="1232" y="744" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="94" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="84" target="86">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1104" y="776" as="sourcePoint" />
+            <mxPoint x="1136" y="776" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="95" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="86" target="89">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1232" y="808" as="sourcePoint" />
+            <mxPoint x="1232" y="848" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

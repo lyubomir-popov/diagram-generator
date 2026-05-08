@@ -229,7 +229,7 @@ Update the comparison pages so reviewers can see before/after:
 
 ### Input/output structure
 
-**Note:** `diagrams/1.input/`, `diagrams/2.output/`, and `diagrams/3.compare/` are gitignored. Run `python scripts/build_v2.py` to generate outputs locally. Reference assets like `_BRND-3284.drawio.svg` are team-internal and excluded from the public repo.
+**Note:** This repo is currently set up for private internal sharing, so the input, output, compare, reference, and working draw.io diagram lanes are included in git. Only generic local development artifacts such as `__pycache__/`, `*.pyc`, workspace files, and `_tail.txt` stay ignored.
 
 Input:
 

@@ -3,22 +3,3 @@ __pycache__/
 _tail.txt
 diagram-generator.code-workspace
 
-# Ignore input and output diagrams
-diagrams/1.input/
-diagrams/1. input/
-diagrams/2.output/
-
-# Ignore local draw.io scratch copies outside the canonical output lane
-draw.io/
-
-# Ignore comparison pages (contain company diagram screenshots)
-diagrams/3.compare/
-
-# Ignore brand reference files
-diagrams/0.reference/_BRND-3284.drawio.svg
-diagrams/0.reference/onbrand-reference.png
-
-# Ignore company-specific diagram definitions
-scripts/diagrams/aws_hld.py
-
-image.png
