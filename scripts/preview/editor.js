@@ -56,6 +56,7 @@ const BOX_STYLES = {
 const GUIDE_MODES = ["off", "composition", "baseline"];
 let guideMode = "off";
 let gridInfo = null;
+let baseGridInfo = null;
 
 // ---- Alignment snap guides ----
 const SNAP_THRESHOLD = 6; // px — distance to snap to an edge
@@ -209,11 +210,98 @@ function clearGuideLines() {
 let undoStack = [];
 let redoStack = [];
 let lastSavedState = null;
+let pendingGridAction = null;
 const MAX_UNDO_STACK_SIZE = 50;
+
+function _cloneState(value) {
+  return JSON.parse(JSON.stringify(value || {}));
+}
+
+function _captureEditorState() {
+  return {
+    o: _cloneState(overrides),
+    g: _cloneState(model.gridOverrides || {}),
+  };
+}
+
+function _normaliseGridOverrides(gridOverrides) {
+  const next = {};
+  if (gridOverrides && Number.isFinite(gridOverrides.col_gap)) next.col_gap = gridOverrides.col_gap;
+  if (gridOverrides && Number.isFinite(gridOverrides.row_gap)) next.row_gap = gridOverrides.row_gap;
+  if (gridOverrides && Number.isFinite(gridOverrides.outer_margin)) next.outer_margin = gridOverrides.outer_margin;
+  return next;
+}
+
+function _gridRequestValues(gridOverrides) {
+  const fallback = baseGridInfo || gridInfo || {};
+  return {
+    colGap: gridOverrides.col_gap ?? fallback.col_gap ?? window.__DG_CONFIG.col_gap ?? 24,
+    rowGap: gridOverrides.row_gap ?? fallback.row_gap ?? window.__DG_CONFIG.row_gap ?? 24,
+    outerMargin: gridOverrides.outer_margin ?? fallback.outer_margin ?? 24,
+  };
+}
+
+function _createUndoCommand(label, beforeState, afterState) {
+  return { label, before: beforeState, after: afterState };
+}
+
+function beginUndoableAction(label) {
+  return { label, before: _serializeDirtyState() };
+}
+
+function commitUndoableAction(action) {
+  if (!action) return false;
+  const after = _serializeDirtyState();
+  if (action.before === after) return false;
+  undoStack.push(_createUndoCommand(action.label, action.before, after));
+  if (undoStack.length > MAX_UNDO_STACK_SIZE) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoButtons();
+  return true;
+}
+
+function runUndoableAction(label, mutate) {
+  const action = beginUndoableAction(label);
+  const result = mutate();
+  commitUndoableAction(action);
+  return result;
+}
 
 /** Serialise the full dirty-trackable state (overrides + grid overrides). */
 function _serializeDirtyState() {
-  return JSON.stringify({ o: overrides, g: model.gridOverrides || {} });
+  return JSON.stringify(_captureEditorState());
+}
+
+async function _restoreEditorState(serializedState) {
+  if (relayoutTimer) {
+    clearTimeout(relayoutTimer);
+    relayoutTimer = null;
+  }
+  pendingGridAction = null;
+  const parsed = JSON.parse(serializedState || "{}");
+  const nextOverrides = _cloneState(parsed.o);
+  const nextGridOverrides = _normaliseGridOverrides(parsed.g);
+  const currentGridOverrides = _normaliseGridOverrides(model.gridOverrides || {});
+  const gridChanged = JSON.stringify(currentGridOverrides) !== JSON.stringify(nextGridOverrides);
+
+  model.gridOverrides = _cloneState(nextGridOverrides);
+  if (gridChanged) {
+    const request = _gridRequestValues(nextGridOverrides);
+    await requestRelayout(request.colGap, request.rowGap, request.outerMargin);
+  }
+
+  overrides = nextOverrides;
+  applyWaypointOverrides();
+  applyAllOverrides();
+  reapplySelection();
+  renderSelectionInspector();
+  updateOverrideSummary();
+  refreshTreeColors();
+  runConstraints();
+  if (gridInfo) populateGridControls();
+
+  const currentStateStr = _serializeDirtyState();
+  setDirty(currentStateStr !== lastSavedState);
 }
 
 async function loadSVG() {
@@ -254,7 +342,10 @@ async function loadTree() {
 async function loadGridInfo() {
   try {
     const resp = await fetch("/api/grid/" + SLUG);
-    if (resp.ok) gridInfo = await resp.json();
+    if (resp.ok) {
+      gridInfo = await resp.json();
+      baseGridInfo = _cloneState(gridInfo);
+    }
   } catch (e) { /* ignore */ }
 }
 
@@ -423,13 +514,24 @@ function onGridControlChange() {
   const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
   const margin = Math.max(0, parseInt(document.getElementById("grid-margin").value) || 0);
 
+  if (!pendingGridAction) {
+    pendingGridAction = beginUndoableAction("Adjust grid");
+  }
+
   // Track grid overrides for persistence
   model.gridOverrides = { col_gap: colGap, row_gap: rowGap, outer_margin: margin };
   setDirty(true);
 
   // Debounce the relayout call so rapid typing doesn't flood the server
   if (relayoutTimer) clearTimeout(relayoutTimer);
-  relayoutTimer = setTimeout(() => requestRelayout(colGap, rowGap, margin), 200);
+  relayoutTimer = setTimeout(async () => {
+    try {
+      await requestRelayout(colGap, rowGap, margin);
+    } finally {
+      commitUndoableAction(pendingGridAction);
+      pendingGridAction = null;
+    }
+  }, 200);
 
   // Immediately update the grid overlay from the input values (local recompute)
   updateGridOverlayFromInputs();
@@ -519,6 +621,7 @@ async function loadOverrides() {
   // Initialize undo stack and saved state
   undoStack = [];
   redoStack = [];
+  pendingGridAction = null;
   lastSavedState = _serializeDirtyState();
   updateUndoRedoButtons();
 }
@@ -539,21 +642,6 @@ function applyWaypointOverrides() {
 
 // ---- Undo/Redo functions ----
 
-function recordSnapshot() {
-  // Record current state to undo stack (call BEFORE making the change)
-  const currentState = JSON.stringify(overrides);
-  if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== currentState) {
-    undoStack.push(currentState);
-    // Cap stack size
-    if (undoStack.length > MAX_UNDO_STACK_SIZE) {
-      undoStack.shift();
-    }
-    // Clear redo stack when new action is performed
-    redoStack = [];
-    updateUndoRedoButtons();
-  }
-}
-
 function canUndo() {
   return undoStack.length > 0;
 }
@@ -562,52 +650,22 @@ function canRedo() {
   return redoStack.length > 0;
 }
 
-function performUndo() {
+async function performUndo() {
   if (!canUndo()) return;
   
-  // Save current state to redo stack before undoing
-  const currentState = JSON.stringify(overrides);
-  redoStack.push(currentState);
-  
-  // Restore previous state
-  const previousState = undoStack.pop();
-  overrides = JSON.parse(previousState);
-  
-  // Update UI
-  applyWaypointOverrides();
-  applyAllOverrides();
-  renderSelectionInspector();
-  updateOverrideSummary();
-  refreshTreeColors();
-  
-  // Update dirty flag
-  const currentStateStr = _serializeDirtyState();
-  setDirty(currentStateStr !== lastSavedState);
+  const command = undoStack.pop();
+  redoStack.push(command);
+  await _restoreEditorState(command.before);
   
   updateUndoRedoButtons();
 }
 
-function performRedo() {
+async function performRedo() {
   if (!canRedo()) return;
   
-  // Save current state to undo stack before redoing
-  const currentState = JSON.stringify(overrides);
-  undoStack.push(currentState);
-  
-  // Restore next state
-  const nextState = redoStack.pop();
-  overrides = JSON.parse(nextState);
-  
-  // Update UI
-  applyWaypointOverrides();
-  applyAllOverrides();
-  renderSelectionInspector();
-  updateOverrideSummary();
-  refreshTreeColors();
-  
-  // Update dirty flag
-  const currentStateStr = _serializeDirtyState();
-  setDirty(currentStateStr !== lastSavedState);
+  const command = redoStack.pop();
+  undoStack.push(command);
+  await _restoreEditorState(command.after);
   
   updateUndoRedoButtons();
 }
@@ -796,7 +854,7 @@ function clampSelectionTarget(item, targetX, targetY) {
 
 function applySelectionTargets(targets) {
   if (Object.keys(targets).length === 0) return;
-  recordSnapshot();
+  const action = beginUndoableAction("Reposition selection");
   for (const [id, target] of Object.entries(targets)) {
     const node = model.get(id);
     if (!node) continue;
@@ -814,6 +872,7 @@ function applySelectionTargets(targets) {
   updateOverrideSummary();
   refreshTreeColors();
   runConstraints();
+  commitUndoableAction(action);
 }
 
 function distributeSelection(axis) {
@@ -1407,7 +1466,7 @@ function onDragMove(e) {
   if (!s.hasMoved) return;
   // Record pre-drag snapshot on first actual move
   if (!s.snapshotRecorded) {
-    recordSnapshot();
+    s.undoAction = beginUndoableAction(s.cids.length > 1 ? "Move selection" : "Move component");
     s.snapshotRecorded = true;
   }
   for (const id of s.cids) {
@@ -1462,6 +1521,7 @@ function onDragUp() {
     } else {
       reapplySelection();
     }
+    commitUndoableAction(s.undoAction);
   } else if (s) {
     selectComponent(s.cid);
   }
@@ -1693,9 +1753,10 @@ function onWpDragUp(e) {
   const s = mgr.state;
   if (s && s.hasMoved) {
     // Prune collinear waypoints (dragged onto a straight line between neighbours)
+    const action = beginUndoableAction("Move waypoint");
     pruneCollinearWaypoints(s.cid);
-    recordSnapshot();
     setWaypointOverride(s.cid);
+    commitUndoableAction(action);
   }
   mgr.endInteraction();
 }
@@ -1744,24 +1805,26 @@ function pruneCollinearWaypoints(cid) {
 function addWaypoint(cid, segIdx, x, y) {
   const node = getArrowNode(cid);
   if (!node) return;
+  const action = beginUndoableAction("Add waypoint");
   if (!node.waypoints) node.waypoints = [];
   const snapX = Math.round(x / 8) * 8;
   const snapY = Math.round(y / 8) * 8;
   node.waypoints.splice(segIdx, 0, [snapX, snapY]);
   rebuildArrowSVG(cid);
   showArrowWaypointHandles(cid);
-  recordSnapshot();
   setWaypointOverride(cid);
+  commitUndoableAction(action);
 }
 
 function removeWaypoint(cid, idx) {
   const node = getArrowNode(cid);
   if (!node || !node.waypoints || node.waypoints.length <= 1) return;
-  recordSnapshot();
+  const action = beginUndoableAction("Remove waypoint");
   node.waypoints.splice(idx, 1);
   rebuildArrowSVG(cid);
   showArrowWaypointHandles(cid);
   setWaypointOverride(cid);
+  commitUndoableAction(action);
 }
 
 function getArrowPoints(cid) {
@@ -2102,11 +2165,9 @@ function commitTextEdit() {
   const changed = newLines.join("\\n") !== originalLines.join("\\n");
 
   if (changed) {
-    // Record undo snapshot BEFORE applying the change
-    recordSnapshot();
-
-    // Store text override so undo/redo can restore it
-    setOverride(cid, { text: newLines });
+    runUndoableAction("Edit text", () => {
+      setOverride(cid, { text: newLines });
+    });
   }
 
   // Update the tspan content
@@ -2235,7 +2296,7 @@ function onResizeMove(e) {
   if (!s.hasMoved) return;
   // Record pre-resize snapshot on first actual move
   if (!s.snapshotRecorded) {
-    recordSnapshot();
+    s.undoAction = beginUndoableAction("Resize component");
     const svg = document.querySelector("#stage svg");
     if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "none");
     s.snapshotRecorded = true;
@@ -2313,6 +2374,7 @@ function onResizeUp() {
       }
     }
     selectComponent(s.cid);
+    commitUndoableAction(s.undoAction);
   } else {
     // No move happened: re-show handles that were hidden
     if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "");
@@ -2341,18 +2403,18 @@ function cleanOverride(cid) {
 }
 
 function applyStyleOverride(cid, styleName) {
-  recordSnapshot();
-  if (styleName && BOX_STYLES[styleName]) {
-    setOverride(cid, { style: styleName });
-  } else {
-    // Clear style override
-    const ovr = overrides[cid];
-    if (ovr) {
-      delete ovr.style;
-      model.cleanOverride(cid);
+  runUndoableAction("Change style", () => {
+    if (styleName && BOX_STYLES[styleName]) {
+      setOverride(cid, { style: styleName });
+    } else {
+      const ovr = overrides[cid];
+      if (ovr) {
+        delete ovr.style;
+        model.cleanOverride(cid);
+      }
+      setDirty(true);
     }
-    setDirty(true);
-  }
+  });
   applyAllOverrides();
   reapplySelection();
   runConstraints();
@@ -2528,8 +2590,7 @@ async function saveOverrides() {
 }
 
 function clearOverride(cid) {
-  // Record snapshot before clearing override
-  recordSnapshot();
+  const action = beginUndoableAction("Clear override");
   const hadWaypoints = overrides[cid] && overrides[cid].waypoints;
   model.clearOverride(cid);
   setDirty(true);
@@ -2544,6 +2605,7 @@ function clearOverride(cid) {
     applyAllOverrides();
     if (selectedIds.has(cid)) updateInspector(cid);
   }
+  commitUndoableAction(action);
 }
 
 function updateOverrideSummary() {
@@ -2598,10 +2660,10 @@ document.getElementById("btn-save").addEventListener("click", () => {
 document.getElementById("btn-clear-all").addEventListener("click", () => {
   if (Object.keys(overrides).length === 0) return;
   if (!confirm("Clear all overrides for " + SLUG + "?")) return;
-  // Record snapshot before clearing all overrides
-  recordSnapshot();
-  overrides = {};
-  setDirty(true);
+  runUndoableAction("Clear all overrides", () => {
+    overrides = {};
+    setDirty(true);
+  });
   applyAllOverrides();
   renderSelectionInspector();
 });
@@ -2643,15 +2705,16 @@ document.addEventListener("keydown", (e) => {
              ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
     e.preventDefault();
     const step = e.shiftKey ? 24 : 8;
-    recordSnapshot();
-    selectedIds.forEach(id => {
-      const own = getOwnDelta(id);
-      let dx = own.dx, dy = own.dy;
-      if (e.key === "ArrowUp") dy -= step;
-      else if (e.key === "ArrowDown") dy += step;
-      else if (e.key === "ArrowLeft") dx -= step;
-      else if (e.key === "ArrowRight") dx += step;
-      setOverride(id, { dx, dy });
+    runUndoableAction("Nudge selection", () => {
+      selectedIds.forEach(id => {
+        const own = getOwnDelta(id);
+        let dx = own.dx, dy = own.dy;
+        if (e.key === "ArrowUp") dy -= step;
+        else if (e.key === "ArrowDown") dy += step;
+        else if (e.key === "ArrowLeft") dx -= step;
+        else if (e.key === "ArrowRight") dx += step;
+        setOverride(id, { dx, dy });
+      });
     });
     applyAllOverrides();
     const primary = [...selectedIds].pop();

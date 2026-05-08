@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-08 – Preview undo state coverage
+
+- Updated the interactive preview undo/redo stack to restore full editor state instead of override deltas only, so grid gutter and outer-margin changes are now undoable alongside component overrides.
+- Replaced the anonymous undo stack entries with explicit per-action command records covering move, resize, grid edits, text edits, style changes, waypoint edits, clear actions, and keyboard nudges.
+- Narrowed the remaining editor undo work from “make it action-based” to “specialize specific hot actions only if before/after state commands prove too heavy.”
+
 ### 2026-05-07 – Preview distribute/align + output validation sweep
 
 - Added multi-select distribute and align controls to the interactive preview inspector with configurable gutter spacing, 8px snapping, override persistence, and undo/redo-safe updates.

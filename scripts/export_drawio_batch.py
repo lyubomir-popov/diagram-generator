@@ -1347,7 +1347,7 @@ def export_logic_data_vram() -> None:
     inset = svg.INSET             # 8
     row_gap = svg.COMPACT_GAP     # 8
     panel_gap = svg.GRID_GUTTER   # 24
-    outer = svg.OUTER_MARGIN      # 32
+    outer = svg.OUTER_MARGIN      # 24
 
     # Box heights (inside-out)
     h_text_1 = svg.tight_box_height([svg.make_line("x")])                        # 36
@@ -1383,7 +1383,7 @@ def export_logic_data_vram() -> None:
         + vram_rows * vram_bar_h + (vram_rows - 1) * row_gap
         + inset
     )
-    helper_line_h = svg.BODY_LINE_STEP  # 20
+    helper_line_h = svg.BODY_LINE_STEP  # 24
     vram_outer_h = svg.round_up_to_grid(
         inset + heading_h + row_gap
         + sub_panel_h + row_gap

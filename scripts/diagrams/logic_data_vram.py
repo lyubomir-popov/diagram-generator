@@ -36,7 +36,7 @@ logic_data_vram = Diagram(
     title="Logic + data conflict / AI inference / VRAM fragmentation",
     arrangement=Diagram.Arrangement.GRID,
     cols=2,
-    # col_gap and row_gap default to GRID_GUTTER (32)
+    # col_gap and row_gap default to GRID_GUTTER (24)
     outer_margin=24,
     components=[
         # ── Row 0: two top panels ──

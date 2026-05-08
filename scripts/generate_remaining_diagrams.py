@@ -973,7 +973,7 @@ def build_logic_data_vram() -> None:
     )
 
     panel_gap = GRID_GUTTER  # 24
-    outer = OUTER_MARGIN     # 32
+    outer = OUTER_MARGIN     # 24
 
     left_x = outer
     left_y = outer
@@ -990,7 +990,7 @@ def build_logic_data_vram() -> None:
         + vram_rows * vram_bar_h + (vram_rows - 1) * row_gap
         + inset
     )
-    helper_line_h = BODY_LINE_STEP  # 20
+    helper_line_h = BODY_LINE_STEP  # 24
     vram_outer_h = round_up_to_grid(
         inset + heading_h + row_gap
         + sub_panel_h + row_gap

@@ -95,7 +95,7 @@ The project has evolved from a batch diagram generator into a **constrained inte
 - `scripts/preview_server.py` – pure API server (485 lines), no embedded JS
 
 **Remaining interactive editor work** (post-refactor):
-- Command pattern for granular undo/redo (deferred; snapshot approach works)
+- Domain-specific undo/redo follow-up (deferred; undo/redo now uses explicit per-action command records, but each command still stores before/after editor state rather than bespoke do/undo handlers)
 - Bug 6: horizontal layout with `cols=1` misclassified as "vertical" in `_bounds_to_component_info` (no current diagrams affected)
 
 **Browser-verified (May 2026):** snap guides, layout metadata in inspector, icon re-anchor on resize, parent→child grid propagation, and multi-select distribute/align in the preview inspector. All audit bugs fixed (commits `51535bf`, `dec8160`).
@@ -125,9 +125,10 @@ The project has evolved from a batch diagram generator into a **constrained inte
 ## Current execution plan
 
 - Content-width alignment and preview distribute-and-align are complete and validated.
-- Generated draw.io outputs are structurally clean; the next validation step is a manual desktop smoke test in draw.io or diagrams.net when that tooling is available.
-- Generated SVG outputs passed the Illustrator-safety sanitizer; the next validation step is a manual Illustrator desktop smoke test when that tooling is available.
-- Ingest remaining typography, spacing, and grid specs from the broader design language into `DIAGRAM.md`, then map them into `scripts/diagram_shared.py` and draw.io style sync.
+- Preview undo/redo now uses explicit action records and restores full editor state, including grid overrides; the remaining no-input editor lane is deciding whether any hotspots need bespoke do/undo handlers beyond before/after state commands.
+- Generated draw.io outputs are structurally clean; manual draw.io or diagrams.net smoke tests remain pending but are not the current no-input implementation lane.
+- Generated SVG outputs passed the Illustrator-safety sanitizer; manual Illustrator smoke tests remain pending but are not blocking the current implementation work.
+- Finish propagating the imported typography, spacing, and grid tokens into draw.io style sync and any remaining renderer defaults.
 - Keep refining `DIAGRAM.md` as more diagram types appear.
 
 ## Draw.io evolution plan

@@ -47,9 +47,9 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 - The repo is runnable from the tracked workflow docs, starter-block references, icon library, draw.io primitive library, and generator scripts, so a fresh clone still preserves the core on-brand style system.
 - The repo now carries the main input, output, compare, and reference lanes needed for internal cold starts without relying on a separate broader brand-language raster reference.
-- The shareable repo currently contains only one real tracked input/output pair in the live diagram lanes, so the transformation workflow is under-sampled for a cold-start agent or an external PM trying to learn the process from examples.
-- Most compare pages remain tracked, but they point at ignored source and output assets, so the review lane is not self-contained for external users even though the HTML files are present.
-- Conclusion: the repo can be shared as a runnable style-and-generator workspace, but it is not yet cold-start-safe enough for PM self-serve trials without a curated tracked exemplar pack and the missing governing reference assets.
+- The tracked corpus now includes the main reference, input, output, compare, and draw.io working lanes, so a fresh internal clone has enough material to inspect the end-to-end workflow without reconstructing missing assets.
+- Compare pages now resolve both `diagrams/1.input/` and `diagrams/1. input/`, so the tracked HTML review lane stays self-contained for the current internal corpus.
+- Conclusion: the repo is now cold-start-safe for internal sharing. The remaining PM-shareability work is curation and guided onboarding, not recovering missing tracked files.
 
 ### Diagram language contract
 
@@ -182,7 +182,8 @@ These items are now unblocked by the completed refactor:
 - [x] **Component swap.** Done — style picker in inspector (default/accent/highlight). Overrides persist, undo/redo works, constraint system validates.
 - [x] **Baseline alignment guide.** Done — snap guides show during single-component drag. Collects peer edges/centers, snaps within 6px threshold, renders dashed orange guide lines, cleans up on drop.
 - [x] **Full interaction manager adoption.** Done — all 4 state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) replaced with `mgr.startXxx()`/`mgr.endInteraction()` and `mgr.state` access.
-- [ ] `[H]` **Command pattern for undo/redo.** ★★ medium — Replace JSON snapshot approach with granular command objects. Deferred; current snapshot approach works correctly.
+- [x] `[H]` **Command pattern for undo/redo.** Replaced the anonymous JSON snapshot stack with explicit per-action command records for move, resize, grid edits, text edits, style changes, waypoint edits, clear actions, and keyboard nudges. Undo/redo now restores full editor state, including grid overrides.
+- [ ] `[M]` **Specialize high-volume undo commands where worth it.** The current command records still store before/after editor state. If history size or restore cost becomes a problem, promote the hottest actions to bespoke do/undo handlers.
 - [x] **Ctrl+Z does not undo typed text in inline editor.** Fixed — text edits now store override, record undo snapshot, and restore via `applyAllOverrides`.
 - [x] **Gutter value changes don't activate save button.** Fixed — grid overrides persist via override JSON and mark dirty on change.
 - [x] **Baseline grid overlay turns pink.** Fixed — composition and baseline modes are now mutually exclusive. Baseline shows a clean 8px grid without the column/row band fills.
@@ -210,6 +211,9 @@ These items are now unblocked by the completed refactor:
 - [x] Collinear waypoint auto-pruning
 - [x] Arrow SVG rebuild on waypoint count change
 - [x] Gutter change re-fits children (relayout clears stale overrides)
+- [x] Undo/redo snapshots now include grid overrides, so gutter and outer-margin edits can be reverted along with component override changes.
+- [x] Undo/redo now records explicit per-action commands instead of pushing anonymous stack snapshots.
+- [ ] `[M]` Swap the preview/editor UI from bespoke local CSS over to Baseline Foundry once the workspace integration target is ready.
 
 ### Previously active
 
@@ -227,6 +231,6 @@ These items are now unblocked by the completed refactor:
 - [ ] `[S]` Manual Illustrator desktop smoke test for the refreshed starter-block SVG batch when Illustrator is available locally.
 - [ ] `[S]` Keep refining `DIAGRAM.md` as more diagram types appear.
 - [ ] `[S]` Re-audit the generator helpers whenever the user adjusts the starter block so the output set does not drift back into mixed inset or line-height rules.
-- [ ] `[H]` Make the repo PM-shareable by tracking a curated exemplar pack of at least `3` to `5` real before/after pairs plus their compare assets.
+- [ ] `[S]` Curate a PM-onboarding exemplar path over the tracked internal corpus so a cold-start agent or PM knows which `3` to `5` before/after/compare sets to inspect first.
 - [x] New component: stacked icon+text block (icon above label, both grid-aligned) to avoid keyline breaks from side-by-side icon placement pushing text out of alignment.
 - [x] Reconcile `README.md`, `STATUS.md`, `docs/specs.md`, and `.github/copilot-instructions.md` with the actually tracked corpus so cold-start instructions do not point at ignored files.

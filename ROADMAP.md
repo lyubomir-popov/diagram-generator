@@ -109,6 +109,7 @@ The product differentiator: the editor enforces brand rules at the model level, 
 - Snap-to-grid visual guides during drag
 - Property panel for editing fill, border style, text on selected component
 - Component swap from shape library (like Figma component swap)
+- Replace the preview/editor's bespoke local CSS with Baseline Foundry primitives and tokens once the workspace integration is ready
 
 **Longer-term:**
 - Create new components from the UI (add box, add panel, add arrow)

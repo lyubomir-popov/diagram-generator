@@ -350,7 +350,7 @@ A newer declarative system where diagrams are defined as data (model → layout 
 | **Layout engine** | `scripts/diagram_layout.py` + `scripts/diagram_model.py` |
 | **Entry point** | `python scripts/build_v2.py` |
 | **Outputs** | `*-onbrand-v2.svg`, `*-onbrand-v2.drawio` |
-| **Maturity** | Experimental but much closer to parity. All 9 diagrams are converted, and the currently audited batch is green; the open work is PM-shareable authoring, command-pattern undo, and further workflow hardening rather than basic rendering gaps. |
+| **Maturity** | Experimental but much closer to parity. All 9 diagrams are converted, and the currently audited batch is green; the open work is PM-shareable authoring, selective undo optimization where it proves necessary, and further workflow hardening rather than basic rendering gaps. |
 
 ### 3-way visual comparison
 
