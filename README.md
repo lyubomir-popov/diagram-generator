@@ -14,6 +14,16 @@ Fastest way to see the project working:
 - Interactive polish pass: run `python scripts/preview_server.py --slug diagram-intake-workflow --grid`, then open `http://127.0.0.1:8100/view/diagram-intake-workflow`
 - Static comparison with inputs: open [`diagrams/3.compare/html/diagram-intake-workflow.html`](diagrams/3.compare/html/diagram-intake-workflow.html)
 
+### Recommended exemplar path
+
+If you are cold-starting the repo and want the fastest route through the tracked corpus, inspect these in order:
+
+1. [`diagrams/3.compare/html/diagram-intake-workflow.html`](diagrams/3.compare/html/diagram-intake-workflow.html) — the workflow explainer and the main interactive demo slug.
+2. [`diagrams/3.compare/html/memory-wall.html`](diagrams/3.compare/html/memory-wall.html) plus [`diagrams/2.output/svg/memory-wall-onbrand.svg`](diagrams/2.output/svg/memory-wall-onbrand.svg) — the current canonical style exemplar.
+3. [`diagrams/3.compare/html/logic-data-vram.html`](diagrams/3.compare/html/logic-data-vram.html) — dense grouped panels, bars, and nested framing.
+4. [`diagrams/3.compare/html/attention-qkv.html`](diagrams/3.compare/html/attention-qkv.html) — matrix widget coverage and more complex connector routing.
+5. [`diagrams/3.compare/html/request-to-hardware-stack.html`](diagrams/3.compare/html/request-to-hardware-stack.html) — the current clean vertical-stack explainer pattern.
+
 ### Agent prompt: demo the project
 
 Paste this into an agent on a fresh clone:
@@ -268,6 +278,20 @@ The canonical diagram-language contract now lives in [`DIAGRAM.md`](DIAGRAM.md).
 - Truly special non-text shapes like the jagged memory wall may use image-backed cells when needed
 - Direct connectors must use real `source` / `target` references plus explicit `entry` / `exit` anchors
 - Exports should force light rendering with `adaptiveColors="none"` and explicit colors
+
+## Token-driven draw.io style sync
+
+`scripts/drawio_style_sync.py` now understands named canonical presets derived from the shared renderer tokens, so you can target generator-tagged cells by token and reapply the current draw.io defaults without hand-writing raw `KEY=VALUE` lists.
+
+Useful commands:
+
+```bash
+python scripts/drawio_style_sync.py --list-presets
+python scripts/drawio_style_sync.py --token label-box --preset label-box
+python scripts/drawio_style_sync.py diagrams/2.output/draw.io/memory-wall-onbrand.drawio --token edge-orange --preset edge-orange --write
+```
+
+Combine `--token`, `--role`, `--preset`, `--set`, and `--unset` as needed. Presets give you the canonical baseline; explicit `--set` or `--unset` flags can still override individual draw.io fields for one-off migrations.
 
 ## Workflow map
 

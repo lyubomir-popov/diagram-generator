@@ -53,6 +53,6 @@ Rows marked ⚠ reference assets excluded by `.gitignore`. Run the build or obta
 - Local reference assets in this repo are the primary source of truth for diagram visuals.
 - `DIAGRAM.md` is the bridge point for imported typography, spacing, and grid specs from the broader design language into this repo's renderers.
 - draw.io libraries improve reuse for future insertions but do not live-update shapes already placed in diagrams; repo-wide style changes still require a batch XML update strategy.
-- `scripts/export_drawio_library.py` regenerates the tracked draw.io library, and `scripts/drawio_style_sync.py` is the batch rewrite path for token-targeted draw.io style changes.
+- `scripts/export_drawio_library.py` regenerates the tracked draw.io library, `scripts/drawio_style_presets.py` defines the canonical shared draw.io style-field presets, and `scripts/drawio_style_sync.py` is the batch rewrite path for applying those presets or other token-targeted draw.io style changes.
 - Sibling repos can inform workflow or style, but they do not outrank an explicitly referenced local sketch or reference asset.
 - Keep this file focused on governing references and repo relationships, not active tasks or handoff notes.

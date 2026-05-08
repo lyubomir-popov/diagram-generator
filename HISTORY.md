@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-08 – Draw.io preset sync and onboarding path
+
+- Added `scripts/drawio_style_presets.py` so the canonical draw.io field maps for labels, panels, images, separators, and connectors now live in one shared module instead of being duplicated across exporter strings and ad hoc sync commands.
+- Wired `scripts/export_drawio_batch.py` and `scripts/drawio_style_sync.py` to the shared preset layer, including `--preset` and `--list-presets` support in the style-sync CLI.
+- Added a curated cold-start exemplar path to `README.md` and marked the PM-onboarding corpus-shortlist task complete in `TODO.md`.
+
 ### 2026-05-08 – Preview undo state coverage
 
 - Updated the interactive preview undo/redo stack to restore full editor state instead of override deltas only, so grid gutter and outer-margin changes are now undoable alongside component overrides.

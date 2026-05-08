@@ -7,10 +7,11 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 
 import diagram_shared as svg
+import drawio_style_presets as dg_presets
 import drawio_style_tokens as dg_tokens
 
 
-FONT_SOURCE = "https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans"
+FONT_SOURCE = dg_presets.FONT_SOURCE
 
 
 def infer_vertex_metadata(style: str) -> dg_tokens.CellMetadata:
@@ -259,20 +260,7 @@ class DrawioBuilder:
 
 
 def rect_style(fill: str, *, stroke: str = svg.BLACK, dashed: bool = False) -> str:
-    parts = [
-        "rounded=0",
-        "whiteSpace=wrap",
-        "html=1",
-        "shadow=0",
-        f"fillColor={fill}",
-    ]
-    if stroke == "none":
-        parts.extend(["strokeColor=none", "strokeWidth=0"])
-    else:
-        parts.extend([f"strokeColor={stroke}", "strokeWidth=1"])
-    if dashed:
-        parts.extend(["dashed=1", "dashPattern=8 8"])
-    return ";".join(parts) + ";"
+    return dg_presets.style_string(dg_presets.rect_style_props(fill, stroke=stroke, dashed=dashed))
 
 
 def label_style(
@@ -284,12 +272,15 @@ def label_style(
     font_family: str = "Ubuntu Sans",
     font_source: str | None = FONT_SOURCE,
 ) -> str:
-    font_source_part = f";fontSource={font_source}" if font_source else ""
-    return (
-        f"rounded=0;whiteSpace=wrap;html=1;align={align};verticalAlign={vertical_align};"
-        "spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;"
-        "fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;"
-        f"fontFamily={font_family}{font_source_part};fontSize={font_size};fontColor={font_color};"
+    return dg_presets.style_string(
+        dg_presets.label_style_props(
+            font_size=font_size,
+            font_color=font_color,
+            align=align,
+            vertical_align=vertical_align,
+            font_family=font_family,
+            font_source=font_source,
+        )
     )
 
 
@@ -301,27 +292,11 @@ def ellipse_style(fill: str) -> str:
 
 
 def image_style(image_uri: str) -> str:
-    return (
-        "shape=image;html=1;aspect=fixed;imageAspect=0;verticalLabelPosition=middle;"
-        "verticalAlign=middle;strokeColor=none;fillColor=none;imageBackground=none;"
-        "imageBorder=0;image="
-        + image_uri
-        + ";"
-    )
+    return dg_presets.style_string(dg_presets.image_style_props(image_uri))
 
 
 def line_style(color: str, *, dashed: bool = False) -> str:
-    parts = [
-        "shape=line",
-        "html=1",
-        f"strokeColor={color}",
-        "strokeWidth=1",
-        "fillColor=none",
-        "rounded=0",
-    ]
-    if dashed:
-        parts.extend(["dashed=1", "dashPattern=8 8"])
-    return ";".join(parts) + ";"
+    return dg_presets.style_string(dg_presets.line_style_props(color, dashed=dashed))
 
 
 def edge_style(
@@ -336,30 +311,19 @@ def edge_style(
     entry_x: float | None = None,
     entry_y: float | None = None,
 ) -> str:
-    parts = [
-        "edgeStyle=orthogonalEdgeStyle" if orthogonal else "edgeStyle=none",
-        "rounded=0",
-        "orthogonalLoop=1",
-        "jettySize=auto",
-        "html=1",
-        f"strokeColor={color}",
-        "strokeWidth=1",
-    ]
-    if start_arrow:
-        parts.extend(["startArrow=blockThin", "startFill=1", "startSize=8"])
-    else:
-        parts.extend(["startArrow=none", "startFill=0"])
-    if end_arrow:
-        parts.extend(["endArrow=blockThin", "endFill=1", "endSize=8"])
-    else:
-        parts.extend(["endArrow=none", "endFill=0"])
-    if dashed:
-        parts.extend(["dashed=1", "dashPattern=8 8"])
-    if exit_x is not None and exit_y is not None:
-        parts.extend([f"exitX={exit_x}", f"exitY={exit_y}", "exitDx=0", "exitDy=0"])
-    if entry_x is not None and entry_y is not None:
-        parts.extend([f"entryX={entry_x}", f"entryY={entry_y}", "entryDx=0", "entryDy=0"])
-    return ";".join(parts) + ";"
+    return dg_presets.style_string(
+        dg_presets.edge_style_props(
+            color,
+            dashed=dashed,
+            start_arrow=start_arrow,
+            end_arrow=end_arrow,
+            orthogonal=orthogonal,
+            exit_x=exit_x,
+            exit_y=exit_y,
+            entry_x=entry_x,
+            entry_y=entry_y,
+        )
+    )
 
 
 def text_height(lines: list[dict[str, object]], *, pad_bottom: int = 0, min_height: int = 0) -> int:

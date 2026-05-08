@@ -231,6 +231,6 @@ These items are now unblocked by the completed refactor:
 - [ ] `[S]` Manual Illustrator desktop smoke test for the refreshed starter-block SVG batch when Illustrator is available locally.
 - [ ] `[S]` Keep refining `DIAGRAM.md` as more diagram types appear.
 - [ ] `[S]` Re-audit the generator helpers whenever the user adjusts the starter block so the output set does not drift back into mixed inset or line-height rules.
-- [ ] `[S]` Curate a PM-onboarding exemplar path over the tracked internal corpus so a cold-start agent or PM knows which `3` to `5` before/after/compare sets to inspect first.
+- [x] `[S]` Curate a PM-onboarding exemplar path over the tracked internal corpus so a cold-start agent or PM knows which `3` to `5` before/after/compare sets to inspect first. The shortlist now lives in `README.md` under `Recommended exemplar path`.
 - [x] New component: stacked icon+text block (icon above label, both grid-aligned) to avoid keyline breaks from side-by-side icon placement pushing text out of alignment.
 - [x] Reconcile `README.md`, `STATUS.md`, `docs/specs.md`, and `.github/copilot-instructions.md` with the actually tracked corpus so cold-start instructions do not point at ignored files.

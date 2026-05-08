@@ -6,6 +6,7 @@ import sys
 import xml.etree.ElementTree as ET
 
 import diagram_shared as shared
+import drawio_style_presets as dg_presets
 import drawio_style_tokens as dg_tokens
 
 
@@ -29,6 +30,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         help="Match only cells with this draw.io role. Repeatable.",
+    )
+    parser.add_argument(
+        "--preset",
+        action="append",
+        default=[],
+        help="Apply a named canonical draw.io style preset derived from shared tokens. Repeatable.",
     )
     parser.add_argument(
         "--set",
@@ -65,6 +72,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--include-untagged",
         action="store_true",
         help="Allow matches outside generator-tagged cells.",
+    )
+    parser.add_argument(
+        "--list-presets",
+        action="store_true",
+        help="Print available canonical style presets and exit.",
     )
     return parser
 
@@ -166,14 +178,27 @@ def rewrite_file(
     return matched, changed
 
 
+def print_presets() -> None:
+    for name, preset in sorted(dg_presets.available_presets().items()):
+        print(f"{name}: {preset.description}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    set_props = parse_set_props(args.set_props)
-    unset_props = {item.strip() for item in args.unset_props if item.strip()}
+    if args.list_presets:
+        print_presets()
+        return 0
+
+    preset_set_props, preset_unset_props = dg_presets.resolve_presets(args.preset)
+    set_props = preset_set_props.copy()
+    set_props.update(parse_set_props(args.set_props))
+    unset_props = set(preset_unset_props)
+    unset_props.update(item.strip() for item in args.unset_props if item.strip())
+    unset_props.difference_update(set_props.keys())
     if not set_props and not unset_props:
-        raise SystemExit("Nothing to do. Provide at least one --set or --unset operation.")
+        raise SystemExit("Nothing to do. Provide at least one --preset, --set, or --unset operation.")
 
     roles = {item.strip() for item in args.role if item.strip()}
     tokens = {item.strip() for item in args.token if item.strip()}
