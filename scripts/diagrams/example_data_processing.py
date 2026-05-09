@@ -44,7 +44,7 @@ example_data_processing = Diagram(
     col_width=192,
     row_height=64,
     col_gap=24,
-    row_gap=24,
+    row_gap=40,
     outer_margin=24,
     components=[
         # ── Row 0: Ingestion ──

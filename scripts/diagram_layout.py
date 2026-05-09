@@ -10,6 +10,7 @@ and spacing tokens from ``diagram_shared``.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -1034,15 +1035,29 @@ def _route_around_obstacles(
 
         if left_dist <= right_dist:
             # Route left of the obstacle
-            detour_x = round((union_x - clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            detour_x = math.floor((union_x - clearance) / BASELINE_UNIT) * BASELINE_UNIT
         else:
             # Route right of the obstacle
-            detour_x = round((union_x2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            detour_x = math.ceil((union_x2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
 
         if src_side == "bottom" and tgt_side == "top" and sy < ty:
-            # Normal downward flow — U-bend: down, sideways, sideways, down
+            # Normal downward flow — U-bend: down, sideways, sideways, down.
+            # exit_y must be above the obstacle union; entry_y below it.
+            # Snap exit_y toward source (floor toward obstacle top).
             exit_y = round((sy + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            exit_y_max = math.floor(union_y / BASELINE_UNIT) * BASELINE_UNIT
+            if exit_y_max >= union_y:
+                exit_y_max -= BASELINE_UNIT
+            exit_y = min(exit_y, exit_y_max)
+            # Snap entry_y away from obstacle bottom (ceil past obstacle).
             entry_y = round((ty - MIN_ARROW_SEGMENT) / BASELINE_UNIT) * BASELINE_UNIT
+            entry_y_min = math.ceil(union_y2 / BASELINE_UNIT) * BASELINE_UNIT
+            if entry_y_min <= union_y2:
+                entry_y_min += BASELINE_UNIT
+            entry_y = max(entry_y, entry_y_min)
+            # Clamp to leave at least one baseline unit for approach
+            if entry_y >= ty:
+                entry_y = ty - BASELINE_UNIT
             new_wps = [
                 (sx, exit_y),
                 (detour_x, exit_y),
@@ -1051,7 +1066,17 @@ def _route_around_obstacles(
             ]
         elif src_side == "top" and tgt_side == "bottom" and sy > ty:
             exit_y = round((sy - clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            exit_y_min = math.ceil(union_y2 / BASELINE_UNIT) * BASELINE_UNIT
+            if exit_y_min <= union_y2:
+                exit_y_min += BASELINE_UNIT
+            exit_y = max(exit_y, exit_y_min)
             entry_y = round((ty + MIN_ARROW_SEGMENT) / BASELINE_UNIT) * BASELINE_UNIT
+            entry_y_max = math.floor(union_y / BASELINE_UNIT) * BASELINE_UNIT
+            if entry_y_max >= union_y:
+                entry_y_max -= BASELINE_UNIT
+            entry_y = min(entry_y, entry_y_max)
+            if entry_y <= ty:
+                entry_y = ty + BASELINE_UNIT
             new_wps = [
                 (sx, exit_y),
                 (detour_x, exit_y),
@@ -1095,23 +1120,50 @@ def _route_around_obstacles(
                 (round(tx / BASELINE_UNIT) * BASELINE_UNIT, detour_y),
             ]
     else:
-        # Mixed vertical/horizontal — L-bend shouldn't usually hit obstacles,
-        # but if it does, add a detour segment
+        # Mixed vertical/horizontal — L-bend may hit obstacles when the
+        # vertical and horizontal segments cross intervening components.
         if vertical_src:
-            # bottom/top → left/right: try routing around
-            detour_y = round(ty / BASELINE_UNIT) * BASELINE_UNIT
-            if sx < tx:
-                detour_x = round((union_x2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            # top/bottom → left/right: route the vertical leg outside
+            # the obstacle column, then approach horizontally.
+            src_goes_up = src_side == "top"
+            # Pick a detour X on the side of the union box that is
+            # closer to the source (or away from the target).
+            left_clear = union_x - clearance
+            right_clear = union_x2 + clearance
+            # Prefer the side that keeps the detour between src and
+            # the margin (shorter overall path).
+            if abs(sx - left_clear) <= abs(sx - right_clear):
+                detour_x = round(left_clear / BASELINE_UNIT) * BASELINE_UNIT
             else:
-                detour_x = round((union_x - clearance) / BASELINE_UNIT) * BASELINE_UNIT
-            new_wps = [(sx, detour_y), (detour_x, detour_y), (detour_x, ty)]
+                detour_x = round(right_clear / BASELINE_UNIT) * BASELINE_UNIT
+
+            # Exit vertically from source by ARROW_EXIT_CLEARANCE,
+            # jog horizontally to detour_x, run vertically to target Y,
+            # then approach target horizontally.
+            exit_y = round((sy + (-1 if src_goes_up else 1) * ARROW_EXIT_CLEARANCE)
+                           / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [
+                (sx, exit_y),         # short exit from source
+                (detour_x, exit_y),   # jog sideways into clear column
+                (detour_x, ty),       # run vertically to target Y
+            ]
         else:
-            detour_x = round(tx / BASELINE_UNIT) * BASELINE_UNIT
-            if sy < ty:
-                detour_y = round((union_y2 + clearance) / BASELINE_UNIT) * BASELINE_UNIT
+            # left/right → top/bottom
+            tgt_goes_up = tgt_side == "top"
+            top_clear = union_y - clearance
+            bottom_clear = union_y2 + clearance
+            if abs(sy - top_clear) <= abs(sy - bottom_clear):
+                detour_y = round(top_clear / BASELINE_UNIT) * BASELINE_UNIT
             else:
-                detour_y = round((union_y - clearance) / BASELINE_UNIT) * BASELINE_UNIT
-            new_wps = [(detour_x, sy), (detour_x, detour_y), (tx, detour_y)]
+                detour_y = round(bottom_clear / BASELINE_UNIT) * BASELINE_UNIT
+
+            exit_x = round((sx + (1 if src_side == "right" else -1) * ARROW_EXIT_CLEARANCE)
+                           / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [
+                (exit_x, sy),
+                (exit_x, detour_y),
+                (tx, detour_y),
+            ]
 
     # Verify the new path is clear; if not, return original (best effort)
     new_pts = [src] + new_wps + [tgt]
