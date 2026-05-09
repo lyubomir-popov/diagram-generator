@@ -9,7 +9,6 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 DIAGRAMS_DIR = ROOT / "diagrams"
 BEFORE_DIRS = [
   DIAGRAMS_DIR / "1.input",
-  DIAGRAMS_DIR / "1. input",
 ]
 AFTER_DIR = DIAGRAMS_DIR / "2.output" / "svg"
 REFINED_DIR = DIAGRAMS_DIR / "2.output" / "draw.io" / "manually-edited" / "raster"
@@ -152,8 +151,7 @@ def build_page(pair: dict[str, str]) -> str:
     after_url = rel_url(html_path, after_path)
     refined_url = rel_url(html_path, refined_path)
     before_text = (
-        f"Expected: diagrams/1.input/{pair['before']} "
-        f"or diagrams/1. input/{pair['before']}"
+        f"Expected: diagrams/1.input/{pair['before']}"
     )
     after_text = f"Expected: diagrams/2.output/svg/{pair['after']}"
     refined_text = (

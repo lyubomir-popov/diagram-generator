@@ -246,7 +246,6 @@ _viewer_template: str | None = None
 
 # Reference-image directories (rough input sketches)
 _INPUT_DIRS = [
-    ROOT / "diagrams" / "1. input",
     ROOT / "diagrams" / "1.input",
 ]
 

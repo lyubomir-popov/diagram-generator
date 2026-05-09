@@ -48,7 +48,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 - The repo is runnable from the tracked workflow docs, starter-block references, icon library, draw.io primitive library, and generator scripts, so a fresh clone still preserves the core on-brand style system.
 - The repo now carries the main input, output, compare, and reference lanes needed for internal cold starts without relying on a separate broader brand-language raster reference.
 - The tracked corpus now includes the main reference, input, output, compare, and draw.io working lanes, so a fresh internal clone has enough material to inspect the end-to-end workflow without reconstructing missing assets.
-- Compare pages now resolve both `diagrams/1.input/` and `diagrams/1. input/`, so the tracked HTML review lane stays self-contained for the current internal corpus.
+- Compare pages resolve `diagrams/1.input/`, so the tracked HTML review lane stays self-contained for the current internal corpus.
 - Conclusion: the repo is now cold-start-safe for internal sharing. The remaining PM-shareability work is curation and guided onboarding, not recovering missing tracked files.
 
 ### Diagram language contract
@@ -61,7 +61,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ### Editor UX — from inbox triage 2026-05-09
 
-- [ ] `[S]` **Consolidate input folders.** Two folders `diagrams/1. input/` and `diagrams/1.input/` exist; merge into one canonical path and update all references (preview server, compare pages, scripts).
+- [x] `[S]` **Consolidate input folders.** Merged `diagrams/1. input/` into `diagrams/1.input/`; updated all references.
 - [ ] `[S]` **Sidebar scroll.** Right aside and left component nav are clipped without scroll-y. Both side panels need `overflow-y: auto` so all controls remain reachable.
 - [ ] `[S]` **Main stage scrollable.** The centre stage area clips tall diagrams. Add vertical scrolling so the full artboard is reachable.
 - [ ] `[H]` **Resizable / auto-fit artboard.** Resizing a box can push content off-canvas. Either make the SVG artboard resizable in the editor, or auto-size the canvas from children + declared margin so it grows to fit content.
