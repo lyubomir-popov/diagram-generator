@@ -59,6 +59,13 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
+### Editor UX — from inbox triage 2026-05-09
+
+- [ ] `[S]` **Consolidate input folders.** Two folders `diagrams/1. input/` and `diagrams/1.input/` exist; merge into one canonical path and update all references (preview server, compare pages, scripts).
+- [ ] `[S]` **Sidebar scroll.** Right aside and left component nav are clipped without scroll-y. Both side panels need `overflow-y: auto` so all controls remain reachable.
+- [ ] `[S]` **Main stage scrollable.** The centre stage area clips tall diagrams. Add vertical scrolling so the full artboard is reachable.
+- [ ] `[H]` **Resizable / auto-fit artboard.** Resizing a box can push content off-canvas. Either make the SVG artboard resizable in the editor, or auto-size the canvas from children + declared margin so it grows to fit content.
+
 ### Lightning talk demo prep — deadline May 13
 
 - [x] `[H]` **Reference panel in editor.** Added toggleable reference-image panel to the preview editor. Shows the rough input sketch (from `diagrams/1. input/`) above the generated SVG for before/after comparison. Server route `/reference/<slug>`, config flag `has_reference`, sidebar toggle button.
