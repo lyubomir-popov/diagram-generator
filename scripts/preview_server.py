@@ -161,7 +161,7 @@ def _relayout(slug: str, grid_overrides: dict) -> dict | None:
         importlib.reload(mod)
         diagram_obj = copy.deepcopy(getattr(mod, mod_name))
         # Patch grid params
-        for key in ("col_gap", "row_gap", "outer_margin"):
+        for key in ("cols", "col_gap", "row_gap", "outer_margin"):
             if key in grid_overrides:
                 setattr(diagram_obj, key, grid_overrides[key])
 
@@ -516,7 +516,7 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(400, "Invalid JSON")
             return
         grid_overrides = {}
-        for key in ("col_gap", "row_gap", "outer_margin"):
+        for key in ("cols", "col_gap", "row_gap", "outer_margin"):
             if key in params and params[key] is not None:
                 grid_overrides[key] = int(params[key])
         result = _relayout(slug, grid_overrides)
