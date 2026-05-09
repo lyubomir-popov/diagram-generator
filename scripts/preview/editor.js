@@ -53,7 +53,7 @@ const BOX_STYLES = {
 };
 
 // ---- Guide mode (W key) ----
-const GUIDE_MODES = ["off", "composition", "baseline"];
+const GUIDE_MODES = ["off", "all"];
 let guideMode = "off";
 let gridInfo = null;
 let baseGridInfo = null;
@@ -422,7 +422,7 @@ function cycleGuideMode() {
   if (guideMode === "off") {
     badge.textContent = "";
   } else {
-    badge.textContent = "Grid: " + guideMode + " (W)";
+    badge.textContent = "Grid: on (W)";
   }
 }
 
@@ -451,7 +451,7 @@ function renderGridOverlay() {
   const rowGap = gridInfo.row_gap || 0;
   const margin = gridInfo.outer_margin || 0;
 
-  if (guideMode === "composition") {
+  if (guideMode === "all") {
     // -- Margin overlays --
     const marginColor = "rgba(235,180,65,0.06)";
     if (margin > 0) {
@@ -516,8 +516,8 @@ function renderGridOverlay() {
     }
   }
 
-  // -- Baseline grid (4px lines, only in "baseline" mode) --
-  if (guideMode === "baseline") {
+  // -- Baseline grid (8px lines) --
+  if (guideMode === "all") {
     const baselineStep = 8;
     // Content area boundary
     const boundary = document.createElementNS(ns, "rect");

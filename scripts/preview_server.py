@@ -49,6 +49,7 @@ WATCH_PATHS = [
     SCRIPTS / "diagram_render_svg.py",
     SCRIPTS / "diagram_render_drawio.py",
     SCRIPTS / "diagram_shared.py",
+    SCRIPTS / "preview",
 ]
 
 _rebuild_generation = 0
@@ -63,8 +64,9 @@ def _collect_mtimes() -> dict[str, float]:
         if p.is_file():
             mtimes[str(p)] = p.stat().st_mtime
         elif p.is_dir():
-            for f in p.rglob("*.py"):
-                mtimes[str(f)] = f.stat().st_mtime
+            for ext in ("*.py", "*.html", "*.css", "*.js"):
+                for f in p.rglob(ext):
+                    mtimes[str(f)] = f.stat().st_mtime
     return mtimes
 
 
@@ -216,13 +218,15 @@ def _save_overrides(slug: str, data: dict) -> None:
 
 
 def _watch_loop(grid: bool = False, interval: float = 0.5):
-    global _rebuild_generation
+    global _rebuild_generation, _viewer_template
     prev_mtimes = _collect_mtimes()
     while True:
         time.sleep(interval)
         curr_mtimes = _collect_mtimes()
         if curr_mtimes != prev_mtimes:
             prev_mtimes = curr_mtimes
+            # Invalidate cached viewer template so HTML/CSS/JS changes are picked up
+            _viewer_template = None
             with _rebuild_lock:
                 ok = _rebuild(grid=grid)
                 _rebuild_generation += 1
@@ -283,7 +287,7 @@ def _get_viewer_template() -> str:
 
 def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     nav_links = " ".join(
-        f'<a href="/view/{s}" class="{"active" if s == slug else ""}">{s}</a>'
+        f'<a href="/view/{s}" class="bf-chip{" is-selected" if s == slug else ""}">{s}</a>'
         for s in all_slugs
     )
     from diagram_shared import ARROW_HEAD_LENGTH, ARROW_HEAD_HALF_WIDTH, ICON_SIZE, GRID_GUTTER, INSET

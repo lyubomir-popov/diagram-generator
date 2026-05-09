@@ -8,8 +8,22 @@
 </head>
 <body class="bf-theme bf-tier-app is-dark dg-preview">
 <div class="bf-application dg-preview-app">
+  <div class="dg-left-nav">
+    <section class="bf-panel is-fill dg-component-panel">
+      <div class="bf-panel-header is-sticky">
+        <h2 class="dg-section-heading bf-h5">Components</h2>
+      </div>
+      <div class="bf-panel-content dg-component-panel-content">
+        <div class="bf-side-navigation is-raw-html is-drawer-expanded dg-component-nav">
+          <nav class="bf-side-navigation-drawer" aria-label="Components">
+            <div class="tree" id="tree"></div>
+          </nav>
+        </div>
+      </div>
+    </section>
+  </div>
   <main class="bf-main dg-preview-main">
-    <div class="bf-stage-shell is-tight dg-stage-shell">
+    <div class="dg-stage-shell">
       <div class="dg-reference-bar" id="reference-bar" style="display:none">
         <div class="dg-reference-header">
           <span class="dg-reference-label">Reference (rough sketch)</span>
@@ -31,15 +45,9 @@
       </div>
       <div class="bf-panel-content dg-sidebar-content">
         <section class="dg-sidebar-section">
-          <h2 class="dg-section-heading bf-h5">Inspector</h2>
           <div class="inspector" id="inspector">
             <p class="dg-empty-message bf-form-help">Click a component to inspect it.</p>
           </div>
-        </section>
-
-        <section class="dg-sidebar-section">
-          <h2 class="dg-section-heading bf-h5">Components</h2>
-          <div class="tree" id="tree"></div>
         </section>
 
         <section class="dg-sidebar-section">

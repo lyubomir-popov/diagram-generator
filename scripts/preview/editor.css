@@ -7,12 +7,48 @@ body.dg-preview {
        overflow: hidden;
 }
 
-.dg-preview-main,
+/* Override BF application grid to add the left component nav column */
+.dg-preview-app {
+       grid-template-areas: "left-nav main aside";
+       grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr) minmax(0, var(--bf-application-aside-width));
+       grid-template-rows: minmax(0, 1fr);
+}
+
+.dg-preview-main {
+       grid-area: main;
+}
+
 .dg-preview-aside {
+       grid-area: aside;
        min-block-size: 0;
        min-inline-size: 0;
 }
 
+/* --- Left component navigation --- */
+.dg-left-nav {
+       border-inline-end: 1px solid var(--bf-color-border-low-contrast, #333);
+       grid-area: left-nav;
+       min-inline-size: 0;
+       overflow: auto;
+}
+
+.dg-component-panel-content {
+       padding-inline-start: 0;
+}
+
+.dg-component-nav .bf-side-navigation-drawer {
+       background: transparent;
+       block-size: 100%;
+       inline-size: 100%;
+       left: auto;
+       overflow: auto;
+       position: static;
+       top: auto;
+       transform: none;
+       visibility: visible;
+}
+
+/* --- Right sidebar --- */
 .sidebar {
        display: flex;
        flex-direction: column;
@@ -39,7 +75,7 @@ body.dg-preview {
 }
 
 .dg-section-heading {
-       color: #777;
+       color: var(--bf-color-text-muted, #777);
        font-size: 12px;
        font-weight: 600;
        letter-spacing: 0.08em;
@@ -48,7 +84,7 @@ body.dg-preview {
 }
 
 .nav-back {
-       color: #6cc;
+       color: var(--bf-color-link, #6cc);
        font-size: 13px;
        text-decoration: none;
 }
@@ -56,20 +92,8 @@ body.dg-preview {
 .nav-strip {
        display: flex;
        flex-wrap: wrap;
-       gap: 4px;
+       gap: 0;
 }
-
-.nav-strip a {
-       background: #2a2a2a;
-       border-radius: 3px;
-       color: #6cc;
-       font-size: 11px;
-       padding: 3px 6px;
-       text-decoration: none;
-}
-
-.nav-strip a:hover { background: #3a3a3a; }
-.nav-strip a.active { background: #E95420; color: #fff; }
 
 .build-status {
        border-radius: 4px;
@@ -197,7 +221,10 @@ body.dg-preview {
 }
 
 .dg-stage-shell {
+       display: flex;
+       flex-direction: column;
        min-block-size: 100%;
+       min-inline-size: 0;
 }
 
 .stage {
