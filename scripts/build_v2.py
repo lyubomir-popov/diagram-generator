@@ -13,7 +13,7 @@ import importlib
 import pathlib
 import sys
 
-from diagram_layout import layout, validate_arrows, validate_grid
+from diagram_layout import layout, validate_arrows, validate_arrow_crossings, validate_grid
 from diagram_loader import load_diagram
 from diagram_render_svg import write_svg
 from diagram_render_drawio import write_drawio
@@ -71,6 +71,7 @@ def main() -> None:
     SVG_DIR.mkdir(parents=True, exist_ok=True)
     DRAWIO_DIR.mkdir(parents=True, exist_ok=True)
     total_arrow_violations = 0
+    total_arrow_crossings = 0
     total_grid_violations = 0
     diagrams = _load_diagrams()
     for slug, diagram in diagrams:
@@ -87,12 +88,23 @@ def main() -> None:
 
         # Arrow clearance check
         arrow_violations = validate_arrows(result)
-        if arrow_violations:
+        crossings = validate_arrow_crossings(result)
+        has_issues = arrow_violations or crossings
+        if has_issues:
             total_arrow_violations += len(arrow_violations)
-            print(f"  {slug}: SVG + draw.io  [!] {len(arrow_violations)} arrow violation(s)")
+            total_arrow_crossings += len(crossings)
+            parts = []
+            if arrow_violations:
+                parts.append(f"{len(arrow_violations)} clearance")
+            if crossings:
+                parts.append(f"{len(crossings)} crossing")
+            print(f"  {slug}: SVG + draw.io  [!] {' + '.join(parts)} violation(s)")
             for v in arrow_violations:
-                print(f"    {v.segment}: {v.length:.1f}px < {v.minimum:.0f}px  "
-                      f"({v.start[0]:.0f},{v.start[1]:.0f})→({v.end[0]:.0f},{v.end[1]:.0f})")
+                print(f"    clearance: {v.segment} {v.length:.1f}px < {v.minimum:.0f}px  "
+                      f"({v.start[0]:.0f},{v.start[1]:.0f})->({v.end[0]:.0f},{v.end[1]:.0f})")
+            for c in crossings:
+                print(f"    crossing: {c.source_ref}->{c.target_ref} passes through '{c.crossed_id}'  "
+                      f"({c.segment_start[0]:.0f},{c.segment_start[1]:.0f})->({c.segment_end[0]:.0f},{c.segment_end[1]:.0f})")
         else:
             print(f"  {slug}: SVG + draw.io")
 
@@ -115,10 +127,14 @@ def main() -> None:
         print(f"\n  [!] {total_arrow_violations} total arrow clearance violation(s)")
         print(f"    Increase row_gap/col_gap to ARROW_GAP (24) where arrows route.")
 
+    if total_arrow_crossings:
+        print(f"\n  [!] {total_arrow_crossings} total arrow crossing violation(s)")
+        print(f"    Arrows must not pass through non-source/target component boxes.")
+
     if total_grid_violations:
         print(f"\n  [!] {total_grid_violations} total baseline-grid violation(s) (warning only)")
 
-    if total_arrow_violations:
+    if total_arrow_violations or total_arrow_crossings:
         sys.exit(1)
 
 

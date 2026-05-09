@@ -1823,6 +1823,17 @@ class ArrowViolation:
     end: tuple[float, float]
 
 
+@dataclass
+class ArrowCrossing:
+    """An arrow that crosses through a component box it doesn't connect to."""
+    arrow_id: str               # component_id of the arrow
+    source_ref: str
+    target_ref: str
+    crossed_id: str             # component_id of the box being crossed
+    segment_start: tuple[float, float]
+    segment_end: tuple[float, float]
+
+
 def validate_arrows(result: LayoutResult) -> list[ArrowViolation]:
     """Check that every arrow has adequate clearance.
 
@@ -1878,3 +1889,71 @@ def validate_arrows(result: LayoutResult) -> list[ArrowViolation]:
                     ))
 
     return violations
+
+
+def validate_arrow_crossings(result: LayoutResult) -> list[ArrowCrossing]:
+    """Check that no arrow passes through a component box it doesn't connect to.
+
+    Collects all Rect primitives with a component_id as potential obstacles,
+    then checks every arrow segment against every non-source/non-target box.
+    Parent panels that contain both the source and target are excluded —
+    arrows between children naturally pass through their shared ancestor.
+    Returns a list of crossings.  An empty list means all arrows are clean.
+    """
+    crossings: list[ArrowCrossing] = []
+    all_prims = list(result.background) + list(result.foreground)
+
+    # Build parent map from component_tree: child_id -> set of ancestor ids
+    ancestors: dict[str, set[str]] = {}
+
+    def _walk(node: ComponentInfo, parent_chain: list[str]) -> None:
+        ancestors[node.id] = set(parent_chain)
+        for child in node.children:
+            _walk(child, parent_chain + [node.id])
+
+    for root in result.component_tree:
+        _walk(root, [])
+
+    # Collect all component boxes (Rect with a component_id)
+    boxes: dict[str, tuple[float, float, float, float]] = {}
+    for p in all_prims:
+        if isinstance(p, Rect) and p.component_id:
+            # Use the first Rect seen for each component_id (outer box)
+            if p.component_id not in boxes:
+                boxes[p.component_id] = (p.x, p.y, p.x + p.width, p.y + p.height)
+
+    for p in all_prims:
+        if not isinstance(p, ArrowPrimitive):
+            continue
+
+        src_comp = p.source_ref.split(".")[0] if p.source_ref else ""
+        tgt_comp = p.target_ref.split(".")[0] if p.target_ref else ""
+        # Exclude source, target, and any shared ancestor panels
+        src_ancestors = ancestors.get(src_comp, set())
+        tgt_ancestors = ancestors.get(tgt_comp, set())
+        exclude = {src_comp, tgt_comp} | (src_ancestors & tgt_ancestors)
+
+        pts = [p.start] + list(p.waypoints) + [p.end]
+        if len(pts) < 2:
+            continue
+
+        for cid, box in boxes.items():
+            if cid in exclude:
+                continue
+            for i in range(len(pts) - 1):
+                if _seg_hits_obstacle(
+                    pts[i][0], pts[i][1],
+                    pts[i + 1][0], pts[i + 1][1],
+                    [box],
+                ):
+                    crossings.append(ArrowCrossing(
+                        arrow_id=p.component_id or "",
+                        source_ref=p.source_ref,
+                        target_ref=p.target_ref,
+                        crossed_id=cid,
+                        segment_start=pts[i],
+                        segment_end=pts[i + 1],
+                    ))
+                    break  # one crossing per box per arrow is enough
+
+    return crossings
