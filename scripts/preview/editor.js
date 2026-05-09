@@ -563,17 +563,22 @@ function addRect(parent, ns, x, y, w, h, fill) {
 
 function populateGridControls() {
   if (!gridInfo) return;
-  document.getElementById("grid-cols").value = (gridInfo.col_xs || []).length;
+  // Always update rows (read-only, derived from layout)
   document.getElementById("grid-rows").value = (gridInfo.row_ys || []).length;
-  document.getElementById("grid-col-gap").value = gridInfo.col_gap || 0;
-  document.getElementById("grid-row-gap").value = gridInfo.row_gap || 0;
-  document.getElementById("grid-margin").value = gridInfo.outer_margin || 0;
+  // Only update editable fields if there are no pending user overrides
+  if (!model.gridOverrides || Object.keys(model.gridOverrides).length === 0) {
+    document.getElementById("grid-cols").value = (gridInfo.col_xs || []).length;
+    document.getElementById("grid-col-gap").value = gridInfo.col_gap || 0;
+    document.getElementById("grid-row-gap").value = gridInfo.row_gap || 0;
+    document.getElementById("grid-margin").value = gridInfo.outer_margin || 0;
+  }
 }
 
 let relayoutTimer = null;
 
 function onGridControlChange() {
   if (!gridInfo) return;
+  const cols = Math.max(1, parseInt(document.getElementById("grid-cols").value) || 1);
   const colGap = Math.max(0, parseInt(document.getElementById("grid-col-gap").value) || 0);
   const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
   const margin = Math.max(0, parseInt(document.getElementById("grid-margin").value) || 0);
@@ -583,14 +588,14 @@ function onGridControlChange() {
   }
 
   // Track grid overrides for persistence
-  model.gridOverrides = { col_gap: colGap, row_gap: rowGap, outer_margin: margin };
+  model.gridOverrides = { cols: cols, col_gap: colGap, row_gap: rowGap, outer_margin: margin };
   setDirty(true);
 
   // Debounce the relayout call so rapid typing doesn't flood the server
   if (relayoutTimer) clearTimeout(relayoutTimer);
   relayoutTimer = setTimeout(async () => {
     try {
-      await requestRelayout(colGap, rowGap, margin);
+      await requestRelayout(cols, colGap, rowGap, margin);
     } finally {
       commitUndoableAction(pendingGridAction);
       pendingGridAction = null;
@@ -635,12 +640,12 @@ function updateGridOverlayFromInputs() {
   renderGridOverlay();
 }
 
-async function requestRelayout(colGap, rowGap, margin) {
+async function requestRelayout(cols, colGap, rowGap, margin) {
   try {
     const resp = await fetch("/api/relayout/" + SLUG, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ col_gap: colGap, row_gap: rowGap, outer_margin: margin }),
+      body: JSON.stringify({ cols: cols, col_gap: colGap, row_gap: rowGap, outer_margin: margin }),
     });
     if (!resp.ok) return;
     const data = await resp.json();

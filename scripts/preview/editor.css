@@ -1,19 +1,10 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* Editor-specific overrides – BF app-tier handles the application shell,
+   grid layout, panel/aside/main structure, buttons, inputs, and fields.
+   This file adds only diagram-editor-specific presentation. */
 
 body.dg-preview {
-       background: #1a1a1a;
-       color: #e0e0e0;
-       margin: 0;
        min-height: 100vh;
        overflow: hidden;
-}
-
-.dg-preview-app {
-       --bf-application-aside-width: 20rem;
-       display: grid;
-       grid-template-areas: "main aside";
-       grid-template-columns: minmax(0, 1fr) minmax(20rem, 20rem);
-       min-height: 100vh;
 }
 
 .dg-preview-main,
@@ -22,18 +13,7 @@ body.dg-preview {
        min-inline-size: 0;
 }
 
-.dg-preview-main {
-       overflow: auto;
-}
-
-.dg-preview-aside {
-       background: #222;
-       border-inline-start: 1px solid #333;
-       overflow: auto;
-}
-
 .sidebar {
-       color: inherit;
        display: flex;
        flex-direction: column;
        font-size: 13px;
@@ -205,6 +185,11 @@ body.dg-preview {
        text-align: right;
 }
 
+.dg-number-input[readonly] {
+       color: #666;
+       cursor: default;
+}
+
 .dg-button-row {
        display: flex;
        flex-wrap: wrap;
@@ -319,15 +304,15 @@ body.dg-preview {
        font: inherit;
 }
 
-:where(.dg-preview .bf-input, .dg-preview .style-picker, .dg-preview input[type=number], .dg-preview select) {
-       background: #2a2a2a;
-       border: 1px solid #555;
-       border-radius: 3px;
-       color: #e0e0e0;
+:where(.dg-preview .style-picker) {
+       background: var(--bf-color-background-alt, #2a2a2a);
+       border: var(--bf-border-width, 1px) solid var(--bf-color-border-default, #555);
+       border-radius: var(--bf-border-radius, 3px);
+       color: inherit;
 }
 
-:where(.dg-preview .bf-input, .dg-preview .style-picker, .dg-preview input[type=number], .dg-preview select):focus {
-       border-color: #6cc;
+:where(.dg-preview .style-picker):focus {
+       border-color: var(--bf-color-border-active, #6cc);
        outline: none;
 }
 
