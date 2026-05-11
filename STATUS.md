@@ -98,6 +98,8 @@ The project has evolved from a batch diagram generator into a **constrained inte
 - `scripts/preview/viewer.html` – HTML template with `%TITLE%`, `%NAV_LINKS%`, `%CONFIG_SCRIPT%`, and optional `%BF_STYLES%` placeholders; left nav uses BF side-navigation for component tree
 - `scripts/preview_server.py` – pure API server (now also serves optional Baseline Foundry app-tier CSS and font assets when the sibling repo is available), watches HTML/CSS/JS for hot-reload, no embedded JS
 
+**Cold-start / portability status:** the preview now prefers a sibling `baseline-foundry` checkout but also ships a vendored panel-CSS and Ubuntu Sans snapshot under `assets/baseline-foundry/`, so fresh clones do not depend on the private repo. The editor shell is back on the BF `navigation + main + aside` contract with local left/right resize bindings; the remaining editor work is undo/redo specialization rather than shell portability.
+
 **Remaining interactive editor work** (post-refactor):
 - Domain-specific undo/redo follow-up (deferred; undo/redo now uses explicit per-action command records, but each command still stores before/after editor state rather than bespoke do/undo handlers)
 
