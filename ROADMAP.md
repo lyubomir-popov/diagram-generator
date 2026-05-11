@@ -78,9 +78,10 @@ The preview server (`scripts/preview_server.py`) provides hot-reload, click-to-s
 - Collinear waypoint auto-pruning on drag
 - Inline text editing (double-click to edit, Enter for newlines, Ctrl+Enter to commit)
 - Text-icon gutter enforcement during editing
-- Auto-layout: parent resize propagates proportionally to children
+- Auto-layout: parent resize relayouts children from the parent content area with fixed gutters
 - Auto-layout: child resize redistributes delta to siblings (fill container)
 - Gutter change re-fits children (relayout clears stale position overrides)
+- Baseline Foundry-backed shell with DG compatibility layer: the preview now rides the BF `os` tier when available or vendored fallback when not, while local CSS owns the resize-handle shim, desktop three-pane pin, and preview-specific amber selection chrome
 
 ### Stage 11 — Viewer extraction (architecture prerequisite)
 
@@ -109,7 +110,7 @@ The product differentiator: the editor enforces brand rules at the model level, 
 - Snap-to-grid visual guides during drag
 - Property panel for editing fill, border style, text on selected component
 - Component swap from shape library (like Figma component swap)
-- Replace the preview/editor's bespoke local CSS with Baseline Foundry primitives and tokens once the workspace integration is ready
+- Keep shrinking the preview/editor compatibility layer as Baseline Foundry stabilizes; local CSS should remain limited to DG-specific interaction chrome and shell fixes
 
 **Longer-term:**
 - Create new components from the UI (add box, add panel, add arrow)

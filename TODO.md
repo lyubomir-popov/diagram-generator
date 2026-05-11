@@ -59,6 +59,13 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
+### 2026-05-11 BF shell regression cleanup
+
+- [x] `[H]` **Pin the BF-backed desktop shell back to three panes.** `scripts/preview/editor.css` now forces a single-row `navigation main aside` grid so upstream BF layout rules cannot reintroduce the broken extra top row.
+- [x] `[S]` **Restore preview-owned amber selection chrome.** Selected tree items, stage outlines, resize handles, waypoint handles, and inline text editing chrome now use local `--dg-selection-accent` tokens instead of BF authoring-accent variables.
+- [x] `[S]` **Refresh tracked example artifacts.** Rebuilt the `example-data-processing` and `example-deployment-pipeline` draw.io/SVG/grid outputs under `diagrams/2.output/` so the checked-in examples match the current generator output.
+- [ ] `[S]` **Run a Windows smoke pass for the BF-backed preview shell.** Verify the preview server, desktop shell layout, and editor handles behave the same after rebooting into Windows.
+
 ### Editor UX — from inbox triage 2026-05-09
 
 - [x] `[S]` **Consolidate input folders.** Merged `diagrams/1. input/` into `diagrams/1.input/`; updated all references.

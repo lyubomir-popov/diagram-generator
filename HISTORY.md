@@ -4,6 +4,13 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-11 – Preview shell compatibility pass
+
+- Forced the BF-backed desktop preview shell back to a single-row `navigation + main + aside` grid in `scripts/preview/editor.css` so upstream BF application layout changes cannot reintroduce the broken extra top row.
+- Restored DG-owned amber selection tokens for selected tree items, stage outlines, resize handles, waypoint handles, and inline text editing chrome, keeping the editor's golden affordances without depending on BF authoring-accent variables.
+- Refreshed the tracked `example-data-processing` and `example-deployment-pipeline` generated artifacts under `diagrams/2.output/` so the checked-in draw.io, SVG, and grid-SVG examples match the current exporter output.
+- Left the repo ready for a follow-up Windows smoke pass against the BF-backed preview shell.
+
 ### 2026-05-11 – Baseline Foundry `os` fallback resync
 
 - Switched the preview-server sibling and vendored fallback path from the old BF `panel` preset to the corrected BF `os` tier stylesheet, and refreshed `assets/baseline-foundry/` from the local sibling repo.

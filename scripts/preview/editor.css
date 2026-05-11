@@ -12,6 +12,8 @@ body.dg-preview {
 
 body.dg-preview {
        margin: 0;
+       --dg-selection-accent: #F6B73C;
+       --dg-selection-accent-hover: #e0a030;
 }
 
 /* Tune the BF shell widths for the components rail and inspector. */
@@ -152,9 +154,11 @@ body.dg-preview {
 
 @media (min-width: 48rem) {
        .dg-preview-app {
-              grid-template-areas: "navigation main aside";
-              grid-template-columns: minmax(var(--dg-component-nav-width-min), var(--bf-application-navigation-width)) minmax(0, 1fr) minmax(var(--dg-preview-aside-width-min), var(--bf-application-aside-width));
-              grid-template-rows: minmax(0, 1fr);
+              /* Force a single-row three-pane shell for the preview editor.
+                 The upstream BF application rule can introduce an extra top row. */
+              grid-template-areas: "navigation main aside" !important;
+              grid-template-columns: minmax(var(--dg-component-nav-width-min), var(--bf-application-navigation-width)) minmax(0, 1fr) minmax(var(--dg-preview-aside-width-min), var(--bf-application-aside-width)) !important;
+              grid-template-rows: minmax(0, 1fr) !important;
        }
 
        .dg-component-navigation {
@@ -319,7 +323,7 @@ body.dg-preview {
 }
 
 .tree-item:hover { border-inline-start-color: #555; }
-.tree-item.selected { border-inline-start-color: var(--bf-authoring-accent); color: var(--bf-authoring-accent); }
+.tree-item.selected { border-inline-start-color: var(--dg-selection-accent); color: var(--dg-selection-accent); }
 
 .grid-controls {
        display: grid;
@@ -453,16 +457,16 @@ body.dg-preview {
 .stage svg [data-component-id] > text,
 .stage svg [data-component-id] > image,
 .stage svg [data-component-id] > tspan { pointer-events: none; }
-.stage svg g.dg-selected > rect:first-of-type { outline: 2px solid var(--bf-authoring-accent); outline-offset: -1px; }
-.stage svg g.dg-selected > line { filter: drop-shadow(0 0 2px var(--bf-authoring-accent)); }
-.stage svg g.dg-selected > polygon { filter: drop-shadow(0 0 2px var(--bf-authoring-accent)); }
-.stage svg g.dg-selected > .dg-icon { filter: drop-shadow(0 0 2px var(--bf-authoring-accent)); }
+.stage svg g.dg-selected > rect:first-of-type { outline: 2px solid var(--dg-selection-accent); outline-offset: -1px; }
+.stage svg g.dg-selected > line { filter: drop-shadow(0 0 2px var(--dg-selection-accent)); }
+.stage svg g.dg-selected > polygon { filter: drop-shadow(0 0 2px var(--dg-selection-accent)); }
+.stage svg g.dg-selected > .dg-icon { filter: drop-shadow(0 0 2px var(--dg-selection-accent)); }
 .stage svg g.dg-hover > rect:first-of-type { outline: 1px dashed #6cc; outline-offset: -1px; }
 .stage svg g.dg-hover > line { filter: drop-shadow(0 0 1px #6cc); }
 .stage svg g.dg-hover > .dg-icon { filter: drop-shadow(0 0 1px #6cc); }
 .stage svg .dg-icon > * { pointer-events: none; }
 
-.dg-handle { fill: var(--bf-authoring-accent); stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }
+.dg-handle { fill: var(--dg-selection-accent); stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }
 .dg-handle.dg-handle-tl { cursor: nw-resize; }
 .dg-handle.dg-handle-t { cursor: ns-resize; }
 .dg-handle.dg-handle-tr { cursor: ne-resize; }
@@ -471,12 +475,12 @@ body.dg-preview {
 .dg-handle.dg-handle-b { cursor: ns-resize; }
 .dg-handle.dg-handle-bl { cursor: nesw-resize; }
 .dg-handle.dg-handle-l { cursor: ew-resize; }
-.dg-wp-handle { fill: var(--bf-authoring-accent); stroke: #fff; stroke-width: 1.5; cursor: move; pointer-events: all; }
-.dg-wp-handle:hover { fill: var(--bf-authoring-accent-hover); stroke: #fff; stroke-width: 2; }
+.dg-wp-handle { fill: var(--dg-selection-accent); stroke: #fff; stroke-width: 1.5; cursor: move; pointer-events: all; }
+.dg-wp-handle:hover { fill: var(--dg-selection-accent-hover); stroke: #fff; stroke-width: 2; }
 
 .dg-text-editor {
        background: #fff;
-       border: 2px solid var(--bf-authoring-accent);
+       border: 2px solid var(--dg-selection-accent);
        box-sizing: border-box;
        font-family: 'Ubuntu Sans', sans-serif;
        line-height: 1.43;

@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="552" viewBox="0 0 240 552" xml:space="preserve">
-  <rect width="240" height="552" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="608" viewBox="0 0 256 608" xml:space="preserve">
+  <rect width="256" height="608" fill="#FFFFFF" />
   <g data-component-id="commit">
-  <rect x="24" y="24" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="32" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#000000">Developer</tspan>
-    <tspan x="32" y="72.92" font-size="18" font-weight="400" fill="#000000">commit</tspan>
+    <tspan x="40" y="56.92" font-size="18" font-weight="400" fill="#000000">Developer</tspan>
+    <tspan x="40" y="80.92" font-size="18" font-weight="400" fill="#000000">commit</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 32)">
+  <g class="dg-icon" transform="translate(168 40)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M46.5 36.75C46.5 38.3551 45.2394 39.6658 43.6543 39.7461L43.5 39.75H4.5L4.3457 39.7461C2.81166 39.6684 1.58163 38.4383 1.50391 36.9043L1.5 36.75V35.25H46.5V36.75ZM2.5 36.75C2.5 37.8546 3.39543 38.75 4.5 38.75H43.5C44.6046 38.75 45.5 37.8546 45.5 36.75V36.25H2.5V36.75Z" fill="#000000" />
 
 <path d="M41.25 8.5C42.3546 8.5 43.25 9.39543 43.25 10.5V33.75H42.25V10.5C42.25 9.94772 41.8023 9.5 41.25 9.5H6.75C6.19772 9.5 5.75 9.94772 5.75 10.5V33.75H4.75V10.5C4.75 9.39543 5.64543 8.5 6.75 8.5H41.25Z" fill="#000000" />
@@ -20,23 +20,23 @@
   </g>
   </g>
   <g data-component-id="build">
-  <rect x="24" y="112" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="128" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="136.92" font-size="18" font-weight="400" fill="#000000">Build &amp;</tspan>
-    <tspan x="32" y="160.92" font-size="18" font-weight="400" fill="#000000">lint</tspan>
+    <tspan x="40" y="152.92" font-size="18" font-weight="400" fill="#000000">Build &amp;</tspan>
+    <tspan x="40" y="176.92" font-size="18" font-weight="400" fill="#000000">lint</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 120)">
+  <g class="dg-icon" transform="translate(168 136)">
 <path d="M33.0005 9.0566L41.4847 13.7516C41.803 13.9278 42.0005 14.2628 42.0005 14.6266V33.3725C42.0005 33.7362 41.803 34.0713 41.4848 34.2474L24.4848 43.6568C24.1834 43.8236 23.8175 43.8236 23.5162 43.6568L6.51622 34.2474C6.19799 34.0713 6.00049 33.7362 6.00049 33.3725V14.6266C6.00049 14.2628 6.19802 13.9278 6.5163 13.7516L15.0005 9.0566L23.5162 4.34317C23.8175 4.1764 24.1834 4.1764 24.4848 4.34317L33.0005 9.0566ZM24.4995 24.4336V42.505L32.5161 38.0684L41.0005 33.3721V15.2304L24.4995 24.4336ZM7.00049 33.3721L15.4849 38.0684L23.4995 42.504V24.4336L15.5249 19.9853V25.583L14.5288 25.0274V19.4297L7.00049 15.2314V33.3721ZM15.9204 19.0605L23.9995 23.5664L40.5151 14.3574L32.5161 9.9316L32.4038 9.8691L15.9204 19.0605ZM15.4849 9.9316L7.48486 14.3574L14.8989 18.4912L31.3774 9.30171L24.0005 5.21772L15.4849 9.9316Z" fill="#000000" />
 
   </g>
   </g>
   <g data-component-id="test">
-  <rect x="24" y="200" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="224" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="224.92" font-size="18" font-weight="400" fill="#000000">Automated</tspan>
-    <tspan x="32" y="248.92" font-size="18" font-weight="400" fill="#000000">tests</tspan>
+    <tspan x="40" y="248.92" font-size="18" font-weight="400" fill="#000000">Automated</tspan>
+    <tspan x="40" y="272.92" font-size="18" font-weight="400" fill="#000000">tests</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 208)">
+  <g class="dg-icon" transform="translate(168 232)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M22.7383 3.88186C23.4733 3.28426 24.5267 3.28425 25.2617 3.88186L27.3145 5.55178C27.5354 5.73139 27.8224 5.80778 28.1035 5.76272L30.7158 5.34377C31.6515 5.19345 32.5647 5.72003 32.9023 6.60549L33.8447 9.07717C33.9463 9.34341 34.1566 9.55377 34.4229 9.65529L36.8945 10.5977C37.78 10.9353 38.3066 11.8486 38.1563 12.7842L37.7373 15.3965C37.6923 15.6776 37.7686 15.9646 37.9482 16.1856L39.6182 18.2383C40.2157 18.9733 40.2158 20.0268 39.6182 20.7617L37.9482 22.8145C37.7686 23.0354 37.6922 23.3224 37.7373 23.6035L38.1563 26.2158C38.3066 27.1515 37.78 28.0647 36.8945 28.4024L34.4229 29.3447C34.1566 29.4463 33.9463 29.6566 33.8447 29.9229L32.9023 32.3946C32.6613 33.0266 32.1264 33.4734 31.5 33.624V44.791L24 41.2246L16.5 44.791V33.624C15.8736 33.4734 15.3387 33.0266 15.0977 32.3946L14.1553 29.9229C14.0538 29.6566 13.8434 29.4463 13.5772 29.3447L11.1055 28.4024C10.22 28.0647 9.69344 27.1515 9.84376 26.2158L10.2627 23.6035C10.3078 23.3224 10.2314 23.0354 10.0518 22.8145L8.38184 20.7617C7.78424 20.0267 7.78424 18.9733 8.38184 18.2383L10.0518 16.1856C10.2314 15.9646 10.3078 15.6776 10.2627 15.3965L9.84376 12.7842C9.69342 11.8485 10.22 10.9353 11.1055 10.5977L13.5772 9.65529C13.8434 9.55377 14.0538 9.34342 14.1553 9.07717L15.0977 6.60549C15.4353 5.72001 16.3485 5.19344 17.2842 5.34377L19.8965 5.76272C20.1776 5.80777 20.4646 5.7314 20.6856 5.55178L22.7383 3.88186ZM19.8965 33.2373L17.5 33.6211V43.208L23.7852 40.2197L24 40.1172L24.2148 40.2197L30.5 43.208V33.6211L28.1035 33.2373C27.8224 33.1923 27.5354 33.2686 27.3145 33.4483L25.2617 35.1182C24.5267 35.7158 23.4733 35.7158 22.7383 35.1182L20.6856 33.4483C20.4646 33.2686 20.1776 33.1923 19.8965 33.2373ZM24.6309 4.65822C24.2633 4.35921 23.7367 4.35922 23.3691 4.65822L21.3164 6.32717C20.8743 6.68673 20.2999 6.84138 19.7373 6.751L17.125 6.33108C16.6573 6.25613 16.201 6.51933 16.0322 6.96194L15.0898 9.43361C14.8868 9.96612 14.4661 10.3868 13.9336 10.5899L11.4619 11.5322C11.0193 11.701 10.7561 12.1573 10.8311 12.625L11.251 15.2373C11.3414 15.8 11.1867 16.3743 10.8272 16.8164L9.15821 18.8692C8.8592 19.2367 8.8592 19.7633 9.15821 20.1309L10.8272 22.1836C11.1867 22.6257 11.3414 23.2001 11.251 23.7627L10.8311 26.375C10.7561 26.8427 11.0193 27.299 11.4619 27.4678L13.9336 28.4102C14.4661 28.6132 14.8868 29.0339 15.0898 29.5664L16.0322 32.0381C16.201 32.4807 16.6573 32.7439 17.125 32.669L19.7373 32.249C20.2999 32.1587 20.8743 32.3133 21.3164 32.6729L23.3691 34.3418C23.7367 34.6408 24.2633 34.6408 24.6309 34.3418L26.6836 32.6729C27.1257 32.3133 27.7001 32.1586 28.2627 32.249L30.875 32.669C31.3427 32.7439 31.799 32.4807 31.9678 32.0381L32.9102 29.5664C33.1132 29.0339 33.5339 28.6132 34.0664 28.4102L36.5381 27.4678C36.9807 27.299 37.2439 26.8427 37.169 26.375L36.749 23.7627C36.6586 23.2001 36.8133 22.6257 37.1729 22.1836L38.8418 20.1309C39.1408 19.7633 39.1408 19.2367 38.8418 18.8692L37.1729 16.8164C36.8133 16.3743 36.6586 15.8 36.749 15.2373L37.169 12.625C37.2439 12.1573 36.9807 11.701 36.5381 11.5322L34.0664 10.5899C33.5339 10.3868 33.1132 9.96612 32.9102 9.43361L31.9678 6.96194C31.799 6.51934 31.3427 6.25614 30.875 6.33108L28.2627 6.751C27.7001 6.8414 27.1257 6.68671 26.6836 6.32717L24.6309 4.65822Z" fill="#000000" />
 
 <path d="M28.5 16.248L22.9775 23.4385L22.5254 23.0127L19.501 20.1709L20.2705 19.3506L22.8418 21.7676L27.6074 15.5625L28.5 16.248Z" fill="#000000" />
@@ -46,23 +46,23 @@
   </g>
   </g>
   <g data-component-id="staging">
-  <rect x="24" y="288" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="320" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="312.92" font-size="18" font-weight="400" fill="#000000">Staging</tspan>
-    <tspan x="32" y="336.92" font-size="18" font-weight="400" fill="#000000">environment</tspan>
+    <tspan x="40" y="344.92" font-size="18" font-weight="400" fill="#000000">Staging</tspan>
+    <tspan x="40" y="368.92" font-size="18" font-weight="400" fill="#000000">environment</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 296)">
+  <g class="dg-icon" transform="translate(168 328)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M27.1855 10C32.1958 10 36.2166 13.9999 36.2168 18.9229L36.2109 19.1426C36.1874 19.6524 36.0941 20.1474 36.0928 20.1543C41.0412 20.2158 45 24.1541 45 29.0771L44.9883 29.5361C44.7475 34.2463 40.8223 38 35.9688 38H12.0312L11.5645 37.9883C6.9281 37.7568 3.24476 34.0945 3.01172 29.5361L3 29.0771C3.00003 24.9541 5.78376 21.3518 9.86621 20.4287V18.9844C9.86638 15.9076 12.4024 13.4463 15.4951 13.4463L15.749 13.4521C17.0168 13.5096 18.2202 13.996 19.2061 14.8613C20.7525 11.9076 23.8454 10 27.1855 10ZM27.1855 11C24.2244 11 21.4689 12.6948 20.0918 15.3252L19.502 16.4521L18.5469 15.6133C17.674 14.8471 16.608 14.4464 15.4951 14.4463C12.9354 14.4463 10.8664 16.479 10.8662 18.9844V21.2275L10.0869 21.4033C6.47196 22.2207 4.00003 25.4093 4 29.0771C4.00012 33.4385 7.56395 37 12.0312 37H35.9688C40.4361 37 43.9999 33.4385 44 29.0771C44 24.7135 40.4931 21.2082 36.0801 21.1533L34.8877 21.1387L35.1104 19.9668V19.9648C35.1109 19.9617 35.1119 19.9557 35.1133 19.9482C35.116 19.9332 35.121 19.91 35.126 19.8799C35.1361 19.8188 35.1493 19.7305 35.1631 19.626C35.1914 19.4107 35.2168 19.151 35.2168 18.9229C35.2166 14.5615 31.6528 11 27.1855 11Z" fill="#000000" />
 
   </g>
   </g>
   <g data-component-id="approval">
-  <rect x="24" y="376" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="416" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="400.92" font-size="18" font-weight="400" fill="#000000">Manual</tspan>
-    <tspan x="32" y="424.92" font-size="18" font-weight="400" fill="#000000">approval</tspan>
+    <tspan x="40" y="440.92" font-size="18" font-weight="400" fill="#000000">Manual</tspan>
+    <tspan x="40" y="464.92" font-size="18" font-weight="400" fill="#000000">approval</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 384)">
+  <g class="dg-icon" transform="translate(168 424)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M37.8057 26.2095C38.8848 25.1408 40.5981 25.0632 41.7695 26.0298C43.0983 27.1262 43.215 29.1234 42.0137 30.3618C39.8715 32.5699 37.2736 35.2185 36.4365 35.936C34.5769 37.53 32.9118 38.7547 31.0693 39.5757C29.2187 40.4002 27.2146 40.8061 24.6875 40.8061C19.7185 40.8059 16.3141 38.2887 14.6396 36.6772H11.833V39.7778H5.5V25.5532H11.833V25.5561H18.417C19.9335 25.5561 21.1399 25.8225 22.1289 26.3237C23.0375 26.7843 23.7343 27.4301 24.3125 28.1948H30.7783C32.1357 28.1949 33.2698 29.1367 33.5713 30.4018L37.8057 26.2095ZM41.1338 26.8003C40.3584 26.1605 39.2241 26.2122 38.5098 26.9194L33.5469 31.8335C33.2119 33.0499 32.1012 33.9447 30.7783 33.9448H24.0605V32.9448H30.7783C31.8136 32.9447 32.6531 32.1051 32.6533 31.0698C32.6533 30.0344 31.8137 29.1949 30.7783 29.1948H23.8027L23.6523 28.9839C23.116 28.2273 22.492 27.6296 21.6768 27.2163C20.8592 26.8019 19.8159 26.5561 18.417 26.5561H11.833V35.6772H15.0469L15.1934 35.8218C16.7125 37.3259 19.9338 39.8059 24.6875 39.8061C27.0981 39.8061 28.9596 39.4201 30.6621 38.6616C32.3727 37.8994 33.9507 36.7486 35.7852 35.1762C36.5773 34.4973 39.1321 31.8958 41.2959 29.6655C42.0888 28.8481 42.0142 27.5268 41.1338 26.8003ZM6.5 38.7778H10.833V26.5532H6.5V38.7778Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 14.7998C27.8661 14.7998 30.9998 16.8474 31 19.3701V22.5L30.9902 22.6006C30.9436 22.8285 30.7416 23 30.5 23H17.5L17.3994 22.9893C17.2041 22.9493 17.0497 22.7959 17.0098 22.6006L17 22.5V19.3701C17.0002 16.8474 20.1339 14.7998 24 14.7998ZM24 15.7998C22.2328 15.7998 20.6786 16.27 19.5967 16.9766C18.506 17.689 18.0001 18.5572 18 19.3701V22H30V19.3701C29.9999 18.5572 29.494 17.689 28.4033 16.9766C27.3214 16.27 25.7672 15.7998 24 15.7998Z" fill="#000000" />
@@ -72,12 +72,12 @@
   </g>
   </g>
   <g data-component-id="production">
-  <rect x="24" y="464" width="192" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="512" width="192" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="488.92" font-size="18" font-weight="400" fill="#FFFFFF">Production</tspan>
-    <tspan x="32" y="512.92" font-size="18" font-weight="400" fill="#FFFFFF">deploy</tspan>
+    <tspan x="40" y="536.92" font-size="18" font-weight="400" fill="#FFFFFF">Production</tspan>
+    <tspan x="40" y="560.92" font-size="18" font-weight="400" fill="#FFFFFF">deploy</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 472)">
+  <g class="dg-icon" transform="translate(168 520)">
 <path d="M39.5 30C40.6046 30 41.5 30.8954 41.5 32V37C41.5 38.1046 40.6046 39 39.5 39H24.5V40.4277C25.5716 40.6573 26.375 41.6099 26.375 42.75C26.375 44.0617 25.3117 45.125 24 45.125C22.6883 45.125 21.625 44.0617 21.625 42.75C21.625 41.6099 22.4284 40.6574 23.5 40.4277V39H8.5C7.39543 39 6.5 38.1046 6.5 37V32C6.5 30.8954 7.39543 30 8.5 30H39.5ZM24 41.375C23.2406 41.375 22.625 41.9906 22.625 42.75C22.625 43.5094 23.2406 44.125 24 44.125C24.7594 44.125 25.375 43.5094 25.375 42.75C25.375 41.9906 24.7594 41.375 24 41.375ZM8.5 31C7.94772 31 7.5 31.4477 7.5 32V37L7.50488 37.1025C7.55278 37.573 7.92703 37.9472 8.39746 37.9951L8.5 38H39.5L39.6025 37.9951C40.1067 37.9438 40.5 37.5177 40.5 37V32C40.5 31.4477 40.0523 31 39.5 31H8.5ZM12 33.501C12.5523 33.501 13 33.9487 13 34.501C13 35.0533 12.5523 35.501 12 35.501C11.4477 35.501 11 35.0533 11 34.501C11 33.9487 11.4477 33.501 12 33.501ZM39.5 19C40.6046 19 41.5 19.8954 41.5 21V26C41.5 27.1046 40.6046 28 39.5 28H8.5C7.39543 28 6.5 27.1046 6.5 26V21C6.5 19.8954 7.39543 19 8.5 19H39.5ZM8.5 20C7.94772 20 7.5 20.4477 7.5 21V26L7.50488 26.1025C7.55278 26.573 7.92703 26.9472 8.39746 26.9951L8.5 27H39.5L39.6025 26.9951C40.1067 26.9438 40.5 26.5177 40.5 26V21C40.5 20.4477 40.0523 20 39.5 20H8.5ZM12 22.501C12.5523 22.501 13 22.9487 13 23.501C13 24.0533 12.5523 24.501 12 24.501C11.4477 24.501 11 24.0533 11 23.501C11 22.9487 11.4477 22.501 12 22.501ZM39.5 8C40.6046 8 41.5 8.89543 41.5 10V15C41.5 16.1046 40.6046 17 39.5 17H8.5C7.39543 17 6.5 16.1046 6.5 15V10C6.5 8.89543 7.39543 8 8.5 8H39.5ZM8.5 9C7.94772 9 7.5 9.44772 7.5 10V15L7.50488 15.1025C7.55278 15.573 7.92703 15.9472 8.39746 15.9951L8.5 16H39.5L39.6025 15.9951C40.1067 15.9438 40.5 15.5177 40.5 15V10C40.5 9.44772 40.0523 9 39.5 9H8.5ZM12 11.501C12.5523 11.501 13 11.9487 13 12.501C13 13.0533 12.5523 13.501 12 13.501C11.4477 13.501 11 13.0533 11 12.501C11 11.9487 11.4477 11.501 12 11.501Z" fill="#FFFFFF" />
 
 <circle cx="16" cy="12.501" r="1" fill="#FFFFFF" />
@@ -89,64 +89,64 @@
   </g>
   </g>
   <g data-component-id="_auto_1">
-  <line x1="120" y1="88" x2="120" y2="101.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="117.0947,101.1592 120,112 122.9053,101.1592" fill="#E95420" />
+  <line x1="128" y1="96" x2="128" y2="117.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="125.0947,117.1592 128,128 130.9053,117.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_2">
-  <line x1="120" y1="176" x2="120" y2="189.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="117.0947,189.1592 120,200 122.9053,189.1592" fill="#E95420" />
+  <line x1="128" y1="192" x2="128" y2="213.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="125.0947,213.1592 128,224 130.9053,213.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_3">
-  <line x1="120" y1="264" x2="120" y2="277.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="117.0947,277.1592 120,288 122.9053,277.1592" fill="#E95420" />
+  <line x1="128" y1="288" x2="128" y2="309.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="125.0947,309.1592 128,320 130.9053,309.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_4">
-  <line x1="120" y1="352" x2="120" y2="365.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="117.0947,365.1592 120,376 122.9053,365.1592" fill="#E95420" />
+  <line x1="128" y1="384" x2="128" y2="405.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="125.0947,405.1592 128,416 130.9053,405.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_5">
-  <line x1="120" y1="440" x2="120" y2="453.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="117.0947,453.1592 120,464 122.9053,453.1592" fill="#E95420" />
+  <line x1="128" y1="480" x2="128" y2="501.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="125.0947,501.1592 128,512 130.9053,501.1592" fill="#E95420" />
   </g>
   <g id="layout-grid" opacity="0.35" style="pointer-events:none">
-    <rect x="24" y="24" width="192" height="504" fill="none" stroke="#0066CC" stroke-width="1" stroke-dasharray="6 4" />
-    <rect x="24" y="24" width="192" height="504" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="24" x2="24" y2="528" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="216" y1="24" x2="216" y2="528" stroke="#0066CC" stroke-width="0.75" />
-    <text x="120.0" y="20" text-anchor="middle" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">192px</text>
-    <rect x="24" y="24" width="192" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="24" x2="216" y2="24" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="88" x2="216" y2="88" stroke="#0066CC" stroke-width="0.75" />
-    <text x="220" y="59.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="112" width="192" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="112" x2="216" y2="112" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="176" x2="216" y2="176" stroke="#0066CC" stroke-width="0.75" />
-    <text x="220" y="147.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="200" width="192" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="200" x2="216" y2="200" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="264" x2="216" y2="264" stroke="#0066CC" stroke-width="0.75" />
-    <text x="220" y="235.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="288" width="192" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="288" x2="216" y2="288" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="352" x2="216" y2="352" stroke="#0066CC" stroke-width="0.75" />
-    <text x="220" y="323.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="376" width="192" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="376" x2="216" y2="376" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="440" x2="216" y2="440" stroke="#0066CC" stroke-width="0.75" />
-    <text x="220" y="411.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="464" width="192" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="464" x2="216" y2="464" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="528" x2="216" y2="528" stroke="#0066CC" stroke-width="0.75" />
-    <text x="220" y="499.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="88" width="192" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="220" y="103.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
-    <rect x="24" y="176" width="192" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="220" y="191.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
-    <rect x="24" y="264" width="192" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="220" y="279.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
-    <rect x="24" y="352" width="192" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="220" y="367.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
-    <rect x="24" y="440" width="192" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="220" y="455.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
+    <rect x="32" y="32" width="192" height="544" fill="none" stroke="#0066CC" stroke-width="1" stroke-dasharray="6 4" />
+    <rect x="32" y="32" width="192" height="544" fill="#3399FF" opacity="0.08" />
+    <line x1="32" y1="32" x2="32" y2="576" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="224" y1="32" x2="224" y2="576" stroke="#0066CC" stroke-width="0.75" />
+    <text x="128.0" y="28" text-anchor="middle" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">192px</text>
+    <rect x="32" y="32" width="192" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="32" y1="32" x2="224" y2="32" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="32" y1="96" x2="224" y2="96" stroke="#0066CC" stroke-width="0.75" />
+    <text x="228" y="67.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="32" y="128" width="192" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="32" y1="128" x2="224" y2="128" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="32" y1="192" x2="224" y2="192" stroke="#0066CC" stroke-width="0.75" />
+    <text x="228" y="163.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="32" y="224" width="192" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="32" y1="224" x2="224" y2="224" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="32" y1="288" x2="224" y2="288" stroke="#0066CC" stroke-width="0.75" />
+    <text x="228" y="259.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="32" y="320" width="192" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="32" y1="320" x2="224" y2="320" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="32" y1="384" x2="224" y2="384" stroke="#0066CC" stroke-width="0.75" />
+    <text x="228" y="355.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="32" y="416" width="192" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="32" y1="416" x2="224" y2="416" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="32" y1="480" x2="224" y2="480" stroke="#0066CC" stroke-width="0.75" />
+    <text x="228" y="451.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="32" y="512" width="192" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="32" y1="512" x2="224" y2="512" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="32" y1="576" x2="224" y2="576" stroke="#0066CC" stroke-width="0.75" />
+    <text x="228" y="547.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="32" y="96" width="192" height="32" fill="#9933FF" opacity="0.06" />
+    <text x="228" y="115.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">32</text>
+    <rect x="32" y="192" width="192" height="32" fill="#9933FF" opacity="0.06" />
+    <text x="228" y="211.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">32</text>
+    <rect x="32" y="288" width="192" height="32" fill="#9933FF" opacity="0.06" />
+    <text x="228" y="307.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">32</text>
+    <rect x="32" y="384" width="192" height="32" fill="#9933FF" opacity="0.06" />
+    <text x="228" y="403.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">32</text>
+    <rect x="32" y="480" width="192" height="32" fill="#9933FF" opacity="0.06" />
+    <text x="228" y="499.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">32</text>
   </g>
 </svg>
