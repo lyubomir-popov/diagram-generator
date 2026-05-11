@@ -2,53 +2,152 @@
    grid layout, panel/aside/main structure, buttons, inputs, and fields.
    This file adds only diagram-editor-specific presentation. */
 
+html,
 body.dg-preview {
-       min-height: 100vh;
+       block-size: 100%;
+       max-block-size: 100%;
+       min-block-size: 100%;
        overflow: hidden;
 }
 
-/* Override BF application grid to add the left component nav column */
+body.dg-preview {
+       margin: 0;
+}
+
+/* Tune the BF shell widths for the components rail and inspector. */
 .dg-preview-app {
-       grid-template-areas: "left-nav main aside";
-       grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr) minmax(0, var(--bf-application-aside-width));
-       grid-template-rows: minmax(0, 1fr);
+       --dg-component-nav-width-default: 12rem;
+       --dg-component-nav-width-min: 10rem;
+       --dg-component-nav-width-max: 16rem;
+       --dg-preview-aside-width-default: 22rem;
+       --dg-preview-aside-width-min: 18rem;
+       --dg-preview-aside-width-max: 36rem;
+       --bf-app-navigation-width: var(--dg-component-nav-width-default);
+       --bf-application-navigation-width: var(--dg-component-nav-width-default);
+       --bf-app-drawer-width-small: var(--dg-component-nav-width-min);
+       --bf-application-drawer-width-small: var(--dg-component-nav-width-min);
+       --bf-app-drawer-width-small-max: var(--dg-component-nav-width-max);
+       --bf-application-drawer-width-small-max: var(--dg-component-nav-width-max);
+       --bf-app-aside-width: var(--dg-preview-aside-width-default);
+       --bf-application-aside-width: var(--dg-preview-aside-width-default);
+       block-size: 100dvh;
+       max-block-size: 100dvh;
+       min-block-size: 100dvh;
+       overflow: hidden;
+       position: relative;
+       width: 100%;
+}
+
+.dg-preview-app > .bf-navigation,
+.dg-preview-app > .bf-main,
+.dg-preview-app > .bf-aside {
+       block-size: 100%;
+       max-block-size: 100%;
+       min-block-size: 0;
+}
+
+.dg-preview-app > .bf-navigation,
+.dg-preview-app > .bf-main,
+.dg-preview-app > .bf-aside,
+.dg-preview-app .bf-aside,
+.dg-preview-app .bf-navigation {
+       overflow: hidden;
+       overscroll-behavior: contain;
 }
 
 .dg-preview-main {
-       grid-area: main;
+       display: flex;
+       flex-direction: column;
        min-block-size: 0;
-       overflow: auto;
+       min-inline-size: 0;
 }
 
 .dg-preview-aside {
-       grid-area: aside;
        min-block-size: 0;
        min-inline-size: 0;
-       overflow-y: auto;
 }
 
-/* --- Left component navigation --- */
-.dg-left-nav {
-       border-inline-end: 1px solid var(--bf-color-border-low-contrast, #333);
-       grid-area: left-nav;
+.dg-component-navigation,
+.dg-component-navigation .bf-navigation-drawer,
+.dg-component-panel,
+.dg-sidebar-panel {
+       min-block-size: 0;
        min-inline-size: 0;
-       overflow: auto;
+}
+
+.dg-component-panel,
+.dg-sidebar-panel {
+       block-size: 100%;
+       overflow: hidden;
+}
+
+.dg-component-navigation .bf-navigation-drawer,
+.dg-component-panel-content,
+.dg-sidebar-content,
+.stage {
+       overscroll-behavior: contain;
+}
+
+.dg-component-navigation > .bf-navigation-overlay {
+       display: none;
+}
+
+.dg-component-navigation > .bf-navigation-drawer,
+.dg-component-navigation:not(.is-collapsed) > .bf-navigation-drawer {
+       box-shadow: none;
 }
 
 .dg-component-panel-content {
-       padding-inline-start: 0;
+       display: flex;
+       flex: 1 1 auto;
+       min-block-size: 0;
+       overflow: auto;
+       padding: 0;
 }
 
-.dg-component-nav .bf-side-navigation-drawer {
-       background: transparent;
-       block-size: 100%;
-       inline-size: 100%;
-       left: auto;
-       overflow: auto;
-       position: static;
-       top: auto;
-       transform: none;
-       visibility: visible;
+.dg-component-tree {
+       align-content: start;
+       min-block-size: 0;
+       padding-block: calc(var(--bf-baseline) * 1);
+}
+
+.dg-preview-app .dg-component-navigation > .bf-application-navigation-resize-handle {
+       display: none;
+}
+
+@media (min-width: 48rem) {
+       .dg-preview-app {
+              grid-template-areas: "navigation main aside";
+              grid-template-columns: minmax(var(--dg-component-nav-width-min), var(--bf-application-navigation-width)) minmax(0, 1fr) minmax(var(--dg-preview-aside-width-min), var(--bf-application-aside-width));
+              grid-template-rows: minmax(0, 1fr);
+       }
+
+       .dg-component-navigation {
+              grid-area: navigation;
+              grid-column: auto;
+              grid-row: auto;
+              pointer-events: auto;
+              position: relative;
+              z-index: auto;
+       }
+
+       .dg-component-navigation > .bf-navigation-drawer,
+       .dg-component-navigation:not(.is-collapsed) > .bf-navigation-drawer {
+              block-size: 100%;
+              box-shadow: none;
+              display: flex;
+              flex-direction: column;
+              inline-size: 100%;
+              min-block-size: 0;
+              overflow: hidden;
+              position: static;
+              transform: translateX(0);
+              visibility: visible;
+       }
+
+       .dg-preview-app .dg-component-navigation > .bf-application-navigation-resize-handle {
+              display: block;
+       }
 }
 
 /* --- Right sidebar --- */
@@ -68,7 +167,10 @@ body.dg-preview {
 .dg-sidebar-content {
        align-content: start;
        display: grid;
+       flex: 1 1 auto;
        gap: 16px;
+       min-block-size: 0;
+       overflow: auto;
 }
 
 .dg-sidebar-section {
@@ -92,10 +194,12 @@ body.dg-preview {
        text-decoration: none;
 }
 
-.nav-strip {
-       display: flex;
-       flex-wrap: wrap;
-       gap: 0;
+.dg-diagram-picker-field {
+       margin-bottom: 0;
+}
+
+.dg-diagram-picker {
+       inline-size: 100%;
 }
 
 .build-status {
@@ -175,22 +279,30 @@ body.dg-preview {
 .tree-item {
        border-inline-start: 2px solid transparent;
        cursor: pointer;
-       font-family: 'Ubuntu Mono', monospace;
-       padding: 4px 0 4px 8px;
+       font-family: var(--bf-body-font-family, 'Ubuntu Sans', system-ui, sans-serif);
+       padding: 4px var(--bf-panel-padding-inline);
 }
 
 .tree-item:hover { border-inline-start-color: #555; }
-.tree-item.selected { border-inline-start-color: #F6B73C; color: #F6B73C; }
+.tree-item.selected { border-inline-start-color: var(--bf-authoring-accent); color: var(--bf-authoring-accent); }
 
 .grid-controls {
        display: grid;
-       gap: 8px;
+       column-gap: 12px;
+       gap: 8px 12px;
+       grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .dg-grid-field {
+       align-content: start;
        display: grid;
        gap: 4px;
        margin-bottom: 0;
+       min-inline-size: 0;
+}
+
+.dg-grid-field.is-full-span {
+       grid-column: 1 / -1;
 }
 
 .dg-grid-control {
@@ -212,6 +324,16 @@ body.dg-preview {
        text-align: right;
 }
 
+@media (max-width: 32rem) {
+       .grid-controls {
+              grid-template-columns: minmax(0, 1fr);
+       }
+
+       .dg-grid-field.is-full-span {
+              grid-column: auto;
+       }
+}
+
 .dg-number-input[readonly] {
        color: #666;
        cursor: default;
@@ -225,16 +347,18 @@ body.dg-preview {
 
 .dg-stage-shell {
        display: flex;
+       flex: 1 1 auto;
        flex-direction: column;
-       min-block-size: 100%;
+       min-block-size: 0;
        min-inline-size: 0;
 }
 
 .stage {
        align-items: flex-start;
        display: flex;
+       flex: 1 1 auto;
        justify-content: center;
-       min-block-size: 100%;
+       min-block-size: 0;
        min-inline-size: 0;
        overflow: auto;
        padding: 32px;
@@ -294,16 +418,16 @@ body.dg-preview {
 .stage svg [data-component-id] > text,
 .stage svg [data-component-id] > image,
 .stage svg [data-component-id] > tspan { pointer-events: none; }
-.stage svg g.dg-selected > rect:first-of-type { outline: 2px solid #F6B73C; outline-offset: -1px; }
-.stage svg g.dg-selected > line { filter: drop-shadow(0 0 2px #F6B73C); }
-.stage svg g.dg-selected > polygon { filter: drop-shadow(0 0 2px #F6B73C); }
-.stage svg g.dg-selected > .dg-icon { filter: drop-shadow(0 0 2px #F6B73C); }
+.stage svg g.dg-selected > rect:first-of-type { outline: 2px solid var(--bf-authoring-accent); outline-offset: -1px; }
+.stage svg g.dg-selected > line { filter: drop-shadow(0 0 2px var(--bf-authoring-accent)); }
+.stage svg g.dg-selected > polygon { filter: drop-shadow(0 0 2px var(--bf-authoring-accent)); }
+.stage svg g.dg-selected > .dg-icon { filter: drop-shadow(0 0 2px var(--bf-authoring-accent)); }
 .stage svg g.dg-hover > rect:first-of-type { outline: 1px dashed #6cc; outline-offset: -1px; }
 .stage svg g.dg-hover > line { filter: drop-shadow(0 0 1px #6cc); }
 .stage svg g.dg-hover > .dg-icon { filter: drop-shadow(0 0 1px #6cc); }
 .stage svg .dg-icon > * { pointer-events: none; }
 
-.dg-handle { fill: #F6B73C; stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }
+.dg-handle { fill: var(--bf-authoring-accent); stroke: #fff; stroke-width: 1; cursor: pointer; pointer-events: all; }
 .dg-handle.dg-handle-tl { cursor: nw-resize; }
 .dg-handle.dg-handle-t { cursor: ns-resize; }
 .dg-handle.dg-handle-tr { cursor: ne-resize; }
@@ -312,12 +436,12 @@ body.dg-preview {
 .dg-handle.dg-handle-b { cursor: ns-resize; }
 .dg-handle.dg-handle-bl { cursor: nesw-resize; }
 .dg-handle.dg-handle-l { cursor: ew-resize; }
-.dg-wp-handle { fill: #F6B73C; stroke: #fff; stroke-width: 1.5; cursor: move; pointer-events: all; }
-.dg-wp-handle:hover { fill: #e0a030; stroke: #fff; stroke-width: 2; }
+.dg-wp-handle { fill: var(--bf-authoring-accent); stroke: #fff; stroke-width: 1.5; cursor: move; pointer-events: all; }
+.dg-wp-handle:hover { fill: var(--bf-authoring-accent-hover); stroke: #fff; stroke-width: 2; }
 
 .dg-text-editor {
        background: #fff;
-       border: 2px solid #F6B73C;
+       border: 2px solid var(--bf-authoring-accent);
        box-sizing: border-box;
        font-family: 'Ubuntu Sans', sans-serif;
        line-height: 1.43;

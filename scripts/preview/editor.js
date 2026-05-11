@@ -813,8 +813,14 @@ function snapToGrid(value) {
   return Math.round(value / 8) * 8;
 }
 
+function getInspectorElement() {
+  return document.getElementById("inspector");
+}
+
 function renderEmptyInspector() {
-  document.getElementById("inspector").innerHTML =
+  const inspector = getInspectorElement();
+  if (!inspector) return;
+  inspector.innerHTML =
     '<p class="dg-empty-message bf-form-help">Click a component to inspect it.</p>';
 }
 
@@ -1020,6 +1026,10 @@ function alignSelection(mode) {
 }
 
 function renderMultiSelectionInspector() {
+  const inspector = getInspectorElement();
+  if (!inspector) {
+    return;
+  }
   const info = getSelectionActionItems();
   if (info.items.length < 2) {
     renderEmptyInspector();
@@ -1043,7 +1053,7 @@ function renderMultiSelectionInspector() {
       '<button class="bf-button is-base" type="button" onclick="alignSelection(\'middle\')">Align middle</button>' +
       '<button class="bf-button is-base" type="button" onclick="alignSelection(\'bottom\')">Align bottom</button>' +
       '</div></div>';
-    document.getElementById("inspector").innerHTML = html;
+    inspector.innerHTML = html;
     return;
   }
 
@@ -1069,7 +1079,7 @@ function renderMultiSelectionInspector() {
   }
 
   html += '<p class="dg-selection-note">All actions snap to the 8px baseline and remain undoable.</p>';
-  document.getElementById("inspector").innerHTML = html;
+  inspector.innerHTML = html;
 }
 
 function applyAllOverrides() {
@@ -2591,6 +2601,10 @@ function clearSelection() {
 }
 
 function updateInspector(cid) {
+  const inspector = getInspectorElement();
+  if (!inspector) {
+    return;
+  }
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
   const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
@@ -2666,7 +2680,7 @@ function updateInspector(cid) {
     html += '</div>';
   }
   html += '<p class="dg-inspector-note">Drag to move &#xb7; handles to resize (8px grid) &#xb7; W to toggle grid overlay.</p>';
-  document.getElementById("inspector").innerHTML = html;
+  inspector.innerHTML = html;
 }
 
 // ---- Override persistence ----
@@ -2897,6 +2911,413 @@ function connectSSE() {
   es.onerror = () => setTimeout(connectSSE, 2000);
 }
 
+function resolveShellCssLengthPx(context, cssValue, fallbackPx) {
+  const trimmedValue = typeof cssValue === "string" ? cssValue.trim() : "";
+  if (!trimmedValue) {
+    return fallbackPx;
+  }
+
+  const probe = context.ownerDocument.createElement("div");
+  probe.style.border = "0";
+  probe.style.inlineSize = trimmedValue;
+  probe.style.margin = "0";
+  probe.style.opacity = "0";
+  probe.style.padding = "0";
+  probe.style.pointerEvents = "none";
+  probe.style.position = "absolute";
+  probe.style.visibility = "hidden";
+  context.appendChild(probe);
+  const resolvedPx = probe.getBoundingClientRect().width;
+  probe.remove();
+
+  return Number.isFinite(resolvedPx) && resolvedPx > 0 ? resolvedPx : fallbackPx;
+}
+
+function shellWidthToRem(context, widthPx) {
+  const rootFontSizePx = Number.parseFloat(getComputedStyle(context.ownerDocument.documentElement).fontSize || "16");
+  const safeRootFontSizePx = Number.isFinite(rootFontSizePx) && rootFontSizePx > 0 ? rootFontSizePx : 16;
+  const widthRem = Math.round((widthPx / safeRootFontSizePx) * 1000) / 1000;
+  return `${widthRem}rem`;
+}
+
+function clampShellWidth(value, minPx, maxPx) {
+  return Math.max(minPx, Math.min(maxPx, value));
+}
+
+function readShellWidth(application, storageKey) {
+  try {
+    const rawValue = window.localStorage.getItem(storageKey);
+    if (!rawValue) {
+      return null;
+    }
+
+    const trimmedValue = rawValue.trim();
+    const parsedWidth = Number.parseFloat(trimmedValue);
+    if (!Number.isFinite(parsedWidth)) {
+      return null;
+    }
+
+    if (/^-?\d+(\.\d+)?$/.test(trimmedValue)) {
+      return parsedWidth;
+    }
+
+    const resolvedWidthPx = resolveShellCssLengthPx(application, trimmedValue, -1);
+    return Number.isFinite(resolvedWidthPx) && resolvedWidthPx > 0 ? resolvedWidthPx : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeShellWidth(application, storageKey, widthPx) {
+  try {
+    window.localStorage.setItem(storageKey, shellWidthToRem(application, widthPx));
+  } catch {
+    // Ignore storage failures so resizing still works for the current session.
+  }
+}
+
+function clearShellWidth(storageKey) {
+  try {
+    window.localStorage.removeItem(storageKey);
+  } catch {
+    // Ignore storage failures so reset still works visually.
+  }
+}
+
+function bindShellResize({
+  application,
+  panel,
+  handle,
+  resizingClass,
+  storageKey,
+  widthProperty,
+  legacyWidthProperty,
+  minWidthProperty,
+  maxWidthProperty,
+  fallbackWidth,
+  fallbackMinWidth,
+  fallbackMaxWidth,
+  isEnabled,
+  measureWidth,
+  pointerWidthFromEvent,
+  ariaLabel,
+}) {
+  const documentRoot = application.ownerDocument.documentElement;
+
+  function getBounds() {
+    const computedStyle = getComputedStyle(application);
+    const minPx = resolveShellCssLengthPx(
+      application,
+      computedStyle.getPropertyValue(minWidthProperty) || fallbackMinWidth,
+      resolveShellCssLengthPx(application, fallbackMinWidth, 160)
+    );
+    const maxPx = resolveShellCssLengthPx(
+      application,
+      computedStyle.getPropertyValue(maxWidthProperty) || fallbackMaxWidth,
+      resolveShellCssLengthPx(application, fallbackMaxWidth, 320)
+    );
+
+    return {
+      minPx,
+      maxPx: Math.max(minPx, maxPx)
+    };
+  }
+
+  function getCurrentWidthPx() {
+    const measuredWidth = measureWidth();
+    if (measuredWidth > 0) {
+      return measuredWidth;
+    }
+
+    const computedStyle = getComputedStyle(application);
+    return resolveShellCssLengthPx(
+      application,
+      computedStyle.getPropertyValue(widthProperty)
+        || computedStyle.getPropertyValue(legacyWidthProperty)
+        || fallbackWidth,
+      resolveShellCssLengthPx(application, fallbackWidth, 240)
+    );
+  }
+
+  function updateHandleA11y(widthPx = getCurrentWidthPx()) {
+    if (!handle.hasAttribute("role")) {
+      handle.setAttribute("role", "separator");
+    }
+
+    if (!handle.hasAttribute("aria-orientation")) {
+      handle.setAttribute("aria-orientation", "vertical");
+    }
+
+    if (!handle.hasAttribute("aria-label")) {
+      handle.setAttribute("aria-label", ariaLabel);
+    }
+
+    const enabled = isEnabled();
+    handle.setAttribute("aria-disabled", String(!enabled));
+    handle.tabIndex = enabled ? 0 : -1;
+
+    if (!enabled) {
+      return;
+    }
+
+    const { minPx, maxPx } = getBounds();
+    handle.setAttribute("aria-valuemin", String(Math.round(minPx)));
+    handle.setAttribute("aria-valuemax", String(Math.round(maxPx)));
+    handle.setAttribute("aria-valuenow", String(Math.round(clampShellWidth(widthPx, minPx, maxPx))));
+  }
+
+  function applyWidth(widthPx, persist) {
+    const { minPx, maxPx } = getBounds();
+    const nextWidthPx = clampShellWidth(widthPx, minPx, maxPx);
+    const nextWidthCss = shellWidthToRem(documentRoot, nextWidthPx);
+    application.style.setProperty(widthProperty, nextWidthCss);
+    application.style.setProperty(legacyWidthProperty, nextWidthCss);
+    updateHandleA11y(nextWidthPx);
+
+    if (persist) {
+      writeShellWidth(application, storageKey, nextWidthPx);
+    }
+
+    return nextWidthPx;
+  }
+
+  function resetWidth() {
+    application.style.removeProperty(widthProperty);
+    application.style.removeProperty(legacyWidthProperty);
+    clearShellWidth(storageKey);
+    updateHandleA11y();
+  }
+
+  const persistedWidth = readShellWidth(application, storageKey);
+  if (persistedWidth !== null) {
+    applyWidth(persistedWidth, false);
+  } else {
+    updateHandleA11y();
+  }
+
+  const onDoubleClick = () => {
+    resetWidth();
+  };
+
+  const onKeyDown = (event) => {
+    if (!isEnabled()) {
+      return;
+    }
+
+    const currentWidthPx = getCurrentWidthPx();
+    const stepPx = resolveShellCssLengthPx(application, "1rem", 16);
+    const adjustedStepPx = event.shiftKey ? stepPx * 3 : stepPx;
+    const { minPx, maxPx } = getBounds();
+
+    if (event.key === "ArrowLeft") {
+      applyWidth(currentWidthPx - adjustedStepPx, true);
+      event.preventDefault();
+      return;
+    }
+
+    if (event.key === "ArrowRight") {
+      applyWidth(currentWidthPx + adjustedStepPx, true);
+      event.preventDefault();
+      return;
+    }
+
+    if (event.key === "Home") {
+      applyWidth(minPx, true);
+      event.preventDefault();
+      return;
+    }
+
+    if (event.key === "End") {
+      applyWidth(maxPx, true);
+      event.preventDefault();
+    }
+  };
+
+  const onPointerDown = (event) => {
+    if (event.button !== 0 || !isEnabled()) {
+      return;
+    }
+
+    event.preventDefault();
+    const shellRect = application.getBoundingClientRect();
+    application.classList.add(resizingClass);
+    handle.setPointerCapture(event.pointerId);
+    let finished = false;
+
+    const onPointerMove = (moveEvent) => {
+      const nextWidthPx = pointerWidthFromEvent(shellRect, moveEvent);
+      applyWidth(nextWidthPx, false);
+    };
+
+    const finishResize = () => {
+      if (finished) {
+        return;
+      }
+
+      finished = true;
+      application.classList.remove(resizingClass);
+      applyWidth(getCurrentWidthPx(), true);
+      handle.removeEventListener("pointermove", onPointerMove);
+      handle.removeEventListener("pointerup", finishResize);
+      handle.removeEventListener("pointercancel", finishResize);
+      handle.removeEventListener("lostpointercapture", finishResize);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+
+      if (handle.hasPointerCapture(event.pointerId)) {
+        handle.releasePointerCapture(event.pointerId);
+      }
+    };
+
+    handle.addEventListener("pointermove", onPointerMove);
+    handle.addEventListener("pointerup", finishResize, { once: true });
+    handle.addEventListener("pointercancel", finishResize, { once: true });
+    handle.addEventListener("lostpointercapture", finishResize, { once: true });
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", finishResize, { once: true });
+    window.addEventListener("pointercancel", finishResize, { once: true });
+  };
+
+  const onWindowResize = () => {
+    if (isEnabled()) {
+      applyWidth(getCurrentWidthPx(), false);
+      return;
+    }
+
+    updateHandleA11y();
+  };
+
+  handle.addEventListener("dblclick", onDoubleClick);
+  handle.addEventListener("keydown", onKeyDown);
+  handle.addEventListener("pointerdown", onPointerDown);
+  window.addEventListener("resize", onWindowResize);
+
+  return () => {
+    handle.removeEventListener("dblclick", onDoubleClick);
+    handle.removeEventListener("keydown", onKeyDown);
+    handle.removeEventListener("pointerdown", onPointerDown);
+    window.removeEventListener("resize", onWindowResize);
+  };
+}
+
+function initPreviewShell() {
+  const application = document.querySelector(".dg-preview-app");
+  const navigation = document.getElementById("dg-component-navigation");
+  const navigationHandle = navigation?.querySelector(".bf-application-navigation-resize-handle");
+  const aside = document.getElementById("dg-preview-aside");
+  const asideHandle = aside?.querySelector(".bf-application-aside-resize-handle");
+  const desktopMedia = window.matchMedia ? window.matchMedia("(min-width: 48rem)") : null;
+
+  if (!(application instanceof HTMLElement)) {
+    return () => {};
+  }
+
+  const teardowns = [];
+
+  if (navigation instanceof HTMLElement && navigationHandle instanceof HTMLElement) {
+    teardowns.push(bindShellResize({
+      application,
+      panel: navigation,
+      handle: navigationHandle,
+      resizingClass: "is-resizing-navigation",
+      storageKey: "diagram-generator:preview-navigation-width",
+      widthProperty: "--bf-application-navigation-width",
+      legacyWidthProperty: "--bf-app-navigation-width",
+      minWidthProperty: "--dg-component-nav-width-min",
+      maxWidthProperty: "--dg-component-nav-width-max",
+      fallbackWidth: "12rem",
+      fallbackMinWidth: "10rem",
+      fallbackMaxWidth: "16rem",
+      isEnabled: () => !navigation.classList.contains("is-collapsed") && (desktopMedia ? desktopMedia.matches : true),
+      measureWidth: () => navigation.getBoundingClientRect().width,
+      pointerWidthFromEvent: (shellRect, moveEvent) => moveEvent.clientX - shellRect.left,
+      ariaLabel: "Resize components panel",
+    }));
+  }
+
+  if (aside instanceof HTMLElement && asideHandle instanceof HTMLElement) {
+    teardowns.push(bindShellResize({
+      application,
+      panel: aside,
+      handle: asideHandle,
+      resizingClass: "is-resizing-aside",
+      storageKey: "diagram-generator:preview-aside-width",
+      widthProperty: "--bf-application-aside-width",
+      legacyWidthProperty: "--bf-app-aside-width",
+      minWidthProperty: "--dg-preview-aside-width-min",
+      maxWidthProperty: "--dg-preview-aside-width-max",
+      fallbackWidth: "22rem",
+      fallbackMinWidth: "18rem",
+      fallbackMaxWidth: "36rem",
+      isEnabled: () => !aside.classList.contains("is-collapsed") && !aside.classList.contains("is-overlay") && !aside.classList.contains("is-drawer"),
+      measureWidth: () => aside.getBoundingClientRect().width,
+      pointerWidthFromEvent: (shellRect, moveEvent) => shellRect.right - moveEvent.clientX,
+      ariaLabel: "Resize inspector panel",
+    }));
+  }
+
+  return () => {
+    teardowns.forEach((teardown) => teardown());
+  };
+}
+
+function initDiagramPicker() {
+  const picker = document.getElementById("diagram-picker");
+  if (!(picker instanceof HTMLSelectElement)) {
+    return;
+  }
+
+  const currentPath = window.location.pathname;
+
+  async function populateDiagramOptions() {
+    if (picker.options.length > 0) {
+      picker.value = currentPath;
+      return;
+    }
+
+    try {
+      const response = await fetch("/", { credentials: "same-origin" });
+      if (!response.ok) {
+        return;
+      }
+
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const viewLinks = Array.from(doc.querySelectorAll('a[href^="/view/"]'));
+      const seen = new Set();
+
+      viewLinks.forEach((link) => {
+        const href = link.getAttribute("href");
+        if (!href || seen.has(href)) {
+          return;
+        }
+        seen.add(href);
+        const option = document.createElement("option");
+        option.value = href;
+        option.textContent = link.textContent?.trim() || href.replace("/view/", "");
+        picker.append(option);
+      });
+
+      picker.value = currentPath;
+    } catch {
+      // Leave the picker empty if the index cannot be fetched.
+    }
+  }
+
+  picker.addEventListener("change", () => {
+    const nextUrl = picker.value;
+    if (nextUrl && nextUrl !== window.location.pathname) {
+      window.location.assign(nextUrl);
+    }
+  });
+
+  void populateDiagramOptions();
+}
+
+initPreviewShell();
+initDiagramPicker();
 loadSVG();
 connectSSE();
 

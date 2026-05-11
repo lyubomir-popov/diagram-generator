@@ -137,7 +137,7 @@ Three generic examples ship with the repo for reference:
 
 The interactive autolayout demo is the hot-reload preview server. It is still an active editor surface rather than a polished end-user app, but it is the current way to exercise live relayout, gutter controls, distribute/align, and override persistence.
 
-If the sibling `baseline-foundry` repo is present beside this repo, the preview server now auto-serves its app-tier stylesheet and Ubuntu Sans font so the editor shell uses Baseline Foundry primitives without extra setup.
+The preview server now prefers a sibling `baseline-foundry` checkout when it is present, but it also ships with a vendored panel-CSS and Ubuntu Sans snapshot under `assets/baseline-foundry/` so fresh clones still get a working preview shell without the private repo. Refresh that vendored snapshot with `python scripts/sync_baseline_foundry_assets.py` when you want to roll a newer Foundry release into this repo.
 
 ```bash
 python scripts/preview_server.py              # all diagrams, port 8100
@@ -306,7 +306,7 @@ Three implementation details are worth noticing on a cold start:
 
 - `DIAGRAM.md` includes `sourceSpecs:` frontmatter that links typography, spacing, and grid back to `canonical-spacing-spec`, so the repo has an explicit spec -> token -> tool chain rather than a chat-only style memory.
 - Generated draw.io `mxCell` nodes carry `data-dg-source`, `data-dg-role`, and `data-dg-style-tokens`, which makes provenance, batch rewrites, and re-runs auditable instead of opaque.
-- The preview server auto-serves the sibling `baseline-foundry` app-tier CSS and Ubuntu Sans font when that repo is present, so the interactive editor can dogfood the broader frontend system without copying assets into this repo.
+- The preview server prefers a sibling `baseline-foundry` checkout when it is present, but otherwise falls back to the vendored panel CSS and Ubuntu Sans snapshot under `assets/baseline-foundry/`, so public clones do not depend on the private repo.
 
 ## Draw.io export rules
 

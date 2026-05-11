@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Union
 
 from diagram_model import (
     Annotation,
@@ -167,11 +167,18 @@ class DashedLinePrimitive:
     component_id: str | None = None
 
 
-Primitive = (
-    Rect | TextBlock | Icon | ArrowPrimitive | CircleMarker |
-    JaggedRect | TerminalBar | MatrixTile | RequestClusterPrimitive |
-    DashedLinePrimitive
-)
+Primitive = Union[
+    Rect,
+    TextBlock,
+    Icon,
+    ArrowPrimitive,
+    CircleMarker,
+    JaggedRect,
+    TerminalBar,
+    MatrixTile,
+    RequestClusterPrimitive,
+    DashedLinePrimitive,
+]
 
 
 # ---------------------------------------------------------------------------

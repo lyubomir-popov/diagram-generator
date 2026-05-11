@@ -6,22 +6,22 @@
 %BF_STYLES%
 <link rel="stylesheet" href="/preview/editor.css">
 </head>
-<body class="bf-theme bf-tier-app is-dark dg-preview">
-<div class="bf-application dg-preview-app">
-  <div class="dg-left-nav">
-    <section class="bf-panel is-fill dg-component-panel">
-      <div class="bf-panel-header is-sticky">
-        <h2 class="dg-section-heading bf-h5">Components</h2>
-      </div>
-      <div class="bf-panel-content dg-component-panel-content">
-        <div class="bf-side-navigation is-raw-html is-drawer-expanded dg-component-nav">
-          <nav class="bf-side-navigation-drawer" aria-label="Components">
-            <div class="tree" id="tree"></div>
-          </nav>
+<body class="bf-theme bf-tier-os is-dark dg-preview">
+<div class="bf-application dg-preview-app" data-dg-shell="true">
+  <nav class="bf-navigation is-pinned dg-component-navigation" id="dg-component-navigation" aria-label="Components">
+    <div class="bf-navigation-overlay" aria-hidden="true"></div>
+    <div class="bf-navigation-drawer">
+      <section class="bf-panel is-fill dg-component-panel">
+        <div class="bf-panel-header is-sticky">
+          <h2 class="dg-section-heading bf-h5">Components</h2>
         </div>
-      </div>
-    </section>
-  </div>
+        <div class="bf-panel-content dg-component-panel-content">
+          <div class="tree dg-component-tree" id="tree"></div>
+        </div>
+      </section>
+    </div>
+    <div class="bf-application-navigation-resize-handle" role="separator" tabindex="0" aria-controls="dg-component-navigation" aria-label="Resize components panel" aria-orientation="vertical"></div>
+  </nav>
   <main class="bf-main dg-preview-main">
     <div class="dg-stage-shell">
       <div class="dg-reference-bar" id="reference-bar" style="display:none">
@@ -36,11 +36,17 @@
       <div class="stage" id="stage"></div>
     </div>
   </main>
-  <aside class="bf-aside is-pinned is-medium dg-preview-aside">
+  <aside class="bf-aside is-pinned is-medium dg-preview-aside" id="dg-preview-aside">
+    <div class="bf-application-aside-resize-handle" role="separator" tabindex="0" aria-controls="dg-preview-aside" aria-label="Resize inspector panel" aria-orientation="vertical"></div>
     <section class="sidebar bf-panel is-fill dg-sidebar-panel">
       <div class="bf-panel-header is-sticky dg-sidebar-header">
         <a class="nav-back" href="/">&#x2190; all diagrams</a>
-        <div class="nav-strip">%NAV_LINKS%</div>
+        <label class="bf-field dg-diagram-picker-field" for="diagram-picker">
+          <span class="bf-form-label">Diagram</span>
+          <span class="bf-control">
+            <select class="bf-input dg-diagram-picker" id="diagram-picker" aria-label="Select diagram">%NAV_LINKS%</select>
+          </span>
+        </label>
         <div class="build-status build-ok" id="build-status">Watching for changes&#x2026;</div>
       </div>
       <div class="bf-panel-content dg-sidebar-content">
@@ -69,7 +75,7 @@
               <span class="bf-form-label">Row gutter</span>
               <span class="bf-control dg-grid-control"><input class="bf-input dg-number-input" type="number" id="grid-row-gap" min="0" max="128" step="8" value="24"><span class="dg-grid-unit">px</span></span>
             </label>
-            <label class="bf-field dg-grid-field" for="grid-margin">
+            <label class="bf-field dg-grid-field is-full-span" for="grid-margin">
               <span class="bf-form-label">Margin</span>
               <span class="bf-control dg-grid-control"><input class="bf-input dg-number-input" type="number" id="grid-margin" min="0" max="128" step="8" value="24"><span class="dg-grid-unit">px</span></span>
             </label>
