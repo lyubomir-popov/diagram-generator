@@ -117,6 +117,25 @@ Deliver brand guardrails for the 20% of diagrams that can't go through the autom
 - Brand review checklist
 - Design token exports (CSS custom properties, JSON tokens)
 
+### Stage 17 — Force-directed layout engine
+
+Port D3's force-simulation layout algorithm (`d3-force`) into the Python layout engine — ideally a literal translation of the velocity Verlet integrator and the core force types, not a reimplementation from scratch. This unlocks automatic layout for diagrams where the author specifies relationships but not positions.
+
+**Core forces to port:**
+- `forceLink` — edge-length spring constraints between connected components
+- `forceManyBody` — charge repulsion to prevent overlap
+- `forceCenter` — gravity toward canvas center
+- `forceCollide` — rectangle collision (adapted from D3's circle collision to handle box dimensions)
+
+**Integration with existing system:**
+- The force simulation produces initial positions; the existing grid engine then snaps results to the 8px baseline grid and enforces box/panel containment rules
+- Force layout becomes an optional `layout_mode` on `Diagram` — explicit grid placement (current default) remains available for hand-tuned diagrams
+- Arrows route through the existing orthogonal auto-router after force layout settles
+
+**Why a literal port:** D3-force is ~400 lines of well-tested physics. Porting the exact algorithm preserves its convergence properties and makes upstream improvements easy to pull in. A from-scratch simulation would need extensive tuning to match.
+
+**Stretch:** Interactive force layout in the preview editor — drag a box and watch connected components respond in real time, then commit the settled positions as overrides.
+
 ## Long-term direction
 
 - Keep the repo minimal and task-focused.
