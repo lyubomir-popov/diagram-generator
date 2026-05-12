@@ -415,7 +415,7 @@ body.dg-preview {
        grid-template-columns: minmax(0, 1fr);
        min-block-size: 0;
        min-inline-size: 0;
-       padding: 16px 32px 32px;
+       padding: 0 32px 32px;
 }
 
 .dg-preview-pane {

@@ -58,6 +58,30 @@ _last_rebuild_error: str | None = None
 _layout_cache: dict[str, object] = {}
 
 
+def _load_env_local() -> None:
+    env_path = ROOT / ".env.local"
+    if not env_path.exists():
+        return
+
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def _default_preview_port() -> int:
+    raw_port = os.environ.get("DG_PREVIEW_PORT") or os.environ.get("PREVIEW_PORT") or "8100"
+    try:
+        return int(raw_port)
+    except ValueError:
+        return 8100
+
+
 def _collect_mtimes() -> dict[str, float]:
     mtimes: dict[str, float] = {}
     for p in WATCH_PATHS:
@@ -572,8 +596,9 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
 
 
 def main():
+    _load_env_local()
     parser = argparse.ArgumentParser(description="Diagram preview server")
-    parser.add_argument("--port", type=int, default=8100)
+    parser.add_argument("--port", type=int, default=_default_preview_port())
     parser.add_argument("--slug", help="Open a specific diagram on start")
     parser.add_argument("--grid", action="store_true", help="Show grid overlay")
     parser.add_argument("--no-watch", action="store_true", help="Disable file watching")
