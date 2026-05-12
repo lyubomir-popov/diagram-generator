@@ -59,9 +59,11 @@
         <label class="bf-field dg-diagram-picker-field" for="diagram-picker">
           <span class="bf-form-label">Diagram</span>
           <span class="bf-control dg-picker-row">
-            <button class="dg-picker-chevron" id="diagram-prev" aria-label="Previous diagram" title="Previous diagram">&#x2039;</button>
             <select class="bf-input dg-diagram-picker" id="diagram-picker" aria-label="Select diagram">%NAV_LINKS%</select>
-            <button class="dg-picker-chevron" id="diagram-next" aria-label="Next diagram" title="Next diagram">&#x203A;</button>
+            <span class="dg-picker-nav">
+              <button class="bf-button is-base" id="diagram-prev" aria-label="Previous diagram" title="Previous diagram"><span class="bf-icon is-chevron-left" aria-hidden="true"></span></button>
+              <button class="bf-button is-base" id="diagram-next" aria-label="Next diagram" title="Next diagram"><span class="bf-icon is-chevron-right" aria-hidden="true"></span></button>
+            </span>
           </span>
         </label>
         <div class="build-status build-ok" id="build-status">Watching for changes&#x2026;</div>
