@@ -68,24 +68,28 @@ The prototype is functional and internally validated:
 
 Get 80% of diagram needs covered for 80% of users. The system should handle the common patterns — architecture stacks, pipeline flows, component relationships, grouped panels — and do them well. Exotic one-off visualisations (data-driven charts, custom illustrations, animated explainers) are explicitly out of scope for the constrained system.
 
-### In scope — the constrained path
+### In scope — the constrained path (automated generation)
 
-These are the outputs the system produces with full brand enforcement:
+The system produces diagrams with full brand enforcement from structured input. Everything below is what we can think of today — stakeholder validation will surface gaps and reprioritise.
 
-**Input formats:**
+**Input formats (known so far — to be validated with stakeholders):**
 - Rough sketches (photo/scan/screenshot)
 - Excalidraw exports
 - Existing draw.io files (import and restyle)
 - Text descriptions / structured definitions (Python today, YAML/JSON planned)
 - Mermaid diagrams (future parser)
+- Google Slides / Docs diagram screenshots (extract and redraw)
+- _Others? To be identified during user research._
 
 **Output formats:**
 - Editable SVG (Illustrator-safe, live text)
 - draw.io native XML (fully editable in draw.io desktop/web)
+- Penpot-compatible output (native format or SVG import pathway)
 - PNG export (from SVG, for embedding)
 - PDF (single-diagram, for print/whitepapers)
+- _Others? Stakeholder needs may surface additional targets (e.g. PowerPoint, Figma import)._
 
-**Diagram types (current corpus):**
+**Diagram types (current corpus — expected to grow):**
 - Vertical and horizontal architecture stacks
 - Pipeline / workflow flows
 - Grouped component panels with nested children
@@ -94,25 +98,25 @@ These are the outputs the system produces with full brand enforcement:
 - Annotated explainer diagrams
 
 **Style system:**
-- Ubuntu Sans typography at defined tiers
-- Constrained colour palette (black, white, `#F3F3F3` grey, `#E95420` orange for connectors only)
-- 8px baseline grid
-- Canonical box proportions (192px wide, 64px+ tall, 48px icons)
-- Reusable component library (boxes, panels, bars, terminals, arrows, annotations)
+The diagram design language defines a constrained set of tokens covering typography tiers, colour palette, spacing grid, box proportions, icon treatment, and connector styles. All values are derived from the canonical Canonical design specs. The full token inventory is maintained in `DIAGRAM.md`; this proposal intentionally avoids hardcoding specific values so the design language can evolve independently.
 
-### Out of scope — the guardrails-off path (the other 20%)
+### In scope — fallback guardrails (the other 20%)
 
-For diagrams that cannot be expressed within the constrained system:
+Not every diagram can or should go through the automated system. Data-driven charts, custom illustrations, complex network topologies, animated explainers, and highly bespoke one-offs will continue to be produced in general-purpose tools. **That work is still in scope for this project** — the deliverable is a level of brand guardrails for those tools so that even the manual path produces reasonably on-brand results.
 
-| Need | Recommended tool | Guardrails provided |
-|------|-----------------|-------------------|
-| Custom illustration / artistic diagrams | Penpot, Figma | Brand colour palette reference, typography guidelines |
-| Data-driven charts and graphs | Mermaid, D3, charting libraries | Palette tokens, font-family guidance |
-| Complex network topologies | draw.io with Canonical library | draw.io style library + connector defaults + guidelines doc |
-| Animated / interactive diagrams | Custom HTML/SVG | Design tokens export, spacing/grid reference |
-| Highly bespoke one-offs | Designer handoff | Reference exemplars + brand review checklist |
+What "fallback guardrails" means in practice:
 
-**The key deliverable for the 20%:** A draw.io component library, a Penpot component library, and a short visual guidelines document that gives authors enough brand rails to produce acceptable results manually. This is the floor — even the unconstrained path should not be a blank canvas.
+| Deliverable | Purpose |
+|-------------|---------|
+| **draw.io component library + style defaults** | Reusable branded shapes, connectors, and typography presets for authors working directly in draw.io |
+| **Penpot component library** | Equivalent branded building blocks for teams using Penpot |
+| **Visual guidelines document** | Short reference covering palette, typography, spacing, and do/don't examples — enough for an author to produce an acceptable diagram in any tool |
+| **Brand review checklist** | Quick self-check before publishing: correct colours, correct fonts, correct connector styles, etc. |
+| **Design token exports** | Machine-readable palette and typography tokens that other tools can import (CSS custom properties, JSON tokens, etc.) |
+
+The goal is that no diagram at Canonical ships from a completely blank canvas — even the unconstrained path has rails.
+
+This is an area where stakeholder input is especially valuable: which tools are actually in use, what level of guardrailing is realistic, and where the effort/impact tradeoff sits. We start broad and narrow down.
 
 ## Phased rollout
 
@@ -236,41 +240,23 @@ This is not a migration from an existing tool. There is no current standard. Thi
 
 ## Appendix: style inventory
 
-The current style system is intentionally minimal. Expansion should be disciplined — each addition must justify itself against the existing primitives.
+The current style system is intentionally minimal. Expansion should be disciplined — each addition must justify itself against the existing primitives. The full token definitions live in `DIAGRAM.md` and are derived from the canonical Canonical spacing, typography, and grid specs.
 
-### Current palette
+### What the design language currently defines
 
-| Token | Value | Use |
-|-------|-------|-----|
-| `ink` | `#000000` | Text, box borders |
-| `surface-default` | `#FFFFFF` | Default box fill |
-| `surface-accent` | `#F3F3F3` | Panel/group fill |
-| `connector` | `#E95420` | Arrows and arrowheads only |
-| `emphasis-surface` | `#000000` | At most one highlight box |
-| `emphasis-text` | `#FFFFFF` | Text inside emphasis box |
-| `text-helper` | `#666666` | Annotations, secondary labels |
+- **Colour palette:** A small constrained set of fills (default surface, accent surface, emphasis surface), a dedicated connector colour, and text tiers (primary, helper, emphasis). Specific values are maintained in `DIAGRAM.md`.
+- **Typography:** Multiple tiers from body to title, using the canonical brand typeface at defined size/weight/leading combinations. Hierarchy is achieved through weight before size.
+- **Spacing and grid:** Baseline grid unit, box proportions, icon sizing, and inset rhythm — all derived from the upstream spacing spec.
+- **Components:** Box, Panel, Bar, Terminal, Arrow, Annotation, JaggedPanel, IconCluster, Matrix, Separator.
+- **Icon library:** 40+ icons at a canonical size, sourced from the Ubuntu icon set.
 
-### Current typography
+### Expansion candidates (to be validated during stakeholder review)
 
-| Tier | Size / Weight / Leading |
-|------|------------------------|
-| Body | 18px / 400 / 24px |
-| Body strong | 18px / 600 / 24px |
-| Heading | 18px / 600 / 24px |
-| Title | 24px / 500–600 / 32px |
-| Helper | 14px / 400 / 20px |
-| Small caps | 14px / 600 / 20px, 0.05em tracking |
-
-### Current component library
-
-Box, Panel, Bar, Terminal, Arrow, Annotation, JaggedPanel, IconCluster, Matrix, Separator
-
-### Expansion candidates (to be validated in Phase 1)
-
-- Additional accent fills (e.g. a second neutral for three-level grouping)
+- Additional accent fills for deeper grouping hierarchy
 - Dashed/dotted box borders for "optional" or "future" semantics
 - Callout / tooltip component
 - Decision diamond (for flowcharts)
 - Swimlane / column layout primitive
 - Status indicators (checkmark, warning, error icons)
 - Cloud / external-service shape
+- Additional icon families for field engineering use cases
