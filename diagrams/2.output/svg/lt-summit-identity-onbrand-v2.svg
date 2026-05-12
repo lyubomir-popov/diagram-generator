@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="688" height="672" viewBox="0 0 688 672" xml:space="preserve">
-  <rect width="688" height="672" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="696" height="672" viewBox="0 0 696 672" xml:space="preserve">
+  <rect width="696" height="672" fill="#FFFFFF" />
   <g data-component-id="input_panel">
   <rect x="256" y="24" width="408" height="144" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
@@ -153,17 +153,17 @@
   </g>
   </g>
   <g data-component-id="export_panel">
-  <rect x="256" y="504" width="408" height="144" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="256" y="504" width="416" height="144" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="264" y="528.92" font-size="18" font-weight="700" fill="#000000">4. Export</tspan>
   </text>
   </g>
   <g data-component-id="output_png">
-  <rect x="264" y="576" width="192" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="264" y="576" width="128" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="272" y="600.92" font-size="18" font-weight="400" fill="#FFFFFF">PNG</tspan>
   </text>
-  <g class="dg-icon" transform="translate(400 584)">
+  <g class="dg-icon" transform="translate(336 584)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M40.6533 6.00781C41.4097 6.08461 42 6.72334 42 7.5V40.5L41.9922 40.6533C41.9205 41.3593 41.3593 41.9205 40.6533 41.9922L40.5 42H7.5C6.72334 42 6.08461 41.4097 6.00781 40.6533L6 40.5V7.5C6 6.67157 6.67157 6 7.5 6H40.5L40.6533 6.00781ZM23.1533 30.5537C22.958 30.7488 22.6415 30.7489 22.4463 30.5537L16.7998 24.9072L7 34.707V40.5C7 40.7761 7.22386 41 7.5 41H40.5C40.7761 41 41 40.7761 41 40.5V22.707L36 17.707L23.1533 30.5537ZM7.5 7C7.22386 7 7 7.22386 7 7.5V33.293L16.4463 23.8467L16.5244 23.7822C16.7185 23.6539 16.9824 23.6758 17.1533 23.8467L22.7998 29.4932L35.6465 16.6465L35.7246 16.582C35.9187 16.4539 36.1827 16.4756 36.3535 16.6465L41 21.293V7.5C41 7.22386 40.7761 7 40.5 7H7.5Z" fill="#FFFFFF" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M18 12C20.2091 12 22 13.7909 22 16C22 18.2091 20.2091 20 18 20C15.7909 20 14 18.2091 14 16C14 13.7909 15.7909 12 18 12ZM18 13C16.3431 13 15 14.3431 15 16C15 17.6569 16.3431 19 18 19C19.6569 19 21 17.6569 21 16C21 14.3431 19.6569 13 18 13Z" fill="#FFFFFF" />
@@ -171,14 +171,30 @@
   </g>
   </g>
   <g data-component-id="output_mp4">
-  <rect x="464" y="576" width="192" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="400" y="576" width="128" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="472" y="600.92" font-size="18" font-weight="400" fill="#FFFFFF">MP4</tspan>
+    <tspan x="408" y="600.92" font-size="18" font-weight="400" fill="#FFFFFF">MP4</tspan>
   </text>
-  <g class="dg-icon" transform="translate(600 584)">
+  <g class="dg-icon" transform="translate(472 584)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M40.6533 6.00781C41.4097 6.08461 42 6.72334 42 7.5V40.5L41.9922 40.6533C41.9205 41.3593 41.3593 41.9205 40.6533 41.9922L40.5 42H7.5C6.72334 42 6.08461 41.4097 6.00781 40.6533L6 40.5V7.5C6 6.67157 6.67157 6 7.5 6H40.5L40.6533 6.00781ZM7 40.5C7 40.7761 7.22386 41 7.5 41H40.5C40.7761 41 41 40.7761 41 40.5V16H7V40.5ZM7.5 7C7.22386 7 7 7.22386 7 7.5V15H16.7119L21.3301 7H7.5ZM27.3652 15H41V7.5C41 7.22386 40.7761 7 40.5 7H31.9844L27.3652 15ZM17.8652 15H26.2119L30.8301 7H22.4844L17.8652 15Z" fill="#FFFFFF" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M18.752 20.5653C18.9077 20.4764 19.0994 20.4781 19.2539 20.5692L30.2539 27.0692C30.4061 27.1591 30.5 27.3231 30.5 27.4999C30.5 27.6767 30.4061 27.8406 30.2539 27.9305L19.2539 34.4305C19.0994 34.5216 18.9077 34.5233 18.752 34.4344C18.5961 34.3454 18.5 34.1793 18.5 33.9999V20.9999C18.5 20.8204 18.5961 20.6542 18.752 20.5653ZM19.5 33.1229L29.0166 27.4999L19.5 21.8758V33.1229Z" fill="#FFFFFF" />
+
+  </g>
+  </g>
+  <g data-component-id="output_drawio">
+  <rect x="536" y="576" width="128" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="544" y="600.92" font-size="18" font-weight="400" fill="#FFFFFF">Draw.io native</tspan>
+  </text>
+  <g class="dg-icon" transform="translate(608 584)">
+<path d="M31.833 6.25C35.2388 6.25 38 9.01124 38 12.417V12.5127H37V12.417C37 9.56352 34.6865 7.25 31.833 7.25C28.9797 7.25018 26.667 9.56363 26.667 12.417V35.25C26.667 38.8397 23.7567 41.7498 20.167 41.75H19.5C15.9101 41.75 13 38.8399 13 35.25V32.4609H14V35.25C14 38.2876 16.4624 40.75 19.5 40.75H20.167C23.2044 40.7498 25.667 38.2875 25.667 35.25V12.417C25.667 9.01134 28.4274 6.25018 31.833 6.25Z" fill="#FFFFFF" />
+
+<path d="M14 25.5H13V21H14V25.5Z" fill="#FFFFFF" />
+
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13.5 6C17.6421 6 21 9.35786 21 13.5V22.5C21 26.6421 17.6421 30 13.5 30C9.35786 30 6 26.6421 6 22.5V13.5C6 9.35786 9.35786 6 13.5 6ZM13.5 7C9.91015 7 7 9.91015 7 13.5V22.5C7 26.0899 9.91015 29 13.5 29C17.0899 29 20 26.0899 20 22.5V13.5C20 9.91015 17.0899 7 13.5 7Z" fill="#FFFFFF" />
+
+<path fill-rule="evenodd" clip-rule="evenodd" d="M40.5 21V40C40.5 41.1046 39.6046 42 38.5 42H36.5C35.4644 42 34.613 41.2128 34.5107 40.2041L34.5 40V21L37.5 15L40.5 21ZM35.5 38.5V40C35.5 40.5523 35.9477 41 36.5 41H38.5C39.0523 41 39.5 40.5523 39.5 40V38.5H35.5ZM35.5 37.5H39.5V21.5H35.5V37.5ZM35.8682 20.5H39.1318L37.5 17.2363L35.8682 20.5Z" fill="#FFFFFF" />
 
   </g>
   </g>
@@ -191,7 +207,9 @@
   <polygon points="245.1592,333.0947 256,336 245.1592,338.9053" fill="#E95420" />
   </g>
   <g data-component-id="_auto_3">
-  <line x1="460" y1="480" x2="460" y2="493.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="457.0947,493.1592 460,504 462.9053,493.1592" fill="#E95420" />
+  <line x1="460" y1="480" x2="460" y2="488" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="460" y1="488" x2="464" y2="488" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="464" y1="488" x2="464" y2="493.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="461.0947,493.1592 464,504 466.9053,493.1592" fill="#E95420" />
   </g>
 </svg>
