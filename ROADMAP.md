@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Turn this repo into a reliable batch-redesign workspace for on-brand diagrams: fast intake, repeatable draw.io and SVG outputs, a safe mixed manual/programmatic editing workflow, and a stable centralized workflow for future agents.
+Turn this repo into Canonical's shared diagram production system and a validation harness for the design language: constrained generation from structured input, fallback guardrails for manual tools, and a live regression surface for the canonical spacing, typography, and grid specs.
 
 ## Stages
 
@@ -14,109 +14,108 @@ Centralized workflow boilerplate adopted: root status, plan, history, inbox spli
 
 Local font, local icon set, draw.io scale reference, connector behavior, and compact SVG conventions documented from the first exemplar.
 
-### Stage 3 — Safe manual draw.io workflow (in progress)
+### Stage 3 — Safe manual draw.io workflow ✅
 
-Establish the operating model for taking a manually polished draw.io file and extending it without breaking previous work: generated base files stay separate from polished working files, manual checkpoints are easy to create and revert, and generator re-entry does not overwrite local polish blindly.
+Review-copy / checkpoint / promote workflow for manually polished draw.io files is built and piloted. Generator re-entry does not overwrite local polish blindly.
 
-### Stage 4 — Library-backed reusable primitives
+### Stage 4 — Library-backed reusable primitives ✅
 
-Capture the canonical manual building blocks in a repo-owned draw.io library, sourced from scratchpad exports and curated library XML, so common additions reuse the same boxes, connectors, grouped panels, and special shapes.
+Canonical building blocks captured in a repo-owned draw.io library (`assets/drawio/diagram-generator-primitives.mxlibrary`), auto-generated from the corpus via `scripts/export_drawio_library.py`.
 
-### Stage 5 — Tokenized style sync and migration tools
+### Stage 5 — Tokenized style sync and migration tools ✅
 
-Introduce a style-token layer over generated draw.io cells and build tooling that can batch-update style properties such as text padding, connector defaults, and panel treatments across existing diagrams when the system changes.
+Style-token layer over generated draw.io cells with provenance markers. `scripts/drawio_style_sync.py` batch-rewrites tokenized properties (spacing, connector styles, dash patterns) across existing diagrams.
 
-### Stage 6 — Grid engine and inside-out box model (layers 1–4 done)
+### Stage 6 — Grid engine and inside-out box model ✅
 
-Replace the current ad-hoc absolute-positioning approach with an output-agnostic grid-aware computation layer in `diagram_shared.py`. This layer sits above both renderers (SVG and draw.io) and produces abstract layout geometry — positions, dimensions, grid arrays — that each renderer consumes. It is not a CSS layout engine; it is a set of helpers that make it structurally impossible to place things off-grid.
+Output-agnostic grid-aware computation layer in `diagram_shared.py`. Layers 1–4 implemented. Layer 5 superseded by Stage 6a.
 
-Layers 1–4 are implemented. Layer 5 (rollout) is superseded by Stage 6a.
+### Stage 6a — Declarative diagram model ✅
 
-### Stage 6a — Declarative diagram model (active)
+Declarative tree model replaces per-diagram imperative functions. A diagram is a compact data definition of typed components (`Box`, `Panel`, `Bar`, `Terminal`, `Arrow`, `Annotation`, `JaggedPanel`, `IconCluster`, `Matrix`). Shared layout engine walks the tree; separate SVG and draw.io renderers consume computed layout. 16+ diagrams converted. Build-time validators enforce baseline grid, arrow crossings, and arrow clearance.
 
-Replace per-diagram imperative functions (~200 lines each, ×2 renderers) with a declarative tree model. A diagram becomes a data structure of typed components (`Box`, `Panel`, `Bar`, `Terminal`, `Arrow`, `Helper`, `Matrix`). A shared layout engine walks the tree using the Stage 6 grid helpers to compute positions. Separate SVG and draw.io renderers consume the computed layout.
+### Stage 7 — Batch redesign throughput (largely done)
 
-**Why:** The imperative approach does not scale to hundreds of diagrams or PM self-serve. Every new diagram currently requires writing a new Python function from scratch. The declarative model means a new diagram is a compact data definition, not a code change.
-
-**When complex diagrams require new component types** (e.g. subnet columns, VPC tile grids, legend entries with icons), capture the need and add it to the model rather than working around it with ad-hoc positioning.
-
-**Grid design per diagram:** Layout grids are designed for each diagram's specific content, following the Müller-Brockmann approach. The upstream spacing specs dictate a power-of-2 grid; how whitespace is distributed within that grid is at the model's discretion.
-
-**Target architecture:**
-- `diagram_model.py` — pure data: `@dataclass` component types, no rendering
-- `diagram_layout.py` — walks the tree, computes geometry, enforces uniform row heights and containment
-- `diagram_render_svg.py` — consumes layout, emits SVG
-- `diagram_render_drawio.py` — consumes layout, emits draw.io XML
-
-**Future direction:** Once the declarative model works, diagram definitions can move from Python to YAML or JSON, enabling a PM to define a diagram without writing code. A mermaid-to-tree parser or sketch-to-tree AI step could feed the same pipeline.
-
-### Stage 7 — Batch redesign throughput
-
-Process the incoming diagram queue against `DIAGRAM.md`, keeping outputs stylistically consistent and easy to compare.
+16+ production diagrams processed through the pipeline. Remaining work is intake of new diagram requests as they come in.
 
 ### Stage 8 — Selective merge and reapply automation
 
-Once the generated/manual boundaries are explicit, selectively patch generator-owned portions of polished diagrams with rollback support instead of forcing all-or-nothing regeneration.
+Selectively patch generator-owned portions of polished diagrams with rollback support instead of all-or-nothing regeneration. Generator cells carry stable identity and provenance metadata to support this.
 
-### Stage 9 — Optional automation
+### Stage 9 — Optional automation ✅
 
-Add lightweight checks or generation helpers only if they reduce repetition without making the outputs less editable.
+Lightweight build-time checks added: arrow crossing validation, arrow clearance enforcement, baseline grid validation. Illustrator-safety sanitizer available.
 
-### Stage 10 — Interactive preview and visual editing
+### Stage 10 — Interactive preview and visual editing (active)
 
-The preview server (`scripts/preview_server.py`) provides hot-reload, click-to-select, drag-to-move, resize, undo/redo, and override persistence. This stage extends it toward a Figma-like editing experience layered over the declarative diagram model.
+The preview server provides hot-reload, click-to-select, drag-to-move, resize, undo/redo, and override persistence. Extending toward a Figma-like editing experience layered over the declarative diagram model.
 
 **Implemented:**
 - Component selection, move, resize with per-component override persistence
-- Undo/redo stack, explicit save, keyboard shortcuts (nudge, multi-select, deselect)
+- Undo/redo with explicit per-action command records
 - 8-direction resize handles with parent-bounds clamping
 - Arrow and annotation selection and repositioning
 - Arrow attachment: endpoints track source/target box movement and resize
-- Grid overlay toggle (W key): composition grid + baseline grid (mutually exclusive)
+- Grid overlay toggle (composition grid + baseline grid, mutually exclusive)
 - Editable grid controls with live relayout
-- Interactive waypoint editing: drag, add (double-click segment), remove (double-click handle)
-- Collinear waypoint auto-pruning on drag
-- Inline text editing (double-click to edit, Enter for newlines, Ctrl+Enter to commit)
-- Text-icon gutter enforcement during editing
-- Auto-layout: parent resize relayouts children from the parent content area with fixed gutters
-- Auto-layout: child resize redistributes delta to siblings (fill container)
-- Gutter change re-fits children (relayout clears stale position overrides)
-- Baseline Foundry-backed shell with DG compatibility layer: the preview now rides the BF `os` tier when available or vendored fallback when not, while local CSS owns the resize-handle shim, desktop three-pane pin, and preview-specific amber selection chrome
+- Interactive waypoint editing: drag, add, remove, collinear auto-pruning
+- Inline text editing with text-icon gutter enforcement
+- Auto-layout: parent resize relayouts children; child resize redistributes to siblings
+- Distribute and align actions with multi-select
+- Snap guides during drag
+- Component swap (style picker in inspector)
+- Client-side brand constraint enforcement
+- Baseline Foundry-backed shell with DG compatibility layer
 
-### Stage 11 — Viewer extraction (architecture prerequisite)
+### Stage 11 — Viewer extraction ✅
 
-Extract the 1500+ lines of embedded JS/CSS from the Python f-string template into static files served by the Python API server. This:
-- Enables IDE support, linting, and browser source mapping for the JS
-- Decouples the viewer from the server so they can evolve independently
-- Makes the JS testable in isolation
-- Is the prerequisite for Stages 12–13
+JS/CSS/HTML extracted from Python f-string template into static files. Preview server is 485 lines (was 2672). IDE support, linting, and browser source mapping enabled.
 
-### Stage 12 — Client-side model and interaction manager
+### Stage 12 — Client-side model and interaction manager ✅
 
-Build a lightweight client-side tree model mirroring the server's component tree. Each node knows its parent, children, base geometry, overrides, and constraints. Replace scattered interaction state variables (`dragState`, `resizeState`, `wpDragState`, `textEditState`) with a mode-based interaction manager. This unlocks:
-- Parent-child constraint propagation (resize parent → resize children)
-- Auto-layout fill-container redistribution
-- Nested component selection
-- Clean addition of new interaction modes
+`ComponentModel` with indexed tree and `InteractionManager` state machine replace scattered interaction state variables. Parent-child constraint propagation, auto-layout, nested selection, and clean interaction modes all working.
 
-### Stage 13 — Brand constraint enforcement
+### Stage 13 — Brand constraint enforcement (active)
 
-The product differentiator: the editor enforces brand rules at the model level, not just the UI level. Only approved fills, arrow styles, icon sources, and typography are available. The UI reflects constraints (e.g. colour picker shows only brand palette). Overrides that violate brand rules are rejected.
+`ConstraintRegistry` with 6 built-in brand constraints running client-side. The editor enforces brand rules at the model level — only approved fills, arrow styles, icon sources, and typography are available.
 
-**Medium-term (requires Stage 11–12):**
+**Remaining:**
 - Nested grid controls: set panel grid dimensions interactively
 - Auto-fill children: add/remove boxes and have the grid re-flow
-- Resize a panel and have children redistribute proportionally
-- Snap-to-grid visual guides during drag
 - Property panel for editing fill, border style, text on selected component
 - Component swap from shape library (like Figma component swap)
-- Keep shrinking the preview/editor compatibility layer as Baseline Foundry stabilizes; local CSS should remain limited to DG-specific interaction chrome and shell fixes
-
-**Longer-term:**
 - Create new components from the UI (add box, add panel, add arrow)
 - Export edited layout back to Python definition or YAML/JSON format
-- Theming controls: switch colour palette, typography tier, spacing scale
-- brand-layout-ops parity audit: baseline alignment guide, field snapping
+- Keep shrinking the preview/editor compatibility layer as Baseline Foundry stabilizes
+
+### Stage 14 — Design-language harness
+
+The system already consumes canonical spec tokens and enforces them at the model level. Complete the harness by adding:
+
+- Automated visual regression (snapshot-compare after token changes)
+- Token change → rebuild → diff pipeline
+- Spec compliance scoring per diagram
+- Cross-format consistency check (SVG vs draw.io structural comparison)
+- Upstream spec watch (flag affected diagrams when specs change)
+
+### Stage 15 — Cross-team adoption
+
+Productionise for Canonical-wide use. See `docs/project-proposal.md` for the full phased rollout plan:
+
+- Phase 0: validate and package for first adopters
+- Phase 1: pilot with tech authors (YAML/JSON definitions, draw.io library)
+- Phase 2: expand to field engineering (templates, Penpot library, visual guidelines)
+- Phase 3: self-serve and scale (web editor, docs pipeline integration, AI intake)
+
+### Stage 16 — Fallback guardrails for manual tools
+
+Deliver brand guardrails for the 20% of diagrams that can't go through the automated system:
+
+- draw.io component library + style defaults
+- Penpot component library
+- Visual guidelines document
+- Brand review checklist
+- Design token exports (CSS custom properties, JSON tokens)
 
 ## Long-term direction
 
@@ -126,4 +125,5 @@ The product differentiator: the editor enforces brand rules at the model level, 
 - Prefer reusable library components plus scripted style sync over repeated hand restyling of individual cells.
 - Never treat generated draw.io files and manually polished working copies as the same lifecycle stage.
 - Use completed diagrams as exemplars for future cold starts.
-- Mirror future workflow-file refinements from `repo-workflow-boilerplate` when the centralized standard changes.
+- Treat every diagram in the corpus as a regression test for the design language specs.
+- The diagram system is both a production tool and a validation harness — investment in one pays off in the other.

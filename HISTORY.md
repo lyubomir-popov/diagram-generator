@@ -138,6 +138,11 @@ Completed work belongs here so `TODO.md` stays lean.
 - Fixed stale `4px` baseline references in `DIAGRAM.md` (should be `8px` after prior session's change).
 - Updated `copilot-instructions.md` box-height growth step from `4px` to `8px`.
 
+### 2026-05-12 — TODO and ROADMAP cleanup
+
+- Cleaned TODO.md: removed ~150 lines of completed checklist items (declarative model steps 1–7, grid engine layers, interactive preview features, grid visualisation, architecture refactor phases, draw.io library/audit/sync, style-sync tool, review-copy workflow, compare pages, Illustrator sanitizer). Open items consolidated into three clean sections: Editor UX, Code quality, Ongoing maintenance.
+- Updated ROADMAP.md: marked Stages 3–6, 6a, 9, 11, 12 as ✅ complete. Added Stages 14 (design-language harness), 15 (cross-team adoption), 16 (fallback guardrails). Updated purpose statement to reflect the broader scope: constrained generation + fallback guardrails + design-language validation harness. Updated long-term direction with harness framing.
+
 ### 2026-05-01 â€“ Baseline unit 4â†’8px
 
 - Changed `BASELINE_UNIT` from 4 to 8 in `diagram_shared.py`. Removed redundant `RHYTHM_STEP`.
