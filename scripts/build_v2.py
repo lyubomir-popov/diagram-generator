@@ -24,6 +24,7 @@ from diagram_shared import SVG_DIR, DRAWIO_DIR, cleanup_legacy_output_root_svgs
 _REGISTRY: list[tuple[str, str, str]] = [
     ("attention-qkv-onbrand", "diagrams.attention_qkv", "attention_qkv"),
     ("aws-hld-onbrand", "diagrams.aws_hld", "aws_hld"),
+    ("controller-agent-architecture-onbrand", "diagrams.controller_agent_architecture", "controller_agent_architecture"),
     ("gpu-waiting-scheduler-onbrand", "diagrams.gpu_waiting_scheduler", "gpu_waiting_scheduler"),
     ("inference-snaps-onbrand", "diagrams.inference_snaps", "inference_snaps"),
     ("logic-data-vram-onbrand", "diagrams.logic_data_vram", "logic_data_vram"),

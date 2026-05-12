@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="1264" viewBox="0 0 1320 1264" xml:space="preserve">
+  <rect width="1320" height="1264" fill="#FFFFFF" />
+  <g data-component-id="host_scope">
+  <rect x="24" y="24" width="624" height="88" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#666666">Your computer</tspan>
+    <tspan x="32" y="72.92" font-size="18" font-weight="400" fill="#666666">Multipass VM</tspan>
+    <tspan x="32" y="96.92" font-size="18" font-weight="400" fill="#666666">Machine (Kubernetes node, not managed by Juju)</tspan>
+  </text>
+  </g>
+  <g data-component-id="cloud_provider">
+  <rect x="888" y="24" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="896" y="48.92" font-size="18" font-weight="400" fill="#000000">Cloud Provider</tspan>
+  </text>
+  </g>
+  <g data-component-id="resource_note">
+  <rect x="1104" y="136" width="192" height="88" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1112" y="160.92" font-size="18" font-weight="400" fill="#666666">Manages resources</tspan>
+    <tspan x="1112" y="184.92" font-size="18" font-weight="400" fill="#666666">(compute, storage,</tspan>
+    <tspan x="1112" y="208.92" font-size="18" font-weight="400" fill="#666666">networking) from</tspan>
+  </text>
+  </g>
+  <g data-component-id="controller_unit_scope">
+  <rect x="24" y="248" width="624" height="64" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="32" y="272.92" font-size="18" font-weight="400" fill="#666666">Controller unit (Kubernetes pod)</tspan>
+    <tspan x="32" y="296.92" font-size="18" font-weight="400" fill="#666666">Charm container 1</tspan>
+  </text>
+  </g>
+  <g data-component-id="workload_scope">
+  <rect x="672" y="248" width="192" height="64" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="680" y="272.92" font-size="18" font-weight="400" fill="#666666">Controller model (Kubernetes namespace)</tspan>
+    <tspan x="680" y="296.92" font-size="18" font-weight="400" fill="#666666">Workload container 1</tspan>
+  </text>
+  </g>
+  <g data-component-id="database_scope">
+  <rect x="1104" y="672" width="192" height="40" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1112" y="696.92" font-size="18" font-weight="400" fill="#666666">Database container</tspan>
+  </text>
+  </g>
+  <g data-component-id="api_unit_note">
+  <rect x="672" y="424" width="192" height="64" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="680" y="448.92" font-size="18" font-weight="400" fill="#666666">Makes API</tspan>
+    <tspan x="680" y="472.92" font-size="18" font-weight="400" fill="#666666">calls to</tspan>
+  </text>
+  </g>
+  <g data-component-id="pebble_charm">
+  <rect x="24" y="336" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="32" y="360.92" font-size="18" font-weight="400" fill="#000000">Pebble - charm</tspan>
+  </text>
+  </g>
+  <g data-component-id="unit_agent">
+  <rect x="240" y="336" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="248" y="360.92" font-size="18" font-weight="700" fill="#000000">Unit Agent</tspan>
+  </text>
+  </g>
+  <g data-component-id="charm">
+  <rect x="456" y="336" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="464" y="360.92" font-size="18" font-weight="400" fill="#000000">Charm</tspan>
+  </text>
+  </g>
+  <g data-component-id="pebble_workload">
+  <rect x="672" y="336" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="680" y="360.92" font-size="18" font-weight="400" fill="#000000">Pebble - workload</tspan>
+  </text>
+  </g>
+  <g data-component-id="progress_note">
+  <rect x="240" y="424" width="192" height="112" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="248" y="448.92" font-size="18" font-weight="400" fill="#666666">Progresses</tspan>
+    <tspan x="248" y="472.92" font-size="18" font-weight="400" fill="#666666">the unit&#x27;s</tspan>
+    <tspan x="248" y="496.92" font-size="18" font-weight="400" fill="#666666">state by</tspan>
+    <tspan x="248" y="520.92" font-size="18" font-weight="400" fill="#666666">executing</tspan>
+  </text>
+  </g>
+  <g data-component-id="reads_note">
+  <rect x="1104" y="424" width="192" height="64" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1112" y="448.92" font-size="18" font-weight="400" fill="#666666">Reads from</tspan>
+    <tspan x="1112" y="472.92" font-size="18" font-weight="400" fill="#666666">and writes to</tspan>
+  </text>
+  </g>
+  <g data-component-id="model_agent">
+  <rect x="672" y="560" width="192" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="680" y="584.92" font-size="18" font-weight="400" fill="#000000">Model Agent</tspan>
+    <tspan x="680" y="608.92" font-size="18" font-weight="400" fill="#666666">one for each model</tspan>
+    <tspan x="680" y="632.92" font-size="18" font-weight="400" fill="#666666">on the controller</tspan>
+  </text>
+  </g>
+  <g data-component-id="controller_agent">
+  <rect x="888" y="560" width="192" height="40" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="896" y="584.92" font-size="18" font-weight="700" fill="#FFFFFF">Controller Agent</tspan>
+  </text>
+  </g>
+  <g data-component-id="database">
+  <rect x="1104" y="560" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1112" y="584.92" font-size="18" font-weight="400" fill="#000000">Database</tspan>
+  </text>
+  </g>
+  <g data-component-id="modeloperator_scope">
+  <rect x="24" y="760" width="624" height="40" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="32" y="784.92" font-size="18" font-weight="400" fill="#666666">Modeloperator (Kubernetes pod)</tspan>
+  </text>
+  </g>
+  <g data-component-id="api_modeloperator_note">
+  <rect x="456" y="760" width="192" height="64" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="464" y="784.92" font-size="18" font-weight="400" fill="#666666">Makes API</tspan>
+    <tspan x="464" y="808.92" font-size="18" font-weight="400" fill="#666666">calls to</tspan>
+  </text>
+  </g>
+  <g data-component-id="additional_model_functionality">
+  <rect x="672" y="760" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="680" y="784.92" font-size="18" font-weight="400" fill="#000000">Additional model</tspan>
+    <tspan x="680" y="808.92" font-size="18" font-weight="400" fill="#000000">functionality</tspan>
+  </text>
+  </g>
+  <g data-component-id="api_client_note">
+  <rect x="456" y="936" width="192" height="64" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="464" y="960.92" font-size="18" font-weight="400" fill="#666666">Makes API</tspan>
+    <tspan x="464" y="984.92" font-size="18" font-weight="400" fill="#666666">calls to</tspan>
+  </text>
+  </g>
+  <g data-component-id="client">
+  <rect x="456" y="1024" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="464" y="1048.92" font-size="18" font-weight="400" fill="#000000">Client</tspan>
+  </text>
+  </g>
+  <g data-component-id="charmhub_note">
+  <rect x="672" y="1112" width="192" height="40" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="680" y="1136.92" font-size="18" font-weight="400" fill="#666666">Manages charms from</tspan>
+  </text>
+  </g>
+  <g data-component-id="charmhub">
+  <rect x="888" y="1112" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="896" y="1136.92" font-size="18" font-weight="400" fill="#000000">Charmhub</tspan>
+  </text>
+  </g>
+  <g data-component-id="external_scope">
+  <rect x="888" y="1200" width="192" height="40" fill="#FFFFFF" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="896" y="1224.92" font-size="18" font-weight="400" fill="#666666">Someone else&#x27;s computer</tspan>
+  </text>
+  </g>
+  <g data-component-id="_auto_1">
+  <line x1="216" y1="356" x2="229.1592" y2="356" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="229.1592,353.0947 240,356 229.1592,358.9053" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_2">
+  <line x1="432" y1="356" x2="445.1592" y2="356" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="445.1592,353.0947 456,356 445.1592,358.9053" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_3">
+  <line x1="648" y1="356" x2="661.1592" y2="356" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="661.1592,353.0947 672,356 661.1592,358.9053" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_4">
+  <line x1="768" y1="376" x2="768" y2="384" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="768" y1="384" x2="888" y2="384" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="888" y1="384" x2="888" y2="544" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="888" y1="544" x2="984" y2="544" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="984" y1="544" x2="984" y2="549.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="981.0947,549.1592 984,560 986.9053,549.1592" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_5">
+  <line x1="864" y1="604" x2="888" y2="604" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="888" y1="604" x2="888" y2="590.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="885.0947,590.8408 888,580 890.9053,590.8408" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_6">
+  <line x1="1080" y1="580" x2="1093.1592" y2="580" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1093.1592,577.0947 1104,580 1093.1592,582.9053" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_7">
+  <line x1="768" y1="760" x2="768" y2="680" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="768" y1="680" x2="984" y2="680" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="984" y1="680" x2="984" y2="610.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="981.0947,610.8408 984,600 986.9053,610.8408" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_8">
+  <line x1="648" y1="1044" x2="888" y2="1044" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="888" y1="1044" x2="888" y2="590.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="885.0947,590.8408 888,580 890.9053,590.8408" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_9">
+  <line x1="984" y1="560" x2="984" y2="74.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="981.0947,74.8408 984,64 986.9053,74.8408" fill="#E95420" />
+  </g>
+  <g data-component-id="_auto_10">
+  <line x1="984" y1="600" x2="984" y2="1101.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="981.0947,1101.1592 984,1112 986.9053,1101.1592" fill="#E95420" />
+  </g>
+</svg>

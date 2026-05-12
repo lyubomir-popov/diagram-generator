@@ -49,6 +49,12 @@ PAIRS = [
         "before": "redo-this-image-onbrand.png",
         "after": "memory-wall-onbrand.svg",
     },
+  {
+    "slug": "controller-agent-architecture",
+    "title": "Controller agent architecture",
+    "before": "controller-agent-architecture-rough.png",
+    "after": "controller-agent-architecture-onbrand-v2.svg",
+  },
     {
         "slug": "rise-of-inference-economy",
         "title": "Rise of the inference economy",
