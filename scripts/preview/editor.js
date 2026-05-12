@@ -3356,11 +3356,9 @@ connectSSE();
   if (!stageShell || !stageLayout || !viewControls || !inputPane || !outputPane || !img || tabs.length === 0) return;
 
   const setViewMode = (mode) => {
-    const nextMode = hasReference && ["input", "output", "both"].includes(mode) ? mode : "output";
+    const nextMode = ["input", "output", "both"].includes(mode) ? mode : "output";
     stageShell.dataset.viewMode = nextMode;
-    stageLayout.style.gridTemplateColumns = nextMode === "both"
-      ? "minmax(0, 1fr) minmax(0, 1fr)"
-      : "minmax(0, 1fr)";
+    // Let CSS data-attribute selector handle grid columns — no inline style needed.
     tabs.forEach((tab) => {
       const isActive = tab.dataset.viewMode === nextMode;
       tab.setAttribute("aria-selected", String(isActive));
@@ -3368,17 +3366,23 @@ connectSSE();
     });
   };
 
-  if (!hasReference) {
-    viewControls.hidden = true;
-    inputPane.style.display = "none";
-    setViewMode("output");
-    return;
+  // Always show the tab bar — it's a global editor feature.
+  viewControls.hidden = false;
+
+  if (hasReference) {
+    img.src = "/reference/" + SLUG;
+  } else {
+    // No reference sketch — show placeholder in input pane.
+    img.alt = "No reference sketch available";
+    img.removeAttribute("src");
+    const wrap = img.closest(".dg-reference-img-wrap");
+    if (wrap) {
+      wrap.innerHTML = '<p class="dg-empty-message">No reference sketch for this diagram.</p>';
+    }
   }
 
-  viewControls.hidden = false;
-  img.src = "/reference/" + SLUG;
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => setViewMode(tab.dataset.viewMode || "output"));
   });
-  setViewMode("both");
+  setViewMode(hasReference ? "both" : "output");
 })();
