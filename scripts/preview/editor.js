@@ -2462,13 +2462,11 @@ function onResizeMove(e) {
   // --- Auto-layout engine ---
   if (!s.propagatedIds) s.propagatedIds = new Set();
 
-  // 1) Parent resize → relayout all children with fixed gutters, recursively
-  const resizedNode = model.get(s.cid);
-  if (resizedNode && resizedNode.layout && resizedNode.children.length > 0) {
-    _applyRelayoutRecursive(s.cid, newDw, newDh, s.origOverrides, s.propagatedIds);
-  }
+  // Parent resize: children keep their size and position.
+  // Only child resize propagates to siblings (below).
 
-  // 2) Child resize → shift siblings to maintain gutters
+  // Child resize → shift siblings to maintain gutters
+  const resizedNode = model.get(s.cid);
   if (resizedNode && resizedNode.parent && resizedNode.parent.layout) {
     const deltaDw = newDw - s.origDw;
     const deltaDh = newDh - s.origDh;
