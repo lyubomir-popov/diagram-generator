@@ -1407,6 +1407,60 @@ function applyAllOverrides() {
   if (selectedIds.size > 0) showResizeHandles([...selectedIds].pop());
 }
 
+/**
+ * Expand the SVG artboard (viewBox + width/height) if any component's
+ * effective bounding box extends past the current canvas edges.
+ * Called after drag/resize so content never gets clipped.
+ */
+function autoFitArtboard() {
+  const svg = document.querySelector("#stage svg");
+  if (!svg || !componentTree || componentTree.length === 0) return;
+
+  const PADDING = 24; // breathing room on every side
+
+  // Compute the union bounding box of all positioned components
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  function visit(nodes) {
+    for (const node of nodes) {
+      if (node.type === "arrow") { if (node.children) visit(node.children); continue; }
+      const m = model.get(node.id);
+      if (!m || !m.data || m.data.x == null) { if (node.children) visit(node.children); continue; }
+      const eff = getEffectiveDelta(node.id);
+      const x = m.data.x + eff.dx;
+      const y = m.data.y + eff.dy;
+      const w = m.data.width + eff.dw;
+      const h = m.data.height + eff.dh;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x + w > maxX) maxX = x + w;
+      if (y + h > maxY) maxY = y + h;
+      if (node.children) visit(node.children);
+    }
+  }
+  visit(componentTree);
+  if (!isFinite(minX)) return;
+
+  const vb = svg.viewBox.baseVal;
+  const curW = vb.width || parseFloat(svg.getAttribute("width") || "0");
+  const curH = vb.height || parseFloat(svg.getAttribute("height") || "0");
+  const curX = vb.x || 0;
+  const curY = vb.y || 0;
+
+  // Required canvas extents
+  const needX = Math.min(curX, minX - PADDING);
+  const needY = Math.min(curY, minY - PADDING);
+  const needRight = Math.max(curX + curW, maxX + PADDING);
+  const needBottom = Math.max(curY + curH, maxY + PADDING);
+  const needW = needRight - needX;
+  const needH = needBottom - needY;
+
+  if (needX < curX || needY < curY || needW > curW || needH > curH) {
+    svg.setAttribute("viewBox", needX + " " + needY + " " + needW + " " + needH);
+    svg.setAttribute("width", needW);
+    svg.setAttribute("height", needH);
+  }
+}
+
 // ---- Interaction ----
 
 function buildTreeUI() {
@@ -1658,6 +1712,7 @@ function onDragUp() {
     selectComponent(s.cid);
   }
   mgr.endInteraction();
+  autoFitArtboard();
 }
 
 // ---- Resize ----
@@ -2511,6 +2566,7 @@ function onResizeUp() {
     if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "");
   }
   mgr.endInteraction();
+  autoFitArtboard();
 }
 
 // ---- Override helpers ----
