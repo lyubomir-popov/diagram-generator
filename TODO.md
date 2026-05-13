@@ -21,7 +21,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 3. For new diagrams, build from the sample block system: literal geometry, live text, natural-size local icons, and no hidden SVG reuse constructs.
 4. Reuse exact style snippets: `diagrams/0.reference/onbrand-svg-starter.svg` is now the copy source for the canonical block proportions, inset rhythm, and literal orange arrow geometry.
 5. Editable SVG over screenshots or embedded raster exports.
-6. The imported dense application and documentation mapping from `canonical-spacing-spec` remains the reference tier, and the current diagram tier now uses `18px` body copy with `24px` line height to keep live text proportionate to the standard `48px` icon treatment inside the `192px` block system.
+6. The imported dense application and documentation mapping from `canonical-specs` remains the reference tier, and the current diagram tier now uses `18px` body copy with `24px` line height to keep live text proportionate to the standard `48px` icon treatment inside the `192px` block system.
 7. Orange is reserved for arrows and arrowheads; boxes do not get orange fills.
 8. Geometry stays tight and reference-scaled; do not casually upscale diagrams.
 9. Use local icons only, and omit the icon entirely when no suitable icon exists in `assets/icons/`.
@@ -71,7 +71,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 - [ ] `[H]` Unify the parent-scoped equal-split/outdent math across `scripts/diagram_layout.py` and `scripts/preview/component-model.js`. Preview now consumes declared slots/spans and measured gutters, but the equal-split/outdent math itself is still duplicated between Python and JS.
 - [ ] `[S]` **draw.io renderer uses spatial containment for parenting.** `_find_children` in `diagram_render_drawio.py` uses bounding-box overlap instead of `component_id`, which can mis-parent elements at shared edges. Fix: match by `component_id`.
 - [ ] `[S]` **`_uniform_row_height` ignores Annotations/Helpers.** Rows containing only annotations get `BOX_MIN_HEIGHT` regardless of content. The post-hoc helper expansion partially compensates but runs after uniform equalization.
-- [ ] `[S]` Fix upstream spec-provenance drift. `DIAGRAM.md` and related docs still point at `canonical-spacing-spec`, while the documented sibling repo is `canonical-specs`; normalize the paths and claims so the advertised spec → token → tool chain is actually resolvable on a cold start.
+- [x] `[S]` Normalize active spec-provenance paths to `canonical-specs`. `DIAGRAM.md`, `README.md`, `STATUS.md`, `TODO.md`, and `docs/specs.md` now point at a sibling repo that actually exists in this workspace.
 - [ ] `[S]` Triage the secondary audit findings: stale-v2 comparison risk in `build_outputs.py`, preview text-width mismatch vs renderer text width, dead helper layout code, stale architectural line-count notes in `STATUS.md`.
 - [ ] `[S]` Triage the current `build_v2.py` corpus blockers separately from the 2026-05-13 autolayout slice: clearance violations on `example-platform-architecture`, `lightning-talk-engine`, `lt-diagram-generator`, `lt-a4-generator`, and `lt-summit-identity`, plus warning-only baseline-grid drift on several older diagrams.
 - [ ] `[L]` **Preview port-kill on Windows.** `preview_server.py` runs `Stop-Process -Force` on any PID holding the port, even if it's an unrelated service. Fix: log the target PID or require `--force`.
@@ -86,7 +86,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ### v2 declarative pipeline — defect registry
 
-All audited diagrams pass. Use `python scripts/_compare_3way.py` for visual comparison and `python scripts/_audit_v2.py` for element counts. Arrow clearance and crossing enforced at build time.
+The audited canonical diagrams pass the compare/audit checks, but full `python scripts/build_v2.py` still exits nonzero on the known clearance blockers listed above. Use `python scripts/_compare_3way.py` for visual comparison and `python scripts/_audit_v2.py` for element counts. Arrow clearance and crossing remain enforced at build time.
 
 | Diagram | Status |
 |---|---|

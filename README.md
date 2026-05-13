@@ -24,6 +24,8 @@ If you are changing the autolayout engine, grouped panels, or arrow routing, rea
 
 Current layout warning: the preview relayout engine now consumes server-declared slots, spans, and measured gutters instead of reconstructing grouped layout from child geometry, but the parent-split/outdent math still lives in both Python and JS. Equal splitting of parent width is valid, but build and preview can still diverge if the duplicated split/outdent math drifts. Verify grouped-layout changes with Playwright screenshots instead of trusting the first visual pass.
 
+Machine-switch checkpoint: the 2026-05-13 slice landed the parent-scoped layout-doc clarification, free arrow labels, thin separators, preview slot metadata, and the committed `example-arrow-label-separator` regression fixture. Remaining work is the duplicated Python/JS parent-split math plus the known `build_v2.py` blockers on `example-platform-architecture`, `lightning-talk-engine`, `lt-diagram-generator`, `lt-a4-generator`, and `lt-summit-identity`.
+
 ### Recommended exemplar path
 
 If you are cold-starting the repo and want the fastest route through the tracked corpus, inspect these in order:
@@ -316,7 +318,7 @@ The canonical diagram-language contract now lives in [`DIAGRAM.md`](DIAGRAM.md).
 
 Three implementation details are worth noticing on a cold start:
 
-- `DIAGRAM.md` includes `sourceSpecs:` frontmatter that links typography, spacing, and grid back to `canonical-spacing-spec`, so the repo has an explicit spec -> token -> tool chain rather than a chat-only style memory.
+- `DIAGRAM.md` includes `sourceSpecs:` frontmatter that links typography, spacing, and grid back to `canonical-specs`, so the repo has an explicit spec -> token -> tool chain rather than a chat-only style memory.
 - Generated draw.io `mxCell` nodes carry `data-dg-source`, `data-dg-role`, and `data-dg-style-tokens`, which makes provenance, batch rewrites, and re-runs auditable instead of opaque.
 - The preview server serves the vendored BF `os` tier stylesheet and Ubuntu Sans snapshot under `assets/baseline-foundry/`, so public clones do not depend on the private repo at runtime. A sibling `baseline-foundry` checkout is only needed when refreshing that snapshot via the sync script.
 

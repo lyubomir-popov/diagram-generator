@@ -1,11 +1,11 @@
 ---
 version: alpha
 name: Diagram Generator diagram language
-description: Diagram-specific design language contract for editable, on-brand SVG and draw.io outputs. Structured to align with DESIGN.md-style tokens and prose, and now mapped to the dense application and documentation tiers from canonical-spacing-spec so diagram geometry can inherit the same type, spacing, and grid logic.
+description: Diagram-specific design language contract for editable, on-brand SVG and draw.io outputs. Structured to align with DESIGN.md-style tokens and prose, and now mapped to the dense application and documentation tiers from canonical-specs so diagram geometry can inherit the same type, spacing, and grid logic.
 sourceSpecs:
-  typography: ../canonical-spacing-spec/specs/type scale/draft.md
-  spacing: ../canonical-spacing-spec/specs/spacing/draft.md
-  grid: ../canonical-spacing-spec/specs/grid/draft.md
+  typography: ../canonical-specs/specs/type scale/draft.md
+  spacing: ../canonical-specs/specs/spacing/draft.md
+  grid: ../canonical-specs/specs/grid/draft.md
   importedTier: applications
   adoptedTier: diagram
   rolloutStatus: pilot

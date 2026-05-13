@@ -4,6 +4,11 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-13 – Machine-switch docs checkpoint
+
+- Normalized the active upstream spec references from `canonical-spacing-spec` to `canonical-specs` across `DIAGRAM.md`, `README.md`, `STATUS.md`, `TODO.md`, and `docs/specs.md` so the advertised spec -> token -> tool chain resolves in this workspace.
+- Refreshed the cold-start docs to state both what landed in the autolayout slice and what still remains: shared Python/JS parent-split math, the known `build_v2.py` clearance blockers, and the pending manual desktop smoke tests.
+
 ### 2026-05-13 – Autolayout docs clarification + connector/separator primitives
 
 - Reframed the durable layout docs around a parent-scoped equal-split/outdent model instead of a strict global-grid lock, and updated `DIAGRAM.md`, `README.md`, `STATUS.md`, `TODO.md`, and the redraw skill so future agents read the same abstraction on a cold start.

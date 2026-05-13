@@ -45,13 +45,13 @@ Rows marked ⚠ reference assets excluded by `.gitignore`. Run the build or obta
 |------|--------------|-------|
 | `repo-workflow-boilerplate` | Workflow upstream | Centralized workflow template for the root file layout, inbox split, source precedence, and cold-start rules |
 | `baseline-foundry` | Read-only reference and refresh source | Upstream BF contract reference; a sibling checkout is only needed when refreshing the vendored preview-shell snapshot under `assets/baseline-foundry/` |
-| `canonical-spacing-spec` | Read-only design language source | Upstream source for the imported spacing, grid, and dense type-scale rules now mirrored into `DIAGRAM.md` and shared renderer tokens |
+| `canonical-specs` | Read-only design language source | Upstream source for the imported spacing, grid, and dense type-scale rules now mirrored into `DIAGRAM.md` and shared renderer tokens |
 | `design.md` | Read-only format reference | Used as a structure reference for the plain-text `DIAGRAM.md` spec and future design-language token ingestion |
 
 ## Notes
 
 - Local reference assets in this repo are the primary source of truth for diagram visuals.
-- `DIAGRAM.md` is the bridge point for imported typography, spacing, and grid specs from the broader design language into this repo's renderers.
+- `DIAGRAM.md` is the bridge point for imported typography, spacing, and grid specs from the broader design language into this repo's renderers, currently via `../canonical-specs/specs/type scale/draft.md`, `../canonical-specs/specs/spacing/draft.md`, and `../canonical-specs/specs/grid/draft.md`.
 - draw.io libraries improve reuse for future insertions but do not live-update shapes already placed in diagrams; repo-wide style changes still require a batch XML update strategy.
 - `scripts/export_drawio_library.py` regenerates the tracked draw.io library, `scripts/drawio_style_presets.py` defines the canonical shared draw.io style-field presets, and `scripts/drawio_style_sync.py` is the batch rewrite path for applying those presets or other token-targeted draw.io style changes.
 - Sibling repos can inform workflow or style, but they do not outrank an explicitly referenced local sketch or reference asset.
