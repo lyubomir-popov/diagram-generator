@@ -352,6 +352,8 @@ class Arrow:
     id: str | None = None
     color: str = "#E95420"
     waypoints: list[tuple[float, float]] = field(default_factory=list)
+    label: list[Line] = field(default_factory=list)
+    label_gap: int | None = None
 
 
 # ---------------------------------------------------------------------------

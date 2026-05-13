@@ -14,6 +14,16 @@ Fastest way to see the project working:
 - Interactive polish pass: run `python scripts/preview_server.py --slug diagram-intake-workflow --grid`, then open `http://127.0.0.1:8100/view/diagram-intake-workflow`
 - Static comparison with inputs: open [`diagrams/3.compare/html/diagram-intake-workflow.html`](diagrams/3.compare/html/diagram-intake-workflow.html)
 
+### Cold-start path for layout work
+
+If you are changing the autolayout engine, grouped panels, or arrow routing, read these in order before editing code:
+
+1. [`DIAGRAM.md`](DIAGRAM.md) — especially the nested group alignment model, known failure modes, verification workflow, and cold-start instructions.
+2. [`.github/skills/diagram-redraw/SKILL.md`](.github/skills/diagram-redraw/SKILL.md) — the operational redraw and verification checklist.
+3. This README's interactive preview section — for the concrete preview, build, and review commands.
+
+Current layout warning: the preview relayout engine now consumes server-declared slots, spans, and measured gutters instead of reconstructing grouped layout from child geometry, but the parent-split/outdent math still lives in both Python and JS. Equal splitting of parent width is valid, but build and preview can still diverge if the duplicated split/outdent math drifts. Verify grouped-layout changes with Playwright screenshots instead of trusting the first visual pass.
+
 ### Recommended exemplar path
 
 If you are cold-starting the repo and want the fastest route through the tracked corpus, inspect these in order:
@@ -132,6 +142,7 @@ Three generic examples ship with the repo for reference:
 | [`example_deployment_pipeline.py`](scripts/diagrams/example_deployment_pipeline.py) | Simple vertical flow: boxes + arrows |
 | [`example_platform_architecture.py`](scripts/diagrams/example_platform_architecture.py) | Grid with nested panels, multi-column span |
 | [`example_data_processing.py`](scripts/diagrams/example_data_processing.py) | Panels with allocation bars, separators, annotations |
+| [`example-arrow-label-separator.json`](scripts/diagrams/yaml/example-arrow-label-separator.json) | Regression fixture for thin separators, free-positioned arrow labels, and compare-page review |
 
 ### Interactive autolayout demo
 
@@ -155,6 +166,7 @@ Suggested demo flow:
 2. Open `http://127.0.0.1:8100/view/memory-wall`
 3. Resize a parent panel or change gutter controls to watch autolayout recompute child placement
 4. Multi-select a few boxes to try distribute/align actions in the inspector
+5. For grouped-layout work, take a Playwright screenshot and check parent-width splits, gutter equality, group wrapper styling, arrow routing, arrow-label placement, and thin separator rows before considering the result valid
 
 Features: component tree sidebar, click-to-select inspector, drag-and-resize with 8px snap, parent/child autolayout relayout, waypoint editing, grid overlay controls, undo/redo snapshots, and override persistence to JSON. Overrides are a drafting aid – the agent reads them and applies fixes to the Python definition.
 

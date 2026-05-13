@@ -115,6 +115,12 @@ PAIRS = [
       "before": "diagram-language-workflow-rough.svg",
       "after": "diagram-language-workflow-onbrand.svg",
     },
+    {
+      "slug": "example-arrow-label-separator",
+      "title": "Example arrow label + separator",
+      "before": "example-arrow-label-separator-rough.svg",
+      "after": "example-arrow-label-separator-onbrand-v2.svg",
+    },
 ]
 
 

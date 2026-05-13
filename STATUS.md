@@ -73,7 +73,7 @@ There are now **two diagram generation pipelines**. On a cold start, ask the use
 - `_audit_v2.py` now reports the audited canonical diagrams as OK, including `attention-qkv` after the heading text was realigned to the v1 baseline.
 - **Arrow crossing validation** added to the build: `validate_arrow_crossings()` checks every arrow segment against all component boxes (excluding source, target, and shared ancestor panels). Build fails on any crossing.
 - **Arrow obstacle avoidance** rewritten for full-width panels: vertical arrows now route around panels that span the entire diagram width.
-- All 16 diagrams pass build-time validation: zero crossings, zero clearance violations (except 4 pre-existing violations on `lightning-talk-engine`).
+- `build_v2.py` currently exits nonzero on 6 existing arrow-clearance violations across `example-platform-architecture`, `lightning-talk-engine`, `lt-diagram-generator`, `lt-a4-generator`, and `lt-summit-identity`; baseline-grid warnings also remain across several older diagrams and are warning-only.
 - Native draw.io desktop import/export and Illustrator desktop smoke tests were not run in this environment.
 
 ### Layout engine (May 2026)
@@ -81,8 +81,9 @@ There are now **two diagram generation pipelines**. On a cold start, ask the use
 - **Content-width alignment:** Two-pass VERTICAL layout separates content width from outer width. Panels with borders wrap content with INSET padding; standalone boxes align to the panel's inner content corridor. All 4 vertical diagrams (request-to-hardware-stack, inference-snaps, diagram-intake-workflow, diagram-language-workflow) have flush right edges.
 - **col_span/row_span:** Boxes inside panels can span multiple grid columns without explicit width overrides.
 - **BOX_MIN_HEIGHT enforcement:** Single-line boxes without icons are clamped to 64px minimum.
-- **Grid spanning detection:** Client-side relayout detects spanning children from geometry.
+- **Preview slot metadata:** Client-side relayout now uses server-declared `col` / `row` / span metadata plus measured gutters instead of inferring grouped slots back from child geometry.
 - **BASELINE_UNIT = 8px**, **GRID_GUTTER = 24px**, **OUTER_MARGIN = 24px**, **BODY_SIZE = 18px**.
+- **Autolayout review status (2026-05-13):** The durable docs now define a parent-scoped equal-split/outdent model for grouped layouts. Current implementation is improved but still mixed: separator rows now stay thin, arrow labels now have a free-positioned primitive, measured child gutters now reach the preview component tree, and preview relayout now consumes declared slots/spans instead of reconstructing them from geometry; the remaining gap is that split/outdent math is still duplicated between `scripts/diagram_layout.py` and `scripts/preview/component-model.js`.
 
 ## Architecture status
 
@@ -145,6 +146,7 @@ The project has evolved from a batch diagram generator into a **constrained inte
 - The current helper-audit lane now covers terminal bars, request clusters, draw.io icon-image sizing, memory-panel geometry, and SVG jagged-step sizing; keep future cleanup scoped to reusable helper surfaces rather than per-diagram coordinates.
 - Keep the new preset-driven draw.io style-sync path aligned with exporter defaults whenever shared diagram tokens change.
 - The cold-start exemplar path is now curated in `README.md`; the next no-input doc lane is refining `DIAGRAM.md` as more diagram types appear.
+- Keep `example-arrow-label-separator` as the smallest tracked regression surface for thin separators + free-positioned arrow labels.
 - Keep refining `DIAGRAM.md` as more diagram types appear.
 
 ## Draw.io evolution plan

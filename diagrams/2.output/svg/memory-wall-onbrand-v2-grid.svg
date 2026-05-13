@@ -109,11 +109,7 @@
   <polygon points="117.0947,101.1592 120,112 122.9053,101.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_3">
-  <line x1="120" y1="176" x2="120" y2="184" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="184" x2="0" y2="184" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="0" y1="184" x2="0" y2="272" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="0" y1="272" x2="120" y2="272" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="272" x2="120" y2="277.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="176" x2="120" y2="277.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,277.1592 120,288 122.9053,277.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_4">

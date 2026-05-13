@@ -13,6 +13,7 @@ import pathlib
 
 from diagram_layout import (
     ArrowPrimitive,
+    ArrowLabelPrimitive,
     CircleMarker,
     DashedLinePrimitive,
     GridInfo,
@@ -226,6 +227,8 @@ def _render_primitive(prim: Primitive) -> str:
     if isinstance(prim, ArrowPrimitive):
         pts = [prim.start] + prim.waypoints + [prim.end]
         return _polyline_arrow(pts, color=prim.color)
+    if isinstance(prim, ArrowLabelPrimitive):
+        return _text_block(prim.x, prim.y, prim.lines)
     if isinstance(prim, CircleMarker):
         return _circle(prim.cx, prim.cy, prim.radius, fill=prim.fill,
                        stroke=prim.stroke)

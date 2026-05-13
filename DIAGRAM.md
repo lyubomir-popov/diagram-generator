@@ -289,81 +289,257 @@ The Diagram model supports optional sizing constraints that make output dimensio
 
 **When to use `uniform_rows`:** when rows should form a regular grid of equal-height modules, regardless of content. Note that content must still fit — uniform rows enlarge smaller rows but never shrink larger ones.
 
-### Auto-fill
+### Project purpose
 
-Sub-panels inside a parent panel no longer need manual `col_width` derivation. The layout engine auto-derives child widths from the parent's available content span:
+This repo owns a diagram generator with grid-based layout, nested groups, boxes, gutters, and connector arrows.
 
-```
-parent_content  = parent_cell − 2 × INSET
-child_count     = N
-child_outer     = (parent_content − (N − 1) × inner_gap) / N
-child_col_width = child_outer − 2 × child_INSET
-```
+The generator must produce clean, repeatable diagrams from structured input. It is not meant to rely on hand-positioned approximations, one-off offsets, or visual guesswork that only happens to look correct in one export.
 
-This eliminates the nesting tax calculations that previously had to be done by hand. If a sub-panel has an explicit `col_width`, it is respected; otherwise the engine auto-fills.
+### Nested group alignment model
 
-Auto-fill triggers when the parent cell is wider than `BLOCK_WIDTH` (192px) — i.e. when the grid has been explicitly sized via `col_width` or `canvas_width`. Panels in default-sized cells use `BLOCK_WIDTH` to avoid inflating diagrams that rely on content-driven width.
+For nested or grouped diagrams, use exactly one alignment model:
 
-### Grid participants vs wrappers
+- The top-level grid is a staging aid, not a master law that every row must literally inherit.
+- Child boxes inside a grouped row should usually be derived from an equal split of the parent content width.
+- The outer group container is a wrapper or outset around that row-level split.
+- Group padding absorbs the difference between the child row and the wrapper edge.
+- Horizontal and vertical structural gutters must stay on the configured gutter tokens.
+- Rows with 2, 3, or 5 columns can still align cleanly if they share the same parent width logic, gutter tokens, and wrapper outdents.
 
-Not every visible rectangle is a grid participant. Distinguish two roles:
+Do not mix alignment models. Do not sometimes align the wrapper to the grid and sometimes align the children. That inconsistency is the root cause of the recurring nested-gutter bug.
 
-| Role | Examples | Alignment rule |
-|------|----------|----------------|
-| **Grid participant** | Standalone boxes, panels that own a grid cell | Outer edges define the grid column/row boundaries. Peer participants share column edges. |
-| **Wrapper** | Dashed grouping frames, frameless layout containers | Outer edges are **derived** from children + inset. A wrapper does not impose its own width on the grid – it wraps around content that is already grid-aligned. |
-
-**The key invariant:** when a wrapper and standalone boxes sit in the same outer column, the wrapper's **outer** width must equal the standalone box width so edges stay flush. Derive the wrapper's child widths from the outer constraint, not the other way around.
-
-### Nesting and alignment rules
-
-Every container introduces an INSET offset. Nesting levels compound: a box inside a sub-panel inside a wrapper panel has 3 levels of INSET between its content and the diagram edge. When child panels sit inside a multi-span wrapper, their outer edges are offset from the outer grid by the wrapper's INSET, and this offset is **expected and intentional** – the children are visually contained.
-
-**Single-column wrapper** (wrapper occupies exactly one grid column):
+Treat grouped layout math this way:
 
 ```
-wrapper_outer_width  = peer_box_width          (e.g. 608)
-wrapper_content_span = wrapper_outer_width − 2 × INSET   (e.g. 592)
-child_col_width      = (wrapper_content_span − (cols − 1) × col_gap) / cols
+parent_content_width = parent_outer_width - group_pad_left - group_pad_right
+child_col_width      = (parent_content_width - ((child_count - 1) × child_col_gap)) / child_count
+group_outer_width    = (child_count × child_col_width)
+                     + ((child_count - 1) × child_col_gap)
+                     + group_pad_left + group_pad_right
 ```
 
-**Multi-span wrapper** (wrapper spans N grid columns):
+If a parent row changes from 2 children to 3 or 5, the child widths should be recomputed from the same parent content span and the same gutter token. The visual alignment comes from consistent splitting and consistent outdents, not from forcing every row onto a single global column count.
 
-When a wrapper spans N outer grid columns, its children will be inset from the outer grid. To align child panels with the outer grid columns, **the child panels must absorb the wrapper's INSET**. The formula:
+Current implementation note: the engine now supports parent-scoped equal splitting, but the implementation is still mixed between the Python renderer and the preview relayout path. The main fragility is inconsistent inheritance of resolved gutters and outdents, not the existence of wrapper-based equal splitting itself.
 
-```
-wrapper_outer     = N × outer_col_width + (N − 1) × outer_col_gap
-wrapper_content   = wrapper_outer − 2 × INSET
-child_count       = N  (one child per outer column)
-child_outer_width = (wrapper_content − (child_count − 1) × inner_col_gap) / child_count
-```
+### Group styling invariant
 
-The child outer width will always be less than the outer column width by `(2 × INSET + (child_count − 1) × (inner_col_gap − outer_col_gap)) / child_count`. **This is the nesting tax.** Accept it as the cost of the frame, or use `border=Border.NONE` (frameless, pad=0) to eliminate it.
+The default grouped-panel style is the repo's borderless grey group treatment:
 
-**Example: logic-data-vram VRAM section**
+- grey background
+- no dashed border
+- no heavy visible stroke
+- readable title and text
+- normal child boxes inside the group
 
-```
-outer_col_width  = 408
-outer_col_gap    = 32
-wrapper_outer    = 2 × 408 + 32 = 848
-wrapper_content  = 848 − 16 = 832
-inner_col_gap    = 32  (for arrow routing)
-child_outer      = (832 − 32) / 2 = 400
+Use this in definitions as `Panel(fill=Fill.GREY, border=Border.FILL)` or the YAML equivalent.
 
-Nesting tax = 408 − 400 = 8px per child
-```
+Where the style lives:
 
-The sub-panels are 8px narrower than the top panels. The left sub-panel starts 8px to the right of the top-left panel (wrapper INSET), and the right sub-panel ends 8px to the left of the top-right panel.
+- `scripts/diagram_model.py`: `Border.FILL` is the semantic switch for a filled, no-stroke group wrapper.
+- `scripts/diagram_layout.py`: `_layout_panel()` and `_render_component()` convert `Border.FILL` into a padded grey wrapper with `stroke="none"`.
+- `scripts/diagram_render_svg.py` and `scripts/diagram_render_drawio.py`: render the resulting no-stroke filled rects.
 
-**Practical checklist for wrappers:**
+`Border.DASHED` is not the default grouped style. Use it only when a dashed frame is explicitly requested for debugging or for a legacy diagram whose semantics genuinely require a dashed frame. Do not treat old dashed examples as the preferred nested-group pattern.
 
-1. Decide the wrapper's outer width from the outer grid (match peer boxes or the diagram column).
-2. Subtract `2 × INSET` to get the content span.
-3. Divide the content span among child columns and gaps.
-4. Size children inside-out for height, but use the derived column width for width.
-5. **Do not hardcode `col_width` on sub-panels independently.** The layout engine auto-derives sub-panel widths from the wrapper's content span when `canvas_width` or an explicit `col_width` is set on the diagram. Manual derivation is only needed if auto-fill is disabled or for documentation.
-6. Verify the wrapper's computed outer width equals the peer boxes' width.
-7. Accept the nesting INSET offset, or use `border=Border.NONE` to eliminate it.
+### Gutters and grid rules
+
+These values matter because grouped layouts fail when they are eyeballed instead of measured.
+
+Token values:
+
+- `baseline-unit` = `8px`
+- horizontal structural gutter token = `grid-gutter` = `24px`
+- vertical structural gutter token = `grid-gutter` = `24px` unless a diagram explicitly sets another `row_gap`
+- outer margin token = `24px`
+- compact internal gap token = `8px`, only for tightly packed non-structural content
+- default standalone box width token = `192px`
+
+Derived values:
+
+- child widths inside groups
+- row heights from content
+- group padding / wrapper outset
+- wrapper outer width from child grid + derived padding
+
+Column calculation rules:
+
+1. Top-level grid columns come from `Diagram.cols` plus either `col_width` or `canvas_width`.
+2. Child boxes inside a grouped row should usually be computed from the parent content width by equal splitting, not by forcing them to match a separate global grid column.
+3. If a group contains fewer or more children than a neighboring row, preserve the same parent width logic and gutter tokens so the rows still align cleanly through their outer edges and consistent outdents.
+4. Nested groups inherit or reference the parent row's structural gutter tokens. They do not invent a new structural gutter lane unless the diagram explicitly declares one.
+
+Row calculation rules:
+
+1. Row heights come from content and are snapped to the `8px` baseline.
+2. Vertical gutters between structural rows must stay on the configured `row_gap` token.
+3. Equal-height behavior is a derived convenience, not a license to move rows off token spacing.
+
+Measure gutters numerically and verify them with screenshots. Do not accept a layout because it "looks about right".
+
+### Arrow-routing diagnostic rule
+
+If an arrow starts, turns unnecessarily, then continues down or across to reach a midpoint, treat that as a layout or anchor-calculation smell.
+
+Before patching the arrow route, inspect:
+
+- source bounds
+- target bounds
+- source anchor
+- target anchor
+- group wrapper bounds
+- child bounds
+- whether the arrow is anchoring to the wrong hierarchy level
+- whether the router is compensating for misaligned geometry
+
+The preferred fix is almost always to correct the layout geometry or anchor selection. Do not add arbitrary routing offsets first.
+
+### Arrow label primitive
+
+Arrow labels are not grid cells.
+
+- Use the `Arrow.label` field when a connector needs explanatory copy.
+- Arrow labels are free-positioned primitives offset from the routed arrow by `GRID_GUTTER` unless `label_gap` overrides it.
+- The label should avoid overlaps with boxes, panels, and other blocking geometry.
+- When the existing route leaves no room for the label, reroute the arrow to create room instead of shoving the text into the nearest grid slot.
+
+Current implementation status:
+
+- `scripts/diagram_model.py` exposes `Arrow.label` and `Arrow.label_gap`.
+- `scripts/diagram_layout.py` places an `ArrowLabelPrimitive` off the routed segment and can add a small fallback detour when the current path has nowhere clean to place the text.
+- Arrow labels are intentionally exempt from baseline-grid validation because they are geometry-aware annotations, not grid-snapped box content.
+
+Use arrow labels for connector copy such as flow names or edge semantics. Do not fake them with helper rows or by burning an entire grid field next to an arrow.
+
+### Dashed separator primitive
+
+Use `Separator` for a thin dashed divider that should not consume a full box-height row.
+
+- `Separator` is a lightweight dashed line primitive, not a content box.
+- Its row should size to the separator itself rather than defaulting to `BOX_MIN_HEIGHT`.
+- It should not be treated as a blocking box for arrow-label placement.
+
+Current implementation status:
+
+- Top-level grid rows now size from actual content first, so separator-only rows stay thin.
+- The SVG and draw.io renderers both emit dashed separator geometry without requiring a fake bordered box.
+
+### Verification workflow
+
+Playwright is required for visual verification.
+
+For any grouped-layout or arrow-routing change:
+
+1. Generate the diagram.
+2. Open it in the browser, preferably through `python scripts/preview_server.py --slug <slug> --grid`.
+3. Take a screenshot with Playwright.
+4. Inspect the screenshot for:
+  - equal horizontal gutters
+  - equal vertical gutters
+  - child boxes split cleanly within the intended parent width
+  - group wrappers correctly outset around children
+  - borderless grey group styling
+  - clean arrow routing
+  - no unnecessary arrow bends or doglegs
+  - arrow labels offset from the connector rather than jammed into a grid slot
+  - thin separators that do not create fake box-height gaps
+5. Iterate until the screenshot is correct.
+
+Do not mark the task complete without a screenshot-based check.
+
+Useful commands:
+
+- `python scripts/build_v2.py`
+- `python scripts/_audit_v2.py`
+- `python scripts/_compare_3way.py`
+- `python scripts/preview_server.py --slug <slug> --grid`
+
+### Known failure modes
+
+Record these as real regressions, not stylistic nits:
+
+- dashed group wrappers aligned to the same grid as standalone boxes, causing nested children to become too narrow
+- inconsistent gutters between child boxes
+- group padding unequal on left and right
+- mixed parent-width splitting rules between adjacent rows or between build and preview
+- arrow routes with unnecessary doglegs
+- arrows anchoring to group wrappers when they should anchor to child boxes, or vice versa
+- arrow labels overlapping boxes or riding directly on the arrow shaft
+- separator rows consuming full box-height gaps
+- visual fixes made with arbitrary offsets instead of fixing the layout model
+
+### Regression cases
+
+Any layout rewrite or grouped-layout fix should be checked against at least these cases:
+
+- one group with two children
+- one group with three children
+- mixed grouped and standalone boxes on the same row
+- vertical stacking between grouped and standalone rows
+- arrows from standalone to grouped items
+- arrows between children inside groups
+- arrows from grouped children to items outside the group
+- different horizontal and vertical gutter settings
+
+### Current implementation status
+
+What currently works:
+
+- top-level declarative grid placement is stable and baseline-snapped
+- the preview server and compare pages are usable review surfaces
+- renderer/exporter integration for SVG and draw.io remains intact
+- recent Python changes restored borderless grey grouped panels for `example-platform-architecture`
+- separator-only rows now stay thin instead of inflating to default box height
+- arrow labels now exist as free-positioned connector annotations rather than grid-snapped text hacks
+- component-tree metadata now captures measured child gutters, so preview relayout preserves inherited horizontal gaps better
+
+What was recently fixed:
+
+- `scripts/diagram_layout.py` now outsets top-level panels against the parent grid cell instead of leaving the wrapper flush on the same bounds as standalone boxes
+- `scripts/diagrams/example_platform_architecture.py` was moved from dashed wrappers to the grey `Border.FILL` group style
+- top-level grid rows now derive height from actual content, which fixes separator-only rows
+- `Arrow.label` / `Arrow.label_gap` plus `ArrowLabelPrimitive` now provide an initial non-grid arrow-label path with overlap-aware placement
+- component-tree layout metadata now measures rendered child gaps so preview relayout keeps inherited `24px` gutters instead of defaulting grouped rows to `0px`
+
+What remains fragile:
+
+- `scripts/preview/component-model.js` still reconstructs layouts from current child geometry rather than a fully shared declarative parent-split model, so nested interactive relayout can still drift from the Python renderer
+- parent-scoped equal splitting, consistent outdents, and declared spans still need a cleaner single-source implementation across build and preview
+- some legacy diagrams and library surfaces still expose dashed-group patterns that should not be copied into new grouped layouts
+
+Relevant code:
+
+- `scripts/diagram_model.py`
+- `scripts/diagram_layout.py`
+- `scripts/preview/component-model.js`
+- `scripts/preview/editor.js`
+- `scripts/diagrams/example_platform_architecture.py`
+
+How to run the main checks:
+
+- preview: `python scripts/preview_server.py --slug example-platform-architecture --grid`
+- build: `python scripts/build_v2.py`
+- audit: `python scripts/_audit_v2.py`
+- Playwright screenshot review: use the preview server or compare page in the browser and capture screenshots there
+
+### Cold-start instructions for future agents
+
+Read this file before changing layout code.
+
+- Do not assume dashed group boxes are correct.
+- Use parent-scoped equal splitting with consistent gutters and wrapper outdents for nested groups.
+- Preserve the configured gutter tokens.
+- Verify with Playwright screenshots.
+- Treat arrow doglegs as layout smells.
+- Treat arrow labels as free-positioned primitives, not grid cells.
+- Avoid arbitrary offsets.
+- Document any new invariant discovered during debugging.
+
+Recommended read order for a cold start on layout work:
+
+1. `DIAGRAM.md` — this section plus the arrow-clearance and equal-height sections below.
+2. `README.md` — preview and validation commands.
+3. `.github/skills/diagram-redraw/SKILL.md` — the operational redraw checklist.
 
 **For a text box (no icon):**
 

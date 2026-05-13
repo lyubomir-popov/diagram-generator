@@ -312,6 +312,7 @@ _REFERENCE_MAP: dict[str, str] = {
     "gpu-waiting-scheduler": "image 5.png",
     "request-to-hardware-stack": "image 6.png",
     "inference-snaps": "image 7.png",
+    "example-arrow-label-separator": "example-arrow-label-separator-rough.svg",
 }
 
 

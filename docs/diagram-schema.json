@@ -302,6 +302,12 @@
         "target": { "type": "string", "description": "component_id.side (e.g. 'build.top')" },
         "id": { "type": "string" },
         "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$", "default": "#E95420" },
+        "label": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/line" },
+          "minItems": 1
+        },
+        "label_gap": { "type": "integer", "minimum": 0 },
         "waypoints": {
           "type": "array",
           "items": {

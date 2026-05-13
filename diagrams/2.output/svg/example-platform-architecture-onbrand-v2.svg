@@ -1,18 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="680" height="568" viewBox="0 0 680 568" xml:space="preserve">
-  <rect width="680" height="568" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="688" height="568" viewBox="0 0 688 568" xml:space="preserve">
+  <rect width="688" height="568" fill="#FFFFFF" />
   <g data-component-id="frontend">
-  <rect x="16" y="24" width="640" height="160" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="16" y="24" width="648" height="160" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="24" y="48.92" font-size="18" font-weight="700" fill="#000000">User-facing services</tspan>
   </text>
   </g>
   <g data-component-id="_auto_frontend_1">
-  <rect x="24" y="112" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="112" width="304" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="136.92" font-size="18" font-weight="400" fill="#000000">Web</tspan>
     <tspan x="32" y="160.92" font-size="18" font-weight="400" fill="#000000">application</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 120)">
+  <g class="dg-icon" transform="translate(272 120)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M18 29.25H12V23.25H18V29.25ZM13 28.25H17V24.25H13V28.25Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M36 21.75H19.5V15.75H36V21.75ZM20.5 20.75H35V16.75H20.5V20.75Z" fill="#000000" />
@@ -28,12 +28,12 @@
   </g>
   </g>
   <g data-component-id="_auto_frontend_2">
-  <rect x="240" y="112" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="352" y="112" width="304" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="248" y="136.92" font-size="18" font-weight="400" fill="#000000">Mobile</tspan>
-    <tspan x="248" y="160.92" font-size="18" font-weight="400" fill="#000000">client</tspan>
+    <tspan x="360" y="136.92" font-size="18" font-weight="400" fill="#000000">Mobile</tspan>
+    <tspan x="360" y="160.92" font-size="18" font-weight="400" fill="#000000">client</tspan>
   </text>
-  <g class="dg-icon" transform="translate(376 120)">
+  <g class="dg-icon" transform="translate(600 120)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M35 3C36.1046 3 37 3.89543 37 5V43C37 44.0357 36.2128 44.887 35.2041 44.9893L35 45H13L12.7959 44.9893C11.8543 44.8938 11.1062 44.1457 11.0107 43.2041L11 43V5C11 3.89543 11.8954 3 13 3H35ZM13 4C12.4477 4 12 4.44772 12 5V43C12 43.5523 12.4477 44 13 44H35C35.5523 44 36 43.5523 36 43V5C36 4.44772 35.5523 4 35 4H13Z" fill="#000000" />
 
 <path d="M24 40C24.5523 40 25 40.4477 25 41C25 41.5523 24.5523 42 24 42C23.4477 42 23 41.5523 23 41C23 40.4477 23.4477 40 24 40Z" fill="#000000" />
@@ -160,7 +160,9 @@
   </g>
   </g>
   <g data-component-id="_auto_6">
-  <line x1="336" y1="184" x2="336" y2="197.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="340" y1="184" x2="340" y2="192" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="340" y1="192" x2="336" y2="192" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="336" y1="192" x2="336" y2="197.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="333.0947,197.1592 336,208 338.9053,197.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_7">

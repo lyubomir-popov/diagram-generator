@@ -17,8 +17,14 @@ class ComponentNode {
     this.layoutGap = data.layout_gap || 0;  // gap between children
     this.layoutColGap = data.layout_col_gap || data.layout_gap || 0;
     this.layoutRowGap = data.layout_row_gap || data.layout_gap || 0;
+    this.layoutCols = data.layout_cols || 0;
+    this.layoutRows = data.layout_rows || 0;
     this.pad = data.pad || 0;               // internal padding (INSET for bordered, 0 for borderless)
     this.headingHeight = data.heading_height || 0; // panel heading height incl gap
+    this.gridCol = data.grid_col || 0;
+    this.gridRow = data.grid_row || 0;
+    this.gridColSpan = data.grid_col_span || 1;
+    this.gridRowSpan = data.grid_row_span || 1;
     if (data.children) {
       for (const child of data.children) {
         this.children.push(new ComponentNode(child, this));
@@ -223,7 +229,14 @@ class ComponentModel {
   getLayoutChildren(id) {
     const node = this.get(id);
     if (!node) return [];
-    return node.children.filter(n => n.type !== "arrow" && n.type !== "separator");
+    return node.children
+      .filter(n => n.type !== "arrow" && n.type !== "separator")
+      .sort((left, right) => {
+        if (left.gridRow !== right.gridRow) return left.gridRow - right.gridRow;
+        if (left.gridCol !== right.gridCol) return left.gridCol - right.gridCol;
+        if (left.data.y !== right.data.y) return left.data.y - right.data.y;
+        return left.data.x - right.data.x;
+      });
   }
 
   /**
@@ -306,14 +319,16 @@ class ComponentModel {
         cx += childW + colGap;
       }
     } else if (layout === "grid") {
-      // Grid: identify columns and rows from children's original positions.
-      // Distribute width equally among columns, height equally among rows.
-      // Detect spanning children by comparing their original width/height
-      // against the base cell size.
-      const colXs = [...new Set(layoutChildren.map(c => c.data.x))].sort((a, b) => a - b);
-      const rowYs = [...new Set(layoutChildren.map(c => c.data.y))].sort((a, b) => a - b);
-      const numCols = colXs.length || 1;
-      const numRows = rowYs.length || 1;
+      // Grid: use the server-declared slot model instead of inferring
+      // columns/rows back from absolute geometry.
+      const maxCol = layoutChildren.reduce((max, child) => {
+        return Math.max(max, (child.gridCol || 0) + (child.gridColSpan || 1));
+      }, 0);
+      const maxRow = layoutChildren.reduce((max, child) => {
+        return Math.max(max, (child.gridRow || 0) + (child.gridRowSpan || 1));
+      }, 0);
+      const numCols = Math.max(1, node.layoutCols || maxCol);
+      const numRows = Math.max(1, node.layoutRows || maxRow);
 
       const availW = contentW - (numCols - 1) * colGap;
       const availH = contentH - (numRows - 1) * rowGap;
@@ -331,24 +346,10 @@ class ComponentModel {
       }
 
       for (const child of layoutChildren) {
-        const colIdx = colXs.indexOf(child.data.x);
-        const rowIdx = rowYs.indexOf(child.data.y);
-        const ci = colIdx >= 0 ? colIdx : 0;
-        const ri = rowIdx >= 0 ? rowIdx : 0;
-
-        // Detect column span: how many original column starts does
-        // this child's width cover?  A child wider than one cell
-        // spans into adjacent columns.
-        let colSpan = 1;
-        for (let c = ci + 1; c < numCols; c++) {
-          if (child.data.x + child.data.width > colXs[c]) colSpan++;
-          else break;
-        }
-        let rowSpan = 1;
-        for (let r = ri + 1; r < numRows; r++) {
-          if (child.data.y + child.data.height > rowYs[r]) rowSpan++;
-          else break;
-        }
+        const ci = Math.max(0, Math.min(numCols - 1, child.gridCol || 0));
+        const ri = Math.max(0, Math.min(numRows - 1, child.gridRow || 0));
+        const colSpan = Math.max(1, Math.min(numCols - ci, child.gridColSpan || 1));
+        const rowSpan = Math.max(1, Math.min(numRows - ri, child.gridRowSpan || 1));
 
         const spanW = colSpan * cellW + (colSpan - 1) * colGap;
         const spanH = rowSpan * cellH + (rowSpan - 1) * rowGap;
@@ -401,17 +402,13 @@ class ComponentModel {
     } else if (layout === "grid") {
       // Grid: shift same-row siblings after resized child horizontally,
       // shift same-column siblings after resized child vertically.
-      const childX = node.data.x;
-      const childY = node.data.y;
-      const colXs = [...new Set(layoutChildren.map(c => c.data.x))].sort((a, b) => a - b);
-      const rowYs = [...new Set(layoutChildren.map(c => c.data.y))].sort((a, b) => a - b);
-      const childColIdx = colXs.indexOf(childX);
-      const childRowIdx = rowYs.indexOf(childY);
+      const childColIdx = node.gridCol || 0;
+      const childRowIdx = node.gridRow || 0;
 
       for (const sib of layoutChildren) {
         if (sib.id === childId) continue;
-        const sibColIdx = colXs.indexOf(sib.data.x);
-        const sibRowIdx = rowYs.indexOf(sib.data.y);
+        const sibColIdx = sib.gridCol || 0;
+        const sibRowIdx = sib.gridRow || 0;
         const patch = {};
         // Same row, later column → shift right
         if (sibRowIdx === childRowIdx && sibColIdx > childColIdx && childDw !== 0) {

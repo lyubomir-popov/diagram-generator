@@ -1,0 +1,51 @@
+{
+  "$schema": "../../../docs/diagram-schema.json",
+  "title": "Labeled separator flow",
+  "arrangement": "grid",
+  "cols": 1,
+  "col_width": 192,
+  "row_height": 64,
+  "col_gap": 24,
+  "row_gap": 24,
+  "outer_margin": 24,
+  "components": [
+    {
+      "type": "box",
+      "id": "source",
+      "label": [
+        "Source"
+      ],
+      "icon": "Document.svg",
+      "col": 0,
+      "row": 0
+    },
+    {
+      "type": "separator",
+      "col": 0,
+      "row": 1
+    },
+    {
+      "type": "box",
+      "id": "target",
+      "label": [
+        "Target"
+      ],
+      "style": "accent",
+      "icon": "Storage node.svg",
+      "col": 0,
+      "row": 2
+    },
+    {
+      "type": "arrow",
+      "source": "source.bottom",
+      "target": "target.top",
+      "label": [
+        {
+          "text": "Labeled flow",
+          "fill": "#666666"
+        }
+      ],
+      "label_gap": 16
+    }
+  ]
+}

@@ -4,6 +4,15 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-13 – Autolayout docs clarification + connector/separator primitives
+
+- Reframed the durable layout docs around a parent-scoped equal-split/outdent model instead of a strict global-grid lock, and updated `DIAGRAM.md`, `README.md`, `STATUS.md`, `TODO.md`, and the redraw skill so future agents read the same abstraction on a cold start.
+- Added free-positioned arrow labels via `Arrow.label` / `label_gap` plus `ArrowLabelPrimitive`, with overlap-aware placement, fallback detour routing, SVG + draw.io rendering, schema/loader support, and canvas-size expansion so labels are not cropped.
+- Fixed top-level separator rows so `Separator` stays a thin dashed divider row instead of consuming `BOX_MIN_HEIGHT`, and updated preview component metadata to measure rendered child gutters so grouped horizontal relayout preserves inherited `24px` gaps instead of falling back to zero.
+- Updated preview relayout to consume server-declared child slots and spans instead of reconstructing grouped layout from child `x` / `y` positions, which restores correct equal-split behavior for resized parent groups such as `frontend`.
+- Added the tracked `example-arrow-label-separator` JSON fixture, rough input, and compare-page entry so thin separators and free-positioned arrow labels have a committed regression surface instead of living only in a temp probe.
+- Validation: focused Python layout probes for separator rows, arrow labels, and preview gutter metadata; browser screenshots of a generated SVG probe confirming thin separators and off-arrow label placement. A full `python scripts/build_v2.py` pass still reports unrelated pre-existing corpus clearance/grid violations outside this slice.
+
 ### 2026-05-11 â€“ Windows BF preview smoke pass
 
 - Verified the BF-backed preview shell on Windows against the running local server: `/` loaded the diagram index, `/view/example-data-processing` loaded the editor shell, and the desktop layout stayed in the intended single-row `navigation + main + aside` arrangement.

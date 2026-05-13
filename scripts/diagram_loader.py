@@ -169,6 +169,10 @@ def _parse_component(d: dict[str, Any]) -> Any:
             kw["color"] = d["color"]
         if "waypoints" in d:
             kw["waypoints"] = [tuple(wp) for wp in d["waypoints"]]
+        if "label" in d:
+            kw["label"] = _parse_lines(d["label"])
+        if "label_gap" in d:
+            kw["label_gap"] = d["label_gap"]
         return Arrow(**kw)
 
     if t == "bar":

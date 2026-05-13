@@ -11,6 +11,7 @@ import pathlib
 
 from diagram_layout import (
     ArrowPrimitive,
+    ArrowLabelPrimitive,
     CircleMarker,
     DashedLinePrimitive,
     Icon,
@@ -130,6 +131,7 @@ def render_drawio(
     # Collect all rects first – we need to identify parent/child relationships
     rects = [(i, p) for i, p in enumerate(all_prims) if isinstance(p, Rect)]
     arrows = [p for p in all_prims if isinstance(p, ArrowPrimitive)]
+    arrow_labels = [p for p in all_prims if isinstance(p, ArrowLabelPrimitive)]
     markers = [p for p in all_prims if isinstance(p, CircleMarker)]
     jagged = [p for p in all_prims if isinstance(p, JaggedRect)]
     terminals = [p for p in all_prims if isinstance(p, TerminalBar)]
@@ -391,6 +393,35 @@ def render_drawio(
             source_point=arrow.start,
             target_point=arrow.end,
             waypoints=arrow.waypoints if arrow.waypoints else None,
+        )
+
+    for label in arrow_labels:
+        best_rect_idx: int | None = None
+        best_area = float("inf")
+        for idx, rect in rects:
+            if (rect.x <= label.x <= rect.x + rect.width
+                    and rect.y <= label.y <= rect.y + rect.height):
+                area = rect.width * rect.height
+                if area < best_area:
+                    best_area = area
+                    best_rect_idx = idx
+        parent_id = rect_ids.get(best_rect_idx, "1") if best_rect_idx is not None else "1"
+        if best_rect_idx is not None:
+            parent_rect = next(r for i, r in rects if i == best_rect_idx)
+            lx = label.x - parent_rect.x
+            ly = label.y - parent_rect.y
+        else:
+            lx = label.x
+            ly = label.y
+        add_label(
+            builder,
+            x=lx,
+            y=ly,
+            width=label.width,
+            height=label.height,
+            lines=label.lines,
+            parent=parent_id,
+            style_tokens=("label-free", "label-arrow"),
         )
 
     return builder

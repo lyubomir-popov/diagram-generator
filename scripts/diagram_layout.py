@@ -61,6 +61,7 @@ from diagram_shared import (
     TERMINAL_CHROME_HEIGHT,
     make_line as _make_line,
     round_up_to_grid,
+    size_to_px,
     tight_box_height,
 )
 
@@ -109,6 +110,16 @@ class ArrowPrimitive:
     component_id: str | None = None
     source_ref: str = ""   # original "id.side" reference
     target_ref: str = ""   # original "id.side" reference
+
+
+@dataclass
+class ArrowLabelPrimitive:
+    x: float
+    y: float
+    width: float
+    height: float
+    lines: list[dict]
+    component_id: str | None = None
 
 
 @dataclass
@@ -172,6 +183,7 @@ Primitive = Union[
     TextBlock,
     Icon,
     ArrowPrimitive,
+    ArrowLabelPrimitive,
     CircleMarker,
     JaggedRect,
     TerminalBar,
@@ -215,8 +227,14 @@ class ComponentInfo:
     layout_gap: float = 0  # gap between children (col_gap for horizontal, row_gap for vertical)
     layout_col_gap: float = 0  # column gap (for grid layouts)
     layout_row_gap: float = 0  # row gap (for grid layouts)
+    layout_cols: int = 0  # declared/effective columns for parent relayout
+    layout_rows: int = 0  # declared/effective rows for parent relayout
     pad: float = 0  # internal padding (INSET for bordered panels, 0 for borderless)
     heading_height: float = 0  # height of panel heading (includes heading gap)
+    grid_col: int = 0  # declared/effective column slot within the parent
+    grid_row: int = 0  # declared/effective row slot within the parent
+    grid_col_span: int = 1
+    grid_row_span: int = 1
 
 
 @dataclass
@@ -1223,10 +1241,191 @@ def _simplify_waypoints(
     return simplified
 
 
+def _estimate_label_width(lines: list[dict]) -> float:
+    max_width = 0.0
+    for spec in lines:
+        text = str(spec["content"])
+        size_px = size_to_px(spec["size"])
+        weight = str(spec.get("weight", "400"))
+        width_factor = 0.62 if weight in {"600", "700"} else 0.58
+        width = len(text) * size_px * width_factor
+        if spec.get("small_caps"):
+            width *= 1.05
+        max_width = max(max_width, width)
+    return max(max_width, size_to_px(BODY_SIZE) * 3)
+
+
+def _estimate_label_height(lines: list[dict]) -> float:
+    current_top = 0.0
+    max_bottom = 0.0
+    for spec in lines:
+        size_px = size_to_px(spec["size"])
+        max_bottom = max(max_bottom, current_top + size_px * 1.2)
+        current_top += float(spec["line_step"])
+    return max_bottom
+
+
+def _label_overlaps_obstacles(
+    label_box: tuple[float, float, float, float],
+    obstacles: list[tuple[float, float, float, float]],
+) -> bool:
+    lx, ly, lx2, ly2 = label_box
+    for ox, oy, ox2, oy2 in obstacles:
+        if lx < ox2 and lx2 > ox and ly < oy2 and ly2 > oy:
+            return True
+    return False
+
+
+def _arrow_label_candidates(
+    pts: list[tuple[float, float]],
+    label_w: float,
+    label_h: float,
+    gap: float,
+) -> list[tuple[float, float]]:
+    segments: list[tuple[float, tuple[float, float], tuple[float, float]]] = []
+    for i in range(len(pts) - 1):
+        a = pts[i]
+        b = pts[i + 1]
+        seg_len = abs(b[0] - a[0]) + abs(b[1] - a[1])
+        if seg_len <= 0:
+            continue
+        segments.append((seg_len, a, b))
+    segments.sort(key=lambda item: item[0], reverse=True)
+
+    candidates: list[tuple[float, float]] = []
+    for _, a, b in segments:
+        if a[1] == b[1]:
+            seg_left = min(a[0], b[0])
+            seg_right = max(a[0], b[0])
+            x_positions = [
+                seg_left + max(0.0, (abs(b[0] - a[0]) - label_w) / 2),
+                seg_left,
+                max(seg_left, seg_right - label_w),
+            ]
+            for label_x in x_positions:
+                candidates.append((label_x, a[1] - gap - label_h))
+                candidates.append((label_x, a[1] + gap))
+        elif a[0] == b[0]:
+            seg_top = min(a[1], b[1])
+            seg_bottom = max(a[1], b[1])
+            y_positions = [
+                seg_top + max(0.0, (abs(b[1] - a[1]) - label_h) / 2),
+                seg_top,
+                max(seg_top, seg_bottom - label_h),
+            ]
+            for label_y in y_positions:
+                candidates.append((a[0] - gap - label_w, label_y))
+                candidates.append((a[0] + gap, label_y))
+    return candidates
+
+
+def _route_for_label_space(
+    src: tuple[float, float],
+    tgt: tuple[float, float],
+    waypoints: list[tuple[float, float]],
+    label_w: float,
+    label_h: float,
+    gap: float,
+    obstacles: list[tuple[float, float, float, float]],
+) -> list[tuple[float, float]] | None:
+    sx, sy = src
+    tx, ty = tgt
+    pts = [src] + waypoints + [tgt]
+    dx = abs(tx - sx)
+    dy = abs(ty - sy)
+
+    if dy >= dx:
+        shift = round_up_to_grid(label_w + gap * 2)
+        mid_y = round(((sy + ty) / 2) / BASELINE_UNIT) * BASELINE_UNIT
+        for direction in (-1, 1):
+            detour_x = round((sx + direction * shift) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [(sx, mid_y), (detour_x, mid_y), (detour_x, ty)]
+            if detour_x != tx:
+                new_wps.append((tx, ty))
+            new_wps = _simplify_waypoints(new_wps, src, tgt)
+            if not _path_hits_obstacle([src] + new_wps + [tgt], obstacles):
+                return new_wps
+    else:
+        shift = round_up_to_grid(label_h + gap * 2)
+        mid_x = round(((sx + tx) / 2) / BASELINE_UNIT) * BASELINE_UNIT
+        for direction in (-1, 1):
+            detour_y = round((sy + direction * shift) / BASELINE_UNIT) * BASELINE_UNIT
+            new_wps = [(mid_x, sy), (mid_x, detour_y), (tx, detour_y)]
+            if detour_y != ty:
+                new_wps.append((tx, ty))
+            new_wps = _simplify_waypoints(new_wps, src, tgt)
+            if not _path_hits_obstacle([src] + new_wps + [tgt], obstacles):
+                return new_wps
+    return None
+
+
+def _resolve_arrow_label(
+    arrow: Arrow,
+    arrow_id: str,
+    src: tuple[float, float],
+    tgt: tuple[float, float],
+    waypoints: list[tuple[float, float]],
+    bounds_map: dict[str, _Bounds],
+) -> tuple[list[tuple[float, float]], ArrowLabelPrimitive | None]:
+    if not arrow.label:
+        return waypoints, None
+
+    lines = _lines_to_dicts(arrow.label)
+    gap = float(arrow.label_gap if arrow.label_gap is not None else GRID_GUTTER)
+    label_w = _estimate_label_width(lines)
+    label_h = _estimate_label_height(lines)
+    obstacles = [
+        (b.x, b.y, b.x + b.width, b.y + b.height)
+        for b in bounds_map.values()
+    ]
+
+    def _pick_candidate(points: list[tuple[float, float]]) -> tuple[float, float] | None:
+        for x, y in _arrow_label_candidates(points, label_w, label_h, gap):
+            if x < 0 or y < 0:
+                continue
+            label_box = (x, y, x + label_w, y + label_h)
+            if _label_overlaps_obstacles(label_box, obstacles):
+                continue
+            if _path_hits_obstacle(points, [label_box]):
+                continue
+            return (x, y)
+        return None
+
+    pts = [src] + waypoints + [tgt]
+    chosen = _pick_candidate(pts)
+    if chosen is None:
+        rerouted = _route_for_label_space(src, tgt, waypoints, label_w, label_h, gap, obstacles)
+        if rerouted is not None:
+            waypoints = rerouted
+            pts = [src] + waypoints + [tgt]
+            chosen = _pick_candidate(pts)
+
+    if chosen is None:
+        fallback_candidates = _arrow_label_candidates(pts, label_w, label_h, gap)
+        if fallback_candidates:
+            for candidate in fallback_candidates:
+                if candidate[0] >= 0 and candidate[1] >= 0:
+                    chosen = candidate
+                    break
+            if chosen is None:
+                chosen = fallback_candidates[0]
+        else:
+            chosen = (max(0.0, (src[0] + tgt[0]) / 2 + gap), max(0.0, (src[1] + tgt[1]) / 2))
+
+    return waypoints, ArrowLabelPrimitive(
+        x=chosen[0],
+        y=chosen[1],
+        width=label_w,
+        height=label_h,
+        lines=lines,
+        component_id=arrow_id,
+    )
+
+
 def _resolve_arrows(
     arrows: list[Arrow],
     bounds_map: dict[str, _Bounds],
-) -> list[ArrowPrimitive]:
+) -> list[tuple[ArrowPrimitive, ArrowLabelPrimitive | None]]:
     """Resolve arrow source/target references to absolute coordinates.
 
     When no explicit waypoints are given and the source/target aren't
@@ -1242,7 +1441,7 @@ def _resolve_arrows(
     If the path crosses any component box, it is re-routed around the
     obstacle(s) using ``_route_around_obstacles``.
     """
-    prims = []
+    prims: list[tuple[ArrowPrimitive, ArrowLabelPrimitive | None]] = []
     for idx, arrow in enumerate(arrows):
         src = _resolve_anchor(arrow.source, bounds_map)
         tgt = _resolve_anchor(arrow.target, bounds_map)
@@ -1319,12 +1518,17 @@ def _resolve_arrows(
         else:
             direction = "right" if dx > 0 else "left"
 
-        prims.append(ArrowPrimitive(
+        waypoints, label_prim = _resolve_arrow_label(
+            arrow, arrow_id, src, tgt, waypoints, bounds_map,
+        )
+
+        arrow_prim = ArrowPrimitive(
             start=src, end=tgt, color=arrow.color,
             waypoints=waypoints, direction=direction,
             component_id=arrow_id,
             source_ref=arrow.source, target_ref=arrow.target,
-        ))
+        )
+        prims.append((arrow_prim, label_prim))
     return prims
 
 
@@ -1377,6 +1581,34 @@ def _register_child_bounds(
             _register_child_bounds(child, bounds_map)
 
 
+def _measured_child_gaps(children: list[_Bounds]) -> tuple[float, float]:
+    """Infer the rendered horizontal and vertical gaps between child bounds."""
+    col_gaps: list[float] = []
+    row_gaps: list[float] = []
+
+    for idx, left in enumerate(children):
+        for right in children[idx + 1:]:
+            if abs(left.y - right.y) < 1.5:
+                if left.x <= right.x:
+                    gap = right.x - (left.x + left.width)
+                else:
+                    gap = left.x - (right.x + right.width)
+                if gap > 0:
+                    col_gaps.append(gap)
+
+            if abs(left.x - right.x) < 1.5:
+                if left.y <= right.y:
+                    gap = right.y - (left.y + left.height)
+                else:
+                    gap = left.y - (right.y + right.height)
+                if gap > 0:
+                    row_gaps.append(gap)
+
+    measured_col_gap = min(col_gaps) if col_gaps else 0.0
+    measured_row_gap = min(row_gaps) if row_gaps else 0.0
+    return measured_col_gap, measured_row_gap
+
+
 def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
     """Convert a _Bounds node to a ComponentInfo, recursively."""
     comp = bounds.component
@@ -1394,8 +1626,14 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
     layout_gap = 0.0
     layout_col_gap = 0.0
     layout_row_gap = 0.0
+    layout_cols = 0
+    layout_rows = 0
     comp_pad = 0.0
     comp_heading_height = 0.0
+    grid_col = int(getattr(comp, "col", 0) or 0)
+    grid_row = int(getattr(comp, "row", 0) or 0)
+    grid_col_span = int(getattr(comp, "col_span", 1) or 1)
+    grid_row_span = int(getattr(comp, "row_span", 1) or 1)
     if hasattr(comp, "children") and len(getattr(comp, "children", [])) > 0:
         # Compute padding from border
         border = getattr(comp, "effective_border", None)
@@ -1417,17 +1655,24 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
         _erg2 = getattr(comp, "effective_row_gap", None)
         _rg2 = getattr(comp, "row_gap", None)
         rg = float(_erg2 if _erg2 is not None else (_rg2 if _rg2 is not None else 0))
+        measured_cg, measured_rg = _measured_child_gaps(bounds.children)
+        if measured_cg > 0:
+            cg = measured_cg
+        if measured_rg > 0:
+            rg = measured_rg
         layout_col_gap = cg
         layout_row_gap = rg
         if hasattr(comp, "cols"):
             cols = getattr(comp, "effective_cols", None) or getattr(comp, "cols", 1)
             num_children = len(getattr(comp, "children", []))
+            layout_cols = int(cols)
             if cols > 1:
                 # Single row with cols == children count → horizontal
                 # Multi-row grid otherwise
                 rows = getattr(comp, "effective_rows", None) or getattr(comp, "rows", None)
                 if rows is None and num_children > 0:
                     rows = -(-num_children // cols)  # ceil division
+                layout_rows = int(rows or 0)
                 if rows == 1 and cols == num_children:
                     layout_str = "horizontal"
                     layout_gap = cg
@@ -1437,9 +1682,23 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
             else:
                 layout_str = "vertical"
                 layout_gap = rg
+                layout_cols = 1
+                explicit_rows = getattr(comp, "effective_rows", None) or getattr(comp, "rows", None)
+                if explicit_rows is not None:
+                    layout_rows = int(explicit_rows)
+                else:
+                    layout_rows = max(
+                        (int(getattr(child, "row", 0) or 0) + int(getattr(child, "row_span", 1) or 1))
+                        for child in getattr(comp, "children", [])
+                    )
         else:
             layout_str = "vertical"
             layout_gap = rg
+            layout_cols = 1
+            layout_rows = max(
+                (int(getattr(child, "row", 0) or 0) + int(getattr(child, "row_span", 1) or 1))
+                for child in getattr(comp, "children", [])
+            )
     return ComponentInfo(
         id=cid, type=ctype,
         x=bounds.x, y=bounds.y,
@@ -1449,8 +1708,14 @@ def _bounds_to_component_info(bounds: "_Bounds") -> ComponentInfo | None:
         layout_gap=layout_gap,
         layout_col_gap=layout_col_gap,
         layout_row_gap=layout_row_gap,
+        layout_cols=layout_cols,
+        layout_rows=layout_rows,
         pad=comp_pad,
         heading_height=comp_heading_height,
+        grid_col=grid_col,
+        grid_row=grid_row,
+        grid_col_span=grid_col_span,
+        grid_row_span=grid_row_span,
     )
 
 
@@ -1521,7 +1786,11 @@ def layout(diagram: Diagram) -> LayoutResult:
 
         # 2. Compute natural sizes and build per-cell size requirements
         col_widths = [default_cw] * n_cols
-        row_heights = [default_rh] * n_rows
+        # Rows size from actual content first. This keeps thin primitives
+        # such as separators from consuming a full box-height grid field.
+        # Only rows with no measured single-row content fall back to the
+        # diagram's default row height later.
+        row_heights = [0] * n_rows
 
         sizes: list[tuple[float, float]] = []
         for comp in components:
@@ -1538,6 +1807,9 @@ def layout(diagram: Diagram) -> LayoutResult:
             # For single-row-span cells, grow the row if the component is taller
             if rs == 1:
                 row_heights[r] = max(row_heights[r], int(nh))
+
+        # Fill any still-empty rows with the diagram default, then snap.
+        row_heights = [h if h > 0 else default_rh for h in row_heights]
 
         # Snap to grid
         col_widths = [round_up_to_grid(w) for w in col_widths]
@@ -1718,12 +1990,21 @@ def layout(diagram: Diagram) -> LayoutResult:
                 y += bounds.height + row_gap
 
     # Phase 3: resolve arrows (foreground so they paint above panel frames)
-    arrow_prims = _resolve_arrows(arrows, bounds_map)
-    fg.extend(arrow_prims)
+    resolved_arrows = _resolve_arrows(arrows, bounds_map)
+    arrow_prims = [arrow_prim for arrow_prim, _ in resolved_arrows]
+    arrow_labels = {arrow_prim.component_id: label for arrow_prim, label in resolved_arrows if label is not None}
+    for arrow_prim, label_prim in resolved_arrows:
+        fg.append(arrow_prim)
+        if label_prim is not None:
+            fg.append(label_prim)
 
-    # Compute canvas size from all bounds
+    # Compute canvas size from component bounds plus any free-positioned
+    # arrow labels, which intentionally sit outside the box grid.
     max_x = max((b.x + b.width for b in all_bounds), default=0)
     max_y = max((b.y + b.height for b in all_bounds), default=0)
+    for label_prim in arrow_labels.values():
+        max_x = max(max_x, label_prim.x + label_prim.width)
+        max_y = max(max_y, label_prim.y + label_prim.height)
     width = round_up_to_grid(int(max_x) + outer)
     height = round_up_to_grid(int(max_y) + outer)
 
@@ -1775,6 +2056,10 @@ def layout(diagram: Diagram) -> LayoutResult:
             pts = [ap.start] + ap.waypoints + [ap.end]
             xs = [p[0] for p in pts]
             ys = [p[1] for p in pts]
+            label_prim = arrow_labels.get(ap.component_id)
+            if label_prim is not None:
+                xs.extend([label_prim.x, label_prim.x + label_prim.width])
+                ys.extend([label_prim.y, label_prim.y + label_prim.height])
             component_tree.append(ComponentInfo(
                 id=ap.component_id,
                 type="arrow",
@@ -1830,6 +2115,10 @@ def validate_grid(result: LayoutResult, step: int = BASELINE_UNIT) -> list[GridV
             _check(ptype, "x", p.x, idx)
             _check(ptype, "y", p.y, idx)
             # baseline y is font-metric derived – not checked
+        elif isinstance(p, ArrowLabelPrimitive):
+            # Arrow labels are intentionally free-positioned relative to the
+            # arrow path. They should avoid overlap, not snap to the grid.
+            pass
         elif isinstance(p, Icon):
             _check(ptype, "x", p.x, idx)
             _check(ptype, "y", p.y, idx)

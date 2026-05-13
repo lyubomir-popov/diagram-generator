@@ -1,18 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="656" height="576" viewBox="0 0 656 576" xml:space="preserve">
-  <rect width="656" height="576" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="656" height="592" viewBox="0 0 656 592" xml:space="preserve">
+  <rect width="656" height="592" fill="#FFFFFF" />
   <g data-component-id="sources">
-  <rect x="24" y="24" width="608" height="152" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
+  <rect x="24" y="24" width="608" height="168" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="700" fill="#000000">Rough initial diagram sources</tspan>
   </text>
   </g>
   <g data-component-id="_auto_sources_1">
-  <rect x="32" y="80" width="292" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="96" width="292" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="104.92" font-size="18" font-weight="400" fill="#000000">ChatGPT-generated</tspan>
-    <tspan x="40" y="128.92" font-size="18" font-weight="400" fill="#000000">diagrams</tspan>
+    <tspan x="40" y="120.92" font-size="18" font-weight="400" fill="#000000">ChatGPT-generated</tspan>
+    <tspan x="40" y="144.92" font-size="18" font-weight="400" fill="#000000">diagrams</tspan>
   </text>
-  <g class="dg-icon" transform="translate(268 88)">
+  <g class="dg-icon" transform="translate(268 104)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30.1585 29.5527C31.5389 29.553 32.6585 30.6722 32.6585 32.0527C32.6584 33.4332 31.5389 34.5525 30.1585 34.5527C28.7778 34.5527 27.6585 33.4334 27.6585 32.0527C27.6585 30.672 28.7778 29.5527 30.1585 29.5527ZM30.1585 30.5527C29.33 30.5527 28.6585 31.2243 28.6585 32.0527C28.6585 32.8811 29.3301 33.5527 30.1585 33.5527C30.9866 33.5525 31.6584 32.8809 31.6585 32.0527C31.6585 31.2245 30.9867 30.553 30.1585 30.5527Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8948 20.0791C18.2755 20.0791 19.3948 21.1984 19.3948 22.5791C19.3947 23.9597 18.2755 25.0791 16.8948 25.0791C15.5141 25.0791 14.3949 23.9597 14.3948 22.5791C14.3948 21.1984 15.5141 20.0791 16.8948 20.0791ZM16.8948 21.0791C16.0664 21.0791 15.3948 21.7507 15.3948 22.5791C15.3949 23.4075 16.0664 24.0791 16.8948 24.0791C17.7232 24.0791 18.3947 23.4075 18.3948 22.5791C18.3948 21.7507 17.7232 21.0791 16.8948 21.0791Z" fill="#000000" />
@@ -24,21 +24,21 @@
   </g>
   </g>
   <g data-component-id="_auto_sources_2">
-  <rect x="332" y="80" width="292" height="88" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="332" y="96" width="292" height="88" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="340" y="104.92" font-size="18" font-weight="400" fill="#000000">? Additional rough</tspan>
-    <tspan x="340" y="128.92" font-size="18" font-weight="400" fill="#000000">source formats</tspan>
-    <tspan x="340" y="152.92" font-size="18" font-weight="400" fill="#000000">from PMs</tspan>
+    <tspan x="340" y="120.92" font-size="18" font-weight="400" fill="#000000">? Additional rough</tspan>
+    <tspan x="340" y="144.92" font-size="18" font-weight="400" fill="#000000">source formats</tspan>
+    <tspan x="340" y="168.92" font-size="18" font-weight="400" fill="#000000">from PMs</tspan>
   </text>
   </g>
   <g data-component-id="workflow">
-  <rect x="32" y="200" width="592" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="216" width="592" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="224.92" font-size="18" font-weight="700" fill="#000000">Agentic workflow</tspan>
-    <tspan x="40" y="248.92" font-size="18" font-weight="400" fill="#000000">in this repo</tspan>
-    <tspan x="40" y="272.92" font-size="18" font-weight="400" fill="#666666">playbook + generators</tspan>
+    <tspan x="40" y="240.92" font-size="18" font-weight="700" fill="#000000">Agentic workflow</tspan>
+    <tspan x="40" y="264.92" font-size="18" font-weight="400" fill="#000000">in this repo</tspan>
+    <tspan x="40" y="288.92" font-size="18" font-weight="400" fill="#666666">playbook + generators</tspan>
   </text>
-  <g class="dg-icon" transform="translate(568 208)">
+  <g class="dg-icon" transform="translate(568 224)">
 <path d="M42 17.4746H6V16.5254H42V17.4746Z" fill="#000000" />
 
 <path d="M42 13.5H18V12.5H42V13.5Z" fill="#000000" />
@@ -58,12 +58,12 @@
   </g>
   </g>
   <g data-component-id="compare">
-  <rect x="32" y="312" width="592" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="328" width="592" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="336.92" font-size="18" font-weight="700" fill="#000000">Compare mode</tspan>
-    <tspan x="40" y="360.92" font-size="18" font-weight="400" fill="#666666">HTML before / agent / refined</tspan>
+    <tspan x="40" y="352.92" font-size="18" font-weight="700" fill="#000000">Compare mode</tspan>
+    <tspan x="40" y="376.92" font-size="18" font-weight="400" fill="#666666">HTML before / agent / refined</tspan>
   </text>
-  <g class="dg-icon" transform="translate(568 320)">
+  <g class="dg-icon" transform="translate(568 336)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M27.0049 4.00977C27.1035 4.03002 27.1949 4.08045 27.2656 4.1543L36.8613 14.1689C36.9504 14.262 37 14.3859 37 14.5146V34.3486L36.0664 33.457C36.0448 33.4364 36.022 33.4174 36 33.3975V15.5H27C26.4477 15.5 26 15.0523 26 14.5V5H10V42H34.458L35.5049 43H9.5C9.22386 43 9 42.7761 9 42.5V4.5C9 4.25829 9.17145 4.05629 9.39941 4.00977L9.5 4H26.9043L27.0049 4.00977ZM27 14.5H35.7939L27 5.32227V14.5Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M23.5068 18C28.205 18 32.0137 21.8087 32.0137 26.5068C32.0137 28.5107 31.3185 30.351 30.1592 31.8047L32.7568 34.4023C33.4346 33.8957 34.3982 33.9369 35.0303 34.541L40.082 39.3691C40.7863 40.0423 40.8117 41.1589 40.1387 41.8633L39.6143 42.4121L39.4824 42.5361C38.8025 43.1169 37.7795 43.0999 37.1191 42.4688L32.0674 37.6406C31.407 37.0095 31.3431 35.9878 31.8926 35.2822L32.0107 35.1455L32.0469 35.1064L29.4912 32.5508C27.9542 34.0727 25.8408 35.0137 23.5068 35.0137C18.8087 35.0137 15 31.205 15 26.5068C15 21.8087 18.8087 18 23.5068 18ZM34.3389 35.2637C34.0339 34.9722 33.5504 34.9824 33.2588 35.2871L32.7334 35.8369C32.4421 36.142 32.4528 36.6265 32.7578 36.918L37.8105 41.7461C38.1157 42.0375 38.6001 42.0267 38.8916 41.7217L39.416 41.1719C39.7073 40.8668 39.6957 40.3833 39.3906 40.0918L34.3389 35.2637ZM23.5068 19C19.3609 19 16 22.361 16 26.5068C16 30.6527 19.361 34.0137 23.5068 34.0137C27.6527 34.0136 31.0136 30.6527 31.0137 26.5068C31.0137 22.361 27.6527 19 23.5068 19Z" fill="#000000" />
@@ -75,12 +75,12 @@
   </g>
   </g>
   <g data-component-id="polish">
-  <rect x="32" y="400" width="592" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="416" width="592" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="424.92" font-size="18" font-weight="700" fill="#000000">Designer polish</tspan>
-    <tspan x="40" y="448.92" font-size="18" font-weight="400" fill="#666666">manual pass in generated draw.io</tspan>
+    <tspan x="40" y="440.92" font-size="18" font-weight="700" fill="#000000">Designer polish</tspan>
+    <tspan x="40" y="464.92" font-size="18" font-weight="400" fill="#666666">manual pass in generated draw.io</tspan>
   </text>
-  <g class="dg-icon" transform="translate(568 408)">
+  <g class="dg-icon" transform="translate(568 424)">
 <path d="M31.833 6.25C35.2388 6.25 38 9.01124 38 12.417V12.5127H37V12.417C37 9.56352 34.6865 7.25 31.833 7.25C28.9797 7.25018 26.667 9.56363 26.667 12.417V35.25C26.667 38.8397 23.7567 41.7498 20.167 41.75H19.5C15.9101 41.75 13 38.8399 13 35.25V32.4609H14V35.25C14 38.2876 16.4624 40.75 19.5 40.75H20.167C23.2044 40.7498 25.667 38.2875 25.667 35.25V12.417C25.667 9.01134 28.4274 6.25018 31.833 6.25Z" fill="#000000" />
 
 <path d="M14 25.5H13V21H14V25.5Z" fill="#000000" />
@@ -92,12 +92,12 @@
   </g>
   </g>
   <g data-component-id="final">
-  <rect x="32" y="488" width="592" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="504" width="592" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="512.92" font-size="18" font-weight="700" fill="#FFFFFF">Final SVGs</tspan>
-    <tspan x="40" y="536.92" font-size="18" font-weight="400" fill="#FFFFFF">on-brand deliverables</tspan>
+    <tspan x="40" y="528.92" font-size="18" font-weight="700" fill="#FFFFFF">Final SVGs</tspan>
+    <tspan x="40" y="552.92" font-size="18" font-weight="400" fill="#FFFFFF">on-brand deliverables</tspan>
   </text>
-  <g class="dg-icon" transform="translate(568 496)">
+  <g class="dg-icon" transform="translate(568 512)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M38.2432 19.3125C38.4017 19.4007 38.4999 19.5686 38.5 19.75C38.4999 19.9313 38.4015 20.0983 38.2432 20.1865L31.6045 23.874L38.2432 27.5625C38.4017 27.6507 38.4999 27.8186 38.5 28C38.4999 28.1813 38.4015 28.3483 38.2432 28.4365L31.6045 32.124L38.2432 35.8125C38.4017 35.9007 38.4999 36.0686 38.5 36.25C38.4999 36.4313 38.4015 36.5983 38.2432 36.6865L24.7432 44.1865C24.5922 44.2704 24.4078 44.2704 24.2568 44.1865L10.7568 36.6865C10.5985 36.5983 10.5001 36.4313 10.5 36.25C10.5001 36.0686 10.5983 35.9007 10.7568 35.8125L17.3955 32.124L10.7568 28.4365C10.5985 28.3483 10.5001 28.1813 10.5 28C10.5001 27.8186 10.5983 27.6507 10.7568 27.5625L17.3945 23.874L10.7568 20.1865C10.5985 20.0983 10.5001 19.9313 10.5 19.75C10.5001 19.5686 10.5983 19.4007 10.7568 19.3125L15.8496 16.4824L16.8799 17.0547L12.0293 19.749L24.5 26.6768L36.9697 19.749L32.1191 17.0547L33.1494 16.4824L38.2432 19.3125ZM24.7432 35.9365C24.5922 36.0204 24.4078 36.0204 24.2568 35.9365L18.4248 32.6963L12.0293 36.249L24.5 43.1768L36.9697 36.249L30.5742 32.6963L24.7432 35.9365ZM24.7432 27.6865C24.5922 27.7704 24.4078 27.7704 24.2568 27.6865L18.4248 24.4463L12.0293 27.999L24.5 34.9268L36.9697 27.999L30.5742 24.4463L24.7432 27.6865Z" fill="#FFFFFF" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24.3154 3.53511C24.4537 3.48023 24.6112 3.48916 24.7432 3.56246L38.2432 11.0625C38.4018 11.1506 38.4999 11.3185 38.5 11.5C38.5 11.6815 38.4018 11.8492 38.2432 11.9375L24.7432 19.4375C24.5922 19.5214 24.4078 19.5214 24.2568 19.4375L10.7568 11.9375C10.5982 11.8492 10.5 11.6815 10.5 11.5C10.5001 11.3185 10.5982 11.1506 10.7568 11.0625L24.2568 3.56246L24.3154 3.53511ZM12.0303 11.5L24.5 18.4267L36.9688 11.5L24.5 4.57222L12.0303 11.5Z" fill="#FFFFFF" />
@@ -105,54 +105,54 @@
   </g>
   </g>
   <g data-component-id="_auto_3">
-  <line x1="328" y1="176" x2="328" y2="189.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="325.0947,189.1592 328,200 330.9053,189.1592" fill="#E95420" />
+  <line x1="328" y1="192" x2="328" y2="205.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="325.0947,205.1592 328,216 330.9053,205.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_4">
-  <line x1="328" y1="288" x2="328" y2="301.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="325.0947,301.1592 328,312 330.9053,301.1592" fill="#E95420" />
+  <line x1="328" y1="304" x2="328" y2="317.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="325.0947,317.1592 328,328 330.9053,317.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_5">
-  <line x1="328" y1="376" x2="328" y2="389.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="325.0947,389.1592 328,400 330.9053,389.1592" fill="#E95420" />
+  <line x1="328" y1="392" x2="328" y2="405.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="325.0947,405.1592 328,416 330.9053,405.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_6">
-  <line x1="328" y1="464" x2="328" y2="477.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="325.0947,477.1592 328,488 330.9053,477.1592" fill="#E95420" />
+  <line x1="328" y1="480" x2="328" y2="493.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="325.0947,493.1592 328,504 330.9053,493.1592" fill="#E95420" />
   </g>
   <g id="layout-grid" opacity="0.35" style="pointer-events:none">
-    <rect x="24" y="24" width="608" height="528" fill="none" stroke="#0066CC" stroke-width="1" stroke-dasharray="6 4" />
-    <rect x="24" y="24" width="608" height="528" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="24" x2="24" y2="552" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="632" y1="24" x2="632" y2="552" stroke="#0066CC" stroke-width="0.75" />
+    <rect x="24" y="24" width="608" height="544" fill="none" stroke="#0066CC" stroke-width="1" stroke-dasharray="6 4" />
+    <rect x="24" y="24" width="608" height="544" fill="#3399FF" opacity="0.08" />
+    <line x1="24" y1="24" x2="24" y2="568" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="632" y1="24" x2="632" y2="568" stroke="#0066CC" stroke-width="0.75" />
     <text x="328.0" y="20" text-anchor="middle" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">608px</text>
-    <rect x="24" y="24" width="608" height="152" fill="#3399FF" opacity="0.08" />
+    <rect x="24" y="24" width="608" height="168" fill="#3399FF" opacity="0.08" />
     <line x1="24" y1="24" x2="632" y2="24" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="176" x2="632" y2="176" stroke="#0066CC" stroke-width="0.75" />
-    <text x="636" y="103.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">152px</text>
-    <rect x="24" y="200" width="608" height="88" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="200" x2="632" y2="200" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="288" x2="632" y2="288" stroke="#0066CC" stroke-width="0.75" />
-    <text x="636" y="247.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">88px</text>
-    <rect x="24" y="312" width="608" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="312" x2="632" y2="312" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="376" x2="632" y2="376" stroke="#0066CC" stroke-width="0.75" />
-    <text x="636" y="347.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="400" width="608" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="400" x2="632" y2="400" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="464" x2="632" y2="464" stroke="#0066CC" stroke-width="0.75" />
-    <text x="636" y="435.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="488" width="608" height="64" fill="#3399FF" opacity="0.08" />
-    <line x1="24" y1="488" x2="632" y2="488" stroke="#0066CC" stroke-width="0.75" />
-    <line x1="24" y1="552" x2="632" y2="552" stroke="#0066CC" stroke-width="0.75" />
-    <text x="636" y="523.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
-    <rect x="24" y="176" width="608" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="636" y="191.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
-    <rect x="24" y="288" width="608" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="636" y="303.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
-    <rect x="24" y="376" width="608" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="636" y="391.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
-    <rect x="24" y="464" width="608" height="24" fill="#9933FF" opacity="0.06" />
-    <text x="636" y="479.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
+    <line x1="24" y1="192" x2="632" y2="192" stroke="#0066CC" stroke-width="0.75" />
+    <text x="636" y="111.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">168px</text>
+    <rect x="24" y="216" width="608" height="88" fill="#3399FF" opacity="0.08" />
+    <line x1="24" y1="216" x2="632" y2="216" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="24" y1="304" x2="632" y2="304" stroke="#0066CC" stroke-width="0.75" />
+    <text x="636" y="263.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">88px</text>
+    <rect x="24" y="328" width="608" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="24" y1="328" x2="632" y2="328" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="24" y1="392" x2="632" y2="392" stroke="#0066CC" stroke-width="0.75" />
+    <text x="636" y="363.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="24" y="416" width="608" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="24" y1="416" x2="632" y2="416" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="24" y1="480" x2="632" y2="480" stroke="#0066CC" stroke-width="0.75" />
+    <text x="636" y="451.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="24" y="504" width="608" height="64" fill="#3399FF" opacity="0.08" />
+    <line x1="24" y1="504" x2="632" y2="504" stroke="#0066CC" stroke-width="0.75" />
+    <line x1="24" y1="568" x2="632" y2="568" stroke="#0066CC" stroke-width="0.75" />
+    <text x="636" y="539.0" font-size="9" fill="#0066CC" font-family="Ubuntu Sans, sans-serif">64px</text>
+    <rect x="24" y="192" width="608" height="24" fill="#9933FF" opacity="0.06" />
+    <text x="636" y="207.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
+    <rect x="24" y="304" width="608" height="24" fill="#9933FF" opacity="0.06" />
+    <text x="636" y="319.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
+    <rect x="24" y="392" width="608" height="24" fill="#9933FF" opacity="0.06" />
+    <text x="636" y="407.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
+    <rect x="24" y="480" width="608" height="24" fill="#9933FF" opacity="0.06" />
+    <text x="636" y="495.0" font-size="7" fill="#9933FF" font-family="Ubuntu Sans, sans-serif">24</text>
   </g>
 </svg>
