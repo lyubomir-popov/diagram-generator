@@ -54,10 +54,19 @@ const UI_AUTHORING_ACCENT = getThemeToken("--bf-authoring-accent", "#F6B73C");
 const UI_AUTHORING_ACCENT_LINE = getThemeToken("--bf-authoring-accent-line", "rgba(246, 183, 60, 0.9)");
 
 // ---- BoxStyle presets (mirrors diagram_model.py BoxStyle enum) ----
-const BOX_STYLES = {
-  default:   { fill: "#FFFFFF", text: "#000000", icon: "#000000", label: "Default (white)" },
-  accent:    { fill: "#F3F3F3", text: "#000000", icon: "#000000", label: "Accent (grey)" },
+const BOX_STYLES = window.__DG_BOX_STYLES || {
+  default: { fill: "#FFFFFF", text: "#000000", icon: "#000000", label: "Default (white)" },
+  accent: { fill: "#F3F3F3", text: "#000000", icon: "#000000", label: "Accent (grey)" },
   highlight: { fill: "#000000", text: "#FFFFFF", icon: "#FFFFFF", label: "Highlight (black)" },
+};
+const renderBoxStyleOptions = window.__DG_boxStyleOptionsHtml || function renderBoxStyleOptions(selectedValue, options = {}) {
+  const current = selectedValue == null ? "" : String(selectedValue);
+  const originalLabel = options.originalLabel || "— original —";
+  let html = `<option value=""${current === "" ? " selected" : ""}>${originalLabel}</option>`;
+  for (const [key, preset] of Object.entries(BOX_STYLES)) {
+    html += `<option value="${key}"${current === key ? " selected" : ""}>${preset.label}</option>`;
+  }
+  return html;
 };
 
 // ---- Guide mode (W key) ----
@@ -2735,11 +2744,7 @@ function updateInspector(cid) {
     const currentStyle = (overrides[cid] && overrides[cid].style) || "";
     html += '<div class="field" style="margin-top:6px"><span class="label">Style</span><br>';
     html += '<select class="style-picker bf-input" onchange="applyStyleOverride(\'' + cid + '\', this.value)">';
-    html += '<option value=""' + (currentStyle === "" ? ' selected' : '') + '>— original —</option>';
-    for (const [key, preset] of Object.entries(BOX_STYLES)) {
-      html += '<option value="' + key + '"' + (currentStyle === key ? ' selected' : '') + '>' +
-              preset.label + '</option>';
-    }
+    html += renderBoxStyleOptions(currentStyle, { originalLabel: '— original —' });
     html += '</select></div>';
   }
   // Show constraint violations for this component
@@ -3358,7 +3363,7 @@ function initDiagramPicker() {
       const html = await response.text();
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, "text/html");
-      const viewLinks = Array.from(doc.querySelectorAll('a[href^="/view/"]'));
+      const viewLinks = Array.from(doc.querySelectorAll('a[href^="/view/"], a[href^="/force/view/"]'));
       const seen = new Set();
 
       viewLinks.forEach((link) => {
@@ -3369,7 +3374,7 @@ function initDiagramPicker() {
         seen.add(href);
         const option = document.createElement("option");
         option.value = href;
-        option.textContent = link.textContent?.trim() || href.replace("/view/", "");
+        option.textContent = link.textContent?.trim() || href.replace("/view/", "").replace("/force/view/", "");
         picker.append(option);
       });
 

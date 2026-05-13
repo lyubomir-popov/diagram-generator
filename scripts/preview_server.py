@@ -27,6 +27,7 @@ import argparse
 import hashlib
 import http.server
 import json
+import math
 import os
 import pathlib
 import subprocess
@@ -45,6 +46,7 @@ DEFINITIONS_DIR = SCRIPTS / "diagrams"
 WATCH_PATHS = [
     DEFINITIONS_DIR,
     DEFINITIONS_DIR / "yaml",
+    DEFINITIONS_DIR / "force",
     SCRIPTS / "diagram_layout.py",
     SCRIPTS / "diagram_model.py",
     SCRIPTS / "diagram_render_svg.py",
@@ -57,6 +59,7 @@ _rebuild_generation = 0
 _rebuild_lock = threading.Lock()
 _last_rebuild_error: str | None = None
 _layout_cache: dict[str, object] = {}
+_force_sessions: dict[str, object] = {}
 
 
 def _load_env_local() -> None:
@@ -128,7 +131,7 @@ def _is_safe_slug(slug: str) -> bool:
 
 
 def _rebuild(grid: bool = False) -> bool:
-    global _last_rebuild_error, _layout_cache, _viewer_template
+    global _last_rebuild_error, _layout_cache, _viewer_template, _force_template, _force_sessions
     cmd = [sys.executable, str(SCRIPTS / "build_v2.py")]
     if grid:
         cmd.append("--grid")
@@ -141,7 +144,9 @@ def _rebuild(grid: bool = False) -> bool:
         if result.returncode == 0:
             _last_rebuild_error = None
             _layout_cache.clear()
+            _force_sessions.clear()
             _viewer_template = None  # reload template on next request
+            _force_template = None
             return True
         _last_rebuild_error = result.stderr or result.stdout
         return False
@@ -272,7 +277,7 @@ def _save_overrides(slug: str, data: dict) -> None:
 
 
 def _watch_loop(grid: bool = False, interval: float = 0.5):
-    global _rebuild_generation, _viewer_template
+    global _rebuild_generation, _viewer_template, _force_template
     prev_mtimes = _collect_mtimes()
     while True:
         time.sleep(interval)
@@ -281,6 +286,7 @@ def _watch_loop(grid: bool = False, interval: float = 0.5):
             prev_mtimes = curr_mtimes
             # Invalidate cached viewer template so HTML/CSS/JS changes are picked up
             _viewer_template = None
+            _force_template = None
             with _rebuild_lock:
                 ok = _rebuild(grid=grid)
                 _rebuild_generation += 1
@@ -297,6 +303,7 @@ BF_VENDOR_ROOT = ROOT / "assets" / "baseline-foundry"
 BF_VENDOR_OS_CSS = BF_VENDOR_ROOT / "os" / "styles.css"
 BF_VENDOR_FONT_DIR = BF_VENDOR_ROOT / "fonts"
 _viewer_template: str | None = None
+_force_template: str | None = None
 
 # Reference-image directories (rough input sketches)
 _INPUT_DIRS = [
@@ -313,12 +320,90 @@ _REFERENCE_MAP: dict[str, str] = {
     "request-to-hardware-stack": "image 6.png",
     "inference-snaps": "image 7.png",
     "example-arrow-label-separator": "example-arrow-label-separator-rough.svg",
+    "force-stakeholders": "force/IMG_3229.jpg",
 }
+
+
+def _list_force_examples() -> list[str]:
+    try:
+        import force_preview
+
+        return force_preview.list_force_examples()
+    except Exception:
+        return []
+
+
+def _build_preview_nav_options(current_path: str) -> str:
+    sections: list[str] = []
+
+    diagram_options = "".join(
+        f'<option value="/view/{slug}"{" selected" if current_path == f"/view/{slug}" else ""}>{slug}</option>'
+        for slug in _list_diagrams()
+    )
+    if diagram_options:
+        sections.append(f'<optgroup label="Diagrams">{diagram_options}</optgroup>')
+
+    force_options = "".join(
+        f'<option value="/force/view/{slug}"{" selected" if current_path == f"/force/view/{slug}" else ""}>{slug}</option>'
+        for slug in _list_force_examples()
+    )
+    if force_options:
+        sections.append(f'<optgroup label="Force demos">{force_options}</optgroup>')
+
+    return "".join(sections)
+
+
+def _get_force_state(slug: str, *, reset: bool = False):
+    global _force_sessions
+    import force_preview
+
+    if reset and slug in _force_sessions:
+        _force_sessions[slug] = force_preview.reset_force_state(_force_sessions[slug])
+    elif reset or slug not in _force_sessions:
+        _force_sessions[slug] = force_preview.create_force_state(slug)
+    return _force_sessions[slug]
+
+
+def _get_force_snapshot(slug: str, *, reset: bool = False, snap: bool = False) -> dict | None:
+    try:
+        import force_preview
+
+        state = _get_force_state(slug, reset=reset)
+        if snap:
+            return force_preview.export_force_snapshot(state)
+        return force_preview.get_force_snapshot(state)
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        return None
+
+
+def _tick_force_snapshot(slug: str, iterations: int | None = None) -> dict | None:
+    try:
+        import force_preview
+
+        state = _get_force_state(slug)
+        return force_preview.tick_force_state(state, iterations=iterations)
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        return None
 
 
 def _find_reference_image(slug: str) -> pathlib.Path | None:
     """Find the rough input sketch for a diagram slug."""
     filename = _REFERENCE_MAP.get(slug)
+    if not filename:
+        try:
+            import force_preview
+
+            if slug in force_preview.list_force_examples():
+                spec = force_preview.load_force_spec(slug)
+                filename = spec.get("reference_image")
+        except Exception:
+            filename = None
     if not filename:
         return None
     for d in _INPUT_DIRS:
@@ -326,6 +411,7 @@ def _find_reference_image(slug: str) -> pathlib.Path | None:
         if p.exists():
             return p
     return None
+
 
 
 def _resolve_bf_preview_assets() -> tuple[pathlib.Path, pathlib.Path] | None:
@@ -346,11 +432,15 @@ def _get_viewer_template() -> str:
     return _viewer_template
 
 
+def _get_force_template() -> str:
+    global _force_template
+    if _force_template is None:
+        _force_template = (PREVIEW_DIR / "force-viewer.html").read_text(encoding="utf-8")
+    return _force_template
+
+
 def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
-    nav_options = "".join(
-        f'<option value="/view/{s}"{" selected" if s == slug else ""}>{s}</option>'
-        for s in all_slugs
-    )
+    nav_options = _build_preview_nav_options(f"/view/{slug}")
     from diagram_shared import ARROW_HEAD_LENGTH, ARROW_HEAD_HALF_WIDTH, ICON_SIZE, GRID_GUTTER, INSET
     has_ref = _find_reference_image(slug) is not None
     config_script = (
@@ -377,24 +467,85 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     return html
 
 
+def _build_force_viewer_html(slug: str, all_slugs: list[str]) -> str:
+    nav_options = _build_preview_nav_options(f"/force/view/{slug}")
+    from diagram_shared import ARROW_HEAD_HALF_WIDTH, ARROW_HEAD_LENGTH, BODY_LINE_STEP, INSET
+
+    config_script = (
+        f'window.__DG_FORCE_CONFIG = {{'
+        f'"slug":"{slug}",'
+        f'"inset":{INSET},'
+        f'"body_line_step":{BODY_LINE_STEP},'
+        f'"head_len":{ARROW_HEAD_LENGTH},'
+        f'"head_half":{ARROW_HEAD_HALF_WIDTH}'
+        f'}};'
+    )
+    html = _get_force_template()
+    html = html.replace("%TITLE%", f"{slug} – force preview")
+    html = html.replace(
+        "%BF_STYLES%",
+        '<link rel="stylesheet" href="/preview/bf-os.css">' if _has_bf_preview_assets() else "",
+    )
+    html = html.replace("%FORCE_OPTIONS%", nav_options)
+    html = html.replace("%CONFIG_SCRIPT%", config_script)
+    return html
+
+
 INDEX_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Diagram preview</title>
+<title>Preview index</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a; color: #e0e0e0; }
-  .nav { padding: 16px 24px; display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #333; }
+    body { font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a; color: #e0e0e0; }
+    .page { padding: 16px 24px 32px; }
+    .section { margin-top: 20px; }
+    h1 { font-size: 16px; font-weight: 600; }
+    h2 { font-size: 13px; font-weight: 600; color: #aaa; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .nav { display: flex; flex-wrap: wrap; gap: 8px; }
   .nav a { color: #6cc; text-decoration: none; padding: 6px 12px; border-radius: 4px;
            background: #2a2a2a; font-size: 14px; }
   .nav a:hover { background: #3a3a3a; }
-  h1 { font-size: 16px; font-weight: 600; padding: 16px 24px 0; }
 </style>
 </head>
 <body>
-<h1>Diagram preview</h1>
-<div class="nav">%LINKS%</div>
+<div class="page">
+    <h1>Preview index</h1>
+    <section class="section">
+        <h2>Diagrams</h2>
+        <div class="nav">%DIAGRAM_LINKS%</div>
+    </section>
+    %FORCE_SECTION%
+</div>
+</body>
+</html>"""
+
+
+FORCE_INDEX_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Force preview</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #121826; color: #e8edf6; }
+    .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 48px; }
+    h1 { font-size: 28px; font-weight: 600; margin-bottom: 12px; }
+    p { color: #9fb0c8; margin-bottom: 24px; max-width: 64ch; }
+    .nav { display: grid; gap: 12px; }
+    .nav a { color: #f2f5f9; text-decoration: none; padding: 14px 16px; border-radius: 14px; background: #1d2740; border: 1px solid #31415f; }
+    .nav a:hover { background: #24304d; }
+    .back { display: inline-block; margin-top: 24px; color: #9fb0c8; }
+</style>
+</head>
+<body>
+    <div class="page">
+        <h1>Force previews</h1>
+        <p>Live Python-solver demos that tick over time, can be paused, and can export the current settled state.</p>
+        <div class="nav">%LINKS%</div>
+        <a class="back" href="/">&larr; all previews</a>
+    </div>
 </body>
 </html>"""
 
@@ -413,6 +564,8 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         path = urlparse(self.path).path.rstrip("/") or "/"
         if path == "/":
             self._serve_index()
+        elif path == "/force":
+            self._serve_force_index()
         elif path == "/events":
             self._serve_sse()
         elif path == "/preview/bf-os.css":
@@ -423,8 +576,14 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self._serve_static(path[9:])
         elif path.startswith("/svg/"):
             self._serve_svg(path[5:])
+        elif path.startswith("/force/view/"):
+            self._serve_force_viewer(path[12:])
         elif path.startswith("/view/"):
             self._serve_viewer(path[6:])
+        elif path.startswith("/api/force-export/"):
+            self._serve_force_export(path[18:])
+        elif path.startswith("/api/force/"):
+            self._serve_force_get(path[11:])
         elif path.startswith("/api/tree/"):
             self._serve_tree(path[10:])
         elif path.startswith("/api/grid/"):
@@ -442,13 +601,41 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self._serve_overrides_post(path[15:])
         elif path.startswith("/api/relayout/"):
             self._serve_relayout(path[14:])
+        elif path.startswith("/api/force-reset/"):
+            self._serve_force_reset(path[17:])
+        elif path.startswith("/api/force-save/"):
+            self._serve_force_save(path[16:])
+        elif path.startswith("/api/force-node/"):
+            self._serve_force_node_update(path[16:])
+        elif path.startswith("/api/force-tick/"):
+            self._serve_force_tick(path[16:])
         else:
             self.send_error(404)
 
     def _serve_index(self):
         slugs = _list_diagrams()
-        links = "\n  ".join(f'<a href="/view/{s}">{s}</a>' for s in slugs)
-        self._respond(200, "text/html", INDEX_HTML.replace("%LINKS%", links).encode())
+        diagram_links = "\n  ".join(f'<a href="/view/{s}">{s}</a>' for s in slugs)
+        force_slugs = _list_force_examples()
+        force_section = ""
+        if force_slugs:
+            force_links = "\n  ".join(f'<a href="/force/view/{s}">{s}</a>' for s in force_slugs)
+            force_section = (
+                '<section class="section">'
+                '<h2>Force demos</h2>'
+                f'<div class="nav">{force_links}</div>'
+                '</section>'
+            )
+        html = INDEX_HTML.replace("%DIAGRAM_LINKS%", diagram_links)
+        html = html.replace("%FORCE_SECTION%", force_section)
+        self._respond(200, "text/html", html.encode())
+
+    def _serve_force_index(self):
+        slugs = _list_force_examples()
+        if not slugs:
+            self.send_error(404, "No force previews found")
+            return
+        links = "\n  ".join(f'<a href="/force/view/{s}">{s}</a>' for s in slugs)
+        self._respond(200, "text/html", FORCE_INDEX_HTML.replace("%LINKS%", links).encode())
 
     def _serve_static(self, filename: str):
         """Serve static files from scripts/preview/ (editor.css, editor.js)."""
@@ -499,6 +686,17 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404, f"Unknown diagram: {slug}")
             return
         html = _build_viewer_html(slug, slugs, self.grid)
+        self._respond(200, "text/html", html.encode())
+
+    def _serve_force_viewer(self, slug: str):
+        if not _is_safe_slug(slug):
+            self.send_error(400, "Invalid slug")
+            return
+        slugs = _list_force_examples()
+        if slug not in slugs:
+            self.send_error(404, f"Unknown force example: {slug}")
+            return
+        html = _build_force_viewer_html(slug, slugs)
         self._respond(200, "text/html", html.encode())
 
     def _serve_reference_image(self, slug: str):
@@ -595,6 +793,152 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             return
         self._respond(200, "application/json", json.dumps(result).encode())
 
+    def _serve_force_get(self, slug: str):
+        if not _is_safe_slug(slug):
+            self.send_error(400, "Invalid slug")
+            return
+        if slug not in _list_force_examples():
+            self.send_error(404, f"Unknown force example: {slug}")
+            return
+        result = _get_force_snapshot(slug)
+        if result is None:
+            self.send_error(500, "Force preview failed")
+            return
+        self._respond(200, "application/json", json.dumps(result).encode())
+
+    def _serve_force_reset(self, slug: str):
+        if not _is_safe_slug(slug):
+            self.send_error(400, "Invalid slug")
+            return
+        if slug not in _list_force_examples():
+            self.send_error(404, f"Unknown force example: {slug}")
+            return
+        result = _get_force_snapshot(slug, reset=True)
+        if result is None:
+            self.send_error(500, "Force reset failed")
+            return
+        self._respond(200, "application/json", json.dumps(result).encode())
+
+    def _serve_force_tick(self, slug: str):
+        if not _is_safe_slug(slug):
+            self.send_error(400, "Invalid slug")
+            return
+        if slug not in _list_force_examples():
+            self.send_error(404, f"Unknown force example: {slug}")
+            return
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length) if content_length else b"{}"
+        try:
+            params = json.loads(body)
+        except json.JSONDecodeError:
+            self.send_error(400, "Invalid JSON")
+            return
+        iterations = params.get("iterations")
+        if iterations is not None:
+            iterations = int(iterations)
+        result = _tick_force_snapshot(slug, iterations=iterations)
+        if result is None:
+            self.send_error(500, "Force tick failed")
+            return
+        self._respond(200, "application/json", json.dumps(result).encode())
+
+    def _serve_force_node_update(self, slug: str):
+        if not _is_safe_slug(slug):
+            self.send_error(400, "Invalid slug")
+            return
+        if slug not in _list_force_examples():
+            self.send_error(404, f"Unknown force example: {slug}")
+            return
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length) if content_length else b"{}"
+        try:
+            params = json.loads(body)
+        except json.JSONDecodeError:
+            self.send_error(400, "Invalid JSON")
+            return
+
+        node_id = params.get("node_id")
+        if not isinstance(node_id, str) or not _is_safe_slug(node_id):
+            self.send_error(400, "Invalid node_id")
+            return
+
+        try:
+            x = None if "x" not in params or params.get("x") is None else float(params.get("x"))
+            y = None if "y" not in params or params.get("y") is None else float(params.get("y"))
+        except (TypeError, ValueError):
+            self.send_error(400, "Invalid node position")
+            return
+
+        if x is not None and not math.isfinite(x):
+            self.send_error(400, "Invalid x position")
+            return
+        if y is not None and not math.isfinite(y):
+            self.send_error(400, "Invalid y position")
+            return
+
+        try:
+            import force_preview
+
+            state = _get_force_state(slug)
+            result = force_preview.update_force_node(
+                state,
+                node_id,
+                pinned=(bool(params["pinned"]) if "pinned" in params else None),
+                x=x,
+                y=y,
+                style=(params["style"] if "style" in params else force_preview.STYLE_UNSET),
+            )
+        except KeyError:
+            self.send_error(404, f"Unknown force node: {node_id}")
+            return
+        except ValueError as exc:
+            self.send_error(400, str(exc))
+            return
+        except Exception:
+            import traceback
+
+            traceback.print_exc()
+            self.send_error(500, "Force node update failed")
+            return
+
+        self._respond(200, "application/json", json.dumps(result).encode())
+
+    def _serve_force_save(self, slug: str):
+        if not _is_safe_slug(slug):
+            self.send_error(400, "Invalid slug")
+            return
+        if slug not in _list_force_examples():
+            self.send_error(404, f"Unknown force example: {slug}")
+            return
+
+        try:
+            import force_preview
+
+            state = _get_force_state(slug)
+            force_preview.save_force_overrides(state)
+        except Exception:
+            import traceback
+
+            traceback.print_exc()
+            self.send_error(500, "Force save failed")
+            return
+
+        self._respond(200, "application/json", b'{"ok":true}')
+
+    def _serve_force_export(self, slug: str):
+        if not _is_safe_slug(slug):
+            self.send_error(400, "Invalid slug")
+            return
+        if slug not in _list_force_examples():
+            self.send_error(404, f"Unknown force example: {slug}")
+            return
+        result = _get_force_snapshot(slug, snap=True)
+        if result is None:
+            self.send_error(500, "Force export failed")
+            return
+        self._respond(200, "application/json", json.dumps(result).encode())
+
     def _serve_sse(self):
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
@@ -618,12 +962,15 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             pass
 
     def _respond(self, code: int, content_type: str, body: bytes):
-        self.send_response(code)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-cache")
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(code)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-cache")
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
 
 
 def main():

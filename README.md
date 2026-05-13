@@ -137,7 +137,7 @@ components:
 
 ### Example diagrams (tracked)
 
-Three generic examples ship with the repo for reference:
+Tracked examples ship with the repo for reference:
 
 | Example | What it demonstrates |
 |---------|---------------------|
@@ -145,6 +145,9 @@ Three generic examples ship with the repo for reference:
 | [`example_platform_architecture.py`](scripts/diagrams/example_platform_architecture.py) | Grid with nested panels, multi-column span |
 | [`example_data_processing.py`](scripts/diagrams/example_data_processing.py) | Panels with allocation bars, separators, annotations |
 | [`example-arrow-label-separator.json`](scripts/diagrams/yaml/example-arrow-label-separator.json) | Regression fixture for thin separators, free-positioned arrow labels, and compare-page review |
+| [`force-stakeholders.json`](scripts/diagrams/force/force-stakeholders.json) | Small BF-backed live force demo with one black emphasis box, shared inspector style presets, and server-backed pinning |
+| [`force-juju-landing-pages.json`](scripts/diagrams/force/force-juju-landing-pages.json) | Wider force-layout reconstruction from `diagrams/1.input/force/IMG_3231.jpg`, used to validate the same shell and connector rules on a denser graph |
+| [`force-support-case-lifecycle.json`](scripts/diagrams/force/force-support-case-lifecycle.json) | Lifecycle-style force-layout reconstruction from `diagrams/1.input/force/IMG_3232.jpg`, including the same export and inspector workflow |
 
 ### Interactive autolayout demo
 
@@ -161,6 +164,11 @@ Then open one of these URLs in your browser:
 
 - `http://127.0.0.1:8100/` for the diagram index
 - `http://127.0.0.1:8100/view/memory-wall` for a direct single-diagram demo
+- `http://127.0.0.1:8100/force/view/force-stakeholders` for the smallest force-layout demo
+- `http://127.0.0.1:8100/force/view/force-juju-landing-pages` for the denser landing-pages graph
+- `http://127.0.0.1:8100/force/view/force-support-case-lifecycle` for the lifecycle graph
+
+The force preview is intentionally on the same vendored Baseline Foundry shell as the main editor rather than a separate bespoke page. It resets to tick 0 on load, advances the Python force solver in batched ticks, and exports snapped JSON or SVG snapshots; the stage content must still obey `DIAGRAM.md` diagram rules instead of mimicking the source photo's styling. Its right-hand inspector now reuses the same semantic box-style vocabulary as the main editor (`default`, `accent`, `highlight`) through a shared preview module, pin/style edits live in the server-held force session so reset/export stay consistent, dragged nodes stay pinned where dropped for manual polish, saved force overrides survive reset/reload, and live/ticked nodes are clamped inside the canvas so boxes do not drift out of bounds.
 
 Suggested demo flow:
 

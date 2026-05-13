@@ -667,6 +667,7 @@ Connectors are part of the language, not decoration.
 - Reuse the canonical arrow geometry from `diagrams/0.reference/sample.svg` or `diagrams/0.reference/onbrand-svg-starter.svg`.
 - Connectors should run from midpoint to midpoint, edge to edge.
 - Prefer straight or orthogonal routing.
+- Force-layout exception: when a diagram is explicitly using a force layout and straight or orthogonal routing would make the graph harder to read, spline connectors are allowed. Keep the same orange `1px` stroke, filled head, and edge-to-edge anchoring; use curvature only to clarify the graph, not as decoration.
 - Draw connectors behind the boxes they terminate into so the destination edge remains visually continuous.
 - Do not terminate arrows into floating helper text. When an annotation needs an arrow connection, use a borderless `Box` (`borderless=True`) instead of a `Helper` so the box participates in grid sizing and provides proper edge anchors.
 

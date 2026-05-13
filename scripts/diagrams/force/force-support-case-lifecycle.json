@@ -1,0 +1,177 @@
+{
+  "title": "Support case lifecycle",
+  "reference_image": "force/IMG_3232.jpg",
+  "canvas": {
+    "width": 1920,
+    "height": 960
+  },
+  "render": {
+    "curve_handle_ratio": 0.35,
+    "curve_handle_min": 24,
+    "curve_handle_max": 72
+  },
+  "simulation": {
+    "ticks_per_frame": 1,
+    "max_iterations": 320,
+    "charge_strength": -820,
+    "link_distance": 230,
+    "link_strength": 0.11,
+    "collision_padding": 28,
+    "collision_iterations": 4,
+    "velocity_decay": 0.34,
+    "alpha_min": 0.006,
+    "center": [960, 480]
+  },
+  "nodes": [
+    {
+      "id": "troubleshoot",
+      "label": ["Customer troubleshoots", "an issue they're", "experiencing"],
+      "width": 240,
+      "height": 96,
+      "x": 240,
+      "y": 144
+    },
+    {
+      "id": "open-case",
+      "label": ["Case is opened by", "customer via phone or", "Support Portal"],
+      "width": 256,
+      "height": 104,
+      "x": 260,
+      "y": 304
+    },
+    {
+      "id": "triage",
+      "label": ["Support Case is", "triaged and actioned", "with severity level set", "appropriately"],
+      "width": 320,
+      "height": 112,
+      "x": 280,
+      "y": 512
+    },
+    {
+      "id": "assign",
+      "label": ["Case is assigned", "to TSE, TAM", "or OSE"],
+      "width": 224,
+      "height": 96,
+      "x": 720,
+      "y": 500
+    },
+    {
+      "id": "solved-one",
+      "label": ["Problem", "solved?"],
+      "width": 176,
+      "height": 88,
+      "x": 1040,
+      "y": 500
+    },
+    {
+      "id": "closed-agreement",
+      "label": ["Case set to", "\"Closed - resolved\"", "after customer", "agreement"],
+      "width": 288,
+      "height": 112,
+      "x": 1400,
+      "y": 468
+    },
+    {
+      "id": "survey",
+      "label": ["Customer", "satisfaction survey", "is sent"],
+      "width": 272,
+      "height": 96,
+      "x": 1740,
+      "y": 480
+    },
+    {
+      "id": "closed-resolved",
+      "label": ["\"Closed -\"", "resolved"],
+      "width": 224,
+      "height": 80,
+      "x": 1732,
+      "y": 716,
+      "fill": "#000000",
+      "text_fill": "#FFFFFF"
+    },
+    {
+      "id": "engineering",
+      "label": ["Case escalated", "to Engineering"],
+      "width": 240,
+      "height": 96,
+      "x": 980,
+      "y": 744
+    },
+    {
+      "id": "solved-two",
+      "label": ["Problem", "solved?"],
+      "width": 176,
+      "height": 88,
+      "x": 1360,
+      "y": 744
+    }
+  ],
+  "links": [
+    {
+      "source": "troubleshoot",
+      "target": "open-case",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "open-case",
+      "target": "triage",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "triage",
+      "target": "assign",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "assign",
+      "target": "solved-one",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "solved-one",
+      "target": "closed-agreement",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "solved-one",
+      "target": "engineering",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "engineering",
+      "target": "solved-two",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "solved-two",
+      "target": "closed-agreement",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "solved-two",
+      "target": "engineering",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "closed-agreement",
+      "target": "survey",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    },
+    {
+      "source": "survey",
+      "target": "closed-resolved",
+      "stroke": "#E95420",
+      "stroke_width": 1
+    }
+  ]
+}

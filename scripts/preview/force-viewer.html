@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>%TITLE%</title>
+%BF_STYLES%
+<link rel="stylesheet" href="/preview/editor.css">
+</head>
+<body class="bf-theme bf-tier-os is-dark dg-preview">
+  <div class="bf-application dg-preview-app" data-dg-shell="true">
+    <nav class="bf-navigation is-pinned dg-component-navigation" id="dg-component-navigation" aria-label="Force nodes">
+      <div class="bf-navigation-overlay" aria-hidden="true"></div>
+      <div class="bf-navigation-drawer">
+        <section class="bf-panel is-fill dg-component-panel">
+          <div class="bf-panel-header is-sticky">
+            <h2 class="dg-section-heading bf-h5">Nodes</h2>
+          </div>
+          <div class="bf-panel-content dg-component-panel-content">
+            <div class="tree dg-component-tree" id="tree"></div>
+          </div>
+        </section>
+      </div>
+      <div class="bf-application-navigation-resize-handle" role="separator" tabindex="0" aria-controls="dg-component-navigation" aria-label="Resize nodes panel" aria-orientation="vertical"></div>
+    </nav>
+
+    <main class="bf-main dg-preview-main">
+      <div class="dg-stage-shell" id="stage-shell" data-view-mode="output">
+        <div class="dg-view-controls" id="view-controls">
+          <div class="bf-tabs dg-view-tabs">
+            <ul class="bf-tabs-list" role="tablist" aria-label="Force preview mode">
+              <li class="bf-tabs-item"><button class="bf-tabs-link dg-view-tab" id="view-tab-input" type="button" data-view-mode="input" role="tab" aria-selected="false" aria-controls="input-pane" tabindex="-1">Input</button></li>
+              <li class="bf-tabs-item"><button class="bf-tabs-link dg-view-tab" id="view-tab-output" type="button" data-view-mode="output" role="tab" aria-selected="true" aria-controls="output-pane" tabindex="0">Output</button></li>
+              <li class="bf-tabs-item"><button class="bf-tabs-link dg-view-tab" id="view-tab-both" type="button" data-view-mode="both" role="tab" aria-selected="false" aria-controls="stage-layout" tabindex="-1">Both</button></li>
+            </ul>
+          </div>
+        </div>
+        <div class="dg-stage-layout" id="stage-layout">
+          <section class="dg-preview-pane dg-input-pane" id="input-pane" aria-label="Input sketch">
+            <div class="dg-preview-pane-header">
+              <span class="dg-preview-pane-label">Input</span>
+            </div>
+            <div class="dg-reference-img-wrap" id="force-reference-wrap">
+              <img class="dg-reference-img" id="reference-img" alt="Source sketch">
+            </div>
+          </section>
+          <section class="dg-preview-pane dg-output-pane" id="output-pane" aria-label="Generated output">
+            <div class="dg-preview-pane-header">
+              <span class="dg-preview-pane-label">Output</span>
+            </div>
+            <div class="stage" id="stage"></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <aside class="bf-aside is-pinned is-medium dg-preview-aside" id="dg-preview-aside">
+      <div class="bf-application-aside-resize-handle" role="separator" tabindex="0" aria-controls="dg-preview-aside" aria-label="Resize inspector panel" aria-orientation="vertical"></div>
+      <section class="sidebar bf-panel is-fill dg-sidebar-panel">
+        <div class="bf-panel-header is-sticky dg-sidebar-header">
+          <a class="nav-back" href="/">&#x2190; all previews</a>
+          <label class="bf-field dg-diagram-picker-field" for="force-picker">
+            <span class="bf-form-label">Preview</span>
+            <span class="bf-control dg-picker-row">
+              <select class="bf-input dg-diagram-picker" id="force-picker" aria-label="Select preview">%FORCE_OPTIONS%</select>
+              <span class="dg-picker-nav">
+                <button class="bf-button is-base is-icon" id="diagram-prev" aria-label="Previous diagram" title="Previous diagram"><span class="bf-icon is-chevron-left" aria-hidden="true"></span></button>
+                <button class="bf-button is-base is-icon" id="diagram-next" aria-label="Next diagram" title="Next diagram"><span class="bf-icon is-chevron-right" aria-hidden="true"></span></button>
+              </span>
+            </span>
+          </label>
+          <div class="build-status build-ok" id="force-status">Ready</div>
+        </div>
+        <div class="bf-panel-content dg-sidebar-content">
+          <section class="dg-sidebar-section">
+            <h2 class="dg-section-heading bf-h5">Solver</h2>
+            <div class="grid-controls">
+              <label class="bf-field dg-grid-field is-full-span" for="ticks-per-frame">
+                <span class="bf-form-label">Ticks per frame</span>
+                <span class="bf-control dg-grid-control"><input class="bf-input dg-number-input" id="ticks-per-frame" type="number" min="1" max="32" step="1" value="4"><span class="dg-grid-unit">ticks</span></span>
+              </label>
+            </div>
+            <div class="bf-cluster dg-button-row">
+              <button class="btn bf-button" id="btn-play" type="button">Run</button>
+              <button class="btn bf-button is-base" id="btn-step" type="button">Step</button>
+              <button class="btn bf-button is-base" id="btn-reset" type="button">Reset</button>
+              <button class="btn bf-button is-base" id="btn-save" type="button">Save</button>
+              <button class="btn bf-button is-base" id="btn-export-json" type="button">Export JSON</button>
+              <button class="btn bf-button is-base" id="btn-export-svg" type="button">Export SVG</button>
+            </div>
+            <p class="bf-form-help dg-override-summary" id="force-summary">The preview resets to tick 0 on load, advances the Python solver in batched ticks, and exports snapped coordinates.</p>
+          </section>
+
+          <section class="dg-sidebar-section">
+            <h2 class="dg-section-heading bf-h5">Selection</h2>
+            <div class="inspector" id="force-selection">
+              <p class="dg-empty-message bf-form-help">Select or drag a node from the stage or the left rail. Dragging drops it into a pinned manual-polish position.</p>
+            </div>
+          </section>
+
+          <section class="dg-sidebar-section">
+            <h2 class="dg-section-heading bf-h5">Guidance</h2>
+            <p class="bf-form-help dg-override-summary">This force preview must still obey the repo's diagram language: white or grey boxes, at most one black emphasis box, orange connectors only, and top-left aligned live text.</p>
+            <p class="bf-form-help dg-override-summary">To pin a node, select it and click Pin here in the Selection panel. Reset and browser refresh restart the solver around the current pinned session state; Save persists that state across server restarts.</p>
+          </section>
+        </div>
+      </section>
+    </aside>
+  </div>
+  <script>%CONFIG_SCRIPT%</script>
+  <script src="/preview/box-styles.js"></script>
+  <script src="/preview/force.js"></script>
+</body>
+</html>

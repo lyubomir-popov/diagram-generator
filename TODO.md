@@ -74,6 +74,9 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 - [x] `[S]` Normalize active spec-provenance paths to `canonical-specs`. `DIAGRAM.md`, `README.md`, `STATUS.md`, `TODO.md`, and `docs/specs.md` now point at a sibling repo that actually exists in this workspace.
 - [ ] `[S]` Triage the secondary audit findings: stale-v2 comparison risk in `build_outputs.py`, preview text-width mismatch vs renderer text width, dead helper layout code, stale architectural line-count notes in `STATUS.md`.
 - [ ] `[S]` Triage the current `build_v2.py` corpus blockers separately from the 2026-05-13 autolayout slice: clearance violations on `example-platform-architecture`, `lightning-talk-engine`, `lt-diagram-generator`, `lt-a4-generator`, and `lt-summit-identity`, plus warning-only baseline-grid drift on several older diagrams.
+- [ ] `[S]` Decide how force-preview exports feed back into the main declarative pipeline. The current `force-stakeholders` route is a BF-backed live prototype that exports snapped JSON/SVG snapshots, but it does not yet round-trip into `scripts/diagrams/*.py` or the standard `build_v2.py` lanes.
+- [ ] `[S]` Add live force-preview tuning controls for connector length / springiness in the shared inspector instead of leaving link-distance and related force-render parameters JSON-only.
+- [ ] `[S]` Decide how far force-preview interaction should collapse into the main editor path after the current parity slice: drag-to-pin, save, export, picker navigation, text editing, and box resizing should not drift into two competing implementations.
 - [ ] `[L]` **Preview port-kill on Windows.** `preview_server.py` runs `Stop-Process -Force` on any PID holding the port, even if it's an unrelated service. Fix: log the target PID or require `--force`.
 - [ ] `[L]` **`_relayout` gap comparison uses reloaded module.** After `importlib.reload(mod)`, `orig_col_gap` reads from the new module state, not the pre-reload snapshot. Fix: capture originals before reload.
 
@@ -83,6 +86,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 - [ ] `[S]` Manual Illustrator desktop smoke test for the SVG batch when Illustrator is available locally.
 - [ ] `[S]` Keep refining `DIAGRAM.md` as more diagram types appear.
 - [ ] `[S]` Re-audit generator helpers when the starter block changes, to prevent drift back into mixed inset or line-height rules.
+- [ ] `[S]` Keep preview-shell experiments on the vendored BF application shell unless there is an explicit repo-wide reason to introduce new preview CSS.
 
 ### v2 declarative pipeline — defect registry
 

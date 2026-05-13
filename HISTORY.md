@@ -4,6 +4,21 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-13 – BF-backed force preview prototype
+
+- Added `scripts/force_preview.py` plus the tracked `scripts/diagrams/force/force-stakeholders.json` example so the repo now has a small force-layout state wrapper around the Python solver and a source-backed example reconstructed from `diagrams/1.input/force/IMG_3229.jpg`.
+- Extended `scripts/preview_server.py` with `/force` routes and JSON tick/reset/export endpoints so the force solver can run live over time, pause, and export snapped JSON or SVG snapshots instead of only supporting a one-shot batch run.
+- Reworked the force preview onto the same vendored Baseline Foundry `navigation + main + aside` shell and existing `scripts/preview/editor.css` compatibility layer as the main editor; removed the separate force-only stylesheet rather than creating a parallel preview look.
+- Added `scripts/preview/box-styles.js` so the force preview and main editor now share one semantic `default` / `accent` / `highlight` style vocabulary instead of maintaining parallel preset definitions.
+- Extended the force session and preview API with server-backed node mutation state, so the force inspector can pin/unpin nodes and change box style cleanly while reset/export continue to reflect the same session state.
+- Added force-canvas boundary clamping plus drag-to-pin manual polish: nodes now stay inside the preview canvas across load/tick/export, and dragging a node on the stage updates its server-held position and leaves it pinned where dropped.
+- Added force-preview parity controls: the picker now has the same prev/next buttons as the main editor, and a new `Save` action persists force overrides so reset/reload keep the manual-polish state instead of discarding it.
+- Changed force reset semantics so drag/drop restarts the solver immediately and browser refresh/reset rebuild the graph around the current pinned session state before reflowing the remaining nodes.
+- Unified the preview navigation so the default preview picker and root preview index now surface the tracked `force-*` demos alongside the normal diagram pages, and added explicit pin guidance to the force inspector empty state.
+- Added the tracked `scripts/diagrams/force/force-juju-landing-pages.json` and `scripts/diagrams/force/force-support-case-lifecycle.json` examples from `diagrams/1.input/force/IMG_3231.jpg` and `diagrams/1.input/force/IMG_3232.jpg`, expanding the force lane beyond the first small prototype.
+- Corrected the stage styling to obey `DIAGRAM.md`: white boxes, one black emphasis box, orange connectors, and top-left live text instead of source-photo purple pills and centred labels.
+- Validation: focused Python settle checks for the tracked force examples, a 320-tick bounds check for `force-juju-landing-pages`, browser checks of `/force/view/force-stakeholders` and `/force/view/force-juju-landing-pages` confirming BF-shell rendering, shared prev/next controls, drag-to-pin manual placement, Save + Reset persistence, server-backed pin/style updates, reset/reload parity, and successful JSON + SVG export.
+
 ### 2026-05-13 – Machine-switch docs checkpoint
 
 - Normalized the active upstream spec references from `canonical-spacing-spec` to `canonical-specs` across `DIAGRAM.md`, `README.md`, `STATUS.md`, `TODO.md`, and `docs/specs.md` so the advertised spec -> token -> tool chain resolves in this workspace.
