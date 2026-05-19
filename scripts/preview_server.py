@@ -40,7 +40,7 @@ from urllib.parse import unquote, urlparse
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 OUTPUT_SVG = ROOT / "diagrams" / "2.output" / "svg"
-V3_OUTPUT = ROOT / "diagrams" / "3.v3-output"
+V3_OUTPUT = ROOT / "diagrams" / "2.output" / "v3"
 V3_SVG = V3_OUTPUT / "svg"
 V3_DRAWIO = V3_OUTPUT / "draw.io"
 OVERRIDES_DIR = ROOT / "diagrams" / "2.output" / "overrides"
@@ -369,6 +369,13 @@ def _build_preview_nav_options(current_path: str) -> str:
     if diagram_options:
         sections.append(f'<optgroup label="Diagrams">{diagram_options}</optgroup>')
 
+    v3_options = "".join(
+        f'<option value="/view/v3:{slug}"{" selected" if current_path == f"/view/v3:{slug}" else ""}>{slug}</option>'
+        for slug in _list_v3_diagrams()
+    )
+    if v3_options:
+        sections.append(f'<optgroup label="v3 Frame engine">{v3_options}</optgroup>')
+
     force_options = "".join(
         f'<option value="/force/view/{slug}"{" selected" if current_path == f"/force/view/{slug}" else ""}>{slug}</option>'
         for slug in _list_force_examples()
@@ -468,10 +475,14 @@ def _get_force_template() -> str:
 def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     nav_options = _build_preview_nav_options(f"/view/{slug}")
     from diagram_shared import ARROW_HEAD_LENGTH, ARROW_HEAD_HALF_WIDTH, ICON_SIZE, GRID_GUTTER, INSET
-    has_ref = _find_reference_image(slug) is not None
+    is_v3 = slug.startswith("v3:")
+    real_slug = slug[3:] if is_v3 else slug
+    engine = "v3" if is_v3 else "v2"
+    has_ref = _find_reference_image(real_slug) is not None
     config_script = (
         f"window.__DG_CONFIG = {{"
-        f'"slug":"{slug}",'
+        f'"slug":"{real_slug}",'
+        f'"engine":"{engine}",'
         f'"grid":{str(grid).lower()},'
         f'"inset":{INSET},'
         f'"head_len":{ARROW_HEAD_LENGTH},'
@@ -829,14 +840,21 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         self._respond(200, content_types.get(font_path.suffix.lower(), "application/octet-stream"), font_path.read_bytes())
 
     def _serve_viewer(self, slug: str):
-        if not _is_safe_slug(slug):
+        # v3 diagrams use "v3:<slug>" in the URL
+        is_v3 = slug.startswith("v3:")
+        real_slug = slug[3:] if is_v3 else slug
+        if not _is_safe_slug(real_slug):
             self.send_error(400, "Invalid slug")
             return
-        slugs = _list_diagrams()
-        if slug not in slugs:
-            self.send_error(404, f"Unknown diagram: {slug}")
-            return
-        html = _build_viewer_html(slug, slugs, self.grid)
+        if is_v3:
+            if real_slug not in _list_v3_diagrams():
+                self.send_error(404, f"Unknown v3 diagram: {real_slug}")
+                return
+        else:
+            if real_slug not in _list_diagrams():
+                self.send_error(404, f"Unknown diagram: {real_slug}")
+                return
+        html = _build_viewer_html(slug, _list_diagrams(), self.grid)
         self._respond(200, "text/html", html.encode())
 
     def _serve_force_viewer(self, slug: str):
@@ -868,7 +886,10 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         if not _is_safe_slug(safe_name):
             self.send_error(400, "Invalid filename")
             return
+        # Try v2 output first, then v3
         svg_path = OUTPUT_SVG / safe_name
+        if not svg_path.exists():
+            svg_path = V3_SVG / safe_name
         if not svg_path.exists():
             self.send_error(404)
             return

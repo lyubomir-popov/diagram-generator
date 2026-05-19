@@ -58,12 +58,12 @@
   </g>
   </g>
   <g data-component-id="input_dg">
-  <rect x="216" y="0" width="608" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="216" y="0" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="224" y="24.92" font-size="18" font-weight="400" fill="#000000">Rough</tspan>
     <tspan x="224" y="48.92" font-size="18" font-weight="400" fill="#000000">diagram</tspan>
   </text>
-  <g class="dg-icon" transform="translate(768 8)">
+  <g class="dg-icon" transform="translate(352 8)">
 <path d="M31.833 6.25C35.2388 6.25 38 9.01124 38 12.417V12.5127H37V12.417C37 9.56352 34.6865 7.25 31.833 7.25C28.9797 7.25018 26.667 9.56363 26.667 12.417V35.25C26.667 38.8397 23.7567 41.7498 20.167 41.75H19.5C15.9101 41.75 13 38.8399 13 35.25V32.4609H14V35.25C14 38.2876 16.4624 40.75 19.5 40.75H20.167C23.2044 40.7498 25.667 38.2875 25.667 35.25V12.417C25.667 9.01134 28.4274 6.25018 31.833 6.25Z" fill="#000000" />
 
 <path d="M14 25.5H13V21H14V25.5Z" fill="#000000" />
@@ -134,12 +134,12 @@
   </g>
   </g>
   <g data-component-id="editor">
-  <rect x="216" y="256" width="608" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="216" y="256" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="224" y="280.92" font-size="18" font-weight="400" fill="#000000">Constrained</tspan>
     <tspan x="224" y="304.92" font-size="18" font-weight="400" fill="#000000">editor</tspan>
   </text>
-  <g class="dg-icon" transform="translate(768 264)">
+  <g class="dg-icon" transform="translate(352 264)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M46.5 36.75C46.5 38.3551 45.2394 39.6658 43.6543 39.7461L43.5 39.75H4.5L4.3457 39.7461C2.81166 39.6684 1.58163 38.4383 1.50391 36.9043L1.5 36.75V35.25H46.5V36.75ZM2.5 36.75C2.5 37.8546 3.39543 38.75 4.5 38.75H43.5C44.6046 38.75 45.5 37.8546 45.5 36.75V36.25H2.5V36.75Z" fill="#000000" />
 
 <path d="M41.25 8.5C42.3546 8.5 43.25 9.39543 43.25 10.5V33.75H42.25V10.5C42.25 9.94772 41.8023 9.5 41.25 9.5H6.75C6.19772 9.5 5.75 9.94772 5.75 10.5V33.75H4.75V10.5C4.75 9.39543 5.64543 8.5 6.75 8.5H41.25Z" fill="#000000" />
@@ -153,11 +153,11 @@
   </g>
   </g>
   <g data-component-id="out_svg">
-  <rect x="216" y="344" width="608" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="216" y="344" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="224" y="368.92" font-size="18" font-weight="400" fill="#000000">SVG</tspan>
   </text>
-  <g class="dg-icon" transform="translate(768 352)">
+  <g class="dg-icon" transform="translate(352 352)">
 <path d="M31.833 6.25C35.2388 6.25 38 9.01124 38 12.417V12.5127H37V12.417C37 9.56352 34.6865 7.25 31.833 7.25C28.9797 7.25018 26.667 9.56363 26.667 12.417V35.25C26.667 38.8397 23.7567 41.7498 20.167 41.75H19.5C15.9101 41.75 13 38.8399 13 35.25V32.4609H14V35.25C14 38.2876 16.4624 40.75 19.5 40.75H20.167C23.2044 40.7498 25.667 38.2875 25.667 35.25V12.417C25.667 9.01134 28.4274 6.25018 31.833 6.25Z" fill="#000000" />
 
 <path d="M14 25.5H13V21H14V25.5Z" fill="#000000" />
@@ -226,8 +226,8 @@
   </g>
   </g>
   <g data-component-id="input_dg.bottom-&gt;engine.top">
-  <line x1="520" y1="64" x2="520" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="520" y1="76" x2="520" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="64" x2="312" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="76" x2="520" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <line x1="520" y1="76" x2="520" y2="77.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="517.0947,77.1592 520,88 522.9053,77.1592" fill="#E95420" />
   </g>
@@ -263,25 +263,25 @@
   </g>
   <g data-component-id="engine.bottom-&gt;editor.top">
   <line x1="520" y1="232" x2="520" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="520" y1="244" x2="520" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="520" y1="244" x2="520" y2="245.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="517.0947,245.1592 520,256 522.9053,245.1592" fill="#E95420" />
+  <line x1="520" y1="244" x2="312" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="244" x2="312" y2="245.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="309.0947,245.1592 312,256 314.9053,245.1592" fill="#E95420" />
   </g>
   <g data-component-id="editor.bottom-&gt;out_svg.top">
-  <line x1="520" y1="320" x2="520" y2="332" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="520" y1="332" x2="520" y2="332" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="520" y1="332" x2="520" y2="333.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="517.0947,333.1592 520,344 522.9053,333.1592" fill="#E95420" />
+  <line x1="312" y1="320" x2="312" y2="332" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="332" x2="312" y2="332" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="332" x2="312" y2="333.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="309.0947,333.1592 312,344 314.9053,333.1592" fill="#E95420" />
   </g>
   <g data-component-id="editor.bottom-&gt;out_pdf.top">
-  <line x1="520" y1="320" x2="520" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="520" y1="204" x2="944" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="320" x2="312" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="204" x2="944" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <line x1="944" y1="204" x2="944" y2="98.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="941.0947,98.8408 944,88 946.9053,98.8408" fill="#E95420" />
   </g>
   <g data-component-id="editor.bottom-&gt;out_mp4.top">
-  <line x1="520" y1="320" x2="520" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="520" y1="204" x2="1160" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="320" x2="312" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="204" x2="1160" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <line x1="1160" y1="204" x2="1160" y2="98.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="1157.0947,98.8408 1160,88 1162.9053,98.8408" fill="#E95420" />
   </g>

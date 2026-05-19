@@ -16,11 +16,11 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30 30H18V18H30V30ZM19 29H29V19H19V29Z" fill="#000000" />
 
   </g>
-  <rect x="208" y="72" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="208" y="72" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="216" y="96.92" font-size="18" font-weight="400" fill="#000000">Logic</tspan>
   </text>
-  <rect x="408" y="72" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="408" y="72" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="416" y="96.92" font-size="18" font-weight="400" fill="#000000">Logic</tspan>
   </text>
@@ -35,7 +35,7 @@
 
   </g>
   <g data-component-id="vram">
-  <rect x="0" y="256" width="808" height="144" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="256" width="408" height="144" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="280.92" font-size="18" font-weight="700" fill="#000000">VRAM fragmentation</tspan>
   </text>

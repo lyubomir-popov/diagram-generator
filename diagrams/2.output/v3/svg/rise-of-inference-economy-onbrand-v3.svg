@@ -11,11 +11,11 @@
   </g>
   </g>
   <g data-component-id="training_hdr">
-  <rect x="0" y="88" width="848" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="88" width="408" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="112.92" font-size="18" font-weight="700" fill="#000000">Training</tspan>
   </text>
-  <g class="dg-icon" transform="translate(792 96)">
+  <g class="dg-icon" transform="translate(352 96)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30.1585 29.5527C31.5389 29.553 32.6585 30.6722 32.6585 32.0527C32.6584 33.4332 31.5389 34.5525 30.1585 34.5527C28.7778 34.5527 27.6585 33.4334 27.6585 32.0527C27.6585 30.672 28.7778 29.5527 30.1585 29.5527ZM30.1585 30.5527C29.33 30.5527 28.6585 31.2243 28.6585 32.0527C28.6585 32.8811 29.3301 33.5527 30.1585 33.5527C30.9866 33.5525 31.6584 32.8809 31.6585 32.0527C31.6585 31.2245 30.9867 30.553 30.1585 30.5527Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8948 20.0791C18.2755 20.0791 19.3948 21.1984 19.3948 22.5791C19.3947 23.9597 18.2755 25.0791 16.8948 25.0791C15.5141 25.0791 14.3949 23.9597 14.3948 22.5791C14.3948 21.1984 15.5141 20.0791 16.8948 20.0791ZM16.8948 21.0791C16.0664 21.0791 15.3948 21.7507 15.3948 22.5791C15.3949 23.4075 16.0664 24.0791 16.8948 24.0791C17.7232 24.0791 18.3947 23.4075 18.3948 22.5791C18.3948 21.7507 17.7232 21.0791 16.8948 21.0791Z" fill="#000000" />
@@ -27,12 +27,12 @@
   </g>
   </g>
   <g data-component-id="training_detail">
-  <rect x="0" y="176" width="848" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="176" width="408" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="200.92" font-size="18" font-weight="400" fill="#000000">Costly &amp; episodic</tspan>
     <tspan x="8" y="224.92" font-size="18" font-weight="400" fill="#000000">High investment</tspan>
   </text>
-  <g class="dg-icon" transform="translate(792 184)">
+  <g class="dg-icon" transform="translate(352 184)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M37.6533 3.00781C38.4097 3.08461 39 3.72334 39 4.5V43.5C39 44.2767 38.4097 44.9154 37.6533 44.9922L37.5 45H10.5C9.72334 45 9.08461 44.4097 9.00781 43.6533L9 43.5V4.5C9 3.67157 9.67157 3 10.5 3H37.5L37.6533 3.00781ZM10.5 4C10.2239 4 10 4.22386 10 4.5V43.5C10 43.7761 10.2239 44 10.5 44H37.5C37.7761 44 38 43.7761 38 43.5V4.5C38 4.22386 37.7761 4 37.5 4H10.5Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M34.5 16.5H13.5V7.5H34.5V16.5ZM14.5 15.5H33.5V8.5H14.5V15.5Z" fill="#000000" />
@@ -52,11 +52,11 @@
   </g>
   </g>
   <g data-component-id="compute">
-  <rect x="0" y="264" width="848" height="144" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="264" width="824" height="144" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="288.92" font-size="18" font-weight="700" fill="#000000">Always-on compute</tspan>
   </text>
-  <g class="dg-icon" transform="translate(792 272)">
+  <g class="dg-icon" transform="translate(768 272)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 5.5C32.2317 5.5 39.206 10.8768 41.6064 18.3096C41.6652 18.3914 41.7001 18.4913 41.7002 18.5996L41.6992 18.6045C42.219 20.3116 42.5 22.1229 42.5 24C42.5 25.8764 42.2186 27.687 41.6992 29.3936L41.7002 29.3994C41.7002 29.5074 41.6647 29.6067 41.6064 29.6885C39.2065 37.1221 32.2323 42.5 24 42.5C15.7671 42.5 8.79112 37.1219 6.3916 29.6875C6.33416 29.6061 6.2998 29.5066 6.2998 29.3994V29.3936C5.78046 27.687 5.5 25.8763 5.5 24C5.5 22.123 5.78012 20.3115 6.2998 18.6045V18.5996C6.29989 18.4923 6.334 18.3929 6.3916 18.3115C8.79139 10.8776 15.7675 5.5 24 5.5ZM7.52051 29.8994C9.75709 36.1464 15.4438 40.7496 22.2852 41.415L21.9658 41.1934C18.0206 38.4486 15.2318 34.4289 13.9971 29.8994H7.52051ZM34.0029 29.8994C32.7683 34.4287 29.9802 38.4486 26.0352 41.1934L25.7148 41.415C32.5562 40.7496 38.2429 36.1464 40.4795 29.8994H34.0029ZM24.5 41.043L25.4648 40.3721C29.1381 37.8162 31.7553 34.0971 32.9639 29.8994H24.5V41.043ZM15.0361 29.8994C16.2447 34.0973 18.8626 37.8162 22.5361 40.3721L23.5 41.042V29.8994H15.0361ZM34.0264 19.0996C34.4799 20.8722 34.7168 22.7111 34.7168 24.5781C34.7168 26.0465 34.5562 27.4941 34.249 28.8994H40.8037C41.2563 27.3447 41.5 25.7008 41.5 24C41.5 22.2988 41.2564 20.6546 40.8037 19.0996H34.0264ZM24.5 28.8994H33.2227C33.546 27.4967 33.7168 26.0485 33.7168 24.5781C33.7168 22.7083 33.4667 20.8682 32.9912 19.0996H24.5V28.8994ZM15.0088 19.0996C14.5334 20.8683 14.2842 22.7083 14.2842 24.5781C14.2842 26.0485 14.454 27.4967 14.7773 28.8994H23.5V19.0996H15.0088ZM7.19629 19.0996C6.74357 20.6546 6.5 22.2988 6.5 24C6.5 25.7008 6.74374 27.3447 7.19629 28.8994H13.751C13.4438 27.4941 13.2842 26.0465 13.2842 24.5781C13.2842 22.7111 13.5202 20.8722 13.9736 19.0996H7.19629ZM26.5117 7.38867C29.9742 10.1896 32.4672 13.9349 33.7441 18.0996H40.4795C38.2184 11.7851 32.4318 7.14919 25.4912 6.56348L26.5117 7.38867ZM24.5 18.0996H32.6963C31.4515 14.2407 29.1073 10.7744 25.8828 8.16602L24.5 7.04688V18.0996ZM22.1172 8.16602C18.8927 10.7744 16.5483 14.2406 15.3037 18.0996H23.5V7.04688L22.1172 8.16602ZM22.5078 6.56348C15.5676 7.14954 9.78154 11.7854 7.52051 18.0996H14.2559C15.5325 13.9348 18.0258 10.1896 21.4883 7.38867L22.5078 6.56348Z" fill="#000000" />
 
   </g>
@@ -114,11 +114,11 @@
   </text>
   </g>
   <g data-component-id="inference_hdr">
-  <rect x="872" y="0" width="808" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="872" y="0" width="408" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="880" y="24.92" font-size="18" font-weight="700" fill="#FFFFFF">Inference</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1624 8)">
+  <g class="dg-icon" transform="translate(1224 8)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M33.5 45H32.5V39H24.5V45H23.5V39H15.5V45H14.5V39H10.5C9.72334 39 9.08461 38.4097 9.00781 37.6533L9 37.5V33.5H3V32.5H9V24.5H3V23.5H9V15.5H3V14.5H9V10.5C9 9.67157 9.67157 9 10.5 9H14.5V3H15.5V9H23.5V3H24.5V9H32.5V3H33.5V9H37.5L37.6533 9.00781C38.4097 9.08461 39 9.72334 39 10.5V14.5H45V15.5H39V23.5H45V24.5H39V32.5H45V33.5H39V37.5L38.9922 37.6533C38.9205 38.3593 38.3593 38.9205 37.6533 38.9922L37.5 39H33.5V45ZM10.5 10C10.2239 10 10 10.2239 10 10.5V37.5C10 37.7761 10.2239 38 10.5 38H37.5C37.7761 38 38 37.7761 38 37.5V10.5C38 10.2239 37.7761 10 37.5 10H10.5Z" fill="#FFFFFF" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30 30H18V18H30V30ZM19 29H29V19H19V29Z" fill="#FFFFFF" />
@@ -126,12 +126,12 @@
   </g>
   </g>
   <g data-component-id="inference_detail">
-  <rect x="872" y="88" width="808" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="872" y="88" width="408" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="880" y="112.92" font-size="18" font-weight="400" fill="#000000">Constant &amp; demand-driven</tspan>
     <tspan x="880" y="136.92" font-size="18" font-weight="400" fill="#000000">Ongoing expense</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1624 96)">
+  <g class="dg-icon" transform="translate(1224 96)">
 <path d="M39.5 30C40.6046 30 41.5 30.8954 41.5 32V37C41.5 38.1046 40.6046 39 39.5 39H24.5V40.4277C25.5716 40.6573 26.375 41.6099 26.375 42.75C26.375 44.0617 25.3117 45.125 24 45.125C22.6883 45.125 21.625 44.0617 21.625 42.75C21.625 41.6099 22.4284 40.6574 23.5 40.4277V39H8.5C7.39543 39 6.5 38.1046 6.5 37V32C6.5 30.8954 7.39543 30 8.5 30H39.5ZM24 41.375C23.2406 41.375 22.625 41.9906 22.625 42.75C22.625 43.5094 23.2406 44.125 24 44.125C24.7594 44.125 25.375 43.5094 25.375 42.75C25.375 41.9906 24.7594 41.375 24 41.375ZM8.5 31C7.94772 31 7.5 31.4477 7.5 32V37L7.50488 37.1025C7.55278 37.573 7.92703 37.9472 8.39746 37.9951L8.5 38H39.5L39.6025 37.9951C40.1067 37.9438 40.5 37.5177 40.5 37V32C40.5 31.4477 40.0523 31 39.5 31H8.5ZM12 33.501C12.5523 33.501 13 33.9487 13 34.501C13 35.0533 12.5523 35.501 12 35.501C11.4477 35.501 11 35.0533 11 34.501C11 33.9487 11.4477 33.501 12 33.501ZM39.5 19C40.6046 19 41.5 19.8954 41.5 21V26C41.5 27.1046 40.6046 28 39.5 28H8.5C7.39543 28 6.5 27.1046 6.5 26V21C6.5 19.8954 7.39543 19 8.5 19H39.5ZM8.5 20C7.94772 20 7.5 20.4477 7.5 21V26L7.50488 26.1025C7.55278 26.573 7.92703 26.9472 8.39746 26.9951L8.5 27H39.5L39.6025 26.9951C40.1067 26.9438 40.5 26.5177 40.5 26V21C40.5 20.4477 40.0523 20 39.5 20H8.5ZM12 22.501C12.5523 22.501 13 22.9487 13 23.501C13 24.0533 12.5523 24.501 12 24.501C11.4477 24.501 11 24.0533 11 23.501C11 22.9487 11.4477 22.501 12 22.501ZM39.5 8C40.6046 8 41.5 8.89543 41.5 10V15C41.5 16.1046 40.6046 17 39.5 17H8.5C7.39543 17 6.5 16.1046 6.5 15V10C6.5 8.89543 7.39543 8 8.5 8H39.5ZM8.5 9C7.94772 9 7.5 9.44772 7.5 10V15L7.50488 15.1025C7.55278 15.573 7.92703 15.9472 8.39746 15.9951L8.5 16H39.5L39.6025 15.9951C40.1067 15.9438 40.5 15.5177 40.5 15V10C40.5 9.44772 40.0523 9 39.5 9H8.5ZM12 11.501C12.5523 11.501 13 11.9487 13 12.501C13 13.0533 12.5523 13.501 12 13.501C11.4477 13.501 11 13.0533 11 12.501C11 11.9487 11.4477 11.501 12 11.501Z" fill="#000000" />
 
 <circle cx="16" cy="12.501" r="1" fill="#000000" />
@@ -222,21 +222,21 @@
 
   </g>
   <g data-component-id="training_hdr.bottom-&gt;training_detail.top">
-  <line x1="424" y1="152" x2="424" y2="164" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="424" y1="164" x2="424" y2="164" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="424" y1="164" x2="424" y2="165.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="421.0947,165.1592 424,176 426.9053,165.1592" fill="#E95420" />
+  <line x1="204" y1="152" x2="204" y2="164" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="204" y1="164" x2="204" y2="164" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="204" y1="164" x2="204" y2="165.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="201.0947,165.1592 204,176 206.9053,165.1592" fill="#E95420" />
   </g>
   <g data-component-id="inference_hdr.bottom-&gt;inference_detail.top">
-  <line x1="1276" y1="64" x2="1276" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1276" y1="76" x2="1276" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1276" y1="76" x2="1276" y2="77.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="1273.0947,77.1592 1276,88 1278.9053,77.1592" fill="#E95420" />
+  <line x1="1076" y1="64" x2="1076" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1076" y1="76" x2="1076" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1076" y1="76" x2="1076" y2="77.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1073.0947,77.1592 1076,88 1078.9053,77.1592" fill="#E95420" />
   </g>
   <g data-component-id="training_detail.right-&gt;inference_detail.left">
-  <line x1="848" y1="208" x2="860" y2="208" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="860" y1="208" x2="860" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="860" y1="120" x2="861.1592" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="408" y1="208" x2="640" y2="208" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="640" y1="208" x2="640" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="640" y1="120" x2="861.1592" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="861.1592,117.0947 872,120 861.1592,122.9053" fill="#E95420" />
   </g>
   <g data-component-id="summary1.bottom-&gt;summary2.top">

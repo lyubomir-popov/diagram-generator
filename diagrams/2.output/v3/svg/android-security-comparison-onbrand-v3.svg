@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="768" height="440" viewBox="0 0 768 440" xml:space="preserve">
   <rect width="768" height="440" fill="#FFFFFF" />
   <g data-component-id="lxd_container">
-  <rect x="0" y="88" width="240" height="168" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="88" width="208" height="168" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="112.92" font-size="18" font-weight="700" fill="#000000">LXD container</tspan>
   </text>
   </g>
   <g data-component-id="lxd_headline">
-  <rect x="8" y="160" width="224" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="8" y="160" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="16" y="184.92" font-size="18" font-weight="700" fill="#000000">SELinux removed</tspan>
   </text>
   </g>
   <g data-component-id="lxd_system">
-  <rect x="8" y="208" width="224" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="8" y="208" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="16" y="232.92" font-size="18" font-weight="400" fill="#000000">Android system</tspan>
   </text>
@@ -25,13 +25,13 @@
   </text>
   </g>
   <g data-component-id="vm">
-  <rect x="264" y="88" width="240" height="288" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="264" y="88" width="208" height="288" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="272" y="112.92" font-size="18" font-weight="700" fill="#000000">VM</tspan>
   </text>
   </g>
   <g data-component-id="vm_headline">
-  <rect x="272" y="160" width="224" height="112" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="272" y="160" width="192" height="112" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="280" y="184.92" font-size="18" font-weight="700" fill="#000000">SELinux ON</tspan>
     <tspan x="280" y="208.92" font-size="18" font-weight="400" fill="#000000">/enforcing mode</tspan>
@@ -40,13 +40,13 @@
   </text>
   </g>
   <g data-component-id="vm_system">
-  <rect x="272" y="280" width="224" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="272" y="280" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="280" y="304.92" font-size="18" font-weight="400" fill="#000000">Android system</tspan>
   </text>
   </g>
   <g data-component-id="vm_kernel">
-  <rect x="272" y="328" width="224" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="272" y="328" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="280" y="352.92" font-size="18" font-weight="400" fill="#000000">Android kernel</tspan>
   </text>

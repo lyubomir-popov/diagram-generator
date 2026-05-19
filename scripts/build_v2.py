@@ -85,7 +85,7 @@ def main() -> None:
     use_v3 = "--engine" in sys.argv and "v3" in sys.argv
 
     if use_v3:
-        v3_output = pathlib.Path(__file__).resolve().parents[1] / "diagrams" / "3.v3-output"
+        v3_output = pathlib.Path(__file__).resolve().parents[1] / "diagrams" / "2.output" / "v3"
         v3_svg = v3_output / "svg"
         v3_drawio = v3_output / "draw.io"
         v3_svg.mkdir(parents=True, exist_ok=True)

@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1040" height="488" viewBox="0 0 1040 488" xml:space="preserve">
   <rect width="1040" height="488" fill="#FFFFFF" />
   <g data-component-id="frontend">
-  <rect x="0" y="0" width="608" height="144" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="0" width="408" height="144" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="24.92" font-size="18" font-weight="700" fill="#000000">User-facing services</tspan>
   </text>
@@ -39,12 +39,12 @@
 
   </g>
   <g data-component-id="gateway">
-  <rect x="0" y="168" width="608" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="168" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="192.92" font-size="18" font-weight="400" fill="#000000">API</tspan>
     <tspan x="8" y="216.92" font-size="18" font-weight="400" fill="#000000">gateway</tspan>
   </text>
-  <g class="dg-icon" transform="translate(552 176)">
+  <g class="dg-icon" transform="translate(136 176)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M38 28C39.3807 28 40.5 29.1193 40.5 30.5C40.5 31.8807 39.3807 33 38 33C36.6193 33 35.5 31.8807 35.5 30.5C35.5 29.1193 36.6193 28 38 28ZM38 29C37.1716 29 36.5 29.6716 36.5 30.5C36.5 31.3284 37.1716 32 38 32C38.8284 32 39.5 31.3284 39.5 30.5C39.5 29.6716 38.8284 29 38 29Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 28C25.3807 28 26.5 29.1193 26.5 30.5C26.5 31.8807 25.3807 33 24 33C22.6193 33 21.5 31.8807 21.5 30.5C21.5 29.1193 22.6193 28 24 28ZM24 29C23.1716 29 22.5 29.6716 22.5 30.5C22.5 31.3284 23.1716 32 24 32C24.8284 32 25.5 31.3284 25.5 30.5C25.5 29.6716 24.8284 29 24 29Z" fill="#000000" />
@@ -97,12 +97,12 @@
 
   </g>
   <g data-component-id="database">
-  <rect x="0" y="424" width="608" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="424" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="448.92" font-size="18" font-weight="400" fill="#000000">Primary</tspan>
     <tspan x="8" y="472.92" font-size="18" font-weight="400" fill="#000000">database</tspan>
   </text>
-  <g class="dg-icon" transform="translate(552 432)">
+  <g class="dg-icon" transform="translate(136 432)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M35.9878 11.6991C36.3041 11.8759 36.5 12.2098 36.5 12.5721V25.3693C36.5 25.7316 36.3041 26.0655 35.9878 26.2423L24 32.9414L12.0122 26.2423C11.6959 26.0655 11.5 25.7316 11.5 25.3693V12.5721C11.5 12.2098 11.6959 11.8759 12.0122 11.6991L23.5122 5.27261C23.8153 5.1032 24.1847 5.1032 24.4878 5.27261L35.9878 11.6991ZM12.5 25.3682L23.5 31.5146V19.3613L12.5 13.166V25.3682ZM24.5 19.3613V31.5146L35.5 25.3682V13.167L24.5 19.3613ZM12.9922 12.2969L24 18.4941L35.0068 12.2969L24 6.14551L12.9922 12.2969Z" fill="#000000" />
 
 <path d="M20.0322 40C20.0118 40.1638 20 40.3306 20 40.5C20 40.6694 20.0118 40.8362 20.0322 41H9V40H20.0322Z" fill="#000000" />
@@ -150,22 +150,22 @@
   </g>
   </g>
   <g data-component-id="frontend.bottom-&gt;gateway.top">
-  <line x1="304" y1="144" x2="304" y2="156" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="304" y1="156" x2="304" y2="156" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="304" y1="156" x2="304" y2="157.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="301.0947,157.1592 304,168 306.9053,157.1592" fill="#E95420" />
+  <line x1="204" y1="144" x2="204" y2="156" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="204" y1="156" x2="96" y2="156" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="96" y1="156" x2="96" y2="157.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="93.0947,157.1592 96,168 98.9053,157.1592" fill="#E95420" />
   </g>
   <g data-component-id="gateway.bottom-&gt;services.top">
-  <line x1="304" y1="232" x2="304" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="304" y1="244" x2="304" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="96" y1="232" x2="96" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="96" y1="244" x2="304" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <line x1="304" y1="244" x2="304" y2="245.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="301.0947,245.1592 304,256 306.9053,245.1592" fill="#E95420" />
   </g>
   <g data-component-id="services.bottom-&gt;database.top">
   <line x1="304" y1="400" x2="304" y2="412" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="304" y1="412" x2="304" y2="412" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="304" y1="412" x2="304" y2="413.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="301.0947,413.1592 304,424 306.9053,413.1592" fill="#E95420" />
+  <line x1="304" y1="412" x2="96" y2="412" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="96" y1="412" x2="96" y2="413.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="93.0947,413.1592 96,424 98.9053,413.1592" fill="#E95420" />
   </g>
   <g data-component-id="services.bottom-&gt;cache.top">
   <line x1="304" y1="400" x2="304" y2="200" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />

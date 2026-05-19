@@ -93,17 +93,17 @@
   </g>
   </g>
   <g data-component-id="engine">
-  <rect x="232" y="168" width="408" height="288" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="232" y="168" width="208" height="288" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="240" y="192.92" font-size="18" font-weight="700" fill="#000000">3. Engine</tspan>
   </text>
   </g>
   <g data-component-id="layout_engine">
-  <rect x="240" y="240" width="392" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="240" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="248" y="264.92" font-size="18" font-weight="400" fill="#000000">Layout engine</tspan>
   </text>
-  <g class="dg-icon" transform="translate(576 248)">
+  <g class="dg-icon" transform="translate(376 248)">
 <path d="M39.5 26.5557C39.4999 32.5189 34.9609 37.4213 29.1494 37.998L30.7979 39.6465L30.0908 40.3535L27.293 37.5557L30.0908 34.7578L30.7979 35.4648L29.2881 36.9736C34.4792 36.3384 38.4999 31.9184 38.5 26.5557H39.5Z" fill="#000000" />
 
 <path d="M20.707 10.4443L17.9092 13.2422L17.2021 12.5352L18.7109 11.0254C13.5203 11.661 9.50006 16.0819 9.5 21.4443H8.5C8.50006 15.4814 13.0385 10.5781 18.8496 10.001L17.2021 8.35352L17.9092 7.64648L20.707 10.4443Z" fill="#000000" />
@@ -115,12 +115,12 @@
   </g>
   </g>
   <g data-component-id="anim_system">
-  <rect x="240" y="312" width="392" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="312" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="248" y="336.92" font-size="18" font-weight="400" fill="#000000">Animation</tspan>
     <tspan x="248" y="360.92" font-size="18" font-weight="400" fill="#000000">system</tspan>
   </text>
-  <g class="dg-icon" transform="translate(576 320)">
+  <g class="dg-icon" transform="translate(376 320)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M40.6533 6.00781C41.4097 6.08461 42 6.72334 42 7.5V40.5L41.9922 40.6533C41.9205 41.3593 41.3593 41.9205 40.6533 41.9922L40.5 42H7.5C6.72334 42 6.08461 41.4097 6.00781 40.6533L6 40.5V7.5C6 6.67157 6.67157 6 7.5 6H40.5L40.6533 6.00781ZM7 40.5C7 40.7761 7.22386 41 7.5 41H40.5C40.7761 41 41 40.7761 41 40.5V16H7V40.5ZM7.5 7C7.22386 7 7 7.22386 7 7.5V15H16.7119L21.3301 7H7.5ZM27.3652 15H41V7.5C41 7.22386 40.7761 7 40.5 7H31.9844L27.3652 15ZM17.8652 15H26.2119L30.8301 7H22.4844L17.8652 15Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M18.752 20.5653C18.9077 20.4764 19.0994 20.4781 19.2539 20.5692L30.2539 27.0692C30.4061 27.1591 30.5 27.3231 30.5 27.4999C30.5 27.6767 30.4061 27.8406 30.2539 27.9305L19.2539 34.4305C19.0994 34.5216 18.9077 34.5233 18.752 34.4344C18.5961 34.3454 18.5 34.1793 18.5 33.9999V20.9999C18.5 20.8204 18.5961 20.6542 18.752 20.5653ZM19.5 33.1229L29.0166 27.4999L19.5 21.8758V33.1229Z" fill="#000000" />
@@ -128,12 +128,12 @@
   </g>
   </g>
   <g data-component-id="editor_box">
-  <rect x="240" y="384" width="392" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="384" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="248" y="408.92" font-size="18" font-weight="400" fill="#000000">Constrained</tspan>
     <tspan x="248" y="432.92" font-size="18" font-weight="400" fill="#000000">editor</tspan>
   </text>
-  <g class="dg-icon" transform="translate(576 392)">
+  <g class="dg-icon" transform="translate(376 392)">
 <path d="M42 17.4746H6V16.5254H42V17.4746Z" fill="#000000" />
 
 <path d="M42 13.5H18V12.5H42V13.5Z" fill="#000000" />
@@ -184,9 +184,9 @@
   </g>
   <g data-component-id="input_panel.bottom-&gt;engine.top">
   <line x1="436" y1="144" x2="436" y2="156" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="436" y1="156" x2="436" y2="156" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="436" y1="156" x2="436" y2="157.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="433.0947,157.1592 436,168 438.9053,157.1592" fill="#E95420" />
+  <line x1="436" y1="156" x2="336" y2="156" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="336" y1="156" x2="336" y2="157.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="333.0947,157.1592 336,168 338.9053,157.1592" fill="#E95420" />
   </g>
   <g data-component-id="guidelines.right-&gt;engine.left">
   <line x1="208" y1="144" x2="220" y2="144" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
@@ -195,8 +195,8 @@
   <polygon points="221.1592,309.0947 232,312 221.1592,314.9053" fill="#E95420" />
   </g>
   <g data-component-id="engine.bottom-&gt;export_panel.top">
-  <line x1="436" y1="456" x2="436" y2="468" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="436" y1="468" x2="436" y2="468" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="336" y1="456" x2="336" y2="468" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="336" y1="468" x2="436" y2="468" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <line x1="436" y1="468" x2="436" y2="469.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="433.0947,469.1592 436,480 438.9053,469.1592" fill="#E95420" />
   </g>

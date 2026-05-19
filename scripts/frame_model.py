@@ -34,6 +34,22 @@ class Sizing(Enum):
     FIXED = auto()     # use explicit width/height
 
 
+class Align(Enum):
+    """Content alignment within a frame (Figma 9-point model).
+
+    Combines main-axis and cross-axis positions.
+    """
+    TOP_LEFT = auto()
+    TOP_CENTER = auto()
+    TOP_RIGHT = auto()
+    CENTER_LEFT = auto()
+    CENTER = auto()
+    CENTER_RIGHT = auto()
+    BOTTOM_LEFT = auto()
+    BOTTOM_CENTER = auto()
+    BOTTOM_RIGHT = auto()
+
+
 # ---------------------------------------------------------------------------
 # Frame node
 # ---------------------------------------------------------------------------
@@ -54,6 +70,7 @@ class Frame:
     padding: int = 8            # px inside this frame (all sides)
     sizing: Sizing = Sizing.HUG  # how this node sizes itself
     child_sizing: Sizing = Sizing.HUG  # how parent should size this child
+    align: Align = Align.TOP_LEFT  # content alignment (Figma 9-point)
     width: int | None = None    # explicit width (when sizing=FIXED or constraint)
     height: int | None = None   # explicit height
 

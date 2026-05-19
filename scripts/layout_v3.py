@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from frame_model import Frame, FrameDiagram, Direction, Sizing
+from frame_model import Frame, FrameDiagram, Direction, Sizing, Align
 from diagram_model import Arrow, Line, Fill, Border
 from diagram_layout import (
     ArrowPrimitive,
@@ -110,6 +110,34 @@ def measure(frame: Frame) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Alignment helpers
+# ---------------------------------------------------------------------------
+
+def _align_offset(align: Align, available: float, content: float, axis: str) -> float:
+    """Compute offset for alignment on a given axis ('x' or 'y').
+
+    The 9-point grid maps to:
+      x-axis: LEFT=0, CENTER=mid, RIGHT=end
+      y-axis: TOP=0, CENTER=mid, BOTTOM=end
+    """
+    slack = max(0, available - content)
+    if axis == "x":
+        if align in (Align.TOP_LEFT, Align.CENTER_LEFT, Align.BOTTOM_LEFT):
+            return 0
+        elif align in (Align.TOP_CENTER, Align.CENTER, Align.BOTTOM_CENTER):
+            return slack / 2
+        else:  # RIGHT
+            return slack
+    else:  # y
+        if align in (Align.TOP_LEFT, Align.TOP_CENTER, Align.TOP_RIGHT):
+            return 0
+        elif align in (Align.CENTER_LEFT, Align.CENTER, Align.CENTER_RIGHT):
+            return slack / 2
+        else:  # BOTTOM
+            return slack
+
+
+# ---------------------------------------------------------------------------
 # Pass 2: Place (top-down)
 # ---------------------------------------------------------------------------
 
@@ -162,28 +190,51 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
     remaining = available_for_children - hug_total
     fill_size = round_up_to_grid(remaining // fill_count) if fill_count > 0 else 0
 
+    # Compute total content extent for alignment
+    if frame.direction == Direction.HORIZONTAL:
+        content_main = hug_total + fill_count * fill_size + total_gap
+        content_cross = max((c._measured_h for c in frame.children), default=0)
+    else:
+        content_main = hug_total + fill_count * fill_size + total_gap
+        content_cross = max((c._measured_w for c in frame.children), default=0)
+
+    # Apply alignment offsets
+    inner_w = frame._placed_w - 2 * pad
+    inner_h = frame._placed_h - 2 * pad - heading_h - heading_gap
+
+    if frame.direction == Direction.HORIZONTAL:
+        main_offset = _align_offset(frame.align, inner_w, content_main, "x")
+        cross_offset = _align_offset(frame.align, inner_h, content_cross, "y")
+    else:
+        main_offset = _align_offset(frame.align, inner_h, content_main, "y")
+        cross_offset = _align_offset(frame.align, inner_w, content_cross, "x")
+
     # Place children sequentially
     if frame.direction == Direction.HORIZONTAL:
-        cursor_x = x + pad
-        cursor_y = y + pad + heading_h + heading_gap
+        cursor_x = x + pad + main_offset
+        base_y = y + pad + heading_h + heading_gap + cross_offset
         for child in frame.children:
             if child.child_sizing == Sizing.FILL:
                 child_w = fill_size
             else:
                 child_w = child._measured_w
-            child_h = cross_size  # stretch to fill cross axis
-            place(child, cursor_x, cursor_y, child_w, child_h)
+            child_h = cross_size if child.child_sizing == Sizing.FILL else child._measured_h
+            # Cross-axis alignment for each child
+            child_cross_offset = _align_offset(frame.align, cross_size, child._measured_h, "y")
+            place(child, cursor_x, y + pad + heading_h + heading_gap + child_cross_offset, child_w, child_h)
             cursor_x += child._placed_w + frame.gap
     else:  # VERTICAL
-        cursor_x = x + pad
-        cursor_y = y + pad + heading_h + heading_gap
+        base_x = x + pad + cross_offset
+        cursor_y = y + pad + heading_h + heading_gap + main_offset
         for child in frame.children:
             if child.child_sizing == Sizing.FILL:
                 child_h = fill_size
             else:
                 child_h = child._measured_h
-            child_w = cross_size  # stretch to fill cross axis
-            place(child, cursor_x, cursor_y, child_w, child_h)
+            child_w = cross_size if child.child_sizing == Sizing.FILL else child._measured_w
+            # Cross-axis alignment for each child
+            child_cross_offset = _align_offset(frame.align, cross_size, child._measured_w, "x")
+            place(child, x + pad + child_cross_offset, cursor_y, child_w, child_h)
             cursor_y += child._placed_h + frame.gap
 
 

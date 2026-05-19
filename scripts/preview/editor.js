@@ -1,5 +1,6 @@
 "use strict";
 const SLUG = window.__DG_CONFIG.slug;
+const ENGINE = window.__DG_CONFIG.engine || "v2";
 const GRID = window.__DG_CONFIG.grid;
 const INSET = window.__DG_CONFIG.inset;
 let generation = 0;
@@ -386,7 +387,7 @@ async function _applyUndoCommand(command, direction) {
 }
 
 async function loadSVG() {
-  const suffix = GRID ? "-v2-grid.svg" : "-v2.svg";
+  const suffix = GRID ? `-${ENGINE}-grid.svg` : `-${ENGINE}.svg`;
   const resp = await fetch("/svg/" + SLUG + "-onbrand" + suffix + "?t=" + Date.now());
   if (!resp.ok) return;
   document.getElementById("stage").innerHTML = await resp.text();
