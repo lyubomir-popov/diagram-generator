@@ -321,6 +321,10 @@ _REFERENCE_MAP: dict[str, str] = {
     "inference-snaps": "image 7.png",
     "example-arrow-label-separator": "example-arrow-label-separator-rough.svg",
     "force-stakeholders": "force/IMG_3229.jpg",
+    "android-graphics-stack": "android/android-graphics-stack.png",
+    "android-custom-to-cloud": "android/image.png",
+    "android-security-comparison": "android/image1.png",
+    "android-container-vs-vm": "android/image2.png",
 }
 
 

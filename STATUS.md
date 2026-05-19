@@ -42,6 +42,16 @@ There are now **two diagram generation pipelines**. On a cold start, ask the use
 - **Active surface:** this is where the declarative model, build-time validators, interactive editor, and Baseline Foundry preview integration now evolve.
 - **Force preview prototype (feature branch, 2026-05-13):** the tracked force lane now includes `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle`. These pages run the Python force solver live in batched ticks, reset to tick 0 on load, export snapped JSON/SVG snapshots, and reuse the vendored BF preview shell (`navigation + main + aside`) plus the main editor's semantic box-style vocabulary through a shared preview module. Stage content must stay inside the normal `DIAGRAM.md` style contract rather than recreating source-photo styling.
 
+### Adding a new diagram (checklist)
+
+When creating a new diagram definition, three registration steps are required:
+
+1. **Build registry:** Add a `(slug, module, variable)` tuple to `_REGISTRY` in `scripts/build_v2.py`.
+2. **Reference image map:** Add a `slug: "subfolder/filename.png"` entry to `_REFERENCE_MAP` in `scripts/preview_server.py` so the preview "Both" tab shows the before/after comparison. The path is relative to `diagrams/1.input/`.
+3. **Compare pages:** Add a `{"slug", "title", "before", "after"}` entry to `PAIRS` in `scripts/build_compare_pages.py`.
+
+Without step 2, the preview editor shows "No reference sketch for this diagram" in the Input/Both tabs.
+
 ### Validation tools
 
 - `python scripts/_compare_3way.py` — Playwright 3-way comparison: input sketch → v1 → v2

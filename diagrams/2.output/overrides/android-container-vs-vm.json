@@ -1,0 +1,22 @@
+{
+  "definition_hash": "3373a4a7d6715224",
+  "overrides": {
+    "_auto_1": {
+      "dx": -8
+    },
+    "_auto_2": {
+      "dx": -8
+    },
+    "container_runtime": {
+      "dy": 72
+    },
+    "container_system": {
+      "dy": 72
+    },
+    "_auto_4": {
+      "dx": -8,
+      "dw": -344
+    }
+  },
+  "format_version": 1
+}

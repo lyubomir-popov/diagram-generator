@@ -47,7 +47,7 @@ PAIRS = [
         "slug": "android-graphics-stack",
         "title": "Android Graphics Stack",
         "before": "android/android-graphics-stack.png",
-        "after": "android-graphics-stack-onbrand.svg",
+        "after": "android-graphics-stack-onbrand-v2.svg",
     },
     {
         "slug": "memory-wall",
@@ -126,6 +126,24 @@ PAIRS = [
       "title": "Example arrow label + separator",
       "before": "example-arrow-label-separator-rough.svg",
       "after": "example-arrow-label-separator-onbrand-v2.svg",
+    },
+    {
+      "slug": "android-custom-to-cloud",
+      "title": "Custom Android to Anbox Cloud",
+      "before": "android/image.png",
+      "after": "android-custom-to-cloud-onbrand-v2.svg",
+    },
+    {
+      "slug": "android-security-comparison",
+      "title": "Android Security Comparison",
+      "before": "android/image1.png",
+      "after": "android-security-comparison-onbrand-v2.svg",
+    },
+    {
+      "slug": "android-container-vs-vm",
+      "title": "Android Container vs VM",
+      "before": "android/image2.png",
+      "after": "android-container-vs-vm-onbrand-v2.svg",
     },
 ]
 
