@@ -853,6 +853,10 @@ def _render_component(
             bw = int(w)
         has_icon = comp.icon is not None
         bh = comp.height or tight_box_height(_lines_to_dicts(comp.label), has_icon=has_icon)
+        # Stretch to cell height when the grid row is taller (uniform_rows
+        # or peer panel equalization).
+        if min_height > 0 and bh < min_height:
+            bh = round_up_to_grid(min_height)
         fill = comp.fill.value
         stroke = "none" if comp.effective_border in (Border.NONE, Border.FILL) else "#000000"
         cid = comp.id or None

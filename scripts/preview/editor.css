@@ -407,6 +407,9 @@ body.dg-preview {
 }
 
 .dg-view-controls {
+       align-items: center;
+       display: flex;
+       gap: 12px;
        padding: 16px 32px 0;
 }
 
@@ -458,6 +461,27 @@ body.dg-preview {
 
 .dg-stage-shell[data-view-mode="both"] .dg-stage-layout {
        grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dg-stage-shell[data-view-mode="both"][data-split-direction="vertical"] .dg-stage-layout {
+       grid-template-columns: minmax(0, 1fr);
+       grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.dg-split-toggle {
+       flex-shrink: 0;
+}
+
+.dg-split-toggle .dg-split-icon--vertical {
+       display: none;
+}
+
+.dg-stage-shell[data-split-direction="vertical"] .dg-split-toggle .dg-split-icon--horizontal {
+       display: none;
+}
+
+.dg-stage-shell[data-split-direction="vertical"] .dg-split-toggle .dg-split-icon--vertical {
+       display: block;
 }
 
 .dg-stage-shell[data-view-mode="input"] .dg-output-pane,

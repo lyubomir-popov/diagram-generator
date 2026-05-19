@@ -657,6 +657,21 @@ Every text element — labels, helper notes, headings — must fit entirely with
 
 Before placing text inside a container, verify: `text_y + (line_count × line_step) ≤ container_y + container_height - inset`. If it does not fit, enlarge the container (re-derive from inside-out model), reposition the text, or move the text outside as a standalone helper note.
 
+**Width budget rule:** the layout engine does not auto-wrap text within a `Line`. Each `Line` of text must fit within the available horizontal space:
+
+- **With icon:** `col_width − 2 × INSET − ICON_SIZE − ICON_INSET` = `col_width − 72` px.
+- **Without icon:** `col_width − 2 × INSET` = `col_width − 16` px.
+
+If a heading or body line exceeds this budget, increase `col_width`, split the line across multiple `Line` objects, or remove the icon. The default `192px` box width is only sufficient for short labels — text-heavy boxes with icons need at least `280px` column width.
+
+### Row equalization for mixed-type rows
+
+When a grid row contains both Panels (tall, with children) and standalone Boxes (short, content-sized), enable `uniform_rows=True` on the Diagram to equalize all row heights. Without equalization, arrows between peers at different heights route with vertical bends and arrowheads that appear parallel to the target edge rather than perpendicular.
+
+### Panel children type ordering
+
+The layout engine processes Box children before Panel children within a parent Panel. All Boxes are placed in the grid first; all sub-Panels are placed below the box grid. To control vertical ordering, keep all children as the same type. If a Panel needs a nested sub-group followed by a standalone item (or vice versa), flatten the sub-group into Boxes (`border=Border.FILL` for grey-background headings) so the engine respects `row` indices.
+
 ## Shapes
 
 The shape language is square and explicit.

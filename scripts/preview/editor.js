@@ -2498,19 +2498,26 @@ function startTextEdit(cid, e) {
     if (g.querySelector(".dg-icon")) hasIcon = true;
   });
 
+  // Compute SVG-to-screen scale so we can convert SVG-coordinate values
+  // (font-size, icon gutter) to screen pixels for the HTML overlay.
+  const ctm = svg.getScreenCTM();
+  const svgScale = ctm ? ctm.a : 1;  // uniform scale (a == d for non-skew)
+
   // Width: container minus insets, minus icon area + gutter if icon present
-  const iconGutter = hasIcon ? (window.__DG_CONFIG.icon_size + window.__DG_CONFIG.col_gap) : 0;
-  const editorW = Math.max(containerRect.width - 16 - iconGutter, 60);
+  const iconGutter = hasIcon ? (window.__DG_CONFIG.icon_size + window.__DG_CONFIG.col_gap) * svgScale : 0;
+  const insetPx = 16 * svgScale;
+  const editorW = Math.max(containerRect.width - insetPx - iconGutter, 60);
 
   // Create textarea overlay
   const ta = document.createElement("textarea");
   ta.className = "dg-text-editor";
   ta.value = lines.join("\n");
-  ta.style.left = textBBox.left + "px";
-  ta.style.top = textBBox.top + "px";
+  ta.style.left = (textBBox.left - 4) + "px";
+  ta.style.top = (textBBox.top - 4) + "px";
   ta.style.width = editorW + "px";
   ta.style.minHeight = textBBox.height + "px";
-  ta.style.fontSize = (styles[0] ? styles[0].fontSize : "14") + "px";
+  ta.style.fontSize = (parseFloat(styles[0] ? styles[0].fontSize : "14") * svgScale) + "px";
+  ta.style.lineHeight = (24 * svgScale) + "px";
   ta.style.fontWeight = styles[0] ? styles[0].fontWeight : "400";
   ta.style.color = styles[0] ? styles[0].fill : "#000";
 
@@ -3656,8 +3663,32 @@ connectSSE();
     }
   }
 
+  // ---- Horizontal / vertical split toggle ----
+  const splitToggle = document.getElementById("split-toggle");
+  const setSplitDirection = (dir) => {
+    const next = dir === "vertical" ? "vertical" : "horizontal";
+    stageShell.dataset.splitDirection = next;
+    splitToggle.setAttribute("aria-label",
+      next === "horizontal" ? "Switch to vertical split" : "Switch to horizontal split");
+    splitToggle.title = splitToggle.getAttribute("aria-label");
+  };
+
+  const origSetViewMode = setViewMode;
+  const setViewModeWithToggle = (mode) => {
+    origSetViewMode(mode);
+    if (splitToggle) splitToggle.style.display = mode === "both" ? "" : "none";
+  };
+
+  if (splitToggle) {
+    splitToggle.addEventListener("click", () => {
+      const current = stageShell.dataset.splitDirection || "horizontal";
+      setSplitDirection(current === "horizontal" ? "vertical" : "horizontal");
+    });
+    setSplitDirection("horizontal");
+  }
+
   tabs.forEach((tab) => {
-    tab.addEventListener("click", () => setViewMode(tab.dataset.viewMode || "output"));
+    tab.addEventListener("click", () => setViewModeWithToggle(tab.dataset.viewMode || "output"));
   });
-  setViewMode(hasReference ? "both" : "output");
+  setViewModeWithToggle(hasReference ? "both" : "output");
 })();

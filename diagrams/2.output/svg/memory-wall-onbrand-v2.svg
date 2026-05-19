@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="456" height="656" viewBox="0 0 456 656" xml:space="preserve">
   <rect width="456" height="656" fill="#FFFFFF" />
   <g data-component-id="user">
-  <rect x="24" y="24" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="24" width="192" height="48" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#000000">User request</tspan>
   </text>
@@ -105,7 +105,7 @@
   </text>
   </g>
   <g data-component-id="_auto_2">
-  <line x1="120" y1="64" x2="120" y2="85.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="72" x2="120" y2="85.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,85.1592 120,96 122.9053,85.1592" fill="#E95420" />
   </g>
   <g data-component-id="_auto_3">

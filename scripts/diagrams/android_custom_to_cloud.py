@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from diagram_model import (
     Arrow,
+    Border,
     Box,
     Diagram,
     Fill,
@@ -28,10 +29,11 @@ android_custom_to_cloud = Diagram(
     title="Custom Android to Anbox Cloud",
     arrangement=Diagram.Arrangement.GRID,
     cols=4,
-    col_width=192,
-    col_gap=24,
+    col_width=336,
+    col_gap=32,
     row_gap=24,
     outer_margin=24,
+    uniform_rows=True,
     components=[
         # ── Col 0: Custom Android files ──
         Panel(
@@ -42,26 +44,24 @@ android_custom_to_cloud = Diagram(
             row_gap=8,
             col=0, row=0,
             children=[
-                Panel(
+                Box(
                     id="partitions",
-                    heading=_heading("Partitions"),
+                    label=[_heading("Partitions")],
                     fill=Fill.GREY,
-                    cols=1,
-                    row_gap=8,
-                    children=[
-                        Box(
-                            id="system_image",
-                            label=[_body("Android system"), _body("image")],
-                            fill=Fill.WHITE,
-                            col=0, row=0,
-                        ),
-                    ],
+                    border=Border.FILL,
+                    col=0, row=0,
+                ),
+                Box(
+                    id="system_image",
+                    label=[_body("Android system image")],
+                    fill=Fill.WHITE,
+                    col=0, row=1,
                 ),
                 Box(
                     id="kernel",
                     label=[_body("Kernel")],
                     fill=Fill.GREY,
-                    col=0, row=1,
+                    col=0, row=2,
                 ),
             ],
         ),
@@ -108,8 +108,8 @@ android_custom_to_cloud = Diagram(
             id="virt_instance",
             label=[
                 _heading("Virtualized Android instance"),
-                _body("- Unmodified Cuttlefish-based"),
-                _body("  Android"),
+                _body("- Unmodified"),
+                _body("  Cuttlefish-based Android"),
                 _body("- No rebuild required"),
             ],
             fill=Fill.WHITE,
