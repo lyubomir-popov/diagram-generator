@@ -141,6 +141,24 @@ def _align_offset(align: Align, available: float, content: float, axis: str) -> 
 
 
 # ---------------------------------------------------------------------------
+# Cross-axis alignment
+# ---------------------------------------------------------------------------
+
+def _is_cross_stretch(align: Align, direction: Direction) -> bool:
+    """Whether cross-axis children should stretch to fill.
+
+    Stretch (default Figma behavior) is active when the alignment is at
+    the 'start' edge of the cross axis:
+      - HORIZONTAL layout → stretch when TOP_*
+      - VERTICAL layout   → stretch when *_LEFT
+    """
+    if direction == Direction.HORIZONTAL:
+        return align in (Align.TOP_LEFT, Align.TOP_CENTER, Align.TOP_RIGHT)
+    else:
+        return align in (Align.TOP_LEFT, Align.CENTER_LEFT, Align.BOTTOM_LEFT)
+
+
+# ---------------------------------------------------------------------------
 # Pass 2: Place (top-down)
 # ---------------------------------------------------------------------------
 
@@ -204,7 +222,7 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
         cross_size = max(0, frame._placed_h - 2 * pad - heading_h - heading_gap)
     else:
         available_for_children = max(0, frame._placed_h - 2 * pad - heading_h - heading_gap - total_gap)
-        cross_size = frame._placed_w - 2 * pad
+        cross_size = max(0, frame._placed_w - 2 * pad)
 
     # FILL children share the available space equally (after HUG children
     # take their measured sizes).  This matches Figma behaviour: all FILL
@@ -250,8 +268,12 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
         main_offset = _align_offset(frame.align, inner_h, content_main, "y")
 
     # Place children sequentially.
-    # Cross-axis always stretches to fill (like Figma default).
+    # Cross-axis: stretch when alignment is at the start edge (TOP for
+    # horizontal, LEFT for vertical).  CENTER/END on the cross-axis keep
+    # the child's measured size and apply an offset — matching Figma.
     # FILL children get base_fill; the last extra_fills of them get +BASELINE_UNIT.
+    stretch_cross = _is_cross_stretch(frame.align, frame.direction)
+
     if frame.direction == Direction.HORIZONTAL:
         cursor_x = x + pad + main_offset
         fill_idx = 0
@@ -262,8 +284,14 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
                 fill_idx += 1
             else:
                 child_w = child._measured_w
-            child_h = cross_size  # cross-axis: always stretch
-            place(child, cursor_x, y + pad + heading_h + heading_gap, child_w, child_h)
+            if stretch_cross:
+                child_h = cross_size
+                child_y = y + pad + heading_h + heading_gap
+            else:
+                child_h = child._measured_h
+                cross_offset = _align_offset(frame.align, cross_size, child._measured_h, "y")
+                child_y = y + pad + heading_h + heading_gap + cross_offset
+            place(child, cursor_x, child_y, child_w, child_h)
             cursor_x += child._placed_w + frame.gap
     else:  # VERTICAL
         cursor_y = y + pad + heading_h + heading_gap + main_offset
@@ -274,8 +302,14 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
                 fill_idx += 1
             else:
                 child_h = child._measured_h
-            child_w = cross_size  # cross-axis: always stretch
-            place(child, x + pad, cursor_y, child_w, child_h)
+            if stretch_cross:
+                child_w = cross_size
+                child_x = x + pad
+            else:
+                child_w = child._measured_w
+                cross_offset = _align_offset(frame.align, cross_size, child._measured_w, "x")
+                child_x = x + pad + cross_offset
+            place(child, child_x, cursor_y, child_w, child_h)
             cursor_y += child._placed_h + frame.gap
 
 

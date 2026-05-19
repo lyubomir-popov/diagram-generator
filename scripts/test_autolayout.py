@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from frame_model import Frame, FrameDiagram, Direction, Sizing, Align
 from diagram_model import Line, Fill, Border
-from layout_v3 import measure, place, _align_offset, _enforce_fill_hug_invariant
+from layout_v3 import measure, place, _align_offset, _enforce_fill_hug_invariant, _is_cross_stretch
 from diagram_shared import BASELINE_UNIT
 
 
@@ -511,6 +511,195 @@ class TestMainAxisAlignment:
         assert abs(a._placed_y - expected_a_y) <= 1, \
             f"First child y={a._placed_y}, expected ~{expected_a_y}"
         assert not _children_within_parent(root)
+
+
+# ── 2B2: Cross-axis alignment ──
+
+class TestCrossAxisAlignment:
+    """Cross-axis alignment: children keep measured size when not stretching."""
+
+    def test_horizontal_center_left_cross_center(self):
+        """CENTER_LEFT in horizontal: cross-axis (Y) centers children.
+
+        Child measured_h=64, cross_size=128 → child keeps 64, offset=32.
+        """
+        child = _box("a", w=80, h=64)
+        root = _container("root", Direction.HORIZONTAL, [child],
+                          gap=0, padding=8, align=Align.CENTER_LEFT)
+        root.height = 64 + 64 + 16  # cross_size = 128 after padding
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, root.width or 200, root.height)
+
+        # Child should keep measured height
+        assert child._placed_h == 64, \
+            f"Child should keep measured height 64, got {child._placed_h}"
+        # Child should be vertically centered
+        cross_size = root._placed_h - 16  # minus 2*pad
+        expected_y = 8 + (cross_size - 64) / 2
+        assert abs(child._placed_y - expected_y) <= 1, \
+            f"y={child._placed_y}, expected ~{expected_y}"
+
+    def test_vertical_top_right_cross_right(self):
+        """TOP_RIGHT in vertical: cross-axis (X) pushes children right.
+
+        Child measured_w=96, cross_size=192 → child keeps 96, offset=96.
+        """
+        child = _box("a", w=96, h=64)
+        root = _container("root", Direction.VERTICAL, [child],
+                          gap=0, padding=8, align=Align.TOP_RIGHT)
+        root.width = 96 + 96 + 16  # cross_size = 192 after padding
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, root.width, root.height or 200)
+
+        # Child keeps measured width
+        assert child._placed_w == 96, \
+            f"Child should keep measured width 96, got {child._placed_w}"
+        # Child should be right-aligned
+        cross_size = root._placed_w - 16
+        expected_x = 8 + (cross_size - 96)
+        assert abs(child._placed_x - expected_x) <= 1, \
+            f"x={child._placed_x}, expected ~{expected_x}"
+
+    def test_top_left_still_stretches(self):
+        """TOP_LEFT (default): cross-axis children stretch — backward compatible."""
+        child = _box("a", w=80, h=64)
+        root = _container("root", Direction.HORIZONTAL, [child],
+                          gap=0, padding=8, align=Align.TOP_LEFT)
+        root.height = 200
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, root.width or 200, 200)
+
+        cross_size = 200 - 16  # 184
+        # Child should stretch to fill cross-axis
+        assert child._placed_h == round_up(cross_size), \
+            f"Child should stretch to {round_up(cross_size)}, got {child._placed_h}"
+        assert child._placed_y == 8, \
+            f"Child should start at pad=8, got {child._placed_y}"
+
+    def test_vertical_center_cross_center(self):
+        """CENTER in vertical: cross-axis (X) centers children."""
+        child = _box("a", w=96, h=64)
+        root = _container("root", Direction.VERTICAL, [child],
+                          gap=0, padding=8, align=Align.CENTER)
+        root.width = 224  # cross_size = 224 - 16 = 208
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, 224, root.height or 200)
+
+        assert child._placed_w == 96, \
+            f"Child should keep measured width 96, got {child._placed_w}"
+        cross_size = 224 - 16
+        expected_x = 8 + (cross_size - 96) / 2
+        assert abs(child._placed_x - expected_x) <= 1, \
+            f"x={child._placed_x}, expected ~{expected_x}"
+
+    def test_no_overflow_cross_smaller_than_child(self):
+        """When cross_size < child measured, child keeps measured size, no negatives.
+
+        The child WILL overflow the parent — this is expected behavior
+        (same as Figma). We verify no negative dimensions or positions.
+        """
+        child = _box("a", w=200, h=200)
+        root = _container("root", Direction.HORIZONTAL, [child],
+                          gap=0, padding=8, align=Align.CENTER_LEFT)
+        root.height = 100  # cross_size = 84, less than child's 200
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, root.width or 300, 100)
+
+        # Child should keep measured height, no negative offset
+        assert child._placed_h == 200, \
+            f"Child should keep measured height 200, got {child._placed_h}"
+        assert child._placed_y >= 8, \
+            f"Child y should be >= pad, got {child._placed_y}"
+        assert child._placed_w > 0, "Child width must be positive"
+        assert child._placed_h > 0, "Child height must be positive"
+
+    def test_fill_child_with_cross_center(self):
+        """FILL child on main axis + CENTER on cross axis.
+
+        Child should expand on main-axis (FILL) and keep measured cross-axis.
+        """
+        child = _box("a", w=80, h=64)
+        child.child_sizing = Sizing.FILL
+        root = _container("root", Direction.HORIZONTAL, [child],
+                          gap=0, padding=8, align=Align.CENTER_LEFT)
+        root.width = 300
+        root.height = 200  # cross_size = 184
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, 300, 200)
+
+        # Main-axis: FILL should expand
+        assert child._placed_w > child._measured_w, \
+            f"FILL child should expand: {child._placed_w} <= {child._measured_w}"
+        # Cross-axis: CENTER_LEFT → keep measured height, center
+        assert child._placed_h == 64, \
+            f"Cross-axis should keep measured height 64, got {child._placed_h}"
+        cross_size = 200 - 16
+        expected_y = 8 + (cross_size - 64) / 2
+        assert abs(child._placed_y - expected_y) <= 1, \
+            f"y={child._placed_y}, expected ~{expected_y}"
+
+    def test_heading_with_cross_center(self):
+        """Heading + CENTER_LEFT cross alignment in horizontal container.
+
+        Heading reserves space at top; cross-axis centering uses the
+        remaining space after heading.
+        """
+        child = _box("a", w=80, h=64)
+        root = _container("root", Direction.HORIZONTAL, [child],
+                          gap=24, padding=8, align=Align.CENTER_LEFT,
+                          heading=Line("Header"))
+        root.height = 300
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, root.width or 300, 300)
+
+        # Child should be below heading, centered in remaining cross-space
+        assert child._placed_h == 64, \
+            f"Cross-axis should keep measured height, got {child._placed_h}"
+        # Heading takes space, so child y > pad + heading
+        assert child._placed_y > 8, \
+            f"Child should be below heading, y={child._placed_y}"
+        # No negative dimensions
+        assert child._placed_w > 0 and child._placed_h > 0
+
+    def test_vertical_top_left_still_stretches(self):
+        """TOP_LEFT in VERTICAL: cross-axis (X) children stretch — backward compatible."""
+        child = _box("a", w=80, h=64)
+        root = _container("root", Direction.VERTICAL, [child],
+                          gap=0, padding=8, align=Align.TOP_LEFT)
+        root.width = 300
+        root.sizing = Sizing.FIXED
+        _layout_fixed(root, 300, root.height or 200)
+
+        cross_size = 300 - 16  # 284
+        # Child should stretch to fill cross-axis
+        assert child._placed_w == round_up(cross_size), \
+            f"Child should stretch to {round_up(cross_size)}, got {child._placed_w}"
+        assert child._placed_x == 8, \
+            f"Child should start at pad=8, got {child._placed_x}"
+
+    def test_nested_container_cross_center(self):
+        """Nested container with CENTER cross-axis alignment.
+
+        Inner container should keep its measured width and be centered.
+        """
+        inner_child = _box("ic", w=80, h=40)
+        inner = _container("inner", Direction.VERTICAL, [inner_child],
+                           gap=0, padding=4)
+        outer = _container("outer", Direction.VERTICAL, [inner],
+                           gap=0, padding=8, align=Align.CENTER)
+        outer.width = 300
+        outer.sizing = Sizing.FIXED
+        _layout_fixed(outer, 300, outer.height or 200)
+
+        # Inner should keep measured width, centered on cross-axis
+        assert inner._placed_w <= inner._measured_w + BASELINE_UNIT, \
+            f"Inner should keep ~measured width, got {inner._placed_w} vs measured {inner._measured_w}"
+        cross_size = 300 - 16
+        expected_x = 8 + (cross_size - inner._placed_w) / 2
+        assert abs(inner._placed_x - expected_x) <= BASELINE_UNIT, \
+            f"Inner x={inner._placed_x}, expected ~{expected_x}"
+        # Inner child should be correctly positioned inside inner
+        assert inner_child._placed_x >= inner._placed_x
 
 
 # ── 2C: Grid-snap under alignment ──
@@ -1046,6 +1235,7 @@ if __name__ == "__main__":
         TestMixedDirections,
         TestAlignOffset,
         TestMainAxisAlignment,
+        TestCrossAxisAlignment,
         TestAlignmentGridSnap,
         TestHugSizing,
         TestFillSizing,
