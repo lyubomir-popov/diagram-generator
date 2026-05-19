@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="240" viewBox="0 0 640 240" xml:space="preserve">
+  <rect width="640" height="240" fill="#FFFFFF" />
+  <g data-component-id="gpu">
+  <rect x="0" y="88" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="8" y="112.92" font-size="18" font-weight="700" fill="#000000">GPU</tspan>
+  </text>
+  <g class="dg-icon" transform="translate(136 96)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M33.5 45H32.5V39H24.5V45H23.5V39H15.5V45H14.5V39H10.5C9.72334 39 9.08461 38.4097 9.00781 37.6533L9 37.5V33.5H3V32.5H9V24.5H3V23.5H9V15.5H3V14.5H9V10.5C9 9.67157 9.67157 9 10.5 9H14.5V3H15.5V9H23.5V3H24.5V9H32.5V3H33.5V9H37.5L37.6533 9.00781C38.4097 9.08461 39 9.72334 39 10.5V14.5H45V15.5H39V23.5H45V24.5H39V32.5H45V33.5H39V37.5L38.9922 37.6533C38.9205 38.3593 38.3593 38.9205 37.6533 38.9922L37.5 39H33.5V45ZM10.5 10C10.2239 10 10 10.2239 10 10.5V37.5C10 37.7761 10.2239 38 10.5 38H37.5C37.7761 38 38 37.7761 38 37.5V10.5C38 10.2239 37.7761 10 37.5 10H10.5Z" fill="#000000" />
+
+<path fill-rule="evenodd" clip-rule="evenodd" d="M30 30H18V18H30V30ZM19 29H29V19H19V29Z" fill="#000000" />
+
+  </g>
+  </g>
+  <g data-component-id="scheduler">
+  <rect x="216" y="0" width="304" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="224" y="24.92" font-size="18" font-weight="700" fill="#000000">Scheduler</tspan>
+    <tspan x="224" y="48.92" font-size="18" font-weight="400" fill="#000000">AI inference</tspan>
+    <tspan x="224" y="72.92" font-size="18" font-weight="400" fill="#000000">request</tspan>
+  </text>
+  <g class="dg-icon" transform="translate(464 8)">
+<path d="M42 29.75H6V28.75H42V29.75Z" fill="#000000" />
+
+<path fill-rule="evenodd" clip-rule="evenodd" d="M43.5 7C44.6046 7 45.5 7.89543 45.5 9V31.5C45.5 32.6046 44.6046 33.5 43.5 33.5H30.5V38.5H34.5C34.7761 38.5 35 38.7239 35 39V42C35 42.2761 34.7761 42.5 34.5 42.5H13.5C13.2239 42.5 13 42.2761 13 42V39C13 38.7239 13.2239 38.5 13.5 38.5H17.5V33.5H4.5C3.39543 33.5 2.5 32.6046 2.5 31.5V9C2.5 7.89543 3.39543 7 4.5 7H43.5ZM14 41.5H34V39.5H14V41.5ZM18.5 38.5H29.5V33.5H18.5V38.5ZM4.5 8C3.94772 8 3.5 8.44772 3.5 9V31.5C3.5 32.0523 3.94772 32.5 4.5 32.5H43.5C44.0523 32.5 44.5 32.0523 44.5 31.5V9C44.5 8.44772 44.0523 8 43.5 8H4.5Z" fill="#000000" />
+
+<path fill-rule="evenodd" clip-rule="evenodd" d="M24 17C25.3807 17 26.5 18.1193 26.5 19.5C26.5 20.8807 25.3807 22 24 22C22.6193 22 21.5 20.8807 21.5 19.5C21.5 18.1193 22.6193 17 24 17ZM24 18C23.1716 18 22.5 18.6716 22.5 19.5C22.5 20.3284 23.1716 21 24 21C24.8284 21 25.5 20.3284 25.5 19.5C25.5 18.6716 24.8284 18 24 18Z" fill="#000000" />
+
+  </g>
+  </g>
+  <g data-component-id="gpu.top-&gt;scheduler.left">
+  <line x1="96" y1="88" x2="216" y2="88" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="216" y1="88" x2="216" y2="54.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="213.0947,54.8408 216,44 218.9053,54.8408" fill="#E95420" />
+  </g>
+</svg>

@@ -18,6 +18,8 @@ from diagram_loader import load_diagram
 from diagram_render_svg import write_svg
 from diagram_render_drawio import write_drawio
 from diagram_shared import SVG_DIR, DRAWIO_DIR, cleanup_legacy_output_root_svgs
+from frame_adapter import diagram_to_frame
+from layout_v3 import layout_frame_diagram
 
 
 # (slug, module_name, variable_name)
@@ -80,6 +82,7 @@ def _load_diagrams() -> list[tuple[str, object]]:
 
 def main() -> None:
     emit_grid = "--grid" in sys.argv
+    use_v3 = "--engine" in sys.argv and "v3" in sys.argv
     SVG_DIR.mkdir(parents=True, exist_ok=True)
     DRAWIO_DIR.mkdir(parents=True, exist_ok=True)
     total_arrow_violations = 0
@@ -87,9 +90,14 @@ def main() -> None:
     total_grid_violations = 0
     diagrams = _load_diagrams()
     for slug, diagram in diagrams:
-        result = layout(diagram)
-        svg_path = SVG_DIR / f"{slug}-v2.svg"
-        drawio_path = DRAWIO_DIR / f"{slug}-v2.drawio"
+        if use_v3:
+            frame_diagram = diagram_to_frame(diagram)
+            result = layout_frame_diagram(frame_diagram)
+        else:
+            result = layout(diagram)
+        suffix = "-v3" if use_v3 else "-v2"
+        svg_path = SVG_DIR / f"{slug}{suffix}.svg"
+        drawio_path = DRAWIO_DIR / f"{slug}{suffix}.drawio"
         write_svg(svg_path, result)
         write_drawio(drawio_path, result, name=diagram.title)
 

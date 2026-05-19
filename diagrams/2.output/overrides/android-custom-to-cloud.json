@@ -1,0 +1,18 @@
+{
+  "definition_hash": "62990bb845f837cc",
+  "overrides": {
+    "custom_files": {
+      "dx": -8
+    },
+    "virt_instance": {
+      "dx": -8
+    },
+    "cvd": {
+      "dy": -16
+    },
+    "launchers": {
+      "dy": -32
+    }
+  },
+  "format_version": 1
+}

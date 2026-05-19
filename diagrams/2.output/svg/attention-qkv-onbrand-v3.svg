@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1704" height="264" viewBox="0 0 1704 264" xml:space="preserve">
+  <rect width="1704" height="264" fill="#FFFFFF" />
+  <g data-component-id="query">
+  <text font-family="Ubuntu Sans">
+    <tspan x="0" y="16.92" font-size="18" font-weight="700" fill="#000000">The query (Q): the &quot;question&quot;</tspan>
+  </text>
+  </g>
+  <g data-component-id="q_ubuntu">
+  <rect x="0" y="80" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="8" y="104.92" font-size="18" font-weight="400" fill="#000000">Ubuntu:</tspan>
+  </text>
+  </g>
+  <g data-component-id="match">
+  <text font-family="Ubuntu Sans">
+    <tspan x="0" y="160.92" font-size="18" font-weight="700" fill="#000000">The match (QK^T): the &quot;relevance check&quot;</tspan>
+  </text>
+  </g>
+  <g data-component-id="m_linux">
+  <rect x="0" y="224" width="192" height="40" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="8" y="248.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
+  </text>
+  </g>
+  <g data-component-id="m_for">
+  <rect x="216" y="224" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="224" y="248.92" font-size="18" font-weight="400" fill="#000000">for</tspan>
+  </text>
+  </g>
+  <g data-component-id="m_human">
+  <rect x="432" y="224" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="440" y="248.92" font-size="18" font-weight="400" fill="#000000">human</tspan>
+  </text>
+  </g>
+  <g data-component-id="m_beings">
+  <rect x="648" y="224" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="656" y="248.92" font-size="18" font-weight="400" fill="#000000">beings</tspan>
+  </text>
+  </g>
+  <g data-component-id="keys">
+  <text font-family="Ubuntu Sans">
+    <tspan x="864" y="16.92" font-size="18" font-weight="700" fill="#000000">The keys (K): the &quot;advertisements&quot;</tspan>
+  </text>
+  </g>
+  <g data-component-id="k_linux">
+  <rect x="864" y="80" width="192" height="40" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="872" y="104.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
+  </text>
+  </g>
+  <g data-component-id="k_for">
+  <rect x="1080" y="80" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1088" y="104.92" font-size="18" font-weight="400" fill="#000000">for</tspan>
+  </text>
+  </g>
+  <g data-component-id="k_human">
+  <rect x="1296" y="80" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1304" y="104.92" font-size="18" font-weight="400" fill="#000000">human</tspan>
+  </text>
+  </g>
+  <g data-component-id="k_beings">
+  <rect x="1512" y="80" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1520" y="104.92" font-size="18" font-weight="400" fill="#000000">beings</tspan>
+  </text>
+  </g>
+  <g data-component-id="value">
+  <text font-family="Ubuntu Sans">
+    <tspan x="864" y="160.92" font-size="18" font-weight="700" fill="#000000">The value (V): the &quot;knowledge transfer&quot;</tspan>
+  </text>
+  </g>
+  <g data-component-id="v_ubuntu">
+  <rect x="864" y="224" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="872" y="248.92" font-size="18" font-weight="400" fill="#000000">Ubuntu:</tspan>
+  </text>
+  </g>
+  <g data-component-id="v_linux">
+  <rect x="1080" y="224" width="192" height="40" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1088" y="248.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
+  </text>
+  </g>
+  <g data-component-id="value_transfer">
+  <rect x="1296" y="224" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1304" y="248.92" font-size="18" font-weight="700" fill="#000000">Value transfer (V)</tspan>
+  </text>
+  </g>
+  <g data-component-id="v_ubuntu.right-&gt;v_linux.left">
+  <line x1="1056" y1="244" x2="1068" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1068" y1="244" x2="1068" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1068" y1="244" x2="1069.1592" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1069.1592,241.0947 1080,244 1069.1592,246.9053" fill="#E95420" />
+  </g>
+  <g data-component-id="v_linux.bottom-&gt;value_transfer.top">
+  <line x1="1176" y1="264" x2="1176" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1176" y1="244" x2="1392" y2="244" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1392" y1="244" x2="1392" y2="234.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1389.0947,234.8408 1392,224 1394.9053,234.8408" fill="#E95420" />
+  </g>
+</svg>

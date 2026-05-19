@@ -155,9 +155,10 @@ def _rebuild(grid: bool = False) -> bool:
         return False
 
 
-def _get_layout_result(slug: str):
-    if slug in _layout_cache:
-        return _layout_cache[slug]
+def _get_layout_result(slug: str, engine: str = "v2"):
+    cache_key = f"{slug}:{engine}"
+    if cache_key in _layout_cache:
+        return _layout_cache[cache_key]
     try:
         if str(SCRIPTS) not in sys.path:
             sys.path.insert(0, str(SCRIPTS))
@@ -180,9 +181,16 @@ def _get_layout_result(slug: str):
             if yaml_path is None:
                 return None
             diagram_obj = load_diagram(yaml_path)
-        import diagram_layout
-        result = diagram_layout.layout(diagram_obj)
-        _layout_cache[slug] = result
+
+        if engine == "v3":
+            from frame_adapter import diagram_to_frame
+            from layout_v3 import layout_frame_diagram
+            frame_diagram = diagram_to_frame(diagram_obj)
+            result = layout_frame_diagram(frame_diagram)
+        else:
+            import diagram_layout
+            result = diagram_layout.layout(diagram_obj)
+        _layout_cache[cache_key] = result
         return result
     except Exception:
         return None
