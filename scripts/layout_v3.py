@@ -198,43 +198,37 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
         content_main = hug_total + fill_count * fill_size + total_gap
         content_cross = max((c._measured_w for c in frame.children), default=0)
 
-    # Apply alignment offsets
+    # Apply main-axis alignment offset
     inner_w = frame._placed_w - 2 * pad
     inner_h = frame._placed_h - 2 * pad - heading_h - heading_gap
 
     if frame.direction == Direction.HORIZONTAL:
         main_offset = _align_offset(frame.align, inner_w, content_main, "x")
-        cross_offset = _align_offset(frame.align, inner_h, content_cross, "y")
     else:
         main_offset = _align_offset(frame.align, inner_h, content_main, "y")
-        cross_offset = _align_offset(frame.align, inner_w, content_cross, "x")
 
     # Place children sequentially
+    # Cross-axis always stretches to fill (like Figma default).
+    # Main-axis uses HUG/FILL sizing.
     if frame.direction == Direction.HORIZONTAL:
         cursor_x = x + pad + main_offset
-        base_y = y + pad + heading_h + heading_gap + cross_offset
         for child in frame.children:
             if child.child_sizing == Sizing.FILL:
                 child_w = fill_size
             else:
                 child_w = child._measured_w
-            child_h = cross_size if child.child_sizing == Sizing.FILL else child._measured_h
-            # Cross-axis alignment for each child
-            child_cross_offset = _align_offset(frame.align, cross_size, child._measured_h, "y")
-            place(child, cursor_x, y + pad + heading_h + heading_gap + child_cross_offset, child_w, child_h)
+            child_h = cross_size  # cross-axis: always stretch
+            place(child, cursor_x, y + pad + heading_h + heading_gap, child_w, child_h)
             cursor_x += child._placed_w + frame.gap
     else:  # VERTICAL
-        base_x = x + pad + cross_offset
         cursor_y = y + pad + heading_h + heading_gap + main_offset
         for child in frame.children:
             if child.child_sizing == Sizing.FILL:
                 child_h = fill_size
             else:
                 child_h = child._measured_h
-            child_w = cross_size if child.child_sizing == Sizing.FILL else child._measured_w
-            # Cross-axis alignment for each child
-            child_cross_offset = _align_offset(frame.align, cross_size, child._measured_w, "x")
-            place(child, x + pad + child_cross_offset, cursor_y, child_w, child_h)
+            child_w = cross_size  # cross-axis: always stretch
+            place(child, x + pad, cursor_y, child_w, child_h)
             cursor_y += child._placed_h + frame.gap
 
 

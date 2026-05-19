@@ -2890,6 +2890,43 @@ function clearSelection() {
   renderEmptyInspector();
 }
 
+// ---- 9-point alignment widget (v3) ----
+const ALIGN_POINTS = [
+  "TOP_LEFT", "TOP_CENTER", "TOP_RIGHT",
+  "CENTER_LEFT", "CENTER", "CENTER_RIGHT",
+  "BOTTOM_LEFT", "BOTTOM_CENTER", "BOTTOM_RIGHT",
+];
+const ALIGN_LABELS = {
+  TOP_LEFT: "Top Left", TOP_CENTER: "Top Center", TOP_RIGHT: "Top Right",
+  CENTER_LEFT: "Center Left", CENTER: "Center", CENTER_RIGHT: "Center Right",
+  BOTTOM_LEFT: "Bottom Left", BOTTOM_CENTER: "Bottom Center", BOTTOM_RIGHT: "Bottom Right",
+};
+function buildAlignWidget(cid, currentAlign) {
+  let html = '<div class="field"><span class="label">Alignment</span>';
+  html += '<div class="dg-align-field">';
+  html += '<div class="dg-align-grid">';
+  for (const pt of ALIGN_POINTS) {
+    const active = pt === currentAlign ? " active" : "";
+    html += '<button class="' + active + '" title="' + ALIGN_LABELS[pt] +
+      '" onclick="setFrameAlign(\'' + cid + '\',\'' + pt + '\')">' +
+      '</button>';
+  }
+  html += '</div>';
+  html += '<span class="value">' + ALIGN_LABELS[currentAlign] + '</span>';
+  html += '</div></div>';
+  return html;
+}
+function setFrameAlign(cid, align) {
+  if (!overrides[cid]) overrides[cid] = {};
+  overrides[cid].align = align;
+  setDirty(true);
+  renderSelectionInspector(cid);
+  // v3 relayout via frame engine is not yet wired; the override will take
+  // effect on the next full rebuild (build_v2.py --engine v3).
+}
+// Expose to onclick handlers
+window.setFrameAlign = setFrameAlign;
+
 function updateInspector(cid) {
   const inspector = getInspectorElement();
   if (!inspector) {
@@ -2928,6 +2965,11 @@ function updateInspector(cid) {
   if (inspNode && inspNode.layout) {
     html += '<div class="field"><span class="label">Layout</span><br>' +
       '<span class="value">' + inspNode.layout + (inspNode.layoutGap ? ' (gap ' + inspNode.layoutGap + 'px)' : '') + '</span></div>';
+  }
+  // 9-point alignment widget (v3 only)
+  if (ENGINE === "v3") {
+    const currentAlign = (overrides[cid] && overrides[cid].align) || "TOP_LEFT";
+    html += buildAlignWidget(cid, currentAlign);
   }
   if (hasMoveOverride) {
     html += '<div class="field"><span class="label">Position override</span><br>' +

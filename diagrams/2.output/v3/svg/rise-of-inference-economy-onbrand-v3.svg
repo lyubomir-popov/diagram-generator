@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1680" height="536" viewBox="0 0 1680 536" xml:space="preserve">
   <rect width="1680" height="536" fill="#FFFFFF" />
   <g data-component-id="title">
-  <rect x="0" y="0" width="848" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="0" width="848" height="72" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="24.92" font-size="18" font-weight="700" fill="#000000">The rise of the inference economy</tspan>
   </text>
@@ -11,11 +11,11 @@
   </g>
   </g>
   <g data-component-id="training_hdr">
-  <rect x="0" y="88" width="408" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="96" width="848" height="72" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="8" y="112.92" font-size="18" font-weight="700" fill="#000000">Training</tspan>
+    <tspan x="8" y="120.92" font-size="18" font-weight="700" fill="#000000">Training</tspan>
   </text>
-  <g class="dg-icon" transform="translate(352 96)">
+  <g class="dg-icon" transform="translate(792 104)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30.1585 29.5527C31.5389 29.553 32.6585 30.6722 32.6585 32.0527C32.6584 33.4332 31.5389 34.5525 30.1585 34.5527C28.7778 34.5527 27.6585 33.4334 27.6585 32.0527C27.6585 30.672 28.7778 29.5527 30.1585 29.5527ZM30.1585 30.5527C29.33 30.5527 28.6585 31.2243 28.6585 32.0527C28.6585 32.8811 29.3301 33.5527 30.1585 33.5527C30.9866 33.5525 31.6584 32.8809 31.6585 32.0527C31.6585 31.2245 30.9867 30.553 30.1585 30.5527Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8948 20.0791C18.2755 20.0791 19.3948 21.1984 19.3948 22.5791C19.3947 23.9597 18.2755 25.0791 16.8948 25.0791C15.5141 25.0791 14.3949 23.9597 14.3948 22.5791C14.3948 21.1984 15.5141 20.0791 16.8948 20.0791ZM16.8948 21.0791C16.0664 21.0791 15.3948 21.7507 15.3948 22.5791C15.3949 23.4075 16.0664 24.0791 16.8948 24.0791C17.7232 24.0791 18.3947 23.4075 18.3948 22.5791C18.3948 21.7507 17.7232 21.0791 16.8948 21.0791Z" fill="#000000" />
@@ -27,12 +27,12 @@
   </g>
   </g>
   <g data-component-id="training_detail">
-  <rect x="0" y="176" width="408" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="192" width="848" height="72" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="8" y="200.92" font-size="18" font-weight="400" fill="#000000">Costly &amp; episodic</tspan>
-    <tspan x="8" y="224.92" font-size="18" font-weight="400" fill="#000000">High investment</tspan>
+    <tspan x="8" y="216.92" font-size="18" font-weight="400" fill="#000000">Costly &amp; episodic</tspan>
+    <tspan x="8" y="240.92" font-size="18" font-weight="400" fill="#000000">High investment</tspan>
   </text>
-  <g class="dg-icon" transform="translate(352 184)">
+  <g class="dg-icon" transform="translate(792 200)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M37.6533 3.00781C38.4097 3.08461 39 3.72334 39 4.5V43.5C39 44.2767 38.4097 44.9154 37.6533 44.9922L37.5 45H10.5C9.72334 45 9.08461 44.4097 9.00781 43.6533L9 43.5V4.5C9 3.67157 9.67157 3 10.5 3H37.5L37.6533 3.00781ZM10.5 4C10.2239 4 10 4.22386 10 4.5V43.5C10 43.7761 10.2239 44 10.5 44H37.5C37.7761 44 38 43.7761 38 43.5V4.5C38 4.22386 37.7761 4 37.5 4H10.5Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M34.5 16.5H13.5V7.5H34.5V16.5ZM14.5 15.5H33.5V8.5H14.5V15.5Z" fill="#000000" />
@@ -52,20 +52,20 @@
   </g>
   </g>
   <g data-component-id="compute">
-  <rect x="0" y="264" width="824" height="144" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="288" width="848" height="144" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="8" y="288.92" font-size="18" font-weight="700" fill="#000000">Always-on compute</tspan>
+    <tspan x="8" y="312.92" font-size="18" font-weight="700" fill="#000000">Always-on compute</tspan>
   </text>
-  <g class="dg-icon" transform="translate(768 272)">
+  <g class="dg-icon" transform="translate(792 296)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 5.5C32.2317 5.5 39.206 10.8768 41.6064 18.3096C41.6652 18.3914 41.7001 18.4913 41.7002 18.5996L41.6992 18.6045C42.219 20.3116 42.5 22.1229 42.5 24C42.5 25.8764 42.2186 27.687 41.6992 29.3936L41.7002 29.3994C41.7002 29.5074 41.6647 29.6067 41.6064 29.6885C39.2065 37.1221 32.2323 42.5 24 42.5C15.7671 42.5 8.79112 37.1219 6.3916 29.6875C6.33416 29.6061 6.2998 29.5066 6.2998 29.3994V29.3936C5.78046 27.687 5.5 25.8763 5.5 24C5.5 22.123 5.78012 20.3115 6.2998 18.6045V18.5996C6.29989 18.4923 6.334 18.3929 6.3916 18.3115C8.79139 10.8776 15.7675 5.5 24 5.5ZM7.52051 29.8994C9.75709 36.1464 15.4438 40.7496 22.2852 41.415L21.9658 41.1934C18.0206 38.4486 15.2318 34.4289 13.9971 29.8994H7.52051ZM34.0029 29.8994C32.7683 34.4287 29.9802 38.4486 26.0352 41.1934L25.7148 41.415C32.5562 40.7496 38.2429 36.1464 40.4795 29.8994H34.0029ZM24.5 41.043L25.4648 40.3721C29.1381 37.8162 31.7553 34.0971 32.9639 29.8994H24.5V41.043ZM15.0361 29.8994C16.2447 34.0973 18.8626 37.8162 22.5361 40.3721L23.5 41.042V29.8994H15.0361ZM34.0264 19.0996C34.4799 20.8722 34.7168 22.7111 34.7168 24.5781C34.7168 26.0465 34.5562 27.4941 34.249 28.8994H40.8037C41.2563 27.3447 41.5 25.7008 41.5 24C41.5 22.2988 41.2564 20.6546 40.8037 19.0996H34.0264ZM24.5 28.8994H33.2227C33.546 27.4967 33.7168 26.0485 33.7168 24.5781C33.7168 22.7083 33.4667 20.8682 32.9912 19.0996H24.5V28.8994ZM15.0088 19.0996C14.5334 20.8683 14.2842 22.7083 14.2842 24.5781C14.2842 26.0485 14.454 27.4967 14.7773 28.8994H23.5V19.0996H15.0088ZM7.19629 19.0996C6.74357 20.6546 6.5 22.2988 6.5 24C6.5 25.7008 6.74374 27.3447 7.19629 28.8994H13.751C13.4438 27.4941 13.2842 26.0465 13.2842 24.5781C13.2842 22.7111 13.5202 20.8722 13.9736 19.0996H7.19629ZM26.5117 7.38867C29.9742 10.1896 32.4672 13.9349 33.7441 18.0996H40.4795C38.2184 11.7851 32.4318 7.14919 25.4912 6.56348L26.5117 7.38867ZM24.5 18.0996H32.6963C31.4515 14.2407 29.1073 10.7744 25.8828 8.16602L24.5 7.04688V18.0996ZM22.1172 8.16602C18.8927 10.7744 16.5483 14.2406 15.3037 18.0996H23.5V7.04688L22.1172 8.16602ZM22.5078 6.56348C15.5676 7.14954 9.78154 11.7854 7.52051 18.0996H14.2559C15.5325 13.9348 18.0258 10.1896 21.4883 7.38867L22.5078 6.56348Z" fill="#000000" />
 
   </g>
   </g>
-  <rect x="8" y="336" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="8" y="360" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="16" y="360.92" font-size="18" font-weight="400" fill="#000000">Data centers</tspan>
+    <tspan x="16" y="384.92" font-size="18" font-weight="400" fill="#000000">Data centers</tspan>
   </text>
-  <g class="dg-icon" transform="translate(144 344)">
+  <g class="dg-icon" transform="translate(144 368)">
 <path d="M39.5 30C40.6046 30 41.5 30.8954 41.5 32V37C41.5 38.1046 40.6046 39 39.5 39H24.5V40.4277C25.5716 40.6573 26.375 41.6099 26.375 42.75C26.375 44.0617 25.3117 45.125 24 45.125C22.6883 45.125 21.625 44.0617 21.625 42.75C21.625 41.6099 22.4284 40.6574 23.5 40.4277V39H8.5C7.39543 39 6.5 38.1046 6.5 37V32C6.5 30.8954 7.39543 30 8.5 30H39.5ZM24 41.375C23.2406 41.375 22.625 41.9906 22.625 42.75C22.625 43.5094 23.2406 44.125 24 44.125C24.7594 44.125 25.375 43.5094 25.375 42.75C25.375 41.9906 24.7594 41.375 24 41.375ZM8.5 31C7.94772 31 7.5 31.4477 7.5 32V37L7.50488 37.1025C7.55278 37.573 7.92703 37.9472 8.39746 37.9951L8.5 38H39.5L39.6025 37.9951C40.1067 37.9438 40.5 37.5177 40.5 37V32C40.5 31.4477 40.0523 31 39.5 31H8.5ZM12 33.501C12.5523 33.501 13 33.9487 13 34.501C13 35.0533 12.5523 35.501 12 35.501C11.4477 35.501 11 35.0533 11 34.501C11 33.9487 11.4477 33.501 12 33.501ZM39.5 19C40.6046 19 41.5 19.8954 41.5 21V26C41.5 27.1046 40.6046 28 39.5 28H8.5C7.39543 28 6.5 27.1046 6.5 26V21C6.5 19.8954 7.39543 19 8.5 19H39.5ZM8.5 20C7.94772 20 7.5 20.4477 7.5 21V26L7.50488 26.1025C7.55278 26.573 7.92703 26.9472 8.39746 26.9951L8.5 27H39.5L39.6025 26.9951C40.1067 26.9438 40.5 26.5177 40.5 26V21C40.5 20.4477 40.0523 20 39.5 20H8.5ZM12 22.501C12.5523 22.501 13 22.9487 13 23.501C13 24.0533 12.5523 24.501 12 24.501C11.4477 24.501 11 24.0533 11 23.501C11 22.9487 11.4477 22.501 12 22.501ZM39.5 8C40.6046 8 41.5 8.89543 41.5 10V15C41.5 16.1046 40.6046 17 39.5 17H8.5C7.39543 17 6.5 16.1046 6.5 15V10C6.5 8.89543 7.39543 8 8.5 8H39.5ZM8.5 9C7.94772 9 7.5 9.44772 7.5 10V15L7.50488 15.1025C7.55278 15.573 7.92703 15.9472 8.39746 15.9951L8.5 16H39.5L39.6025 15.9951C40.1067 15.9438 40.5 15.5177 40.5 15V10C40.5 9.44772 40.0523 9 39.5 9H8.5ZM12 11.501C12.5523 11.501 13 11.9487 13 12.501C13 13.0533 12.5523 13.501 12 13.501C11.4477 13.501 11 13.0533 11 12.501C11 11.9487 11.4477 11.501 12 11.501Z" fill="#000000" />
 
 <circle cx="16" cy="12.501" r="1" fill="#000000" />
@@ -75,11 +75,11 @@
 <circle cx="16" cy="34.501" r="1" fill="#000000" />
 
   </g>
-  <rect x="208" y="336" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="208" y="360" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="216" y="360.92" font-size="18" font-weight="400" fill="#000000">Edge devices</tspan>
+    <tspan x="216" y="384.92" font-size="18" font-weight="400" fill="#000000">Edge devices</tspan>
   </text>
-  <g class="dg-icon" transform="translate(344 344)">
+  <g class="dg-icon" transform="translate(344 368)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M35 3C36.1046 3 37 3.89543 37 5V43C37 44.0357 36.2128 44.887 35.2041 44.9893L35 45H13L12.7959 44.9893C11.8543 44.8938 11.1062 44.1457 11.0107 43.2041L11 43V5C11 3.89543 11.8954 3 13 3H35ZM13 4C12.4477 4 12 4.44772 12 5V43C12 43.5523 12.4477 44 13 44H35C35.5523 44 36 43.5523 36 43V5C36 4.44772 35.5523 4 35 4H13Z" fill="#000000" />
 
 <path d="M24 40C24.5523 40 25 40.4477 25 41C25 41.5523 24.5523 42 24 42C23.4477 42 23 41.5523 23 41C23 40.4477 23.4477 40 24 40Z" fill="#000000" />
@@ -87,11 +87,11 @@
 <path d="M34.5 38.5H13.5V37.5H34.5V38.5Z" fill="#000000" />
 
   </g>
-  <rect x="408" y="336" width="408" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="408" y="360" width="408" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="416" y="360.92" font-size="18" font-weight="400" fill="#000000">Local AI</tspan>
+    <tspan x="416" y="384.92" font-size="18" font-weight="400" fill="#000000">Local AI</tspan>
   </text>
-  <g class="dg-icon" transform="translate(760 344)">
+  <g class="dg-icon" transform="translate(760 368)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30.1585 29.5527C31.5389 29.553 32.6585 30.6722 32.6585 32.0527C32.6584 33.4332 31.5389 34.5525 30.1585 34.5527C28.7778 34.5527 27.6585 33.4334 27.6585 32.0527C27.6585 30.672 28.7778 29.5527 30.1585 29.5527ZM30.1585 30.5527C29.33 30.5527 28.6585 31.2243 28.6585 32.0527C28.6585 32.8811 29.3301 33.5527 30.1585 33.5527C30.9866 33.5525 31.6584 32.8809 31.6585 32.0527C31.6585 31.2245 30.9867 30.553 30.1585 30.5527Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8948 20.0791C18.2755 20.0791 19.3948 21.1984 19.3948 22.5791C19.3947 23.9597 18.2755 25.0791 16.8948 25.0791C15.5141 25.0791 14.3949 23.9597 14.3948 22.5791C14.3948 21.1984 15.5141 20.0791 16.8948 20.0791ZM16.8948 21.0791C16.0664 21.0791 15.3948 21.7507 15.3948 22.5791C15.3949 23.4075 16.0664 24.0791 16.8948 24.0791C17.7232 24.0791 18.3947 23.4075 18.3948 22.5791C18.3948 21.7507 17.7232 21.0791 16.8948 21.0791Z" fill="#000000" />
@@ -102,23 +102,23 @@
 
   </g>
   <g data-component-id="summary1">
-  <rect x="0" y="432" width="848" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="456" width="848" height="72" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="8" y="456.92" font-size="18" font-weight="700" fill="#000000">From training focused to inference focused</tspan>
+    <tspan x="8" y="480.92" font-size="18" font-weight="700" fill="#000000">From training focused to inference focused</tspan>
   </text>
   </g>
   <g data-component-id="summary2">
-  <rect x="0" y="496" width="848" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="0" y="552" width="848" height="72" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="8" y="520.92" font-size="18" font-weight="700" fill="#000000">Performance &amp; cost efficiency</tspan>
+    <tspan x="8" y="576.92" font-size="18" font-weight="700" fill="#000000">Performance &amp; cost efficiency</tspan>
   </text>
   </g>
   <g data-component-id="inference_hdr">
-  <rect x="872" y="0" width="408" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="872" y="0" width="808" height="168" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="880" y="24.92" font-size="18" font-weight="700" fill="#FFFFFF">Inference</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1224 8)">
+  <g class="dg-icon" transform="translate(1624 8)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M33.5 45H32.5V39H24.5V45H23.5V39H15.5V45H14.5V39H10.5C9.72334 39 9.08461 38.4097 9.00781 37.6533L9 37.5V33.5H3V32.5H9V24.5H3V23.5H9V15.5H3V14.5H9V10.5C9 9.67157 9.67157 9 10.5 9H14.5V3H15.5V9H23.5V3H24.5V9H32.5V3H33.5V9H37.5L37.6533 9.00781C38.4097 9.08461 39 9.72334 39 10.5V14.5H45V15.5H39V23.5H45V24.5H39V32.5H45V33.5H39V37.5L38.9922 37.6533C38.9205 38.3593 38.3593 38.9205 37.6533 38.9922L37.5 39H33.5V45ZM10.5 10C10.2239 10 10 10.2239 10 10.5V37.5C10 37.7761 10.2239 38 10.5 38H37.5C37.7761 38 38 37.7761 38 37.5V10.5C38 10.2239 37.7761 10 37.5 10H10.5Z" fill="#FFFFFF" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30 30H18V18H30V30ZM19 29H29V19H19V29Z" fill="#FFFFFF" />
@@ -126,12 +126,12 @@
   </g>
   </g>
   <g data-component-id="inference_detail">
-  <rect x="872" y="88" width="408" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="872" y="192" width="808" height="168" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="880" y="112.92" font-size="18" font-weight="400" fill="#000000">Constant &amp; demand-driven</tspan>
-    <tspan x="880" y="136.92" font-size="18" font-weight="400" fill="#000000">Ongoing expense</tspan>
+    <tspan x="880" y="216.92" font-size="18" font-weight="400" fill="#000000">Constant &amp; demand-driven</tspan>
+    <tspan x="880" y="240.92" font-size="18" font-weight="400" fill="#000000">Ongoing expense</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1224 96)">
+  <g class="dg-icon" transform="translate(1624 200)">
 <path d="M39.5 30C40.6046 30 41.5 30.8954 41.5 32V37C41.5 38.1046 40.6046 39 39.5 39H24.5V40.4277C25.5716 40.6573 26.375 41.6099 26.375 42.75C26.375 44.0617 25.3117 45.125 24 45.125C22.6883 45.125 21.625 44.0617 21.625 42.75C21.625 41.6099 22.4284 40.6574 23.5 40.4277V39H8.5C7.39543 39 6.5 38.1046 6.5 37V32C6.5 30.8954 7.39543 30 8.5 30H39.5ZM24 41.375C23.2406 41.375 22.625 41.9906 22.625 42.75C22.625 43.5094 23.2406 44.125 24 44.125C24.7594 44.125 25.375 43.5094 25.375 42.75C25.375 41.9906 24.7594 41.375 24 41.375ZM8.5 31C7.94772 31 7.5 31.4477 7.5 32V37L7.50488 37.1025C7.55278 37.573 7.92703 37.9472 8.39746 37.9951L8.5 38H39.5L39.6025 37.9951C40.1067 37.9438 40.5 37.5177 40.5 37V32C40.5 31.4477 40.0523 31 39.5 31H8.5ZM12 33.501C12.5523 33.501 13 33.9487 13 34.501C13 35.0533 12.5523 35.501 12 35.501C11.4477 35.501 11 35.0533 11 34.501C11 33.9487 11.4477 33.501 12 33.501ZM39.5 19C40.6046 19 41.5 19.8954 41.5 21V26C41.5 27.1046 40.6046 28 39.5 28H8.5C7.39543 28 6.5 27.1046 6.5 26V21C6.5 19.8954 7.39543 19 8.5 19H39.5ZM8.5 20C7.94772 20 7.5 20.4477 7.5 21V26L7.50488 26.1025C7.55278 26.573 7.92703 26.9472 8.39746 26.9951L8.5 27H39.5L39.6025 26.9951C40.1067 26.9438 40.5 26.5177 40.5 26V21C40.5 20.4477 40.0523 20 39.5 20H8.5ZM12 22.501C12.5523 22.501 13 22.9487 13 23.501C13 24.0533 12.5523 24.501 12 24.501C11.4477 24.501 11 24.0533 11 23.501C11 22.9487 11.4477 22.501 12 22.501ZM39.5 8C40.6046 8 41.5 8.89543 41.5 10V15C41.5 16.1046 40.6046 17 39.5 17H8.5C7.39543 17 6.5 16.1046 6.5 15V10C6.5 8.89543 7.39543 8 8.5 8H39.5ZM8.5 9C7.94772 9 7.5 9.44772 7.5 10V15L7.50488 15.1025C7.55278 15.573 7.92703 15.9472 8.39746 15.9951L8.5 16H39.5L39.6025 15.9951C40.1067 15.9438 40.5 15.5177 40.5 15V10C40.5 9.44772 40.0523 9 39.5 9H8.5ZM12 11.501C12.5523 11.501 13 11.9487 13 12.501C13 13.0533 12.5523 13.501 12 13.501C11.4477 13.501 11 13.0533 11 12.501C11 11.9487 11.4477 11.501 12 11.501Z" fill="#000000" />
 
 <circle cx="16" cy="12.501" r="1" fill="#000000" />
@@ -143,11 +143,11 @@
   </g>
   </g>
   <g data-component-id="revenue">
-  <rect x="872" y="176" width="808" height="144" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="872" y="384" width="808" height="168" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="880" y="200.92" font-size="18" font-weight="700" fill="#000000">Revenue impact</tspan>
+    <tspan x="880" y="408.92" font-size="18" font-weight="700" fill="#000000">Revenue impact</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1624 184)">
+  <g class="dg-icon" transform="translate(1624 392)">
 <path d="M41.5752 24.2002H40.5752V21.207L30.9287 30.8535C30.835 30.9472 30.7077 30.9999 30.5752 31H18.707L8.35352 41.3535L7.64648 40.6465L18.1465 30.1465L18.2227 30.084C18.3042 30.0296 18.4006 30 18.5 30H30.3682L39.8682 20.5H36.875V19.5H41.5752V24.2002Z" fill="#000000" />
 
 <path d="M20 42H19V36H20V42Z" fill="#000000" />
@@ -164,11 +164,11 @@
 
   </g>
   </g>
-  <rect x="880" y="248" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="880" y="456" width="192" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="888" y="272.92" font-size="18" font-weight="400" fill="#000000">Latency down</tspan>
+    <tspan x="888" y="480.92" font-size="18" font-weight="400" fill="#000000">Latency down</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1016 256)">
+  <g class="dg-icon" transform="translate(1016 464)">
 <path d="M12.13 33.15H2.85001V32.64C2.97001 28 4.56001 23.63 7.44001 20L7.79001 19.56L14.4 26.17L14.17 26.51C12.94 28.33 12.24 30.46 12.15 32.66L12.13 33.14V33.15ZM3.88001 32.15H11.18C11.34 30.07 12.01 28.07 13.12 26.3L7.88001 21.06C5.45001 24.29 4.07001 28.1 3.88001 32.14V32.15ZM15.14 25.25L8.57001 18.68L8.92001 18.33C12.54 14.64 17.37 12.41 22.51 12.06L23.04 12.02V21.32L22.6 21.37C19.91 21.68 17.38 22.93 15.49 24.89L15.14 25.25ZM9.98001 18.68L15.13 23.84C17.03 22.03 19.46 20.84 22.04 20.44V13.1C17.5 13.54 13.26 15.5 9.97001 18.68H9.98001ZM32.5 24.88L32.15 24.55C30.12 22.63 27.47 21.48 24.69 21.32L24.22 21.29V12L24.74 12.02C29.98 12.2 34.94 14.31 38.71 17.96L39.08 18.31L32.51 24.88H32.5ZM25.22 20.35C27.9 20.6 30.45 21.7 32.48 23.49L37.64 18.33C34.22 15.18 29.85 13.32 25.22 13.04V20.35Z" fill="#000000" />
 
 <path d="M31.53 27.31L30.82 26.6L25.33 32.09C24.94 31.85 24.49 31.7 24 31.7C22.62 31.7 21.5 32.82 21.5 34.2C21.5 35.58 22.62 36.7 24 36.7C25.38 36.7 26.5 35.58 26.5 34.2C26.5 33.67 26.33 33.18 26.05 32.78L31.53 27.3V27.31ZM24 35.71C23.17 35.71 22.5 35.04 22.5 34.21C22.5 33.38 23.17 32.71 24 32.71C24.83 32.71 25.5 33.38 25.5 34.21C25.5 35.04 24.83 35.71 24 35.71Z" fill="#000000" />
@@ -176,11 +176,11 @@
 <path d="M45.15 33.15H35.87L35.85 32.67C35.76 30.29 34.96 28.02 33.54 26.11L33.28 25.76L39.87 19.17L40.22 19.59C43.28 23.24 45.02 27.88 45.14 32.64V33.15H45.15ZM36.82 32.15H44.12C43.92 27.92 42.43 23.97 39.8 20.65L34.59 25.86C35.88 27.73 36.64 29.89 36.82 32.15Z" fill="#000000" />
 
   </g>
-  <rect x="1080" y="248" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1080" y="456" width="192" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1088" y="272.92" font-size="18" font-weight="400" fill="#000000">Tokens/sec up</tspan>
+    <tspan x="1088" y="480.92" font-size="18" font-weight="400" fill="#000000">Tokens/sec up</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1216 256)">
+  <g class="dg-icon" transform="translate(1216 464)">
 <path d="M26.25 42.6035L24 43.8496L21.749 42.6035L22.2344 41.7285L24 42.7061L25.7656 41.7285L26.25 42.6035ZM17.7344 39.2383L17.249 40.1133L15 38.8682L12.75 37.6221L13.2344 36.748L17.7344 39.2383ZM35.249 37.6221L33 38.8682L30.75 40.1133L30.2656 39.2383L34.7656 36.748L35.249 37.6221ZM7 33.2969L8.73438 34.2568L8.24902 35.1318L6 33.8867V31.3965H7V33.2969ZM42 33.8867L39.75 35.1318L39.2656 34.2568L41 33.2969V31.3965H42V33.8867ZM7 26.415H6V21.4336H7V26.415ZM42 26.415H41V21.4336H42V26.415ZM8.73438 13.5918L7 14.5508V16.4531H6V13.9619L8.25 12.7168L8.73438 13.5918ZM42 13.9619V16.4531H41V14.5508L39.2656 13.5918L39.75 12.7168L42 13.9619ZM17.25 7.73633L17.7344 8.61035L15.4844 9.85645L13.2344 11.1016L12.75 10.2266L15 8.98145L17.249 7.73535L17.25 7.73633ZM33 8.98145L35.25 10.2266L34.7656 11.1016L32.5156 9.85645L30.2656 8.61035L30.75 7.73633V7.73535L33 8.98145ZM26.249 5.24512L25.7656 6.12012L24 5.14258L22.2344 6.12012L21.75 5.24512L24 4L26.249 5.24512Z" fill="#000000" />
 
 <path d="M32 19.4707V28.4121L24 32.8828L16 28.4121V19.4707L24 15L32 19.4707ZM17 27.8242L20.4883 29.7744L23.5 31.4561V24.2969L17 20.6357V27.8242ZM24.5 24.2969V31.4561L27.5117 29.7744L31 27.8242V20.6357L24.5 24.2969ZM20.4883 18.1084L17.5068 19.7734L24 23.4297L30.4922 19.7734L27.5117 18.1084L24 16.1455L20.4883 18.1084Z" fill="#000000" />
@@ -188,11 +188,11 @@
 <path d="M24.5 37.293L25.5 36.293L26.207 37L24 39.207L21.793 37L22.5 36.293L23.5 37.293V34H24.5V37.293ZM11.707 22.5049L11.3516 22.8555L10.7188 23.4805H14V24.4805H10.6963L11.3555 25.1484L11.707 25.5049L10.9951 26.207L10.6445 25.8516L9.14453 24.332L8.79297 23.9756L9.14844 23.625L10.6484 22.1445L11.0049 21.793L11.707 22.5049ZM37.6973 22.1904L38.8926 23.7109L39.1396 24.0234L38.8887 24.334L37.6934 25.8145L37.3799 26.2031L36.6016 25.5752L36.916 25.1855L37.4541 24.5195H34V23.5195H37.4697L36.9111 22.8096L36.6025 22.416L37.3887 21.7979L37.6973 22.1904ZM26.207 11L25.5 11.707L24.5 10.707V14H23.5V10.707L22.5 11.707L21.793 11L24 8.79297L26.207 11Z" fill="#000000" />
 
   </g>
-  <rect x="1280" y="248" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1280" y="456" width="192" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1288" y="272.92" font-size="18" font-weight="400" fill="#000000">Efficiency up</tspan>
+    <tspan x="1288" y="480.92" font-size="18" font-weight="400" fill="#000000">Efficiency up</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1416 256)">
+  <g class="dg-icon" transform="translate(1416 464)">
 <path d="M7.5 40.5H42V41.5H6.5V8H7.5V40.5Z" fill="#000000" />
 
 <path d="M20.7363 16.5098C20.5493 16.7939 20.3766 17.0882 20.2188 17.3916L16.7295 14.1914L9.85352 21.0684L9.14648 20.3613L16.3613 13.1465L16.6992 12.8076L20.7363 16.5098Z" fill="#000000" />
@@ -204,12 +204,12 @@
 <path d="M32.791 19.5L33.1387 19.8584L28.1729 24.6855L25.0645 21.8701L25.7363 21.1299L28.1475 23.3145L32.4424 19.1416L32.791 19.5Z" fill="#000000" />
 
   </g>
-  <rect x="1480" y="248" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1480" y="456" width="192" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1488" y="272.92" font-size="18" font-weight="400" fill="#000000">Optimization</tspan>
-    <tspan x="1488" y="296.92" font-size="18" font-weight="400" fill="#000000">&amp; scale</tspan>
+    <tspan x="1488" y="480.92" font-size="18" font-weight="400" fill="#000000">Optimization</tspan>
+    <tspan x="1488" y="504.92" font-size="18" font-weight="400" fill="#000000">&amp; scale</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1616 256)">
+  <g class="dg-icon" transform="translate(1616 464)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M29.6385 18.4219C30.8462 18.4222 31.8258 19.4016 31.826 20.6094V21.1709H33.0135L33.1268 21.1826C33.3828 21.2352 33.576 21.4617 33.576 21.7334V26.7959C33.5759 27.0675 33.3828 27.2941 33.1268 27.3467L33.0135 27.3584H26.2635C25.9917 27.3584 25.7652 27.1654 25.7127 26.9092L25.701 26.7959V21.7334C25.701 21.4227 25.9528 21.1709 26.2635 21.1709H27.451V20.6094C27.4511 19.4014 28.4304 18.4219 29.6385 18.4219ZM26.701 26.3584H32.576V22.1709H26.701V26.3584ZM29.6385 19.4219C28.9827 19.4219 28.4511 19.9537 28.451 20.6094V21.1709H30.826V20.6094C30.8258 19.9539 30.2939 19.4222 29.6385 19.4219Z" fill="#000000" />
 
 <path d="M8 8H7V41.5H42.5V40.5H8V8Z" fill="#000000" />
@@ -222,27 +222,27 @@
 
   </g>
   <g data-component-id="training_hdr.bottom-&gt;training_detail.top">
-  <line x1="204" y1="152" x2="204" y2="164" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="204" y1="164" x2="204" y2="164" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="204" y1="164" x2="204" y2="165.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="201.0947,165.1592 204,176 206.9053,165.1592" fill="#E95420" />
+  <line x1="424" y1="168" x2="424" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="424" y1="180" x2="424" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="424" y1="180" x2="424" y2="181.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="421.0947,181.1592 424,192 426.9053,181.1592" fill="#E95420" />
   </g>
   <g data-component-id="inference_hdr.bottom-&gt;inference_detail.top">
-  <line x1="1076" y1="64" x2="1076" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1076" y1="76" x2="1076" y2="76" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1076" y1="76" x2="1076" y2="77.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="1073.0947,77.1592 1076,88 1078.9053,77.1592" fill="#E95420" />
+  <line x1="1276" y1="168" x2="1276" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1276" y1="180" x2="1276" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1276" y1="180" x2="1276" y2="181.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1273.0947,181.1592 1276,192 1278.9053,181.1592" fill="#E95420" />
   </g>
   <g data-component-id="training_detail.right-&gt;inference_detail.left">
-  <line x1="408" y1="208" x2="640" y2="208" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="640" y1="208" x2="640" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="640" y1="120" x2="861.1592" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="861.1592,117.0947 872,120 861.1592,122.9053" fill="#E95420" />
+  <line x1="848" y1="228" x2="860" y2="228" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="860" y1="228" x2="860" y2="276" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="860" y1="276" x2="861.1592" y2="276" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="861.1592,273.0947 872,276 861.1592,278.9053" fill="#E95420" />
   </g>
   <g data-component-id="summary1.bottom-&gt;summary2.top">
-  <line x1="424" y1="472" x2="424" y2="484" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="424" y1="484" x2="424" y2="484" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="424" y1="484" x2="424" y2="485.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="421.0947,485.1592 424,496 426.9053,485.1592" fill="#E95420" />
+  <line x1="424" y1="528" x2="424" y2="540" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="424" y1="540" x2="424" y2="540" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="424" y1="540" x2="424" y2="541.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="421.0947,541.1592 424,552 426.9053,541.1592" fill="#E95420" />
   </g>
 </svg>

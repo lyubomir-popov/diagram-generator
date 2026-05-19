@@ -64,12 +64,12 @@
   </g>
   </g>
   <g data-component-id="enrich">
-  <rect x="216" y="104" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="216" y="176" width="192" height="136" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="224" y="128.92" font-size="18" font-weight="400" fill="#000000">Enrich</tspan>
-    <tspan x="224" y="152.92" font-size="18" font-weight="400" fill="#000000">&amp; join</tspan>
+    <tspan x="224" y="200.92" font-size="18" font-weight="400" fill="#000000">Enrich</tspan>
+    <tspan x="224" y="224.92" font-size="18" font-weight="400" fill="#000000">&amp; join</tspan>
   </text>
-  <g class="dg-icon" transform="translate(352 112)">
+  <g class="dg-icon" transform="translate(352 184)">
 <path d="M39.5 26.5557C39.4999 32.5189 34.9609 37.4213 29.1494 37.998L30.7979 39.6465L30.0908 40.3535L27.293 37.5557L30.0908 34.7578L30.7979 35.4648L29.2881 36.9736C34.4792 36.3384 38.4999 31.9184 38.5 26.5557H39.5Z" fill="#000000" />
 
 <path d="M20.707 10.4443L17.9092 13.2422L17.2021 12.5352L18.7109 11.0254C13.5202 11.661 9.50005 16.0819 9.5 21.4443H8.5C8.50006 15.4814 13.0385 10.5781 18.8496 10.001L17.2021 8.35352L17.9092 7.64648L20.707 10.4443Z" fill="#000000" />
@@ -89,12 +89,12 @@
   </g>
   </g>
   <g data-component-id="dashboard">
-  <rect x="216" y="208" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="216" y="352" width="192" height="136" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="224" y="232.92" font-size="18" font-weight="400" fill="#000000">Analytics</tspan>
-    <tspan x="224" y="256.92" font-size="18" font-weight="400" fill="#000000">dashboard</tspan>
+    <tspan x="224" y="376.92" font-size="18" font-weight="400" fill="#000000">Analytics</tspan>
+    <tspan x="224" y="400.92" font-size="18" font-weight="400" fill="#000000">dashboard</tspan>
   </text>
-  <g class="dg-icon" transform="translate(352 216)">
+  <g class="dg-icon" transform="translate(352 360)">
 <path d="M7.5 40.5H42V41.5H6.5V6H7.5V40.5Z" fill="#000000" />
 
 <path d="M12.5 37H11.5V20H12.5V37Z" fill="#000000" />
@@ -122,10 +122,10 @@
   <polygon points="93.0947,93.1592 96,104 98.9053,93.1592" fill="#E95420" />
   </g>
   <g data-component-id="ingest.bottom-&gt;enrich.top">
-  <line x1="96" y1="64" x2="96" y2="84" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="96" y1="84" x2="312" y2="84" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="312" y1="84" x2="312" y2="93.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="309.0947,93.1592 312,104 314.9053,93.1592" fill="#E95420" />
+  <line x1="96" y1="64" x2="96" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="96" y1="120" x2="312" y2="120" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="120" x2="312" y2="165.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="309.0947,165.1592 312,176 314.9053,165.1592" fill="#E95420" />
   </g>
   <g data-component-id="validate.bottom-&gt;warehouse.top">
   <line x1="96" y1="168" x2="96" y2="292" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
@@ -134,9 +134,9 @@
   <polygon points="93.0947,405.1592 96,416 98.9053,405.1592" fill="#E95420" />
   </g>
   <g data-component-id="enrich.bottom-&gt;dashboard.top">
-  <line x1="312" y1="168" x2="312" y2="188" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="312" y1="188" x2="312" y2="188" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="312" y1="188" x2="312" y2="197.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="309.0947,197.1592 312,208 314.9053,197.1592" fill="#E95420" />
+  <line x1="312" y1="312" x2="312" y2="332" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="332" x2="312" y2="332" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="312" y1="332" x2="312" y2="341.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="309.0947,341.1592 312,352 314.9053,341.1592" fill="#E95420" />
   </g>
 </svg>

@@ -5,10 +5,10 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
-          <mxGeometry x="216" y="0" width="304" height="88" as="geometry" />
+          <mxGeometry x="216" y="0" width="304" height="112" as="geometry" />
         </mxCell>
         <mxCell id="3" parent="2" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;Scheduler&lt;/b&gt;&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px&quot;&gt;AI inference&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px&quot;&gt;request&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="224" height="72" as="geometry" />
+          <mxGeometry x="8" y="8" width="224" height="96" as="geometry" />
         </mxCell>
         <mxCell id="4" parent="2" style="shape=image;html=1;aspect=fixed;imageAspect=0;verticalLabelPosition=middle;verticalAlign=middle;strokeColor=none;fillColor=none;imageBackground=none;imageBorder=0;image=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%20viewBox%3D%220%200%2048%2048%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpath%20d%3D%22M42%2029.75H6V28.75H42V29.75Z%22%20fill%3D%22%23000000%22%20%2F%3E%3Cpath%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20d%3D%22M43.5%207C44.6046%207%2045.5%207.89543%2045.5%209V31.5C45.5%2032.6046%2044.6046%2033.5%2043.5%2033.5H30.5V38.5H34.5C34.7761%2038.5%2035%2038.7239%2035%2039V42C35%2042.2761%2034.7761%2042.5%2034.5%2042.5H13.5C13.2239%2042.5%2013%2042.2761%2013%2042V39C13%2038.7239%2013.2239%2038.5%2013.5%2038.5H17.5V33.5H4.5C3.39543%2033.5%202.5%2032.6046%202.5%2031.5V9C2.5%207.89543%203.39543%207%204.5%207H43.5ZM14%2041.5H34V39.5H14V41.5ZM18.5%2038.5H29.5V33.5H18.5V38.5ZM4.5%208C3.94772%208%203.5%208.44772%203.5%209V31.5C3.5%2032.0523%203.94772%2032.5%204.5%2032.5H43.5C44.0523%2032.5%2044.5%2032.0523%2044.5%2031.5V9C44.5%208.44772%2044.0523%208%2043.5%208H4.5Z%22%20fill%3D%22%23000000%22%20%2F%3E%3Cpath%20fill-rule%3D%22evenodd%22%20clip-rule%3D%22evenodd%22%20d%3D%22M24%2017C25.3807%2017%2026.5%2018.1193%2026.5%2019.5C26.5%2020.8807%2025.3807%2022%2024%2022C22.6193%2022%2021.5%2020.8807%2021.5%2019.5C21.5%2018.1193%2022.6193%2017%2024%2017ZM24%2018C23.1716%2018%2022.5%2018.6716%2022.5%2019.5C22.5%2020.3284%2023.1716%2021%2024%2021C24.8284%2021%2025.5%2020.3284%2025.5%2019.5C25.5%2018.6716%2024.8284%2018%2024%2018Z%22%20fill%3D%22%23000000%22%20%2F%3E%3C%2Fsvg%3E;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="image" tags="dg-generated dg-role-image dg-token-icon-image" data-dg-style-tokens="icon-image" connectable="0">
           <mxGeometry x="248" y="8" width="48" height="48" as="geometry" />
@@ -25,7 +25,7 @@
         <mxCell id="8" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow" source="5" target="2">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="96" y="88" as="sourcePoint" />
-            <mxPoint x="216" y="44" as="targetPoint" />
+            <mxPoint x="216" y="56" as="targetPoint" />
             <Array as="points">
               <mxPoint x="216" y="88" />
             </Array>

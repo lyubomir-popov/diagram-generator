@@ -188,6 +188,9 @@ def _grid_to_columns(components: list, diagram: Diagram) -> list[Frame]:
         for comp in col_map.get(col_idx, []):
             frame = _component_to_frame(comp, col_width=col_width)
             if frame:
+                # Children fill the column height so cross-column
+                # arrow attachment points align at matching edges.
+                frame.child_sizing = Sizing.FILL
                 col_children.append(frame)
 
         if col_children:

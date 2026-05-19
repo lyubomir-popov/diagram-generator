@@ -13,7 +13,7 @@
   </g>
   </g>
   <g data-component-id="scheduler">
-  <rect x="216" y="0" width="304" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="216" y="0" width="304" height="112" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="224" y="24.92" font-size="18" font-weight="700" fill="#000000">Scheduler</tspan>
     <tspan x="224" y="48.92" font-size="18" font-weight="400" fill="#000000">AI inference</tspan>
@@ -30,7 +30,7 @@
   </g>
   <g data-component-id="gpu.top-&gt;scheduler.left">
   <line x1="96" y1="88" x2="216" y2="88" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="216" y1="88" x2="216" y2="54.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="213.0947,54.8408 216,44 218.9053,54.8408" fill="#E95420" />
+  <line x1="216" y1="88" x2="216" y2="66.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="213.0947,66.8408 216,56 218.9053,66.8408" fill="#E95420" />
   </g>
 </svg>

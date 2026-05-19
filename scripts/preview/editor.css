@@ -301,6 +301,48 @@ body.dg-preview {
        margin: 0;
 }
 
+/* 9-point alignment widget */
+.dg-align-grid {
+       display: inline-grid;
+       grid-template-columns: repeat(3, 16px);
+       grid-template-rows: repeat(3, 16px);
+       gap: 2px;
+       padding: 2px;
+       border: 1px solid var(--bf-color-border, #444);
+       border-radius: 3px;
+       background: var(--bf-color-surface-alt, #1a1a1a);
+}
+.dg-align-grid button {
+       all: unset;
+       width: 16px;
+       height: 16px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       border-radius: 2px;
+       cursor: pointer;
+}
+.dg-align-grid button::after {
+       content: '';
+       width: 6px;
+       height: 6px;
+       border-radius: 50%;
+       background: var(--bf-color-text-muted, #666);
+}
+.dg-align-grid button:hover::after {
+       background: var(--bf-color-text, #ccc);
+}
+.dg-align-grid button.active::after {
+       background: var(--bf-authoring-accent, #F6B73C);
+       box-shadow: 0 0 4px var(--bf-authoring-accent, #F6B73C);
+}
+.dg-align-field {
+       display: flex;
+       align-items: center;
+       gap: 8px;
+       margin-top: 2px;
+}
+
 .multi-action-grid {
        display: grid;
        gap: 6px;

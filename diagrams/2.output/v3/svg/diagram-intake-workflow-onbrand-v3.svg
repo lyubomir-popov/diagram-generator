@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="608" height="544" viewBox="0 0 608 544" xml:space="preserve">
   <rect width="608" height="544" fill="#FFFFFF" />
   <g data-component-id="sources">
-  <rect x="0" y="0" width="408" height="168" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
+  <rect x="0" y="0" width="608" height="168" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
   <text font-family="Ubuntu Sans">
     <tspan x="8" y="24.92" font-size="18" font-weight="700" fill="#000000">Rough initial diagram sources</tspan>
   </text>
   </g>
-  <rect x="8" y="72" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="8" y="72" width="192" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="16" y="96.92" font-size="18" font-weight="400" fill="#000000">ChatGPT-generated</tspan>
     <tspan x="16" y="120.92" font-size="18" font-weight="400" fill="#000000">diagrams</tspan>
@@ -101,8 +101,8 @@
   </g>
   </g>
   <g data-component-id="sources.bottom-&gt;workflow.top">
-  <line x1="204" y1="168" x2="204" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="204" y1="180" x2="304" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="304" y1="168" x2="304" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="304" y1="180" x2="304" y2="180" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <line x1="304" y1="180" x2="304" y2="181.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="301.0947,181.1592 304,192 306.9053,181.1592" fill="#E95420" />
   </g>

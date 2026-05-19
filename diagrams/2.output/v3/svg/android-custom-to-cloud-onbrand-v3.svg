@@ -25,7 +25,7 @@
   </text>
   </g>
   <g data-component-id="host_tools">
-  <rect x="240" y="0" width="208" height="200" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="0" width="208" height="216" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="248" y="24.92" font-size="18" font-weight="700" fill="#000000">Host-side tools</tspan>
   </text>
@@ -43,7 +43,7 @@
   </text>
   </g>
   <g data-component-id="anbox_cloud">
-  <rect x="480" y="0" width="336" height="88" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="480" y="0" width="336" height="216" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="488" y="24.92" font-size="18" font-weight="700" fill="#000000">Anbox Cloud</tspan>
     <tspan x="488" y="48.92" font-size="18" font-weight="400" fill="#000000">- Consumes system images</tspan>
@@ -55,7 +55,7 @@
   </g>
   </g>
   <g data-component-id="virt_instance">
-  <rect x="848" y="0" width="336" height="112" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="848" y="0" width="336" height="216" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="856" y="24.92" font-size="18" font-weight="700" fill="#000000">Virtualized Android instance</tspan>
     <tspan x="856" y="48.92" font-size="18" font-weight="400" fill="#000000">- Unmodified</tspan>
@@ -71,20 +71,20 @@
   </g>
   <g data-component-id="custom_files.right-&gt;host_tools.left">
   <line x1="208" y1="108" x2="224" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="224" y1="108" x2="224" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="224" y1="100" x2="229.1592" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="229.1592,97.0947 240,100 229.1592,102.9053" fill="#E95420" />
+  <line x1="224" y1="108" x2="224" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="224" y1="108" x2="229.1592" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="229.1592,105.0947 240,108 229.1592,110.9053" fill="#E95420" />
   </g>
   <g data-component-id="host_tools.right-&gt;anbox_cloud.left">
-  <line x1="448" y1="100" x2="464" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="464" y1="100" x2="464" y2="44" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="464" y1="44" x2="469.1592" y2="44" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="469.1592,41.0947 480,44 469.1592,46.9053" fill="#E95420" />
+  <line x1="448" y1="108" x2="464" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="464" y1="108" x2="464" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="464" y1="108" x2="469.1592" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="469.1592,105.0947 480,108 469.1592,110.9053" fill="#E95420" />
   </g>
   <g data-component-id="anbox_cloud.right-&gt;virt_instance.left">
-  <line x1="816" y1="44" x2="832" y2="44" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="832" y1="44" x2="832" y2="56" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="832" y1="56" x2="837.1592" y2="56" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="837.1592,53.0947 848,56 837.1592,58.9053" fill="#E95420" />
+  <line x1="816" y1="108" x2="832" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="832" y1="108" x2="832" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="832" y1="108" x2="837.1592" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="837.1592,105.0947 848,108 837.1592,110.9053" fill="#E95420" />
   </g>
 </svg>
