@@ -4,6 +4,26 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-20 – INBOX bug fixes (branch frame-layout-engine)
+
+- Fixed text editing stuck: `onSvgMouseDown` now calls `commitTextEdit()` before handling new interaction, so clicking elsewhere properly exits text editing mode.
+- Fixed HUG text width overlap: `_leaf_natural_size` now estimates text width using per-character measurement and sizes the box to fit text + icon. Uses `max(content_width, BLOCK_WIDTH)` so boxes never shrink below 192px. Added `_estimate_text_width()` helper to `layout_v3.py`.
+
+### 2026-05-20 – Autolayout interaction parity (Milestone 12) (branch frame-layout-engine)
+
+- Disabled free drag for autolayout children: when a component's parent has `layout` set (vertical/horizontal), `onDragMove` suppresses `dx`/`dy` override writes.
+- Implemented drag-to-reorder: during drag in autolayout parent, orange dashed insertion indicator shows between siblings. On drop, emits `children_order` override that reorders children.
+- Server handles `children_order` override: reorders `target.children` list before relayout.
+- Fixed `selectComponent` to sync `selectionDepth` with component ancestry so SVG mousedown targets the correct depth after tree-panel selection.
+- Added `_isAutolayoutChild()`, `_getReorderTargets()`, `_showReorderIndicator()`, `_clearReorderIndicator()`, `_applyReorder()` helpers in editor.js.
+- Added `children_order` to `FRAME_KEYS` in `requestV3Relayout()`.
+- Added Shift+Enter keyboard shortcut to navigate from child to parent.
+- Added Enter key to select all children of the selected parent frame.
+- Modified double-click behavior: when double-clicking a container that's already selected, selects all children instead of drilling into one.
+- Suppressed arrow-key nudging for autolayout children (position is engine-controlled).
+- Updated inspector help text: autolayout children see "Drag to reorder · Shift+Enter to select parent" instead of "Drag to move".
+- Browser-verified: reorder indicator appears during drag, child order changes after drop, Shift+Enter navigates to parent, Enter selects all children.
+
 ### 2026-05-20 – Parent coercion model + coercion persistence (branch frame-layout-engine)
 
 - Redesigned FILL-in-HUG invariant: parent is now coerced HUG→FIXED (freezing at measured size) instead of coercing children FILL→HUG. Children stay FILL and divide the frozen space equally. Cross-axis FILL is not coerced. Matches Figma behavior.

@@ -354,12 +354,12 @@ root:
 
 **Steps:**
 
-- [ ] `[H]` **Disable free drag in autolayout frames.** When a selected component's parent has `layout` set (vertical/horizontal), suppress `dx`/`dy` override writes during drag. Instead, show a reorder preview (insertion indicator between siblings).
-- [ ] `[H]` **Drag-to-reorder siblings.** During drag in an autolayout parent, compute the nearest sibling gap from cursor position. On drop, emit a reorder override that changes the child order. Server applies child reorder before relayout.
-- [ ] `[S]` **Multi-select with bulk property edits.** Shift+click to add/remove from selection. Inspector shows shared fields for all selected nodes. Changing a property (e.g. sizing_w) applies to all selected nodes.
-- [ ] `[S]` **Double-click parent → select all children.** Double-clicking on a container selects all its direct children.
-- [ ] `[S]` **Shift+Enter → navigate to parent.** When a child is selected, Shift+Enter selects its parent.
-- [ ] `[S]` **Autolayout toggle on parent.** Add an "Auto layout" on/off toggle in the inspector for container nodes. When off, children use absolute positioning (current behavior). When on, children are engine-managed and free drag is suppressed.
+- [x] `[H]` **Disable free drag in autolayout frames.** When a selected component's parent has `layout` set (vertical/horizontal), suppress `dx`/`dy` override writes during drag. Instead, show a reorder preview (insertion indicator between siblings). Arrow-key nudging also suppressed for autolayout children.
+- [x] `[H]` **Drag-to-reorder siblings.** During drag in an autolayout parent, compute the nearest sibling gap from cursor position. On drop, emit a `children_order` override that changes the child order. Server applies child reorder before relayout.
+- [ ] `[S]` **Multi-select with bulk property edits.** Shift+click to add/remove from selection. Inspector shows shared fields for all selected nodes. Changing a property (e.g. sizing_w) applies to all selected nodes. *(Multi-select + align/distribute already works; bulk property editing deferred.)*
+- [x] `[S]` **Double-click parent → select all children.** Double-clicking on a container selects all its direct children. Enter key also selects all children when a parent is selected.
+- [x] `[S]` **Shift+Enter → navigate to parent.** When a child is selected, Shift+Enter selects its parent.
+- [ ] `[S]` **Autolayout toggle on parent.** Deferred — requires `Direction.NONE` and absolute positioning support, which the v3 engine doesn't have yet.
 - [ ] `[X]` **Benchmark test:** verify all interaction sequences against Figma/Penpot reference behavior.
 
 ### Editor UX

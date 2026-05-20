@@ -154,12 +154,13 @@ The engine core is stable with 104 comprehensive tests passing (96 autolayout + 
 - All 5 test-case frame YAMLs verified: vertical-stack, fill-distribution, nested-containers, alignment-grid, mixed-sizing
 - All 3 representative real diagrams render in v3: `android-container-vs-vm`, `example-platform-architecture`, `example-arrow-label-separator`
 - `build_v2.py` completes for all diagrams (pre-existing clearance violations only)
+- Autolayout interaction parity (Milestone 12): free drag suppressed for autolayout children, drag-to-reorder with orange insertion indicator, Shift+Enter navigates to parent, Enter/double-click selects all children, arrow-key nudge suppressed for autolayout children, `children_order` override persists through server relayout
 
 **Stash:** `unverified-v3-ui-work` contains old UI code fully superseded by Milestones 9+11. Can be dropped.
 
-**Remaining work:** See TODO.md — autolayout interaction parity (disable free drag, drag-to-reorder, multi-select, depth navigation), golden-value test harness, API test for relayout endpoint, domain-specific undo/redo, PNG export.
+**Remaining work:** See TODO.md — remaining Milestone 12 items (multi-select bulk property editing, Figma benchmark), golden-value test harness, API test for relayout endpoint, domain-specific undo/redo, PNG export.
 
-**Next priorities:** Autolayout interaction parity (Milestone 12): disable absolute positioning in autolayout frames, implement drag-to-reorder siblings, multi-select with bulk property edits, depth navigation (double-click to select children, Shift+Enter to go back).
+**Next priorities:** Multi-select bulk property editing (Milestone 12), then golden-value assertions and API test harness.
 
 **Files:**
 - `scripts/frame_model.py` — `Frame`, `FrameDiagram`, `Align`, `Sizing`, `Direction` enums

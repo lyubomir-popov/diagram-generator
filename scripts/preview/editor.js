@@ -1803,20 +1803,37 @@ function onSvgDblClick(e) {
   pt.x = e.clientX;
   pt.y = e.clientY;
   const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+  // If current selection is a container with children, select all children
+  const current = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
+  if (current && selectedIds.has(current)) {
+    const node = model.get(current);
+    if (node && node.children && node.children.length > 0) {
+      const childIds = node.children.map(n => n.data.id);
+      selectedIds.clear();
+      childIds.forEach(id => selectedIds.add(id));
+      selectionDepth++;
+      reapplySelection();
+      return;
+    }
+    // No children — try text edit
+    startTextEdit(current, e);
+    return;
+  }
+
   const deeper = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth + 1);
   if (deeper) {
     selectionDepth++;
     selectComponent(deeper, false);
-  } else {
-    // No deeper child — try entering text edit on the current selection
-    const current = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
-    if (current && selectedIds.has(current)) {
-      startTextEdit(current, e);
-    }
   }
 }
 
 function onSvgMouseDown(e) {
+  // If currently text-editing, commit the edit before handling the new interaction
+  if (mgr.isMode(InteractionMode.TEXT_EDITING)) {
+    commitTextEdit();
+  }
+
   // Check if clicking a resize handle
   if (e.target.classList.contains("dg-handle")) {
     startResize(e);
@@ -1896,10 +1913,136 @@ function onSvgMouseDown(e) {
   mgr.startDrag({ cid: finalCid, cids: dragCids, startX: e.clientX, startY: e.clientY,
                    origDeltas, hasMoved: false,
                    overrideSnapshotBefore: _captureOverrideEntries(dragCids),
-                   snapTargets: dragCids.length === 1 ? collectSnapTargets(finalCid) : null });
+                   snapTargets: dragCids.length === 1 ? collectSnapTargets(finalCid) : null,
+                   autolayout: _isAutolayoutChild(finalCid),
+                   reorderTarget: null });
   document.addEventListener("mousemove", onDragMove);
   document.addEventListener("mouseup", onDragUp);
   e.preventDefault();
+}
+
+/**
+ * Check if a component is a child of an autolayout parent (v3 frame with direction).
+ */
+function _isAutolayoutChild(cid) {
+  const parent = getParentNode(cid);
+  if (!parent) return false;
+  return parent.layout === 'vertical' || parent.layout === 'horizontal';
+}
+
+/**
+ * Get sibling insertion targets for autolayout reorder.
+ * Returns array of { cid, midpoint } sorted by position along the layout axis.
+ */
+function _getReorderTargets(cid) {
+  const parentNode = model.getParent(cid);
+  if (!parentNode) return [];
+  const parent = parentNode.data;
+  const isVertical = parent.layout === 'vertical';
+  const siblings = parentNode.children.map(n => n.data);
+  // Build midpoints along the layout axis
+  return siblings.map(s => ({
+    cid: s.id,
+    midpoint: isVertical ? (s.y + s.height / 2) : (s.x + s.width / 2),
+    pos: isVertical ? s.y : s.x,
+    size: isVertical ? s.height : s.width,
+  }));
+}
+
+/**
+ * Show a reorder insertion indicator line between siblings.
+ */
+function _showReorderIndicator(parentCid, insertIndex, isVertical) {
+  _clearReorderIndicator();
+  const parentNode = model.get(parentCid);
+  if (!parentNode) return;
+  const parent = parentNode.data;
+  const siblings = parentNode.children.map(n => n.data);
+  if (siblings.length === 0) return;
+
+  const svg = document.querySelector('#stage svg');
+  if (!svg) return;
+
+  // Calculate indicator position
+  let x1, y1, x2, y2;
+  const gap = parent.layout_gap || 24;
+  if (isVertical) {
+    const leftEdge = parent.x + (parent.padding_left || parent.pad || 0);
+    const rightEdge = leftEdge + (siblings[0] ? siblings[0].width : 100);
+    if (insertIndex <= 0) {
+      const firstY = siblings[0].y;
+      y1 = y2 = firstY - gap / 2;
+    } else if (insertIndex >= siblings.length) {
+      const last = siblings[siblings.length - 1];
+      y1 = y2 = last.y + last.height + gap / 2;
+    } else {
+      const prev = siblings[insertIndex - 1];
+      const next = siblings[insertIndex];
+      y1 = y2 = (prev.y + prev.height + next.y) / 2;
+    }
+    x1 = leftEdge;
+    x2 = rightEdge;
+  } else {
+    const topEdge = parent.y + (parent.padding_top || parent.pad || 0);
+    const bottomEdge = topEdge + (siblings[0] ? siblings[0].height : 64);
+    if (insertIndex <= 0) {
+      const firstX = siblings[0].x;
+      x1 = x2 = firstX - gap / 2;
+    } else if (insertIndex >= siblings.length) {
+      const last = siblings[siblings.length - 1];
+      x1 = x2 = last.x + last.width + gap / 2;
+    } else {
+      const prev = siblings[insertIndex - 1];
+      const next = siblings[insertIndex];
+      x1 = x2 = (prev.x + prev.width + next.x) / 2;
+    }
+    y1 = topEdge;
+    y2 = bottomEdge;
+  }
+
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line.setAttribute('x1', x1);
+  line.setAttribute('y1', y1);
+  line.setAttribute('x2', x2);
+  line.setAttribute('y2', y2);
+  line.setAttribute('stroke', '#E95420');
+  line.setAttribute('stroke-width', '3');
+  line.setAttribute('stroke-dasharray', '6 4');
+  line.setAttribute('data-reorder-indicator', 'true');
+  svg.appendChild(line);
+}
+
+function _clearReorderIndicator() {
+  const svg = document.querySelector('#stage svg');
+  if (!svg) return;
+  const indicators = svg.querySelectorAll('[data-reorder-indicator]');
+  indicators.forEach(el => el.remove());
+}
+
+/**
+ * Apply a reorder: move child `cid` to `insertIndex` within parent's children.
+ * Sends a `children_order` override to the server and triggers relayout.
+ */
+function _applyReorder(parentId, cid, insertIndex) {
+  const parentNode = model.get(parentId);
+  if (!parentNode) return;
+  const currentOrder = parentNode.children.map(n => n.data.id);
+  const currentIdx = currentOrder.indexOf(cid);
+  if (currentIdx === -1) return;
+
+  // Build new order
+  const newOrder = currentOrder.filter(id => id !== cid);
+  // Adjust insertIndex since we removed the item
+  const adjustedIdx = insertIndex > currentIdx ? insertIndex - 1 : insertIndex;
+  newOrder.splice(adjustedIdx, 0, cid);
+
+  // Skip if order didn't change
+  if (newOrder.every((id, i) => id === currentOrder[i])) {
+    return;
+  }
+
+  // Set children_order override on the parent
+  setFrameProp(parentId, 'children_order', newOrder);
 }
 
 function onDragMove(e) {
@@ -1909,6 +2052,45 @@ function onDragMove(e) {
   const dy = e.clientY - s.startY;
   if (Math.abs(dx) > 2 || Math.abs(dy) > 2) s.hasMoved = true;
   if (!s.hasMoved) return;
+
+  // Autolayout drag: show reorder indicator instead of free positioning
+  if (s.autolayout && s.cids.length === 1) {
+    const cid = s.cids[0];
+    const parentNode = model.getParent(cid);
+    if (parentNode) {
+      const parent = parentNode.data;
+      const isVertical = parent.layout === 'vertical';
+      const targets = _getReorderTargets(cid);
+      // Get the SVG coordinate of the cursor
+      const svg = document.querySelector('#stage svg');
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const ctm = svg.getScreenCTM();
+      const svgPt = pt.matrixTransform(ctm.inverse());
+      const cursorPos = isVertical ? svgPt.y : svgPt.x;
+
+      // Find insertion index
+      let insertIdx = targets.length;
+      for (let i = 0; i < targets.length; i++) {
+        if (cursorPos < targets[i].midpoint) {
+          insertIdx = i;
+          break;
+        }
+      }
+      // Skip if dropping at the same position
+      const currentIdx = targets.findIndex(t => t.cid === cid);
+      if (insertIdx === currentIdx || insertIdx === currentIdx + 1) {
+        _clearReorderIndicator();
+        s.reorderTarget = null;
+      } else {
+        _showReorderIndicator(parentNode.data.id, insertIdx, isVertical);
+        s.reorderTarget = { parentId: parentNode.data.id, insertIndex: insertIdx };
+      }
+    }
+    return; // Don't apply dx/dy for autolayout children
+  }
+
   for (const id of s.cids) {
     const orig = s.origDeltas[id];
     let newDx = Math.round((orig.dx + dx) / 8) * 8;
@@ -1953,20 +2135,29 @@ function onDragUp() {
   document.removeEventListener("mousemove", onDragMove);
   document.removeEventListener("mouseup", onDragUp);
   clearGuideLines();
+  _clearReorderIndicator();
   const s = mgr.state;
   if (s && s.hasMoved) {
-    for (const id of s.cids) cleanOverride(id);
-    const afterOverrides = _captureOverrideEntries(s.cids);
-    if (s.cids.length === 1) {
+    // Handle autolayout reorder
+    if (s.autolayout && s.reorderTarget && s.cids.length === 1) {
+      const { parentId, insertIndex } = s.reorderTarget;
+      const cid = s.cids[0];
+      _applyReorder(parentId, cid, insertIndex);
       selectComponent(s.cid);
-    } else {
-      reapplySelection();
+    } else if (!s.autolayout) {
+      for (const id of s.cids) cleanOverride(id);
+      const afterOverrides = _captureOverrideEntries(s.cids);
+      if (s.cids.length === 1) {
+        selectComponent(s.cid);
+      } else {
+        reapplySelection();
+      }
+      commitOverridePatchAction(
+        s.cids.length > 1 ? "Move selection" : "Move component",
+        s.overrideSnapshotBefore,
+        afterOverrides,
+      );
     }
-    commitOverridePatchAction(
-      s.cids.length > 1 ? "Move selection" : "Move component",
-      s.overrideSnapshotBefore,
-      afterOverrides,
-    );
   } else if (s) {
     selectComponent(s.cid);
   }
@@ -2945,6 +3136,9 @@ function selectComponent(cid, additive) {
   } else {
     selectedIds.clear();
     selectedIds.add(cid);
+    // Sync selectionDepth so SVG mousedown targets the right level
+    const ancestors = getAncestors(cid);
+    selectionDepth = ancestors.length;
   }
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
@@ -3146,7 +3340,7 @@ async function requestV3Relayout(triggerCid) {
   const slug = SLUG.replace('v3:', '');
   // Send ALL accumulated frame overrides so the server can apply them together
   const allFrameOverrides = {};
-  const FRAME_KEYS = ['direction', 'gap', 'padding', 'sizing', 'sizing_w', 'sizing_h', 'align', 'width', 'height'];
+  const FRAME_KEYS = ['direction', 'gap', 'padding', 'sizing', 'sizing_w', 'sizing_h', 'align', 'width', 'height', 'children_order'];
   for (const [fid, ovr] of Object.entries(overrides)) {
     const entry = {};
     for (const key of FRAME_KEYS) {
@@ -3325,7 +3519,12 @@ function updateInspector(cid) {
     }
     html += '</div>';
   }
-  html += '<p class="dg-inspector-note">Drag to move &#xb7; handles to resize (8px grid) &#xb7; W to toggle grid overlay.</p>';
+  const isAutoChild = _isAutolayoutChild(cid);
+  if (isAutoChild) {
+    html += '<p class="dg-inspector-note">Drag to reorder &#xb7; Shift+Enter to select parent &#xb7; W to toggle grid overlay.</p>';
+  } else {
+    html += '<p class="dg-inspector-note">Drag to move &#xb7; handles to resize (8px grid) &#xb7; W to toggle grid overlay.</p>';
+  }
   inspector.innerHTML = html;
 }
 
@@ -3474,9 +3673,34 @@ document.addEventListener("keydown", (e) => {
     }
   } else if ((e.key === "w" || e.key === "W") && !e.ctrlKey && !e.metaKey && !e.altKey) {
     cycleGuideMode();
+  } else if (e.key === "Enter" && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey &&
+             selectedIds.size > 0 && !mgr.isMode(InteractionMode.TEXT_EDITING)) {
+    // Shift+Enter: navigate to parent
+    e.preventDefault();
+    const primary = [...selectedIds][0];
+    const parent = getParentNode(primary);
+    if (parent) {
+      selectComponent(parent.id);
+    }
+  } else if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey &&
+             selectedIds.size === 1 && !mgr.isMode(InteractionMode.TEXT_EDITING)) {
+    // Enter: select all children of the selected frame
+    e.preventDefault();
+    const primary = [...selectedIds][0];
+    const node = model.get(primary);
+    if (node && node.children && node.children.length > 0) {
+      const childIds = node.children.map(n => n.data.id);
+      selectedIds.clear();
+      childIds.forEach(id => selectedIds.add(id));
+      selectionDepth = getAncestors(childIds[0]).length;
+      reapplySelection();
+    }
   } else if (selectedIds.size > 0 && !mgr.isMode(InteractionMode.TEXT_EDITING) &&
              !e.ctrlKey && !e.metaKey && !e.altKey &&
              ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+    // Skip nudge for autolayout children — position is engine-controlled
+    const anyAutolayout = [...selectedIds].some(id => _isAutolayoutChild(id));
+    if (anyAutolayout) return;
     e.preventDefault();
     const step = e.shiftKey ? 24 : 8;
     runUndoableAction("Nudge selection", () => {

@@ -30,6 +30,7 @@ from diagram_shared import (
     ICON_SIZE,
     BODY_LINE_STEP,
     round_up_to_grid,
+    size_to_px,
     tight_box_height,
 )
 
@@ -63,6 +64,21 @@ def _heading_height(heading: Line | None) -> int:
     return max(h, ICON_SIZE + INSET)
 
 
+def _estimate_text_width(lines: list[Line]) -> float:
+    """Estimate the pixel width of the widest text line."""
+    max_w = 0.0
+    for ln in lines:
+        text = str(ln.content)
+        sz = size_to_px(ln.size)
+        weight = str(ln.weight)
+        factor = 0.62 if weight in ("600", "700") else 0.58
+        w = len(text) * sz * factor
+        if getattr(ln, "small_caps", False):
+            w *= 1.05
+        max_w = max(max_w, w)
+    return max_w
+
+
 def _leaf_natural_size(frame: Frame) -> tuple[float, float]:
     """Natural size of a leaf Frame (box with text/icon)."""
     has_icon = frame.icon is not None
@@ -73,7 +89,16 @@ def _leaf_natural_size(frame: Frame) -> tuple[float, float]:
     # Explicit height overrides computed height if larger
     if frame.height is not None:
         h = max(h, frame.height)
-    w = frame.width or BLOCK_WIDTH
+    # Width: use explicit value, or fit text+icon, falling back to BLOCK_WIDTH
+    if frame.width is not None:
+        w = frame.width
+    elif frame.label:
+        text_w = _estimate_text_width(frame.label)
+        icon_col = (ICON_SIZE + INSET) if has_icon else 0
+        content_w = INSET + text_w + INSET + icon_col
+        w = max(round_up_to_grid(content_w), BLOCK_WIDTH)
+    else:
+        w = BLOCK_WIDTH
     return (w, h)
 
 

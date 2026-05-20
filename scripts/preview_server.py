@@ -424,6 +424,14 @@ def _relayout_v3(slug: str, params: dict) -> dict | None:
                 target.width = int(ovr["width"])
             if "height" in ovr and ovr["height"] is not None:
                 target.height = int(ovr["height"])
+            if "children_order" in ovr and isinstance(ovr["children_order"], list):
+                new_order = ovr["children_order"]
+                # Reorder children to match requested order
+                child_map = {c.id: c for c in target.children}
+                reordered = [child_map[cid] for cid in new_order if cid in child_map]
+                # Append any children not in the new order list (safety)
+                remaining = [c for c in target.children if c.id not in {cid for cid in new_order}]
+                target.children = reordered + remaining
 
         # Re-layout
         from layout_v3 import layout_frame_diagram
