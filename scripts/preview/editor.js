@@ -841,6 +841,46 @@ function findComponentAtDepth(x, y, targetDepth) {
   return walk(roots, 0);
 }
 
+/**
+ * Ctrl+click: find the deepest (innermost) component containing the point.
+ * Walks children-first so the deepest match wins.
+ */
+function findDeepestComponent(x, y) {
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return null;
+
+  function walk(nodes) {
+    for (const node of nodes) {
+      let nx, ny, nw, nh;
+      const g = svg.querySelector('[data-component-id="' + node.id + '"]');
+      const rect = g ? g.querySelector("rect:first-of-type") : null;
+      if (rect) {
+        nx = parseFloat(rect.getAttribute("x"));
+        ny = parseFloat(rect.getAttribute("y"));
+        nw = parseFloat(rect.getAttribute("width"));
+        nh = parseFloat(rect.getAttribute("height"));
+      } else {
+        nx = node.x; ny = node.y; nw = node.width; nh = node.height;
+      }
+      if (g) {
+        const t = g.style.transform || "";
+        const m = t.match(/translate\(([-.\d]+)px,\s*([-.\d]+)px\)/);
+        if (m) { nx += parseFloat(m[1]); ny += parseFloat(m[2]); }
+      }
+      if (x >= nx && x <= nx + nw && y >= ny && y <= ny + nh) {
+        if (node.children && node.children.length > 0) {
+          const deeper = walk(node.children);
+          if (deeper) return deeper;
+        }
+        return node.id;
+      }
+    }
+    return null;
+  }
+  const roots = model._roots.map(n => n.data);
+  return walk(roots);
+}
+
 function getAncestors(cid) {
   return model.getAncestors(cid);
 }
@@ -1789,12 +1829,28 @@ function onSvgMouseDown(e) {
   pt.y = e.clientY;
   const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
   
+  if (e.button !== 0) return;
+
+  // Ctrl+click: jump straight to the deepest (innermost) component (Figma behavior)
+  if (e.ctrlKey || e.metaKey) {
+    const deepest = findDeepestComponent(svgPt.x, svgPt.y);
+    if (deepest) {
+      // Set selectionDepth to match so subsequent clicks stay at that level
+      const ancestors = getAncestors(deepest);
+      selectionDepth = ancestors.length;
+      selectComponent(deepest, e.shiftKey);
+    } else {
+      deselectAll();
+    }
+    e.preventDefault();
+    return;
+  }
+
   // Find component at current selectionDepth (shallowest = depth 0 by default)
   const cid = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
   // Fall back: if nothing at current depth, try top-level
   const effectiveCid = cid || findComponentAtDepth(svgPt.x, svgPt.y, 0);
   
-  if (e.button !== 0) return;
   if (!effectiveCid) {
     deselectAll();
     return;
@@ -2785,6 +2841,32 @@ function onResizeUp() {
     const afterOverrides = _captureOverrideEntries(Object.keys(s.origOverrides));
     selectComponent(s.cid);
     commitOverridePatchAction("Resize component", s.overrideSnapshotBefore, afterOverrides);
+
+    // V3: convert resize delta into frame width/height override → relayout
+    if (ENGINE === "v3") {
+      const node = model.get(s.cid);
+      if (node) {
+        const baseW = node.data.width;
+        const baseH = node.data.height;
+        const own = getOwnDelta(s.cid);
+        const newW = Math.max(8, baseW + own.dw);
+        const newH = Math.max(8, baseH + own.dh);
+        // Store as frame overrides
+        if (!overrides[s.cid]) overrides[s.cid] = {};
+        overrides[s.cid].width = newW;
+        overrides[s.cid].height = newH;
+        overrides[s.cid].sizing = "FIXED";
+        // Clear visual delta — the relayout will reposition everything
+        setOverride(s.cid, { dx: 0, dy: 0, dw: 0, dh: 0 });
+        // Clear sibling deltas too
+        if (s.propagatedIds) {
+          for (const pid of s.propagatedIds) {
+            setOverride(pid, { dx: 0, dy: 0, dw: 0, dh: 0 });
+          }
+        }
+        requestV3Relayout(s.cid);
+      }
+    }
   } else {
     // No move happened: re-show handles that were hidden
     if (svg) svg.querySelectorAll(".dg-handle").forEach(h => h.style.display = "");
@@ -2997,13 +3079,19 @@ function setFrameProp(cid, prop, value) {
   renderSelectionInspector(cid);
 }
 
-async function requestV3Relayout(cid) {
+async function requestV3Relayout(triggerCid) {
   const slug = SLUG.replace('v3:', '');
-  const ovr = overrides[cid] || {};
-  const payload = { frame_id: cid };
-  for (const key of ['direction', 'gap', 'padding', 'sizing', 'align', 'width', 'height']) {
-    if (ovr[key] !== undefined) payload[key] = ovr[key];
+  // Send ALL accumulated frame overrides so the server can apply them together
+  const allFrameOverrides = {};
+  const FRAME_KEYS = ['direction', 'gap', 'padding', 'sizing', 'align', 'width', 'height'];
+  for (const [fid, ovr] of Object.entries(overrides)) {
+    const entry = {};
+    for (const key of FRAME_KEYS) {
+      if (ovr[key] !== undefined) entry[key] = ovr[key];
+    }
+    if (Object.keys(entry).length > 0) allFrameOverrides[fid] = entry;
   }
+  const payload = { frame_overrides: allFrameOverrides };
   try {
     const resp = await fetch('/api/relayout-v3/' + slug, {
       method: 'POST',

@@ -317,18 +317,15 @@ def _relayout(slug: str, grid_overrides: dict) -> dict | None:
         return None
 
 
-def _relayout_v3(slug: str, frame_overrides: dict) -> dict | None:
+def _relayout_v3(slug: str, params: dict) -> dict | None:
     """Re-run v3 frame layout with patched frame properties.
 
-    frame_overrides can contain:
-      - frame_id: str — which frame to modify (or "root" for the root)
-      - direction: "VERTICAL" | "HORIZONTAL"
-      - gap: int
-      - padding: int
-      - sizing: "HUG" | "FILL" | "FIXED"
-      - align: "TOP_LEFT" | "CENTER" | etc.
-      - width: int (for FIXED sizing)
-      - height: int (for FIXED sizing)
+    params can contain:
+      - frame_overrides: dict of frame_id → {direction, gap, padding, sizing,
+        align, width, height} (multi-frame format, preferred)
+
+    Legacy single-frame format (frame_id + flat props) is also accepted
+    for backwards compatibility.
     """
     try:
         if str(SCRIPTS) not in sys.path:
@@ -373,8 +370,14 @@ def _relayout_v3(slug: str, frame_overrides: dict) -> dict | None:
 
             frame_diagram = diagram_to_frame(diagram_obj)
 
-        # Apply frame overrides
-        target_id = frame_overrides.get("frame_id", "root")
+        # Build overrides map: { frame_id: { prop: value } }
+        if "frame_overrides" in params:
+            all_overrides = params["frame_overrides"]
+        else:
+            # Legacy single-frame format
+            target_id = params.get("frame_id", "root")
+            legacy_ovr = {k: v for k, v in params.items() if k != "frame_id"}
+            all_overrides = {target_id: legacy_ovr} if legacy_ovr else {}
 
         def _find_frame(frame, fid):
             if frame.id == fid:
@@ -385,28 +388,32 @@ def _relayout_v3(slug: str, frame_overrides: dict) -> dict | None:
                     return found
             return None
 
-        target = _find_frame(frame_diagram.root, target_id) if target_id != "root" else frame_diagram.root
-        if target is None:
-            target = frame_diagram.root
-
         direction_map = {"VERTICAL": Direction.VERTICAL, "HORIZONTAL": Direction.HORIZONTAL}
         sizing_map = {"HUG": Sizing.HUG, "FILL": Sizing.FILL, "FIXED": Sizing.FIXED}
         align_map = {a.name: a for a in Align}
 
-        if "direction" in frame_overrides and frame_overrides["direction"] in direction_map:
-            target.direction = direction_map[frame_overrides["direction"]]
-        if "gap" in frame_overrides and frame_overrides["gap"] is not None:
-            target.gap = int(frame_overrides["gap"])
-        if "padding" in frame_overrides and frame_overrides["padding"] is not None:
-            target.padding = int(frame_overrides["padding"])
-        if "sizing" in frame_overrides and frame_overrides["sizing"] in sizing_map:
-            target.sizing = sizing_map[frame_overrides["sizing"]]
-        if "align" in frame_overrides and frame_overrides["align"] in align_map:
-            target.align = align_map[frame_overrides["align"]]
-        if "width" in frame_overrides and frame_overrides["width"] is not None:
-            target.width = int(frame_overrides["width"])
-        if "height" in frame_overrides and frame_overrides["height"] is not None:
-            target.height = int(frame_overrides["height"])
+        for fid, ovr in all_overrides.items():
+            if fid == "root":
+                target = frame_diagram.root
+            else:
+                target = _find_frame(frame_diagram.root, fid)
+            if target is None:
+                continue
+
+            if "direction" in ovr and ovr["direction"] in direction_map:
+                target.direction = direction_map[ovr["direction"]]
+            if "gap" in ovr and ovr["gap"] is not None:
+                target.gap = int(ovr["gap"])
+            if "padding" in ovr and ovr["padding"] is not None:
+                target.padding = int(ovr["padding"])
+            if "sizing" in ovr and ovr["sizing"] in sizing_map:
+                target.sizing = sizing_map[ovr["sizing"]]
+            if "align" in ovr and ovr["align"] in align_map:
+                target.align = align_map[ovr["align"]]
+            if "width" in ovr and ovr["width"] is not None:
+                target.width = int(ovr["width"])
+            if "height" in ovr and ovr["height"] is not None:
+                target.height = int(ovr["height"])
 
         # Re-layout
         from layout_v3 import layout_frame_diagram
