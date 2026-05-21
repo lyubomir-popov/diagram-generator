@@ -72,6 +72,16 @@ Full test-first redesign of the v3 frame layout engine, from scratch test covera
 - **v3 style undo bug fix.** `applyV3Style` previously had no undo support; now uses patch-based undo.
 - **Timer cleanup.** `_restoreOverridePatch` now clears `_v3RelayoutTimer` to prevent stale relayout after undo.
 
+### 2026-05-22 – Frame-layout-engine interaction features batch (branch frame-layout-engine)
+
+Five features implemented with competitive code reviews (Opus 4.6 vs GPT-5.4) after each:
+
+- **Feature 1: Snap to grid.** Drag and resize now snap to column edges, row tops, and baseline grid lines. Guide lines render during snap. `findSnaps()` delegates to shared `snapEdgeToTarget()` and `collectGridSnapTargets()`. Resize handler snaps each edge independently with grid-priority. DRY fix: unified snap-target collection.
+- **Feature 2: Swappable engine interface (Phase 1).** Abstract `EngineAdapter` class in `engine-interface.js` defines the common interaction contract. Shared snap primitives extracted to `editor-base.js`: `snapEdgeToTarget`, `collectGridSnapTargets`, `collectPeerSnapTargets`, `renderGuideLines`, `clearGuideLines`. Both editors delegate to shared primitives.
+- **Feature 3: Force alignment guides.** Force drag now snaps to peer node edges with guide lines. `collectForceSnapTargets()` converts center-positioned force nodes to top-left rects, then uses `collectPeerSnapTargets()`. Snap applied during drag preview and on final commit.
+- **Feature 4: Simplify force inspector.** Selection panel reduced from 8 fields to 3 (Node, Style dropdown, Pin/Unpin). Removed: Label, Position, Size, Pinned, Effective style, and help text.
+- **Feature 5: Grid-aware resize.** Implemented as part of Feature 1 — resize handles snap to column/row edges with snap indicators.
+
 ### 2026-05-22 – Live text reflow during resize (branch frame-layout-engine)
 
 - **Bidirectional text reflow.** Fixed `reflowTextInGroup()` in editor.js to handle both narrowing AND widening. Previously the function only split tspans that were too wide; it never joined tspans that could be merged when the box grew. Root cause: each existing tspan already fit at the new (wider) available width, so the split-only logic kept them unchanged.
