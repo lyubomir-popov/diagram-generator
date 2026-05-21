@@ -4,6 +4,20 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-22 – Unified editor shell (branch frame-layout-engine)
+
+- **editor-base.js**: Shared utility module with `byId`, `escapeHtml`, `fetchJson`, `downloadFile`, `getThemeToken`, `setViewMode`, `initViewTabs`, `initDiagramPicker`, `bindShellResize`, `getStageSvg`, `pointerToSvgPoint`, `setStatus`, `initPreviewShell`. Both grid and force editors load this before their mode-specific script.
+- **viewer-unified.html**: Single HTML template replacing `viewer.html` and `force-viewer.html`. Uses `data-dg-mode="grid"|"force"` attribute with CSS `.dg-grid-only`/`.dg-force-only` visibility rules. Shared: nav, stage, sidebar header (picker + prev/next + status), inspector section. Grid-only: Browse/Layers tabs, grid controls, overrides, constraints. Force-only: Nodes heading, solver controls, simulation params, guidance.
+- **force.js**: Removed duplicated `byId`, `escapeHtml`, `fetchJson`, `setStatus`, `setViewMode`, `getStageSvg`, `pointerToStagePoint`, `stepPicker` functions. Updated element IDs to unified: `force-picker`→`diagram-picker`, `force-selection`→`inspector`, `tree`→`tree-force`. Shell init delegated to `initPreviewShell()` from editor-base.js.
+- **preview_server.py**: Both `_build_viewer_html` and `_build_force_viewer_html` now use `_get_unified_template()`. Mode-specific substitutions: `%MODE%`, `%BROWSE_NAV%`, `%INSPECTOR_EMPTY%`, `%MODE_SCRIPTS%`.
+- **editor.css**: Added `[data-dg-mode="grid"] .dg-force-only` and `[data-dg-mode="force"] .dg-grid-only` display rules.
+- Browser-verified: grid editor shows all grid-only sections (Browse/Layers, Grid, Overrides, Constraints), hides force sections. Force editor shows force-only sections (Nodes, Solver, Simulation, Guidance), hides grid sections. Both render diagrams and run simulations correctly.
+
+### 2026-05-22 – Baseline-snap column widths + column-span width input (branch frame-layout-engine)
+
+- **Feature A: Baseline-snap columns.** Column widths now snap down to 8px multiples in both `_computeBrockmanGrid()` (editor.js) and `_build_grid_info()` (layout_v3.py). Leftover absorbed into `resolved_right_margin`. Grid overlay shows right-margin zone when it exceeds configured margin.
+- **Feature B: Column-span width input.** Inspector sizing section now shows numeric input + unit dropdown (`px`/`cols` for width, `px`/`rows` for height) when sizing mode is FIXED. Conversion helpers: `colSpanToPx`, `rowSpanToPx`, `pxToColSpan`, `pxToRowSpan`. Works in both single-select and multi-select inspectors.
+
 ### 2026-05-22 – Force engine UI sliders
 
 - Added "Simulation" section to force-viewer sidebar with 8 live parameter controls: link_distance, link_strength, charge_strength, collision_padding, velocity_decay, alpha_min, alpha_decay, curve_handle_ratio.
