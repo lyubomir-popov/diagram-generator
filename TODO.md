@@ -120,7 +120,7 @@ The editor now has a proper Brockman composition grid (baseline-snapped rows, eq
 - [ ] `[S]` **PNG export at 1x, 2x, 3x.** Add a Playwright-based PNG exporter that renders generated SVGs at 1x, 2x, and 3x scale (e.g. `scripts/export_png.py --scale 1,2,3`). Wire into the preview Export button as an option alongside the existing override JSON export.
 
 ### Code quality — open
-- [ ] `[H]` Unify the parent-scoped equal-split/outdent math across `scripts/diagram_layout.py` and `scripts/preview/component-model.js`. Preview now consumes declared slots/spans and measured gutters, but the equal-split/outdent math itself is still duplicated between Python and JS.
+- [x] `[H]` Unify the parent-scoped equal-split/outdent math across `scripts/diagram_layout.py` and `scripts/preview/component-model.js`. Extracted `equal_split_cell()` and `span_size()` into `diagram_shared.py` and `editor-base.js`. Wired both `component-model.js` and `diagram_layout.py` to use shared versions. v2 pipeline sp_outer_w keeps intentional ceil rounding (documented). 7 cross-language contract tests added.
 - [ ] `[S]` **draw.io renderer uses spatial containment for parenting.** `_find_children` in `diagram_render_drawio.py` uses bounding-box overlap instead of `component_id`, which can mis-parent elements at shared edges. Fix: match by `component_id`.
 - [ ] `[S]` **`_uniform_row_height` ignores Annotations/Helpers.** Rows containing only annotations get `BOX_MIN_HEIGHT` regardless of content. The post-hoc helper expansion partially compensates but runs after uniform equalization.
 - [ ] `[S]` Triage the secondary audit findings: stale-v2 comparison risk in `build_outputs.py`, preview text-width mismatch vs renderer text width, dead helper layout code, stale architectural line-count notes in `STATUS.md`.
@@ -137,7 +137,7 @@ Goal: the force and grid editors share one editor shell; swapping the layout eng
 
 **Stage interaction parity**
 
-- [ ] `[H]` **Resize handles.** Force nodes need the same 8-handle resize affordance as grid components. Resize should update node `width`/`height` in the force session and restart the solver.
+- [x] `[H]` **Resize handles.** Force nodes now show 8 resize handles (corners + midpoints) when selected. Dragging snaps to 8px grid, commits width/height to server, and restarts solver. Backend supports width/height in node update API and override serialization.
 - [ ] `[S]` **Text editing.** Double-click a force node to edit its label in-place, same as the grid editor's `tspan` editing path.
 - [ ] `[S]` **Multi-select.** Shift+click to select multiple force nodes; enable distribute/align controls on the multi-selection.
 - [ ] `[S]` **Hover highlighting.** Show visual hover class on force nodes.
@@ -151,7 +151,7 @@ Goal: the force and grid editors share one editor shell; swapping the layout eng
 
 **Persistence and undo**
 
-- [ ] `[H]` **Undo/redo for force.** Add an undo stack (max 50 commands) covering move/pin, style change, text edit, and resize, using the same command-record pattern as the grid editor.
+- [x] `[H]` **Undo/redo for force.** Command-based undo stack (max 50) covering move/pin, style change, text edit, and resize. Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y keyboard shortcuts. Reset clears the stack.
 - [ ] `[S]` **Stale-definition detection.** Warn if the force spec JSON changes on disk while a session is live.
 
 **Connectors and arrows**

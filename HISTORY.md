@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-22 – Equal-split unification + force resize + force undo/redo (branch frame-layout-engine)
+
+- **Equal-split unification.** Extracted `equal_split_cell()` and `span_size()` into `diagram_shared.py` (Python) and `editor-base.js` (JS). Wired `component-model.js` (4 inline formulas replaced) and `diagram_layout.py` (`span_w` via `span_size()`). v2 `sp_outer_w` intentionally keeps ceil rounding (documented). Fixed `BASELINE_STEP` redeclaration error (now owned by `editor-base.js` only). 7 cross-language contract tests added.
+- **Force resize handles.** 8-handle resize (corners + midpoints) on selected force nodes. Dragging snaps width/height to 8px grid, adjusts center position per handle direction, commits to server via `updateForceNode()` with width/height params, restarts solver. Backend: `force_preview.py` and `preview_server.py` accept width/height in node update API and override serialization. Minimum node size: 48px.
+- **Force undo/redo.** Command-based undo stack (max 50) covering move/pin, style change, resize, and pin toggle. Each command captures affected node state (position, pinned, width, height, style) before and after. Undo/redo buttons in force toolbar, Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y keyboard shortcuts. Reset clears the stack. Also fixed `btn-force-save` wiring (was targeting wrong element ID).
+
 ### 2026-05-22 – v3 autolayout engine milestones 1–12 complete (branch frame-layout-engine)
 
 Full test-first redesign of the v3 frame layout engine, from scratch test coverage through Figma-correct per-axis sizing and interaction parity. 165 tests passing at completion.
