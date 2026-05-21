@@ -457,6 +457,7 @@ function render(snapshot) {
   renderTree(snapshot);
   renderSelection(snapshot);
   updateSummary(snapshot);
+  updateSimulationParams(snapshot);
   ensureReferenceImage();
 
   if (dragState) {
@@ -765,6 +766,51 @@ byId("btn-export-svg").addEventListener("click", async () => {
 
 setViewMode("output");
 updateRunButton();
+
+// --- Simulation parameter sliders ---
+
+let _paramsInitialized = false;
+
+function updateSimulationParams(snapshot) {
+  const params = snapshot.simulation && snapshot.simulation.params;
+  const render = snapshot.render || {};
+  if (!params && !render) return;
+  const container = document.getElementById("force-params");
+  if (!container) return;
+  for (const input of container.querySelectorAll("[data-force-param]")) {
+    const key = input.getAttribute("data-force-param");
+    const source = input.getAttribute("data-param-source") === "render" ? render : params;
+    if (source && key in source && source[key] != null) {
+      if (!_paramsInitialized || document.activeElement !== input) {
+        input.value = source[key];
+      }
+    }
+  }
+  _paramsInitialized = true;
+}
+
+document.getElementById("force-params").addEventListener("change", async (event) => {
+  const input = event.target.closest("[data-force-param]");
+  if (!input) return;
+  const key = input.getAttribute("data-force-param");
+  const value = parseFloat(input.value);
+  if (isNaN(value)) return;
+  try {
+    const resp = await fetch(`/api/force-params/${encodeURIComponent(FORCE_SLUG)}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [key]: value }),
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    const snapshot = await resp.json();
+    render(snapshot);
+    if (!running) startRunning();
+    setStatus(`${key} → ${value}`, "ok");
+  } catch (error) {
+    setStatus(error.message || "Param update failed", "error");
+  }
+});
+
 loadSnapshot(true)
   .then(() => {
     startRunning();

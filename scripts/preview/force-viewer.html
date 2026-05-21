@@ -98,6 +98,44 @@
           </section>
 
           <section class="dg-sidebar-section">
+            <h2 class="dg-section-heading bf-h5">Simulation</h2>
+            <div class="inspector" id="force-params">
+              <div class="field">
+                <label class="label" for="param-link-distance">Link distance</label>
+                <input class="bf-input" type="number" id="param-link-distance" min="10" max="500" step="10" data-force-param="link_distance">
+              </div>
+              <div class="field">
+                <label class="label" for="param-link-strength">Link strength</label>
+                <input class="bf-input" type="number" id="param-link-strength" min="0" max="2" step="0.05" data-force-param="link_strength">
+              </div>
+              <div class="field">
+                <label class="label" for="param-charge-strength">Charge strength</label>
+                <input class="bf-input" type="number" id="param-charge-strength" min="-1000" max="0" step="10" data-force-param="charge_strength">
+              </div>
+              <div class="field">
+                <label class="label" for="param-collision-padding">Collision padding</label>
+                <input class="bf-input" type="number" id="param-collision-padding" min="0" max="100" step="2" data-force-param="collision_padding">
+              </div>
+              <div class="field">
+                <label class="label" for="param-velocity-decay">Velocity decay</label>
+                <input class="bf-input" type="number" id="param-velocity-decay" min="0" max="1" step="0.05" data-force-param="velocity_decay">
+              </div>
+              <div class="field">
+                <label class="label" for="param-alpha-min">Alpha min</label>
+                <input class="bf-input" type="number" id="param-alpha-min" min="0" max="0.1" step="0.001" data-force-param="alpha_min">
+              </div>
+              <div class="field">
+                <label class="label" for="param-alpha-decay">Alpha decay</label>
+                <input class="bf-input" type="number" id="param-alpha-decay" min="0" max="0.1" step="0.001" data-force-param="alpha_decay">
+              </div>
+              <div class="field">
+                <label class="label" for="param-curve-handle-ratio">Curve handle ratio</label>
+                <input class="bf-input" type="number" id="param-curve-handle-ratio" min="0" max="1" step="0.05" data-force-param="curve_handle_ratio" data-param-source="render">
+              </div>
+            </div>
+          </section>
+
+          <section class="dg-sidebar-section">
             <h2 class="dg-section-heading bf-h5">Guidance</h2>
             <p class="bf-form-help dg-override-summary">This force preview must still obey the repo's diagram language: white or grey boxes, at most one black emphasis box, orange connectors only, and top-left aligned live text.</p>
             <p class="bf-form-help dg-override-summary">To pin a node, select it and click Pin here in the Selection panel. Reset and browser refresh restart the solver around the current pinned session state; Save persists that state across server restarts.</p>

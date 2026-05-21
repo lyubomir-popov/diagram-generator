@@ -37,6 +37,7 @@ class ForcePreviewState:
     node_base_styles: dict[str, str | None]
     node_style_overrides: dict[str, str] = field(default_factory=dict)
     tick_count: int = 0
+    render_overrides: dict[str, float] = field(default_factory=dict)
 
 
 def list_force_examples() -> list[str]:
@@ -274,6 +275,81 @@ def save_force_overrides(state: ForcePreviewState) -> None:
     path.write_text(json.dumps(serialize_force_overrides(state), indent=2) + "\n", encoding="utf-8")
 
 
+def _get_simulation_params(state: ForcePreviewState) -> dict[str, Any]:
+    """Extract current simulation parameter values for the UI."""
+    sim = state.simulation
+    params: dict[str, Any] = {
+        "velocity_decay": sim.velocity_decay,
+        "alpha_min": sim.alpha_min,
+        "alpha_decay": sim.alpha_decay,
+    }
+    charge = sim._forces.get("charge")
+    if charge is not None:
+        try:
+            params["charge_strength"] = float(charge._strength_fn(None, 0, []))
+        except Exception:
+            pass
+    collide = sim._forces.get("collide")
+    if collide is not None:
+        params["collision_padding"] = float(collide._padding)
+    link = sim._forces.get("link")
+    if link is not None:
+        try:
+            params["link_distance"] = float(link._distance_fn(None, 0, []))
+        except Exception:
+            pass
+        try:
+            strength_fn = link._strength_fn or link._default_strength
+            params["link_strength"] = float(strength_fn(None, 0, []))
+        except Exception:
+            pass
+    return params
+
+
+def update_simulation_params(state: ForcePreviewState, params: dict[str, Any]) -> dict[str, Any]:
+    """Update live simulation parameters and return a fresh snapshot."""
+    sim = state.simulation
+
+    if "velocity_decay" in params:
+        sim.velocity_decay = float(params["velocity_decay"])
+
+    if "alpha_min" in params:
+        sim.alpha_min = float(params["alpha_min"])
+
+    if "alpha_decay" in params:
+        sim.alpha_decay = float(params["alpha_decay"])
+
+    if "charge_strength" in params:
+        charge = sim._forces.get("charge")
+        if charge is not None:
+            charge.strength(float(params["charge_strength"]))
+
+    if "collision_padding" in params:
+        collide = sim._forces.get("collide")
+        if collide is not None:
+            collide._padding = float(params["collision_padding"])
+
+    if "link_distance" in params:
+        link = sim._forces.get("link")
+        if link is not None:
+            link.distance(float(params["link_distance"]))
+
+    if "link_strength" in params:
+        link = sim._forces.get("link")
+        if link is not None:
+            link.strength(float(params["link_strength"]))
+
+    # Reheat simulation so changes take effect
+    sim.alpha = max(sim.alpha, 0.3)
+
+    # Render overrides (not simulation params, but exposed via same API)
+    for key in ("curve_handle_ratio", "curve_handle_min", "curve_handle_max"):
+        if key in params:
+            state.render_overrides[key] = float(params[key])
+
+    return get_force_snapshot(state)
+
+
 def create_force_state(slug: str) -> ForcePreviewState:
     spec = load_force_spec(slug)
     canvas = _canvas(spec)
@@ -410,9 +486,9 @@ def get_force_snapshot(state: ForcePreviewState, *, snap: bool = False) -> dict[
         "reference_image": spec.get("reference_image"),
         "canvas": canvas,
         "render": {
-            "curve_handle_ratio": float(render_cfg.get("curve_handle_ratio", 0.35)),
-            "curve_handle_min": float(render_cfg.get("curve_handle_min", 24)),
-            "curve_handle_max": float(render_cfg.get("curve_handle_max", 72)),
+            "curve_handle_ratio": float(state.render_overrides.get("curve_handle_ratio", render_cfg.get("curve_handle_ratio", 0.35))),
+            "curve_handle_min": float(state.render_overrides.get("curve_handle_min", render_cfg.get("curve_handle_min", 24))),
+            "curve_handle_max": float(state.render_overrides.get("curve_handle_max", render_cfg.get("curve_handle_max", 72))),
         },
         "simulation": {
             "alpha": state.simulation.alpha,
@@ -421,6 +497,7 @@ def get_force_snapshot(state: ForcePreviewState, *, snap: bool = False) -> dict[
             "ticks_per_frame": int(sim_cfg.get("ticks_per_frame", 4)),
             "max_iterations": max_iterations,
             "settled": state.simulation.alpha < state.simulation.alpha_min or state.tick_count >= max_iterations,
+            "params": _get_simulation_params(state),
         },
         "nodes": node_payloads,
         "links": link_payloads,
