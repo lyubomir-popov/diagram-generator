@@ -21,20 +21,32 @@
             </ul>
           </div>
         </div>
-        <!-- Force mode: simple Nodes heading -->
-        <div class="bf-panel-header is-sticky dg-force-only">
-          <h2 class="dg-section-heading bf-h5">Nodes</h2>
+        <!-- Force mode: Browse/Nodes tabs -->
+        <div class="bf-panel-header is-sticky dg-nav-tabs-header dg-force-only">
+          <div class="bf-tabs dg-nav-tabs">
+            <ul class="bf-tabs-list" role="tablist" aria-label="Left sidebar view">
+              <li class="bf-tabs-item"><button class="bf-tabs-link dg-nav-tab is-active" id="nav-tab-browse-force" type="button" role="tab" aria-selected="true" aria-controls="nav-pane-browse-force" tabindex="0">Browse</button></li>
+              <li class="bf-tabs-item"><button class="bf-tabs-link dg-nav-tab" id="nav-tab-nodes" type="button" role="tab" aria-selected="false" aria-controls="nav-pane-nodes" tabindex="-1">Nodes</button></li>
+            </ul>
+          </div>
         </div>
         <div class="bf-panel-content dg-component-panel-content">
           <!-- Grid mode: Browse pane -->
           <div class="dg-nav-pane is-active dg-grid-only" id="nav-pane-browse" role="tabpanel" aria-labelledby="nav-tab-browse">
             %BROWSE_NAV%
           </div>
-          <!-- Grid mode: Layers pane / Force mode: flat tree -->
+          <!-- Grid mode: Layers pane -->
           <div class="dg-nav-pane dg-grid-only" id="nav-pane-layers" role="tabpanel" aria-labelledby="nav-tab-layers" hidden>
             <div class="tree dg-component-tree" id="tree"></div>
           </div>
-          <div class="tree dg-component-tree dg-force-only" id="tree-force"></div>
+          <!-- Force mode: Browse pane -->
+          <div class="dg-nav-pane is-active dg-force-only" id="nav-pane-browse-force" role="tabpanel" aria-labelledby="nav-tab-browse-force">
+            %BROWSE_NAV%
+          </div>
+          <!-- Force mode: Nodes pane -->
+          <div class="dg-nav-pane dg-force-only" id="nav-pane-nodes" role="tabpanel" aria-labelledby="nav-tab-nodes" hidden>
+            <div class="tree dg-component-tree" id="tree-force"></div>
+          </div>
         </div>
       </section>
     </div>

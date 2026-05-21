@@ -827,7 +827,9 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
 
 
 def _build_force_viewer_html(slug: str, all_slugs: list[str]) -> str:
-    nav_options = _build_preview_nav_options(f"/force/view/{slug}")
+    view_path = f"/force/view/{slug}"
+    nav_options = _build_preview_nav_options(view_path)
+    browse_nav = _build_browse_nav(view_path)
     from diagram_shared import ARROW_HEAD_HALF_WIDTH, ARROW_HEAD_LENGTH, BODY_LINE_STEP, INSET
 
     config_script = (
@@ -847,7 +849,7 @@ def _build_force_viewer_html(slug: str, all_slugs: list[str]) -> str:
     )
     html = html.replace("%MODE%", "force")
     html = html.replace("%NAV_OPTIONS%", nav_options)
-    html = html.replace("%BROWSE_NAV%", "")
+    html = html.replace("%BROWSE_NAV%", browse_nav)
     html = html.replace("%INSPECTOR_EMPTY%", "Click a node to select it.")
     html = html.replace(
         "%MODE_SCRIPTS%",

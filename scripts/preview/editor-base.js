@@ -177,10 +177,39 @@ function setStatus(message, kind) {
 
 // ---- Init shell ----
 
+function initNavTabs() {
+  const tabs = Array.from(document.querySelectorAll(".dg-nav-tab"));
+  const panes = Array.from(document.querySelectorAll(".dg-nav-pane"));
+  if (tabs.length === 0 || panes.length === 0) return;
+
+  function activateTab(tab) {
+    tabs.forEach(t => {
+      const active = t === tab;
+      t.classList.toggle("is-active", active);
+      t.setAttribute("aria-selected", String(active));
+      t.setAttribute("tabindex", active ? "0" : "-1");
+    });
+    panes.forEach(p => {
+      const show = p.id === tab.getAttribute("aria-controls");
+      p.classList.toggle("is-active", show);
+      p.hidden = !show;
+    });
+  }
+
+  tabs.forEach(tab => tab.addEventListener("click", () => activateTab(tab)));
+
+  // Scroll active browse link into view
+  const activeLink = document.querySelector(".dg-browse-link.is-active");
+  if (activeLink) {
+    requestAnimationFrame(() => activeLink.scrollIntoView({ block: "nearest" }));
+  }
+}
+
 function initPreviewShell() {
   bindShellResize();
   initViewTabs();
   initDiagramPicker();
+  initNavTabs();
 }
 
 // Expose shared API on window for inline handlers
