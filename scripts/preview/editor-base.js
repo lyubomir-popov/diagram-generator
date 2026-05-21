@@ -212,6 +212,109 @@ function initPreviewShell() {
   initNavTabs();
 }
 
+// ---- Shared snap primitives ----
+// Used by both grid (editor.js) and force (force.js) editors for
+// magnetic snap-to-grid and peer-edge alignment during drag/resize.
+
+/** Distance in px within which a component edge snaps to a target. */
+const SHARED_SNAP_THRESHOLD = 6;
+
+/**
+ * Snap a single coordinate to the nearest target within SHARED_SNAP_THRESHOLD.
+ * @param {number} edge - The proposed edge coordinate.
+ * @param {number[]} targets - Snap target positions.
+ * @returns {{ value: number, snapped: boolean, target: number|null }}
+ */
+function snapEdgeToTarget(edge, targets) {
+  let best = edge;
+  let bestDist = SHARED_SNAP_THRESHOLD + 1;
+  let snappedTarget = null;
+  for (const t of targets) {
+    const dist = Math.abs(edge - t);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = t;
+      snappedTarget = t;
+    }
+  }
+  return { value: best, snapped: bestDist <= SHARED_SNAP_THRESHOLD, target: snappedTarget };
+}
+
+/**
+ * Collect Brockman grid x and y snap positions from a gridInfo object.
+ * Returns column left/right edges and row top/bottom edges.
+ * @param {Object|null} gi - Grid info with col_xs, col_widths, row_ys, row_heights.
+ * @returns {{ xs: number[], ys: number[] }}
+ */
+function collectGridSnapTargets(gi) {
+  if (!gi) return { xs: [], ys: [] };
+  const xs = [];
+  const ys = [];
+  if (gi.col_xs && gi.col_widths) {
+    for (let i = 0; i < gi.col_xs.length; i++) {
+      xs.push(gi.col_xs[i]);
+      xs.push(gi.col_xs[i] + gi.col_widths[i]);
+    }
+  }
+  if (gi.row_ys && gi.row_heights) {
+    for (let i = 0; i < gi.row_ys.length; i++) {
+      ys.push(gi.row_ys[i]);
+      ys.push(gi.row_ys[i] + gi.row_heights[i]);
+    }
+  }
+  return { xs, ys };
+}
+
+/**
+ * Collect snap targets from a list of peer component rects.
+ * Returns left, right, center x positions and top, bottom, center y positions.
+ * @param {{ x: number, y: number, width: number, height: number }[]} peers
+ * @returns {{ xs: number[], ys: number[] }}
+ */
+function collectPeerSnapTargets(peers) {
+  const xs = [];
+  const ys = [];
+  for (const p of peers) {
+    xs.push(p.x);              // left edge
+    xs.push(p.x + p.width);    // right edge
+    xs.push(p.x + p.width / 2);// center
+    ys.push(p.y);              // top edge
+    ys.push(p.y + p.height);   // bottom edge
+    ys.push(p.y + p.height / 2);// center
+  }
+  return { xs, ys };
+}
+
+/** Render dashed alignment guide lines on the SVG stage. */
+function renderGuideLines(lines, color, opacity) {
+  const svg = getStageSvg();
+  if (!svg) return;
+  clearGuideLines();
+  const ns = "http://www.w3.org/2000/svg";
+  const strokeColor = color || "rgba(255, 165, 0, 0.8)";
+  const strokeOpacity = opacity || "0.5";
+  for (const ln of lines) {
+    const line = document.createElementNS(ns, "line");
+    line.setAttribute("x1", ln.x1);
+    line.setAttribute("y1", ln.y1);
+    line.setAttribute("x2", ln.x2);
+    line.setAttribute("y2", ln.y2);
+    line.setAttribute("stroke", strokeColor);
+    line.setAttribute("stroke-width", "1");
+    line.setAttribute("stroke-opacity", strokeOpacity);
+    line.setAttribute("stroke-dasharray", "4 4");
+    line.setAttribute("class", "dg-snap-guide");
+    line.setAttribute("pointer-events", "none");
+    svg.appendChild(line);
+  }
+}
+
+/** Remove all alignment guide lines from the SVG stage. */
+function clearGuideLines() {
+  const svg = getStageSvg();
+  if (svg) svg.querySelectorAll(".dg-snap-guide").forEach(el => el.remove());
+}
+
 // Expose shared API on window for inline handlers
 window.byId = byId;
 window.escapeHtml = escapeHtml;
@@ -224,3 +327,9 @@ window.getStageSvg = getStageSvg;
 window.pointerToSvgPoint = pointerToSvgPoint;
 window.setStatus = setStatus;
 window.initPreviewShell = initPreviewShell;
+window.SHARED_SNAP_THRESHOLD = SHARED_SNAP_THRESHOLD;
+window.snapEdgeToTarget = snapEdgeToTarget;
+window.collectGridSnapTargets = collectGridSnapTargets;
+window.collectPeerSnapTargets = collectPeerSnapTargets;
+window.renderGuideLines = renderGuideLines;
+window.clearGuideLines = clearGuideLines;

@@ -80,15 +80,16 @@ let gridInfo = null;
 let baseGridInfo = null;
 
 // ---- Alignment snap guides ----
-const SNAP_THRESHOLD = 6; // px — distance to snap to an edge
+// Snap primitives (snapEdgeToTarget, collectGridSnapTargets, collectPeerSnapTargets,
+// renderGuideLines, clearGuideLines) are shared via editor-base.js.
+// This file keeps only grid-model-aware wrappers that depend on `model` and `gridInfo`.
+const SNAP_THRESHOLD = SHARED_SNAP_THRESHOLD;
 const GUIDE_COLOR = UI_AUTHORING_ACCENT_LINE;
 const GUIDE_OPACITY = "0.5";
 
 /**
  * Collect snap targets from peer components AND the Brockman grid.
- * Returns arrays of x and y coordinate targets.
- * Grid targets (column edges, row tops, baseline lines) are included when
- * gridInfo is available, giving the user magnetic-snap to the composition grid.
+ * Uses the grid model (not available in force mode) for peer lookups.
  */
 function collectSnapTargets(dragCid) {
   const node = model.get(dragCid);
@@ -97,34 +98,31 @@ function collectSnapTargets(dragCid) {
   const peers = node.parent
     ? node.parent.children.filter(n => n.id !== dragCid && n.type !== "arrow" && n.type !== "separator")
     : model._roots.filter(n => n.id !== dragCid && n.type !== "arrow" && n.type !== "separator");
-  const xs = [];
-  const ys = [];
-  for (const peer of peers) {
+
+  // Build peer rects for the shared helper
+  const peerRects = peers.map(peer => {
     const eff = model.getEffectiveDelta(peer.id);
     const own = model.getOwnDelta(peer.id);
-    const px = peer.data.x + eff.dx;
-    const py = peer.data.y + eff.dy;
-    const pw = peer.data.width + own.dw;
-    const ph = peer.data.height + own.dh;
-    xs.push(px);           // left edge
-    xs.push(px + pw);      // right edge
-    xs.push(px + pw / 2);  // center
-    ys.push(py);           // top edge
-    ys.push(py + ph);      // bottom edge
-    ys.push(py + ph / 2);  // center
-  }
+    return {
+      x: peer.data.x + eff.dx,
+      y: peer.data.y + eff.dy,
+      width: peer.data.width + own.dw,
+      height: peer.data.height + own.dh,
+    };
+  });
 
-  // Add Brockman grid lines as snap targets
-  const grid = _gridSnapTargets();
-  xs.push(...grid.xs);
-  ys.push(...grid.ys);
+  const peerSnaps = collectPeerSnapTargets(peerRects);
+  const gridSnaps = collectGridSnapTargets(gridInfo);
 
-  return { xs, ys };
+  return {
+    xs: [...peerSnaps.xs, ...gridSnaps.xs],
+    ys: [...peerSnaps.ys, ...gridSnaps.ys],
+  };
 }
 
 /**
  * Find which snap targets the dragged component is close to.
- * Returns { snapX: number|null, snapY: number|null, guideLines: [{x1,y1,x2,y2}] }
+ * Returns { snapDx, snapDy, lines[] }.
  */
 function findSnaps(cid, proposedDx, proposedDy, targets) {
   const node = model.get(cid);
@@ -165,7 +163,7 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
     }
   }
 
-  // Snap to 4px grid
+  // Snap to 8px grid
   bestDx = Math.round(bestDx / 8) * 8;
   bestDy = Math.round(bestDy / 8) * 8;
 
@@ -176,16 +174,16 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
   const snapBottom = snapTop + h;
   const snapCx = snapLeft + w / 2;
   const snapCy = snapTop + h / 2;
+  const svgEl = getStageSvg();
+  const svgW = svgEl ? parseFloat(svgEl.getAttribute("width") || "0") : 0;
+  const svgH = svgEl ? parseFloat(svgEl.getAttribute("height") || "0") : 0;
 
   // Only draw lines if we actually snapped (within threshold)
   if (bestDistX <= SNAP_THRESHOLD) {
-    // Find which x we snapped to
     for (const tx of targets.xs) {
       const edges = [snapLeft, snapRight, snapCx];
       for (const edge of edges) {
         if (Math.abs(edge - tx) < 2) {
-          const svgEl = document.querySelector("#stage svg");
-          const svgH = svgEl ? parseFloat(svgEl.getAttribute("height") || "2000") : 2000;
           lines.push({ x1: tx, y1: 0, x2: tx, y2: svgH });
         }
       }
@@ -196,8 +194,6 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
       const edges = [snapTop, snapBottom, snapCy];
       for (const edge of edges) {
         if (Math.abs(edge - ty) < 2) {
-          const svgElH = document.querySelector("#stage svg");
-          const svgW = svgElH ? parseFloat(svgElH.getAttribute("width") || "2000") : 2000;
           lines.push({ x1: 0, y1: ty, x2: svgW, y2: ty });
         }
       }
@@ -208,77 +204,19 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
 }
 
 /**
- * Snap a proposed edge coordinate to the nearest Brockman grid line.
- * Returns the snapped value if within SNAP_THRESHOLD, else the original.
- * @param {number} edge - The proposed edge coordinate.
- * @param {number[]} targets - Grid line positions to snap to.
- * @returns {{ value: number, snapped: boolean, target: number|null }}
+ * Grid-model-aware wrapper for resize snapping.
+ * Delegates to collectGridSnapTargets() from editor-base.js.
  */
-function _snapEdgeToGrid(edge, targets) {
-  let best = edge;
-  let bestDist = SNAP_THRESHOLD + 1;
-  let snappedTarget = null;
-  for (const t of targets) {
-    const dist = Math.abs(edge - t);
-    if (dist < bestDist) {
-      bestDist = dist;
-      best = t;
-      snappedTarget = t;
-    }
-  }
-  return { value: best, snapped: bestDist <= SNAP_THRESHOLD, target: snappedTarget };
+function _gridSnapTargets() {
+  return collectGridSnapTargets(gridInfo);
 }
 
 /**
- * Collect Brockman grid x and y targets for resize snapping.
- * Returns { xs: number[], ys: number[] }.
+ * Grid-model-aware wrapper for edge snapping.
+ * Delegates to snapEdgeToTarget() from editor-base.js.
  */
-function _gridSnapTargets() {
-  const gi = gridInfo;
-  if (!gi) return { xs: [], ys: [] };
-  const xs = [];
-  const ys = [];
-  if (gi.col_xs && gi.col_widths) {
-    for (let i = 0; i < gi.col_xs.length; i++) {
-      xs.push(gi.col_xs[i]);
-      xs.push(gi.col_xs[i] + gi.col_widths[i]);
-    }
-  }
-  if (gi.row_ys && gi.row_heights) {
-    for (let i = 0; i < gi.row_ys.length; i++) {
-      ys.push(gi.row_ys[i]);
-      ys.push(gi.row_ys[i] + gi.row_heights[i]);
-    }
-  }
-  return { xs, ys };
-}
-
-/** Render alignment guide lines on the SVG. */
-function renderGuideLines(lines) {
-  const svg = document.querySelector("#stage svg");
-  if (!svg) return;
-  clearGuideLines();
-  const ns = "http://www.w3.org/2000/svg";
-  for (const ln of lines) {
-    const line = document.createElementNS(ns, "line");
-    line.setAttribute("x1", ln.x1);
-    line.setAttribute("y1", ln.y1);
-    line.setAttribute("x2", ln.x2);
-    line.setAttribute("y2", ln.y2);
-    line.setAttribute("stroke", GUIDE_COLOR);
-    line.setAttribute("stroke-width", "1");
-    line.setAttribute("stroke-opacity", GUIDE_OPACITY);
-    line.setAttribute("stroke-dasharray", "4 4");
-    line.setAttribute("class", "dg-snap-guide");
-    line.setAttribute("pointer-events", "none");
-    svg.appendChild(line);
-  }
-}
-
-/** Remove all alignment guide lines. */
-function clearGuideLines() {
-  const svg = document.querySelector("#stage svg");
-  if (svg) svg.querySelectorAll(".dg-snap-guide").forEach(el => el.remove());
+function _snapEdgeToGrid(edge, targets) {
+  return snapEdgeToTarget(edge, targets);
 }
 
 // ---- Undo/Redo stack ----
@@ -2728,7 +2666,7 @@ function onDragMove(e) {
       const snap = findSnaps(id, newDx, newDy, s.snapTargets);
       newDx = snap.snapDx;
       newDy = snap.snapDy;
-      renderGuideLines(snap.lines);
+      renderGuideLines(snap.lines, GUIDE_COLOR, GUIDE_OPACITY);
     }
 
     // Clamp to parent bounds if nested
@@ -3647,7 +3585,7 @@ function onResizeMove(e) {
 
   // Show grid snap guides during resize
   if (resizeLines.length > 0) {
-    renderGuideLines(resizeLines);
+    renderGuideLines(resizeLines, GUIDE_COLOR, GUIDE_OPACITY);
   } else {
     clearGuideLines();
   }
