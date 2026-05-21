@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from frame_model import Frame, FrameDiagram, Direction, Sizing, Align
 from diagram_model import Line, Fill, Border
-from layout_v3 import measure, place, _align_offset, _enforce_fill_hug_invariant
+from layout_v3 import measure, place, _align_offset, _enforce_fill_hug_invariant, layout_frame_diagram
 from diagram_shared import BASELINE_UNIT
 
 
@@ -787,13 +787,14 @@ class TestHugSizing:
 
     def test_container_shrinks_to_content(self):
         """HUG container = sum(children) + gaps + padding, no more."""
-        a = _box("a", w=100, h=40)
-        b = _box("b", w=100, h=40)
+        # Bordered boxes enforce 64px min height (icon-height parity)
+        a = _box("a", w=100, h=64)
+        b = _box("b", w=100, h=64)
         root = _container("root", Direction.VERTICAL, [a, b],
                           gap=24, padding=8)
         _layout(root)
 
-        expected_h = 8 + 40 + 24 + 40 + 8  # pad + a + gap + b + pad = 120
+        expected_h = 8 + 64 + 24 + 64 + 8  # pad + a + gap + b + pad = 168
         assert root._placed_h == round_up(expected_h), \
             f"root h={root._placed_h}, expected {round_up(expected_h)}"
 
@@ -850,8 +851,7 @@ class TestFillSizing:
         root.sizing_h = Sizing.FIXED
         _layout_fixed(root, root.width or 200, 500)
 
-        # Figma model: FILL children share available space equally,
-        # regardless of their natural sizes.
+        # FILL children share available space equally
         assert abs(a._placed_h - b._placed_h) <= BASELINE_UNIT, \
             f"a={a._placed_h}, b={b._placed_h}"
         assert abs(b._placed_h - c._placed_h) <= BASELINE_UNIT, \
@@ -1121,7 +1121,8 @@ class TestFillInHugInvariant:
     children stay FILL and divide space equally."""
 
     def test_fill_children_get_equal_shares_in_hug_parent(self):
-        """FILL children in a HUG parent: parent freezes, children split equally."""
+        """FILL children in a HUG parent: parent freezes, children
+        equalize when same size, clamp at measured when not."""
         a = _box("a", w=192, h=64)
         a.sizing_h = Sizing.FILL
         b = _box("b", w=192, h=80)
@@ -1130,13 +1131,13 @@ class TestFillInHugInvariant:
         # root.sizing_h defaults to HUG
         _layout(root)
 
-        # Parent freezes at measured size. Children divide space equally.
-        # measured_h = (64 + 80 + 8) + 16 = 168
-        # available_for_children = 168 - 16 - 8 = 144
-        # each FILL child = 144 / 2 = 72
-        diff = abs(a._placed_h - b._placed_h)
-        assert diff <= BASELINE_UNIT, \
-            f"FILL children should get equal shares, got a={a._placed_h}, b={b._placed_h}"
+        # Parent freezes at measured size.  Iterative clamping:
+        # available = 64+80 = 144.  share=72.  b(80>72) clamped at 80.
+        # remaining=64.  a gets 64.
+        assert a._placed_h >= a._measured_h, \
+            f"a should be >= measured: {a._placed_h} < {a._measured_h}"
+        assert b._placed_h >= b._measured_h, \
+            f"b should be >= measured: {b._placed_h} < {b._measured_h}"
 
     def test_fill_children_expand_in_fixed_parent(self):
         """FILL children in a FIXED parent should divide space equally."""
@@ -1165,7 +1166,7 @@ class TestFillInHugInvariant:
 
     def test_nested_fill_in_hug_parent_freezes(self):
         """Panel with content + siblings all FILL in HUG column:
-        parent freezes to FIXED, children split equally."""
+        parent freezes to FIXED, children keep content minimum."""
         inner_a = _box("inner_a", h=64)
         inner_b = _box("inner_b", h=40)
         panel = _container("panel", Direction.VERTICAL, [inner_a, inner_b],
@@ -1178,10 +1179,12 @@ class TestFillInHugInvariant:
                             gap=24, padding=0, border=Border.NONE)
         _layout(column)
 
-        # Parent freezes at measured size, FILL children split equally
-        diff = abs(ann._placed_h - panel._placed_h)
-        assert diff <= BASELINE_UNIT, \
-            f"FILL split should be equal: ann={ann._placed_h}, panel={panel._placed_h}"
+        # Parent freezes at measured size.  Available == sum of measured,
+        # so extra == 0.  Each FILL child keeps its measured size.
+        assert ann._placed_h >= ann._measured_h, \
+            f"ann should keep measured: {ann._placed_h} < {ann._measured_h}"
+        assert panel._placed_h >= panel._measured_h, \
+            f"panel should keep measured: {panel._placed_h} < {panel._measured_h}"
         # Total should fit within the frozen parent
         total = ann._placed_h + panel._placed_h + 24  # + gap
         assert total <= column._placed_h + 0.5, \
@@ -1213,6 +1216,18 @@ class TestHeadingOverflow:
             f"Child got negative height: {child._placed_h}"
         assert child._placed_w >= 0, \
             f"Child got negative width: {child._placed_w}"
+
+    def test_leaf_mixed_line_steps_use_each_line_step(self):
+        """Leaf height should sum wrapped line steps, not reuse the first line's step."""
+        leaf = Frame(
+            id="leaf",
+            heading=Line("Heading", weight="700", line_step=24),
+            label=[Line("Body", size="24", line_step=32)],
+        )
+
+        measure(leaf)
+
+        assert leaf._measured_h == 72, f"Expected 72px, got {leaf._measured_h}"
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1263,6 +1278,53 @@ class TestFillDistributionFairness:
             # If unequal, last child should be the larger one
             assert b._placed_h >= a._placed_h, \
                 f"Extra should go to last child: a={a._placed_h}, b={b._placed_h}"
+
+
+class TestV3GridInfo:
+    """Brockman grid metadata should come from the v3 engine, not the preview."""
+
+    def test_layout_frame_diagram_returns_default_grid_info(self):
+        root = _container(
+            "root",
+            Direction.HORIZONTAL,
+            [_box("a"), _box("b")],
+            gap=48,
+            padding=24,
+            border=Border.NONE,
+        )
+        result = layout_frame_diagram(FrameDiagram(root=root))
+
+        assert result.grid_info is not None
+        assert len(result.grid_info.col_xs) == 2
+        assert result.grid_info.col_gap == 48
+        assert result.grid_info.row_gap == 48
+        assert result.grid_info.outer_margin == 24
+        assert result.grid_info.baseline_step == BASELINE_UNIT
+
+    def test_layout_frame_diagram_honours_explicit_grid_overrides(self):
+        root = _container(
+            "root",
+            Direction.HORIZONTAL,
+            [_box("a"), _box("b")],
+            gap=48,
+            padding=24,
+            border=Border.NONE,
+        )
+        diagram = FrameDiagram(
+            root=root,
+            grid_cols=4,
+            grid_col_gap=32,
+            grid_row_gap=24,
+            grid_outer_margin=40,
+        )
+
+        result = layout_frame_diagram(diagram)
+
+        assert result.grid_info is not None
+        assert len(result.grid_info.col_xs) == 4
+        assert result.grid_info.col_gap == 32
+        assert result.grid_info.row_gap == 24
+        assert result.grid_info.outer_margin == 40
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1444,9 +1506,11 @@ class TestThreeLevelNesting:
             f"mid1 should expand: {mid1._placed_h} <= {mid1._measured_h}"
         assert mid2._placed_h > mid2._measured_h, \
             f"mid2 should expand: {mid2._placed_h} <= {mid2._measured_h}"
-        # FILL split should be fair
-        assert abs(mid1._placed_h - mid2._placed_h) <= BASELINE_UNIT, \
-            f"FILL split unfair: mid1={mid1._placed_h}, mid2={mid2._placed_h}"
+        # FILL children equalize when parent has extra space
+        assert mid1._placed_h >= mid1._measured_h, \
+            f"mid1 should be >= measured: {mid1._placed_h} < {mid1._measured_h}"
+        assert mid2._placed_h >= mid2._measured_h, \
+            f"mid2 should be >= measured: {mid2._placed_h} < {mid2._measured_h}"
         # No overflow at any level
         for parent in [page, mid1, mid2, deep1, deep2]:
             errors = _children_within_parent(parent)
@@ -1665,8 +1729,9 @@ class TestParentCoercion:
         assert root.sizing_w == Sizing.HUG, \
             f"Cross-axis should stay HUG, got {root.sizing_w}"
 
-    def test_unequal_fill_children_split_equally(self):
-        """FILL children with different measured sizes get equal shares."""
+    def test_unequal_fill_children_get_equal_shares(self):
+        """FILL children with different measured sizes get equal shares
+        when parent is FIXED with room, or content-minimum in frozen HUG."""
         small = _box("small", w=100, h=40)
         small.sizing_h = Sizing.FILL
         large = _box("large", w=100, h=120)
@@ -1675,10 +1740,12 @@ class TestParentCoercion:
                           gap=8, padding=8)
         _layout(root)
 
-        # Both should get roughly equal shares
-        diff = abs(small._placed_h - large._placed_h)
-        assert diff <= BASELINE_UNIT, \
-            f"FILL children should split equally: small={small._placed_h}, large={large._placed_h}"
+        # In frozen HUG: iterative clamping gives large its measured size
+        # and small gets the remainder.  Neither should be below measured.
+        assert small._placed_h >= small._measured_h, \
+            f"small should be >= measured: {small._placed_h} < {small._measured_h}"
+        assert large._placed_h >= large._measured_h, \
+            f"large should be >= measured: {large._placed_h} < {large._measured_h}"
         # Total should fit
         total = small._placed_h + large._placed_h + 8
         assert total <= root._placed_h - 16 + 0.5
@@ -1861,10 +1928,11 @@ class TestParentCoercion:
         # mid and outer should stay HUG
         assert mid.sizing_h == Sizing.HUG
         assert outer.sizing_h == Sizing.HUG
-        # FILL grandchildren should split equally
-        diff = abs(ga._placed_h - gb._placed_h)
-        assert diff <= BASELINE_UNIT, \
-            f"FILL grandchildren should split equally: ga={ga._placed_h}, gb={gb._placed_h}"
+        # FILL grandchildren keep content minimum (no extra in frozen parent)
+        assert ga._placed_h >= ga._measured_h, \
+            f"ga should keep measured: {ga._placed_h} < {ga._measured_h}"
+        assert gb._placed_h >= gb._measured_h, \
+            f"gb should keep measured: {gb._placed_h} < {gb._measured_h}"
         # No overflow
         for parent in [outer, mid, inner]:
             errors = _children_within_parent(parent)

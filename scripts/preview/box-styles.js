@@ -2,9 +2,9 @@
 
 (function initBoxStyles(global) {
   const BOX_STYLES = {
-    default: { fill: "#FFFFFF", text: "#000000", icon: "#000000", label: "Default (white)" },
-    accent: { fill: "#F3F3F3", text: "#000000", icon: "#000000", label: "Accent (grey)" },
-    highlight: { fill: "#000000", text: "#FFFFFF", icon: "#FFFFFF", label: "Highlight (black)" },
+    default: { fill: "#FFFFFF", text: "#000000", icon: "#000000", border: "solid", label: "Default (white)" },
+    accent: { fill: "#F3F3F3", text: "#000000", icon: "#000000", border: "none", label: "Accent (grey)" },
+    highlight: { fill: "#000000", text: "#FFFFFF", icon: "#FFFFFF", border: "solid", label: "Highlight (black)" },
   };
 
   function escapeHtml(value) {

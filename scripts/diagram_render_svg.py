@@ -47,6 +47,7 @@ from diagram_shared import (
     TERMINAL_FONT_FAMILY,
     WHITE,
     centered_band_text_top,
+    wrap_text_lines,
     fmt,
     line_top_to_baseline,
     load_icon,
@@ -92,9 +93,16 @@ def _circle(cx, cy, r, *, fill, stroke=BLACK) -> str:
     )
 
 
-def _text_block(x, y, lines) -> str:
+def _wrap_lines(lines: list[dict], max_width: float) -> list[dict]:
+    """Wrap text lines that exceed max_width at word boundaries."""
+    return wrap_text_lines(lines, max_width)
+
+
+def _text_block(x, y, lines, max_width=None) -> str:
     if not lines:
         return ""
+    if max_width:
+        lines = _wrap_lines(lines, max_width)
     parts = ['  <text font-family="Ubuntu Sans">']
     top = y
     for spec in lines:
@@ -221,7 +229,7 @@ def _render_primitive(prim: Primitive) -> str:
         return _rect(prim.x, prim.y, prim.width, prim.height,
                      fill=prim.fill, stroke=prim.stroke, dashed=prim.dashed)
     if isinstance(prim, TextBlock):
-        return _text_block(prim.x, prim.y, prim.lines)
+        return _text_block(prim.x, prim.y, prim.lines, max_width=prim.max_width)
     if isinstance(prim, Icon):
         return _icon_group(prim.x, prim.y, prim.name, prim.fill)
     if isinstance(prim, ArrowPrimitive):

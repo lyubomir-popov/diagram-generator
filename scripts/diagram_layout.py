@@ -88,6 +88,7 @@ class TextBlock:
     y: float
     lines: list[dict]          # make_line() dicts
     component_id: str | None = None
+    max_width: float | None = None
 
 
 @dataclass
@@ -207,6 +208,8 @@ class GridInfo:
     col_gap: int
     row_gap: int
     outer_margin: int
+    resolved_bottom_margin: int | None = None
+    baseline_step: int | None = None
 
 
 @dataclass
@@ -243,6 +246,9 @@ class ComponentInfo:
     padding_right: float = 0
     padding_bottom: float = 0
     padding_left: float = 0
+    # Semantic text content (unwrapped) for editor text editing
+    heading_text: str = ""
+    label_text: list[str] = field(default_factory=list)
 
 
 @dataclass

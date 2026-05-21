@@ -103,8 +103,64 @@ body.dg-preview {
        display: flex;
        flex: 1 1 auto;
        min-block-size: 0;
-       overflow: auto;
+       overflow: hidden;
        padding: 0;
+}
+
+/* Nav tabs (Browse / Layers) */
+.dg-nav-tabs-header {
+       padding-block: 0;
+}
+.dg-nav-tabs .bf-tabs-list {
+       gap: 0;
+}
+.dg-nav-pane {
+       display: none;
+       flex: 1 1 auto;
+       min-block-size: 0;
+       overflow: auto;
+}
+.dg-nav-pane.is-active {
+       display: block;
+}
+
+/* Browse panel */
+.dg-browse-group {
+       padding-block: calc(var(--bf-baseline) * 0.5);
+}
+.dg-browse-heading {
+       color: var(--bf-color-text-muted, #999);
+       font-size: 0.6875rem;
+       font-weight: 600;
+       letter-spacing: 0.04em;
+       padding-block: calc(var(--bf-baseline) * 0.5);
+       padding-inline: var(--bf-panel-padding-inline, 0.75rem);
+       text-transform: uppercase;
+}
+.dg-browse-list {
+       list-style: none;
+       margin: 0;
+       padding: 0;
+}
+.dg-browse-link {
+       color: var(--bf-color-text-default, #ccc);
+       display: block;
+       font-size: 0.8125rem;
+       overflow: hidden;
+       padding-block: calc(var(--bf-baseline) * 0.5);
+       padding-inline: var(--bf-panel-padding-inline, 0.75rem);
+       text-decoration: none;
+       text-overflow: ellipsis;
+       white-space: nowrap;
+}
+.dg-browse-link:hover {
+       background: var(--bf-color-surface-hover, rgba(255,255,255,0.06));
+       color: var(--bf-color-text-default, #fff);
+}
+.dg-browse-link.is-active {
+       background: var(--bf-color-surface-selected, rgba(255,255,255,0.1));
+       color: var(--bf-color-text-default, #fff);
+       font-weight: 500;
 }
 
 .dg-component-tree {
@@ -527,7 +583,35 @@ body.dg-preview {
 
 .dg-stage-shell[data-view-mode="both"][data-split-direction="vertical"] .dg-stage-layout {
        grid-template-columns: minmax(0, 1fr);
-       grid-template-rows: repeat(2, minmax(0, 1fr));
+       grid-template-rows: minmax(0, 2fr) minmax(0, 1fr);
+       padding-block: 4px;
+       gap: 8px;
+}
+
+.dg-stage-shell[data-view-mode="both"][data-split-direction="vertical"] .dg-output-pane {
+       order: -1;
+}
+
+/* Scale output SVG to fit its pane — no scrollbars */
+.dg-stage-shell[data-view-mode="both"][data-split-direction="vertical"] .stage {
+       overflow: hidden;
+       padding: 8px;
+       align-items: center;
+}
+.dg-stage-shell[data-view-mode="both"][data-split-direction="vertical"] .stage svg {
+       max-width: 100%;
+       max-height: 100%;
+       width: auto;
+       height: auto;
+}
+
+/* Scale input reference image to fit remaining space */
+.dg-stage-shell[data-view-mode="both"][data-split-direction="vertical"] .dg-reference-img-wrap {
+       overflow: hidden;
+       padding: 8px;
+}
+.dg-stage-shell[data-view-mode="both"][data-split-direction="vertical"] .dg-reference-img {
+       max-height: 100%;
 }
 
 .dg-split-toggle {
@@ -590,6 +674,23 @@ body.dg-preview {
 }
 
 .stage svg [data-component-id] { cursor: pointer; }
+
+/* Panel toggle – hide navigation (Alt+1) or aside (Alt+2). */
+.dg-preview-app.is-nav-hidden {
+       --bf-app-navigation-width: 0;
+       --bf-application-navigation-width: 0;
+}
+.dg-preview-app.is-nav-hidden > .bf-navigation {
+       display: none;
+}
+.dg-preview-app.is-aside-hidden {
+       --bf-app-aside-width: 0;
+       --bf-application-aside-width: 0;
+}
+.dg-preview-app.is-aside-hidden > .bf-aside {
+       display: none;
+}
+
 .stage svg [data-component-id] > text,
 .stage svg [data-component-id] > image,
 .stage svg [data-component-id] > tspan { pointer-events: none; }

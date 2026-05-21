@@ -12,11 +12,21 @@
     <div class="bf-navigation-overlay" aria-hidden="true"></div>
     <div class="bf-navigation-drawer">
       <section class="bf-panel is-fill dg-component-panel">
-        <div class="bf-panel-header is-sticky">
-          <h2 class="dg-section-heading bf-h5">Components</h2>
+        <div class="bf-panel-header is-sticky dg-nav-tabs-header">
+          <div class="bf-tabs dg-nav-tabs">
+            <ul class="bf-tabs-list" role="tablist" aria-label="Left sidebar view">
+              <li class="bf-tabs-item"><button class="bf-tabs-link dg-nav-tab is-active" id="nav-tab-browse" type="button" role="tab" aria-selected="true" aria-controls="nav-pane-browse" tabindex="0">Browse</button></li>
+              <li class="bf-tabs-item"><button class="bf-tabs-link dg-nav-tab" id="nav-tab-layers" type="button" role="tab" aria-selected="false" aria-controls="nav-pane-layers" tabindex="-1">Layers</button></li>
+            </ul>
+          </div>
         </div>
         <div class="bf-panel-content dg-component-panel-content">
-          <div class="tree dg-component-tree" id="tree"></div>
+          <div class="dg-nav-pane is-active" id="nav-pane-browse" role="tabpanel" aria-labelledby="nav-tab-browse">
+            %BROWSE_NAV%
+          </div>
+          <div class="dg-nav-pane" id="nav-pane-layers" role="tabpanel" aria-labelledby="nav-tab-layers" hidden>
+            <div class="tree dg-component-tree" id="tree"></div>
+          </div>
         </div>
       </section>
     </div>
@@ -110,10 +120,11 @@
           <p class="bf-form-help dg-override-summary" id="override-summary">No overrides.</p>
           <div class="bf-cluster dg-button-row">
             <button class="btn bf-button" id="btn-save" disabled>Save</button>
+            <button class="btn bf-button is-base" id="btn-save-svg">Save SVG</button>
             <button class="btn bf-button is-base" id="btn-undo" disabled>Undo</button>
             <button class="btn bf-button is-base" id="btn-redo" disabled>Redo</button>
             <button class="btn bf-button is-base" id="btn-clear-all">Clear all</button>
-            <button class="btn bf-button is-base" id="btn-export">Export</button>
+            <button class="btn bf-button is-base" id="btn-export">Copy overrides</button>
           </div>
         </section>
 

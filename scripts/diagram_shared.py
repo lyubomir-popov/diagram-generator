@@ -5,12 +5,55 @@ import math
 import pathlib
 import xml.etree.ElementTree as ET
 
+from fontTools.ttLib import TTFont
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ICON_DIR = ROOT / "assets" / "icons"
 OUTPUT_DIR = ROOT / "diagrams" / "2.output"
 SVG_DIR = OUTPUT_DIR / "svg"
 DRAWIO_DIR = OUTPUT_DIR / "draw.io"
 LEGACY_OUTPUT_ROOT_SVGS = {"icon-box-48px-prototype.svg"}
+
+# ---------------------------------------------------------------------------
+# Font metrics (single load at module init)
+# ---------------------------------------------------------------------------
+
+_FONT_PATH = ROOT / "assets" / "UbuntuSans[wdth,wght].ttf"
+_font: TTFont | None = None
+_cmap: dict[int, str] | None = None
+_hmtx: object | None = None
+_units_per_em: int = 1000
+_SPACE_ADVANCE: float = 0.25  # fallback fraction of em for unknown glyphs
+
+
+def _ensure_font_loaded() -> None:
+    global _font, _cmap, _hmtx, _units_per_em
+    if _font is not None:
+        return
+    _font = TTFont(str(_FONT_PATH))
+    _cmap = _font.getBestCmap()
+    _hmtx = _font["hmtx"]
+    _units_per_em = _font["head"].unitsPerEm
+
+
+def measure_text_width(text: str, font_size: float) -> float:
+    """Measure text width using actual font glyph advance widths.
+
+    Uses the hmtx table from the loaded Ubuntu Sans Variable font.
+    This is the single source of truth for text width measurement
+    in the build-time pipeline.
+    """
+    _ensure_font_loaded()
+    total_units = 0
+    for ch in text:
+        glyph_name = _cmap.get(ord(ch))
+        if glyph_name and glyph_name in _hmtx.metrics:
+            advance, _ = _hmtx.metrics[glyph_name]
+            total_units += advance
+        else:
+            # Fallback: use space advance for unknown characters
+            total_units += int(_units_per_em * _SPACE_ADVANCE)
+    return total_units * font_size / _units_per_em
 
 BLACK = "#000000"
 WHITE = "#FFFFFF"
@@ -194,6 +237,50 @@ def make_diagram_line(
     )
 
 
+def estimate_line_width(spec: dict[str, object]) -> float:
+    text = str(spec["content"])
+    size = size_to_px(spec.get("size", BODY_SIZE))
+    width = measure_text_width(text, size)
+    if bool(spec.get("small_caps", False)):
+        width *= 1.05
+    return width
+
+
+def wrap_text_lines(lines: list[dict[str, object]], max_width: float) -> list[dict[str, object]]:
+    """Wrap text lines at word boundaries using real font metrics."""
+    if max_width <= 0:
+        return [dict(spec) for spec in lines]
+
+    result: list[dict[str, object]] = []
+    for spec in lines:
+        text = str(spec["content"])
+        line_w = estimate_line_width(spec)
+        if line_w <= max_width:
+            result.append(dict(spec))
+            continue
+
+        size = size_to_px(spec.get("size", BODY_SIZE))
+        small_caps = bool(spec.get("small_caps", False))
+
+        words = text.split()
+        current = ""
+        for word in words:
+            test = (current + " " + word) if current else word
+            test_w = measure_text_width(test, size)
+            if small_caps:
+                test_w *= 1.05
+            if test_w <= max_width or not current:
+                current = test
+            else:
+                result.append({**spec, "content": current})
+                current = word
+        if current:
+            result.append({**spec, "content": current})
+        elif not words:
+            result.append(dict(spec))
+    return result
+
+
 def size_to_px(value: str | int | float) -> float:
     if isinstance(value, (int, float)):
         return float(value)
@@ -246,6 +333,20 @@ def stack_required_height(
     return max(min_height, round_up_to_grid(max_bottom + bottom_pad))
 
 
+def stepped_lines_height(
+    lines: list[dict[str, object]],
+    *,
+    top_pad: int = 0,
+    bottom_pad: int = 0,
+    min_height: int = 0,
+) -> int:
+    """Height from stacked line-step allotments rather than glyph bounds."""
+    total = float(top_pad + bottom_pad)
+    if lines:
+        total += sum(int(spec.get("line_step", default_line_step(spec.get("size", BODY_SIZE)))) for spec in lines)
+    return max(min_height, round_up_to_grid(total))
+
+
 def lines_required_height(lines: list[dict[str, object]]) -> int:
     return stack_required_height(lines, top_pad=INSET, bottom_pad=INSET, min_height=BOX_MIN_HEIGHT)
 
@@ -269,17 +370,8 @@ def tight_box_height(
     Text-only:  INSET + (line_count * line_step) + INSET  →  snapped to the 8px baseline.
     With icon:  max(text_height, INSET + ICON_SIZE + INSET).
     """
-    if not lines:
-        line_step = BODY_LINE_STEP
-        n_lines = 0
-    else:
-        line_step = int(lines[0]["line_step"])
-        n_lines = len(lines)
-    text_h = round_up_to_grid(INSET + n_lines * line_step + INSET)
-    if has_icon:
-        icon_h = INSET + ICON_SIZE + INSET  # 64
-        return max(text_h, icon_h)
-    return text_h
+    min_height = INSET + ICON_SIZE + INSET if has_icon else 0
+    return stepped_lines_height(lines, top_pad=INSET, bottom_pad=INSET, min_height=min_height)
 
 
 def panel_grid(
