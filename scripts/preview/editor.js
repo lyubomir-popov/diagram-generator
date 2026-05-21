@@ -85,8 +85,10 @@ const GUIDE_COLOR = UI_AUTHORING_ACCENT_LINE;
 const GUIDE_OPACITY = "0.5";
 
 /**
- * Collect snap targets from peer components (siblings or all top-level).
- * Returns arrays of { x, label } and { y, label } targets.
+ * Collect snap targets from peer components AND the Brockman grid.
+ * Returns arrays of x and y coordinate targets.
+ * Grid targets (column edges, row tops, baseline lines) are included when
+ * gridInfo is available, giving the user magnetic-snap to the composition grid.
  */
 function collectSnapTargets(dragCid) {
   const node = model.get(dragCid);
@@ -111,6 +113,12 @@ function collectSnapTargets(dragCid) {
     ys.push(py + ph);      // bottom edge
     ys.push(py + ph / 2);  // center
   }
+
+  // Add Brockman grid lines as snap targets
+  const grid = _gridSnapTargets();
+  xs.push(...grid.xs);
+  ys.push(...grid.ys);
+
   return { xs, ys };
 }
 
@@ -197,6 +205,52 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
   }
 
   return { snapDx: bestDx, snapDy: bestDy, lines };
+}
+
+/**
+ * Snap a proposed edge coordinate to the nearest Brockman grid line.
+ * Returns the snapped value if within SNAP_THRESHOLD, else the original.
+ * @param {number} edge - The proposed edge coordinate.
+ * @param {number[]} targets - Grid line positions to snap to.
+ * @returns {{ value: number, snapped: boolean, target: number|null }}
+ */
+function _snapEdgeToGrid(edge, targets) {
+  let best = edge;
+  let bestDist = SNAP_THRESHOLD + 1;
+  let snappedTarget = null;
+  for (const t of targets) {
+    const dist = Math.abs(edge - t);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = t;
+      snappedTarget = t;
+    }
+  }
+  return { value: best, snapped: bestDist <= SNAP_THRESHOLD, target: snappedTarget };
+}
+
+/**
+ * Collect Brockman grid x and y targets for resize snapping.
+ * Returns { xs: number[], ys: number[] }.
+ */
+function _gridSnapTargets() {
+  const gi = gridInfo;
+  if (!gi) return { xs: [], ys: [] };
+  const xs = [];
+  const ys = [];
+  if (gi.col_xs && gi.col_widths) {
+    for (let i = 0; i < gi.col_xs.length; i++) {
+      xs.push(gi.col_xs[i]);
+      xs.push(gi.col_xs[i] + gi.col_widths[i]);
+    }
+  }
+  if (gi.row_ys && gi.row_heights) {
+    for (let i = 0; i < gi.row_ys.length; i++) {
+      ys.push(gi.row_ys[i]);
+      ys.push(gi.row_ys[i] + gi.row_heights[i]);
+    }
+  }
+  return { xs, ys };
 }
 
 /** Render alignment guide lines on the SVG. */
@@ -3528,13 +3582,42 @@ function onResizeMove(e) {
   let newDh = s.origDh;
   
   const axis = s.axis;
+  const node = model.get(s.cid);
+  const baseX = node ? node.data.x : 0;
+  const baseY = node ? node.data.y : 0;
+  const baseW = node ? node.data.width : 0;
+  const baseH = node ? node.data.height : 0;
+  const gridTargets = _gridSnapTargets();
+  const resizeLines = [];
+
+  // Hoist SVG dimensions for guide lines (avoid repeated DOM queries)
+  const svgEl = document.querySelector("#stage svg");
+  const svgW = svgEl ? parseFloat(svgEl.getAttribute("width") || "0") : 0;
+  const svgH = svgEl ? parseFloat(svgEl.getAttribute("height") || "0") : 0;
+
   // Handle horizontal resizing
   if (axis === "l" || axis === "tl" || axis === "bl") {
     const delta = Math.round(dx / 8) * 8;
     newDx = s.origDx + delta;
     newDw = s.origDw - delta;
+    // Snap left edge to grid
+    const leftEdge = baseX + newDx;
+    const snapL = _snapEdgeToGrid(leftEdge, gridTargets.xs);
+    if (snapL.snapped) {
+      const adj = snapL.value - leftEdge;
+      newDx += adj;
+      newDw -= adj;
+      resizeLines.push({ x1: snapL.target, y1: 0, x2: snapL.target, y2: svgH });
+    }
   } else if (axis === "r" || axis === "tr" || axis === "br") {
     newDw = Math.round((s.origDw + dx) / 8) * 8;
+    // Snap right edge to grid
+    const rightEdge = baseX + s.origDx + baseW + newDw;
+    const snapR = _snapEdgeToGrid(rightEdge, gridTargets.xs);
+    if (snapR.snapped) {
+      newDw += snapR.value - rightEdge;
+      resizeLines.push({ x1: snapR.target, y1: 0, x2: snapR.target, y2: svgH });
+    }
   }
   
   // Handle vertical resizing
@@ -3542,8 +3625,31 @@ function onResizeMove(e) {
     const delta = Math.round(dy / 8) * 8;
     newDy = s.origDy + delta;
     newDh = s.origDh - delta;
+    // Snap top edge to grid
+    const topEdge = baseY + newDy;
+    const snapT = _snapEdgeToGrid(topEdge, gridTargets.ys);
+    if (snapT.snapped) {
+      const adj = snapT.value - topEdge;
+      newDy += adj;
+      newDh -= adj;
+      resizeLines.push({ x1: 0, y1: snapT.target, x2: svgW, y2: snapT.target });
+    }
   } else if (axis === "b" || axis === "bl" || axis === "br") {
     newDh = Math.round((s.origDh + dy) / 8) * 8;
+    // Snap bottom edge to grid
+    const bottomEdge = baseY + s.origDy + baseH + newDh;
+    const snapB = _snapEdgeToGrid(bottomEdge, gridTargets.ys);
+    if (snapB.snapped) {
+      newDh += snapB.value - bottomEdge;
+      resizeLines.push({ x1: 0, y1: snapB.target, x2: svgW, y2: snapB.target });
+    }
+  }
+
+  // Show grid snap guides during resize
+  if (resizeLines.length > 0) {
+    renderGuideLines(resizeLines);
+  } else {
+    clearGuideLines();
   }
 
   setOverride(s.cid, { dx: newDx, dy: newDy, dw: newDw, dh: newDh });
