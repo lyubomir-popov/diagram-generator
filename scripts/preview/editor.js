@@ -81,9 +81,8 @@ let baseGridInfo = null;
 
 // ---- Alignment snap guides ----
 // Snap primitives (snapEdgeToTarget, collectGridSnapTargets, collectPeerSnapTargets,
-// renderGuideLines, clearGuideLines) are shared via editor-base.js.
+// snapRectToTargets, renderGuideLines, clearGuideLines) are shared via editor-base.js.
 // This file keeps only grid-model-aware wrappers that depend on `model` and `gridInfo`.
-const SNAP_THRESHOLD = SHARED_SNAP_THRESHOLD;
 const GUIDE_COLOR = UI_AUTHORING_ACCENT_LINE;
 const GUIDE_OPACITY = "0.5";
 
@@ -132,75 +131,20 @@ function findSnaps(cid, proposedDx, proposedDy, targets) {
   const h = node.data.height + own.dh;
   const left = node.data.x + proposedDx;
   const top = node.data.y + proposedDy;
-  const right = left + w;
-  const bottom = top + h;
-  const cx = left + w / 2;
-  const cy = top + h / 2;
 
-  let bestDx = proposedDx;
-  let bestDy = proposedDy;
-  let bestDistX = SNAP_THRESHOLD + 1;
-  let bestDistY = SNAP_THRESHOLD + 1;
-  const lines = [];
+  const snap = snapRectToTargets(left, top, left + w, top + h, targets);
 
-  // Check each edge and center against snap targets
-  for (const tx of targets.xs) {
-    for (const edge of [left, right, cx]) {
-      const dist = Math.abs(edge - tx);
-      if (dist < bestDistX) {
-        bestDistX = dist;
-        bestDx = proposedDx + (tx - edge);
-      }
-    }
-  }
-  for (const ty of targets.ys) {
-    for (const edge of [top, bottom, cy]) {
-      const dist = Math.abs(edge - ty);
-      if (dist < bestDistY) {
-        bestDistY = dist;
-        bestDy = proposedDy + (ty - edge);
-      }
-    }
-  }
+  // Apply snap adjustment then round to 8px grid
+  let snapDx = Math.round((proposedDx + snap.adjX) / 8) * 8;
+  let snapDy = Math.round((proposedDy + snap.adjY) / 8) * 8;
 
-  // Snap to 8px grid
-  bestDx = Math.round(bestDx / 8) * 8;
-  bestDy = Math.round(bestDy / 8) * 8;
+  // Regenerate guide lines at the FINAL (8px-rounded) position so guides
+  // match where the component actually lands, not the pre-rounded snap.
+  const finalLeft = node.data.x + snapDx;
+  const finalTop = node.data.y + snapDy;
+  const finalSnap = snapRectToTargets(finalLeft, finalTop, finalLeft + w, finalTop + h, targets);
 
-  // Build guide lines for the snapped position
-  const snapLeft = node.data.x + bestDx;
-  const snapTop = node.data.y + bestDy;
-  const snapRight = snapLeft + w;
-  const snapBottom = snapTop + h;
-  const snapCx = snapLeft + w / 2;
-  const snapCy = snapTop + h / 2;
-  const svgEl = getStageSvg();
-  const svgW = svgEl ? parseFloat(svgEl.getAttribute("width") || "0") : 0;
-  const svgH = svgEl ? parseFloat(svgEl.getAttribute("height") || "0") : 0;
-
-  // Only draw lines if we actually snapped (within threshold)
-  if (bestDistX <= SNAP_THRESHOLD) {
-    for (const tx of targets.xs) {
-      const edges = [snapLeft, snapRight, snapCx];
-      for (const edge of edges) {
-        if (Math.abs(edge - tx) < 2) {
-          lines.push({ x1: tx, y1: 0, x2: tx, y2: svgH });
-        }
-      }
-    }
-  }
-  if (bestDistY <= SNAP_THRESHOLD) {
-    for (const ty of targets.ys) {
-      const edges = [snapTop, snapBottom, snapCy];
-      for (const edge of edges) {
-        if (Math.abs(edge - ty) < 2) {
-          lines.push({ x1: 0, y1: ty, x2: svgW, y2: ty });
-        }
-      }
-    }
-  }
-
-  return { snapDx: bestDx, snapDy: bestDy, lines };
+  return { snapDx, snapDy, lines: finalSnap.lines };
 }
 
 /**

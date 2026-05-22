@@ -344,6 +344,88 @@ const SHARED_HANDLE_SIZE = 8;
 const SHARED_MIN_NODE_SIZE = 48;
 
 /**
+ * Snap a bounding rect to the nearest targets along each axis.
+ * Compares left/right/center against target xs; top/bottom/center against ys.
+ * Returns the adjustment (dx, dy) to apply and guide lines to render.
+ *
+ * @param {number} left   — Left edge x.
+ * @param {number} top    — Top edge y.
+ * @param {number} right  — Right edge x.
+ * @param {number} bottom — Bottom edge y.
+ * @param {{ xs: number[], ys: number[] }} targets — Snap targets.
+ * @param {number} [threshold=SHARED_SNAP_THRESHOLD] — Max distance to snap.
+ * @returns {{ adjX: number, adjY: number, lines: {x1:number,y1:number,x2:number,y2:number}[] }}
+ */
+function snapRectToTargets(left, top, right, bottom, targets, threshold) {
+  const th = threshold != null ? threshold : SHARED_SNAP_THRESHOLD;
+  const cx = (left + right) / 2;
+  const cy = (top + bottom) / 2;
+  const w = right - left;
+  const h = bottom - top;
+
+  let bestAdjX = 0;
+  let bestAdjY = 0;
+  let bestDistX = th + 1;
+  let bestDistY = th + 1;
+
+  for (const tx of targets.xs) {
+    for (const edge of [left, right, cx]) {
+      const dist = Math.abs(edge - tx);
+      if (dist < bestDistX) {
+        bestDistX = dist;
+        bestAdjX = tx - edge;
+      }
+    }
+  }
+  for (const ty of targets.ys) {
+    for (const edge of [top, bottom, cy]) {
+      const dist = Math.abs(edge - ty);
+      if (dist < bestDistY) {
+        bestDistY = dist;
+        bestAdjY = ty - edge;
+      }
+    }
+  }
+
+  const adjX = bestDistX <= th ? bestAdjX : 0;
+  const adjY = bestDistY <= th ? bestAdjY : 0;
+
+  // Build guide lines for snapped position
+  const lines = [];
+  const svgEl = getStageSvg();
+  if (svgEl) {
+    const svgW = parseFloat(svgEl.getAttribute("width") || "0");
+    const svgH = parseFloat(svgEl.getAttribute("height") || "0");
+    if (bestDistX <= th) {
+      const sLeft = left + adjX;
+      const sRight = right + adjX;
+      const sCx = cx + adjX;
+      for (const tx of targets.xs) {
+        for (const edge of [sLeft, sRight, sCx]) {
+          if (Math.abs(edge - tx) < 2) {
+            lines.push({ x1: tx, y1: 0, x2: tx, y2: svgH });
+          }
+        }
+      }
+    }
+    if (bestDistY <= th) {
+      const sTop = top + adjY;
+      const sBottom = bottom + adjY;
+      const sCy = cy + adjY;
+      for (const ty of targets.ys) {
+        for (const edge of [sTop, sBottom, sCy]) {
+          if (Math.abs(edge - ty) < 2) {
+            lines.push({ x1: 0, y1: ty, x2: svgW, y2: ty });
+          }
+        }
+      }
+    }
+  }
+
+  return { adjX, adjY, lines };
+}
+
+/**
  * Render 8 resize handles (corners + midpoints) around a bounding box.
  * @param {SVGSVGElement} svg — The SVG container to append handles to.
  * @param {number} left   — Left edge x.
@@ -434,5 +516,6 @@ window.equalSplitCell = equalSplitCell;
 window.spanSize = spanSize;
 window.SHARED_HANDLE_SIZE = SHARED_HANDLE_SIZE;
 window.SHARED_MIN_NODE_SIZE = SHARED_MIN_NODE_SIZE;
+window.snapRectToTargets = snapRectToTargets;
 window.renderResizeHandles = renderResizeHandles;
 window.clearHandlesByClass = clearHandlesByClass;

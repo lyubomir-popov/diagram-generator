@@ -553,65 +553,8 @@ function snapForcePosition(nodeId, cx, cy, w, h, targets) {
   const right = cx + w / 2;
   const bottom = cy + h / 2;
 
-  let bestAdjX = 0;
-  let bestAdjY = 0;
-  let bestDistX = SHARED_SNAP_THRESHOLD + 1;
-  let bestDistY = SHARED_SNAP_THRESHOLD + 1;
-
-  // Check left, right, center against x targets
-  for (const tx of targets.xs) {
-    for (const edge of [left, right, cx]) {
-      const dist = Math.abs(edge - tx);
-      if (dist < bestDistX) {
-        bestDistX = dist;
-        bestAdjX = tx - edge;
-      }
-    }
-  }
-  // Check top, bottom, center against y targets
-  for (const ty of targets.ys) {
-    for (const edge of [top, bottom, cy]) {
-      const dist = Math.abs(edge - ty);
-      if (dist < bestDistY) {
-        bestDistY = dist;
-        bestAdjY = ty - edge;
-      }
-    }
-  }
-
-  const snappedX = cx + (bestDistX <= SHARED_SNAP_THRESHOLD ? bestAdjX : 0);
-  const snappedY = cy + (bestDistY <= SHARED_SNAP_THRESHOLD ? bestAdjY : 0);
-
-  // Build guide lines
-  const lines = [];
-  if (bestDistX <= SHARED_SNAP_THRESHOLD) {
-    const snapLeft = snappedX - w / 2;
-    const snapRight = snappedX + w / 2;
-    const svgEl = getStageSvg();
-    const svgH = svgEl ? parseFloat(svgEl.getAttribute("height") || "0") : 0;
-    for (const tx of targets.xs) {
-      for (const edge of [snapLeft, snapRight, snappedX]) {
-        if (Math.abs(edge - tx) < 2) {
-          lines.push({ x1: tx, y1: 0, x2: tx, y2: svgH });
-        }
-      }
-    }
-  }
-  if (bestDistY <= SHARED_SNAP_THRESHOLD) {
-    const snapTop = snappedY - h / 2;
-    const snapBottom = snappedY + h / 2;
-    const svgEl = getStageSvg();
-    const svgW = svgEl ? parseFloat(svgEl.getAttribute("width") || "0") : 0;
-    for (const ty of targets.ys) {
-      for (const edge of [snapTop, snapBottom, snappedY]) {
-        if (Math.abs(edge - ty) < 2) {
-          lines.push({ x1: 0, y1: ty, x2: svgW, y2: ty });
-        }
-      }
-    }
-  }
-
-  return { x: snappedX, y: snappedY, lines };
+  const snap = snapRectToTargets(left, top, right, bottom, targets);
+  return { x: cx + snap.adjX, y: cy + snap.adjY, lines: snap.lines };
 }
 
 function startDragPreview(candidate) {
