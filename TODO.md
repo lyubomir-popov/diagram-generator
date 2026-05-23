@@ -100,8 +100,8 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 **Valid findings to address (non-blocking, parallel or post-port):**
 
 - [ ] `[S]` **v2→v3 migration audit.** Audited: 10 v3 Frame YAML diagrams, ~24 v2 diagrams (Python modules + YAML). 19+ can migrate immediately (Boxes, Panels, Arrows only). 3 diagrams are blocked: `attention_qkv` (MatrixWidget, Legend), `logic_data_vram` (Bar/BarSegment), `inference_snaps` (Terminal). These need new v3 Frame primitives (BarFrame, MatrixFrame, TerminalFrame) before they can migrate. Move to ROADMAP when ready to add specialized primitives.
-- [ ] `[L]` **SVG renderer snapshot tests.** Add golden-file tests for SVG renderer output before any future renderer refactoring. Not needed for the TS port.
-- [ ] `[S]` **`diagram_shared.py` cleanup during port.** As tokens/text-metrics are ported to TS, split the Python module into `design_tokens.py`, `text_metrics.py`, `grid_helpers.py` for cleaner correspondence.
+- [x] `[L]` **SVG renderer snapshot tests.** 3 golden-file snapshot tests (two_box_vertical, panel_with_children, horizontal_arrow) with `--update-golden` flag for intentional changes.
+- [x] `[S]` **`diagram_shared.py` cleanup during port.** Extracted `design_tokens.py`, `text_metrics.py`, `grid_helpers.py` alongside unchanged `diagram_shared.py` for backwards compatibility.
 - [ ] `[S]` **`preview_server.py` decomposition (post-port).** After M4 (layout client-side), extract file watcher, layout cache, override manager, and SSE broadcaster into focused modules. Server role shrinks to static files + save/export API.
 - [x] `[S]` **`_refresh_coerced_heights` bug (post-parity).** Fixed: threaded `coerced_ids` set from `_enforce_fill_hug_invariant()` through `_remeasure_with_width_constraints()` → `_refresh_coerced_heights()`. Now only frames that were actually coerced from HUG→FIXED get refreshed; explicitly-set FIXED heights are preserved. Fixed in both Python (`layout_v3.py`) and TS (`layout.ts`). Parity fixtures updated — test-fill-distribution root now correctly keeps height=480.
 - [ ] `[L]` **Security hardening before Stage 17.** Add schema validation for incoming JSON (`setattr` on Frame objects, override loading). Add CSRF when server becomes network-accessible. Not urgent while server is local-only.
@@ -296,21 +296,21 @@ Goal: the force and grid editors share one editor shell; swapping the layout eng
 **Stage interaction parity**
 
 - [x] `[H]` **Resize handles.** Force nodes now show 8 resize handles (corners + midpoints) when selected. Dragging snaps to 8px grid, commits width/height to server, and restarts solver. Backend supports width/height in node update API and override serialization.
-- [ ] `[S]` **Text editing.** Double-click a force node to edit its label in-place, same as the grid editor's `tspan` editing path.
-- [ ] `[S]` **Multi-select.** Shift+click to select multiple force nodes; enable distribute/align controls on the multi-selection.
-- [ ] `[S]` **Hover highlighting.** Show visual hover class on force nodes.
-- [ ] `[L]` **Snap guides.** Show alignment snap guides during force-node drag (peer edge/center, 6px threshold).
+- [x] `[S]` **Text editing.** Double-click inline label editing with Enter to commit, Escape to cancel, Shift+Enter for newlines. Label overrides persisted through force override system. Undo support.
+- [x] `[S]` **Multi-select.** Shift/Ctrl+click toggles selection in both stage and tree. Arrow-key nudge moves all selected pinned nodes. Inspector shows count for multi-select; resize handles single-only.
+- [x] `[S]` **Hover highlighting.** Reuses existing `dg-hover` CSS class via mouseover/mouseout on node groups.
+- [x] `[L]` **Snap guides.** Alignment snap guides shown during force-node drag (peer edge/center, shared `renderGuideLines` from editor-base.js).
 
 **Inspector parity**
 
 - [x] `[S]` **Dirty flag and save-button state.** Added `_savedIndex`, `markSaved()`, `isDirty()`, and `saveBtnId` to `UndoRedoManager`. Force editor Save button now disabled when clean. Handles: branch divergence (undo+new push invalidates saved point), maxSize overflow, reset. Initial button state set on construction.
 - [ ] `[S]` **Constraint enforcement.** Run the same fill/stroke/highlight-limit/containment checks on force nodes and display violations in the sidebar.
-- [ ] `[L]` **Override highlight in tree.** Accent-color tree items that have overrides, matching the grid editor's convention.
+- [x] `[L]` **Override highlight in tree.** Tree items with pinned position or style override get italic + accent color via `.overridden` class.
 
 **Persistence and undo**
 
 - [x] `[H]` **Undo/redo for force.** Command-based undo stack (max 50) covering move/pin, style change, text edit, and resize. Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y keyboard shortcuts. Reset clears the stack.
-- [ ] `[S]` **Stale-definition detection.** Warn if the force spec JSON changes on disk while a session is live.
+- [x] `[S]` **Stale-definition detection.** Tracks definition_hash from saved overrides. Shows warning banner in force viewer when source JSON changed since last save. Saving clears warning.
 
 **Connectors and arrows**
 
@@ -320,7 +320,7 @@ Goal: the force and grid editors share one editor shell; swapping the layout eng
 **Keyboard shortcuts**
 
 - [ ] `[L]` **Grid overlay toggle (W).** Decide whether force preview needs a baseline-grid overlay or if that concept doesn't apply.
-- [ ] `[L]` **Keyboard nudge.** Arrow-key nudge (8px default, 24px with Shift) for pinned force nodes.
+- [x] `[L]` **Keyboard nudge.** Arrow-key nudge (8px default, 24px with Shift) for pinned force nodes. Multi-select moves all selected pinned nodes.
 - [ ] `[L]` **Double-click depth cycling.** Decide whether force nodes need a depth-drill concept (probably N/A for flat graphs).
 
 **Visual scale consistency**

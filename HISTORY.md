@@ -4,6 +4,19 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-24 – Autonomous session: force editor features + module split (branch frame-layout-engine)
+
+- **v2 corpus blockers fixed.** Widened col_gap/row_gap from 24→32 on 5 diagrams to fix 6 arrow clearance violations (arrows need 24px minimum after baseline snap). 0 clearance violations remaining.
+- **SVG renderer snapshot tests.** 3 golden-file tests (two_box_vertical, panel_with_children, horizontal_arrow) with `--update-golden` flag.
+- **Security hardening for override save endpoint.** 1MB payload limit, structure validation, type checks, component ID validation via `_is_safe_slug`.
+- **Force keyboard nudge.** Arrow keys move selected pinned node (8px default, 24px with Shift). Multi-select moves all selected pinned nodes.
+- **Force override highlight in tree.** Tree items with pinned position or style override get italic + accent color.
+- **`diagram_shared.py` module split.** Extracted `design_tokens.py`, `text_metrics.py`, `grid_helpers.py` alongside unchanged monolith for backwards compatibility.
+- **Force hover highlighting.** Reuses existing `dg-hover` CSS class via mouseover/mouseout on node groups.
+- **Force double-click text editing.** Full inline label editing with Enter to commit, Escape to cancel, Shift+Enter for newlines. Server API extended with `label` param on node update. Label overrides persisted/serialized/loaded through existing override system. Undo support.
+- **Force multi-select.** Shift/Ctrl+click toggles selection in stage and tree. `selectedId` (string) replaced with `selectedIds` (Set). Inspector shows "N nodes selected" for multi. Resize handles single-only.
+- **Stale-definition detection.** Tracks `definition_hash` from saved overrides. Shows warning banner when source JSON changed since last save. Saving clears warning.
+
 ### 2026-05-23 – Per-side padding UI, stale overrides cleanup, heading height fix (branch frame-layout-engine)
 
 - **Per-side padding UI in inspector.** Replaced single "Padding" input with a Figma-style 4-field layout (T/R/B/L) with a link/unlink toggle button (🔗/🔓). When linked: single input sets all sides via `padding` override. When unlinked: 4 inputs set `padding_top/right/bottom/left` overrides individually. Link state detects explicit per-side overrides (not just value equality). Re-linking uses top value as uniform. Added `togglePaddingLink()`, `toggleMultiPaddingLink()` functions. Layout bridge handles per-side overrides (applied after uniform, so they win). `setFrameProp`/`setMultiFrameProp` clear conflicting overrides when switching modes. Both single-select and multi-select inspectors support the new UI. Browser-verified: link/unlink toggle, per-side editing, re-linking.
