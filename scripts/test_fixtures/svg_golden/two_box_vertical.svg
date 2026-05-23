@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="152" viewBox="0 0 240 152" xml:space="preserve">
+  <rect width="240" height="152" fill="#FFFFFF" />
+  <g data-component-id="a">
+  <rect x="24" y="24" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#000000">Alpha</tspan>
+  </text>
+  </g>
+  <g data-component-id="b">
+  <rect x="24" y="88" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="32" y="112.92" font-size="18" font-weight="400" fill="#000000">Beta</tspan>
+  </text>
+  </g>
+  <g data-component-id="_auto_1">
+  <line x1="120" y1="64" x2="120" y2="77.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="117.0947,77.1592 120,88 122.9053,77.1592" fill="#E95420" />
+  </g>
+</svg>
