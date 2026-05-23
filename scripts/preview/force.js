@@ -847,6 +847,16 @@ byId("stage").addEventListener("click", (event) => {
   render(currentSnapshot);
 });
 
+// Hover highlighting
+byId("stage").addEventListener("mouseover", (event) => {
+  const g = event.target.closest("[data-component-id]");
+  if (g && !g.classList.contains("dg-selected")) g.classList.add("dg-hover");
+});
+byId("stage").addEventListener("mouseout", (event) => {
+  const g = event.target.closest("[data-component-id]");
+  if (g) g.classList.remove("dg-hover");
+});
+
 byId("stage").addEventListener("mousedown", (event) => {
   if (event.button !== 0 || !currentSnapshot) {
     return;
