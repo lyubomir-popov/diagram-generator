@@ -5,7 +5,7 @@
  * Values must match the Python originals exactly.
  */
 
-/** Grid snap unit in pixels. All layout measurements round to multiples of this. */
+/** Grid snap unit in pixels. Intrinsic and authored sizes use this step; explicit FILL allocation may remain continuous. */
 export const BASELINE_UNIT = 8;
 
 /** Standard component (box) width in pixels. */

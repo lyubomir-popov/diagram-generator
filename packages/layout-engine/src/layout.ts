@@ -141,6 +141,10 @@ function leafNaturalSize(
  * Measured content size is NOT a floor — FILL children shrink below
  * their content when the parent is too small. Only explicit min/max
  * constraints act as floor/ceiling. This matches Figma's model.
+ *
+ * Unconstrained shares stay continuous rather than snapping each child
+ * independently to the baseline grid. That keeps explicit FILL siblings
+ * visually equal even when the parent span is not divisible by 8.
  */
 export function distributeFillSpace(
   available: number,
@@ -193,13 +197,10 @@ export function distributeFillSpace(
     }
 
     if (!clampedAny) {
-      const gridRemaining = Math.floor(remaining / BASELINE_UNIT) * BASELINE_UNIT;
       const nUnc = unclamped.length;
-      const base = Math.floor(gridRemaining / nUnc / BASELINE_UNIT) * BASELINE_UNIT;
-      const leftoverUnits = Math.floor((gridRemaining - base * nUnc) / BASELINE_UNIT);
       for (let j = 0; j < unclamped.length; j++) {
         const idx = unclamped[j]!;
-        sizes[idx] = base + (j >= nUnc - leftoverUnits ? BASELINE_UNIT : 0);
+        sizes[idx] = remaining / nUnc;
       }
       break;
     }
@@ -490,7 +491,7 @@ export function place(
 ): void {
   // Final size per-axis
   if (frame.sizingW === Sizing.FILL) {
-    frame._layout.placedW = roundUpToGrid(availableW);
+    frame._layout.placedW = availableW;
   } else if (frame.sizingW === Sizing.FIXED && frame.width != null) {
     frame._layout.placedW = roundUpToGrid(frame.width);
   } else {
@@ -499,7 +500,7 @@ export function place(
   frame._layout.placedW = clampToConstraints(frame._layout.placedW, frame.minWidth, frame.maxWidth);
 
   if (frame.sizingH === Sizing.FILL) {
-    frame._layout.placedH = roundUpToGrid(availableH);
+    frame._layout.placedH = availableH;
   } else if (frame.sizingH === Sizing.FIXED && frame.height != null) {
     frame._layout.placedH = roundUpToGrid(frame.height);
   } else {

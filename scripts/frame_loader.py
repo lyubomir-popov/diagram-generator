@@ -49,7 +49,7 @@ def _parse_line(raw) -> Line:
     return Line(str(raw))
 
 
-def _parse_frame(data: dict) -> Frame:
+def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
     """Recursively parse a Frame dict from YAML.
 
     Sizing accepts three forms:
@@ -79,12 +79,26 @@ def _parse_frame(data: dict) -> Frame:
     # Sensible defaults differ for leaf vs container
     default_border = Border.NONE if is_container else Border.SOLID
     default_gap = 24 if is_container else 0
+    border = _BORDER.get(data.get("border", ""), default_border)
 
-    # Per-axis sizing: uniform `sizing` as base, then per-axis overrides
-    # Default is FILL so children stretch to their parent's available space
-    uniform_sizing = _SIZING.get(data.get("sizing", "fill"), Sizing.FILL)
-    sizing_w = _SIZING.get(data.get("sizing_w"), None) or uniform_sizing
-    sizing_h = _SIZING.get(data.get("sizing_h"), None) or uniform_sizing
+    # Per-axis sizing: uniform `sizing` as base, then per-axis overrides.
+    # Root stays FILL/FILL. Otherwise omitted sizing defaults to HUG height
+    # so boxes and containers size to content vertically. Width defaults are:
+    #   - container or bordered leaf: FILL
+    #   - borderless leaf text: HUG
+    if "sizing" in data:
+        uniform_sizing = _SIZING.get(data.get("sizing", "fill"), Sizing.FILL)
+        sizing_w = _SIZING.get(data.get("sizing_w"), None) or uniform_sizing
+        sizing_h = _SIZING.get(data.get("sizing_h"), None) or uniform_sizing
+    else:
+        if is_root:
+            default_sizing_w = Sizing.FILL
+            default_sizing_h = Sizing.FILL
+        else:
+            default_sizing_w = Sizing.FILL if (is_container or border != Border.NONE) else Sizing.HUG
+            default_sizing_h = Sizing.HUG
+        sizing_w = _SIZING.get(data.get("sizing_w"), None) or default_sizing_w
+        sizing_h = _SIZING.get(data.get("sizing_h"), None) or default_sizing_h
 
     # Infer FIXED sizing when an explicit dimension is set but no sizing override
     if "width" in data and "sizing_w" not in data and "sizing" not in data:
@@ -95,7 +109,6 @@ def _parse_frame(data: dict) -> Frame:
     # Padding: default is 8 for bordered nodes, 0 for borderless containers.
     # Borderless wrappers are pure layout groups — padding would misalign
     # their children relative to siblings at the same nesting level.
-    border = _BORDER.get(data.get("border", ""), default_border)
     default_padding = 0 if (is_container and border == Border.NONE) else 8
     uniform_padding = int(data.get("padding", default_padding))
     pad_t = int(data["padding_top"]) if "padding_top" in data else None
@@ -153,7 +166,7 @@ def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:
         raise ValueError(f"{p}: not a native frame YAML (missing engine: v3)")
 
     root_data = data.get("root", {})
-    root = _parse_frame(root_data)
+    root = _parse_frame(root_data, is_root=True)
 
     arrows = [_parse_arrow(a) for a in data.get("arrows", [])]
     grid = data.get("grid", {}) if isinstance(data.get("grid", {}), dict) else {}

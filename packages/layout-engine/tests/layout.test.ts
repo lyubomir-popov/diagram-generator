@@ -36,11 +36,11 @@ describe('distributeFillSpace', () => {
     expect(sizes[0]).toBe(200);
   });
 
-  it('grid-aligns results', () => {
+  it('preserves exact available space for unconstrained shares', () => {
     const sizes = distributeFillSpace(100, [0, 0]);
-    for (const s of sizes) {
-      expect(s % BASELINE_UNIT).toBe(0);
-    }
+    expect(sizes[0]).toBeCloseTo(50, 6);
+    expect(sizes[1]).toBeCloseTo(50, 6);
+    expect(sizes[0]! + sizes[1]!).toBeCloseTo(100, 6);
   });
 
   it('min constraint floors the child size', () => {
@@ -160,8 +160,8 @@ describe('place', () => {
     place(leaf, 10, 20, 200, 100, adapter);
     expect(leaf._layout.placedX).toBe(10);
     expect(leaf._layout.placedY).toBe(20);
-    expect(leaf._layout.placedW).toBe(roundUpToGrid(200));
-    expect(leaf._layout.placedH).toBe(roundUpToGrid(100));
+    expect(leaf._layout.placedW).toBe(200);
+    expect(leaf._layout.placedH).toBe(100);
   });
 
   it('places children sequentially in vertical container', () => {
@@ -214,6 +214,32 @@ describe('place', () => {
     const totalChildH = c1._layout.placedH + c2._layout.placedH;
     expect(c1._layout.placedH).toBe(c2._layout.placedH);
     expect(totalChildH + 8).toBeLessThanOrEqual(200 - 16); // gap + padding fits
+  });
+
+  it('keeps explicit FILL siblings equal when the parent is not grid-divisible', () => {
+    const c1 = new Frame({ id: 'c1', sizingW: Sizing.FILL, sizingH: Sizing.FILL });
+    const c2 = new Frame({ id: 'c2', sizingW: Sizing.FILL, sizingH: Sizing.FILL });
+    const c3 = new Frame({ id: 'c3', sizingW: Sizing.FILL, sizingH: Sizing.FILL });
+    const parent = new Frame({
+      id: 'parent',
+      direction: Direction.VERTICAL,
+      sizingW: Sizing.FIXED,
+      sizingH: Sizing.FIXED,
+      width: 200,
+      height: 104,
+      padding: 0,
+      gap: 0,
+      border: Border.NONE,
+      children: [c1, c2, c3],
+    });
+
+    measure(parent, adapter);
+    place(parent, 0, 0, 200, 104, adapter);
+
+    expect(c1._layout.placedH).toBeCloseTo(104 / 3, 6);
+    expect(c1._layout.placedH).toBeCloseTo(c2._layout.placedH, 6);
+    expect(c2._layout.placedH).toBeCloseTo(c3._layout.placedH, 6);
+    expect(c1._layout.placedH + c2._layout.placedH + c3._layout.placedH).toBeCloseTo(104, 6);
   });
 
   it('cross-axis FILL stretches to parent width', () => {

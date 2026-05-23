@@ -1231,10 +1231,10 @@ class TestHeadingOverflow:
 # ═══════════════════════════════════════════════════════════════════
 
 class TestFillDistributionFairness:
-    """FILL distribution should be as fair as possible within grid constraints."""
+    """Explicit FILL distribution should stay equal even off the baseline grid."""
 
-    def test_three_fill_max_diff_is_one_baseline_unit(self):
-        """3 FILL children: sizes should differ by at most BASELINE_UNIT."""
+    def test_three_fill_children_stay_equal_off_grid(self):
+        """3 FILL children remain equal even when the parent height is not grid-divisible."""
         a = _box("a", w=192, h=40)
         a.sizing_h = Sizing.FILL
         b = _box("b", w=192, h=40)
@@ -1250,12 +1250,12 @@ class TestFillDistributionFairness:
         _layout(root)
 
         sizes = [a._placed_h, b._placed_h, c._placed_h]
-        diff = max(sizes) - min(sizes)
-        assert diff <= BASELINE_UNIT, \
-            f"FILL children differ by {diff}px (max {BASELINE_UNIT}): {sizes}"
+        expected = 104 / 3
+        assert all(abs(size - expected) < 1e-6 for size in sizes), \
+            f"Expected equal sizes near {expected}, got {sizes}"
 
-    def test_extra_goes_to_last_children(self):
-        """Extra grid units from FILL rounding go to last children, not first."""
+    def test_two_fill_children_keep_exact_assigned_size(self):
+        """2 FILL children keep the exact assigned size instead of snapping to the baseline grid."""
         a = _box("a", w=192, h=40)
         a.sizing_h = Sizing.FILL
         b = _box("b", w=192, h=40)
@@ -1264,16 +1264,12 @@ class TestFillDistributionFairness:
                           gap=0, padding=0, border=Border.NONE)
         root.sizing_w = Sizing.FIXED
         root.sizing_h = Sizing.FIXED
-        # 104 / 2 = 52, floor to grid = 48, leftover = 104 - 96 = 8
-        # Extra 8 should go to LAST child
         root.height = 104
         root.width = 200
         _layout(root)
 
-        if a._placed_h != b._placed_h:
-            # If unequal, last child should be the larger one
-            assert b._placed_h >= a._placed_h, \
-                f"Extra should go to last child: a={a._placed_h}, b={b._placed_h}"
+        assert abs(a._placed_h - 52) < 1e-6, a._placed_h
+        assert abs(b._placed_h - 52) < 1e-6, b._placed_h
 
 
 class TestV3GridInfo:
@@ -1511,9 +1507,11 @@ class TestThreeLevelNesting:
         for parent in [page, mid1, mid2, deep1, deep2]:
             errors = _children_within_parent(parent)
             assert not errors, f"{parent.id}: {errors}"
-        # Sizes on grid
-        for f in [page, mid1, mid2]:
-            assert _on_grid(f._placed_h), f"{f.id} height off grid"
+        # The fixed root stays on grid, but explicit FILL descendants can now
+        # keep exact assigned sizes even when that lands off the baseline.
+        assert _on_grid(page._placed_h), f"{page.id} height off grid"
+        assert abs(mid1._placed_h - mid2._placed_h) < 1e-6, \
+            f"FILL siblings should stay equal: mid1={mid1._placed_h}, mid2={mid2._placed_h}"
 
     def test_fill_cascade_three_levels(self):
         """FIXED root → FILL child → FILL grandchild.

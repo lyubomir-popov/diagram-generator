@@ -71,9 +71,13 @@ def _distribute_fill_space(
     min_height constraints act as a floor (defaulting to 0).  This matches
     Figma's model: content overflows the child, not the parent's padding.
 
-    Returns a list of final sizes (one per FILL child), grid-aligned.
+    Returns a list of final sizes (one per FILL child).
     This is the single source of truth for FILL distribution, used by
     both _resolve_child_widths() (pass 1.5) and place() (pass 2).
+
+    Unconstrained shares stay continuous rather than snapping each child
+    independently to the baseline grid. That keeps explicit FILL siblings
+    visually equal even when the parent span is not divisible by 8.
     """
     n = len(fill_measured)
     if n == 0:
@@ -115,12 +119,10 @@ def _distribute_fill_space(
                 clamped_any = True
                 break
         if not clamped_any:
-            grid_remaining = (remaining // BASELINE_UNIT) * BASELINE_UNIT
             n_unc = len(unclamped)
-            base = (grid_remaining // n_unc // BASELINE_UNIT) * BASELINE_UNIT
-            leftover_units = int((grid_remaining - base * n_unc) // BASELINE_UNIT)
-            for j, idx in enumerate(unclamped):
-                sizes[idx] = base + (BASELINE_UNIT if j >= n_unc - leftover_units else 0)
+            share = remaining / n_unc if n_unc else 0
+            for idx in unclamped:
+                sizes[idx] = share
             break
     return sizes
 
@@ -685,7 +687,7 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
     # Determine this frame's final size per-axis
     # Width
     if frame.sizing_w == Sizing.FILL:
-        frame._placed_w = round_up_to_grid(available_w)
+        frame._placed_w = available_w
     elif frame.sizing_w == Sizing.FIXED and frame.width is not None:
         frame._placed_w = round_up_to_grid(frame.width)
     else:  # HUG, or FIXED without explicit width
@@ -693,7 +695,7 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
     frame._placed_w = _clamp_to_constraints(frame._placed_w, frame.min_width, frame.max_width)
     # Height
     if frame.sizing_h == Sizing.FILL:
-        frame._placed_h = round_up_to_grid(available_h)
+        frame._placed_h = available_h
     elif frame.sizing_h == Sizing.FIXED and frame.height is not None:
         frame._placed_h = round_up_to_grid(frame.height)
     else:  # HUG, or FIXED without explicit height

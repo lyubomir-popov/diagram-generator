@@ -22,7 +22,7 @@ def _load(tmp_path, content: str):
     return load_frame_yaml(path)
 
 
-def test_omitted_sizing_defaults_to_fill_on_both_axes(tmp_path):
+def test_omitted_sizing_defaults_leaf_nodes_to_fill_width_hug_height(tmp_path):
     diagram = _load(
         tmp_path,
         """
@@ -40,7 +40,7 @@ root:
     assert diagram.root.sizing_h == Sizing.FILL
     child = diagram.root.children[0]
     assert child.sizing_w == Sizing.FILL
-    assert child.sizing_h == Sizing.FILL
+    assert child.sizing_h == Sizing.HUG
 
 
 def test_explicit_width_without_sizing_infers_fixed_width_only(tmp_path):
@@ -60,7 +60,7 @@ root:
 
     child = diagram.root.children[0]
     assert child.sizing_w == Sizing.FIXED
-    assert child.sizing_h == Sizing.FILL
+    assert child.sizing_h == Sizing.HUG
 
 
 def test_explicit_height_without_sizing_infers_fixed_height_only(tmp_path):
@@ -81,6 +81,47 @@ root:
     child = diagram.root.children[0]
     assert child.sizing_w == Sizing.FILL
     assert child.sizing_h == Sizing.FIXED
+
+
+def test_container_children_still_default_to_fill_on_both_axes(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: root
+  children:
+    - id: child
+      children:
+        - id: leaf
+          label:
+            - Hello
+""",
+    )
+
+    child = diagram.root.children[0]
+    assert child.sizing_w == Sizing.FILL
+    assert child.sizing_h == Sizing.HUG
+
+
+def test_borderless_leaf_text_defaults_to_hug_on_both_axes(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: root
+  children:
+    - id: note
+      border: none
+      label:
+        - Hello
+""",
+    )
+
+    note = diagram.root.children[0]
+    assert note.sizing_w == Sizing.HUG
+    assert note.sizing_h == Sizing.HUG
 
 
 def test_explicit_sizing_prevents_fixed_inference(tmp_path):

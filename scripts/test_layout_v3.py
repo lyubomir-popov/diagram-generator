@@ -120,6 +120,29 @@ def test_fill_children_share_space():
     print(f"  PASS: fill children, a={child_a._placed_h}, b={child_b._placed_h}")
 
 
+def test_fill_children_stay_equal_when_parent_is_not_grid_divisible():
+    """Explicit FILL siblings should stay equal even when the parent span is not divisible by 8."""
+    child_a = _box("a", h=40)
+    child_a.sizing_h = Sizing.FILL
+    child_b = _box("b", h=40)
+    child_b.sizing_h = Sizing.FILL
+    child_c = _box("c", h=40)
+    child_c.sizing_h = Sizing.FILL
+
+    root = _container("root", Direction.VERTICAL, [child_a, child_b, child_c],
+                       gap=0, padding=0, border=Border.NONE)
+    root.width = 200
+    root.height = 104
+    root.sizing_w = Sizing.FIXED
+    root.sizing_h = Sizing.FIXED
+    _layout(root)
+
+    assert abs(child_a._placed_h - (104 / 3)) < 1e-6, child_a._placed_h
+    assert abs(child_a._placed_h - child_b._placed_h) < 1e-6
+    assert abs(child_b._placed_h - child_c._placed_h) < 1e-6
+    assert abs((child_a._placed_h + child_b._placed_h + child_c._placed_h) - 104) < 1e-6
+
+
 # ---------------------------------------------------------------------------
 # Test 3: Mixed HUG + FILL — FILL gets remaining space
 # ---------------------------------------------------------------------------
