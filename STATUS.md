@@ -129,21 +129,21 @@ The project has evolved from a batch diagram generator into a **constrained inte
 
 **Current state (2026-05-24):** Milestones 1–12 complete. **275 tests** passing (120 TS + 155 Python). Engine core stable with Figma-correct per-axis sizing (`sizing_w`/`sizing_h`), parent coercion model (HUG→FIXED for FILL children), coercion visibility in inspector ("Fixed (auto)" gold text), stale coercion cleanup with override value deletion, native Frame YAML definitions, baseline-snapped Brockman grid, unified editor shell (grid + force share `viewer-unified.html` + `editor-base.js`), drag-to-reorder, multi-select bulk editing (both grid and force), column-span/row-span inspector input, domain-specific undo/redo, InDesign-like deferred text composition, bidirectional text reflow, font metrics via `fonttools`, min/max size constraints with inspector UI (single-select + multi-select, auto-adjustment prevents min > max), constraint violation prevention (Figma-style auto-clamping), per-side padding UI with link/unlink toggle (Figma-style T/R/B/L fields), heading height consistency across all pipeline stages. TypeScript port complete (6 milestones). Force editor features: hover highlighting, double-click inline text editing, multi-select (shift/ctrl+click), keyboard nudge, stale-definition detection, snap guides, override tree highlighting. `diagram_shared.py` split into focused modules (`design_tokens.py`, `text_metrics.py`, `grid_helpers.py`). 5 test-case frame YAMLs + 3 real v2→v3 diagrams browser-verified.
 
-**TypeScript port (Stage 15.5) — in progress:**
+**TypeScript port (Stage 15.5) — complete:**
 - **M1 complete:** Frame model ported to `packages/layout-engine/src/frame-model.ts` — Frame, Direction, Sizing, Align, Border, Arrow, enforceFillHugInvariant. 21 TS unit tests passing.
 - **M2 complete:** Layout algorithm ported to `packages/layout-engine/src/layout.ts` — measure, distributeFillSpace, place, alignOffset, constrained re-measurement. Text measurement via adapter interface (MockTextAdapter for tests). Design tokens in `tokens.ts`. 46 additional tests (24 layout + 22 tokens).
 - **M3 complete:** Canvas text adapter (`canvas-text-adapter.ts`) using `Canvas.measureText()` with Ubuntu Sans Variable. 6 tests. IIFE browser bundle builds (33KB via esbuild).
 - **M4 complete:** Layout bridge (`layout-bridge.js`) replaces server round-trip with local layout. Frame tree JSON served via `/api/frame-tree/<slug>`. `performLocalRelayout()` runs TS engine client-side; falls back to server on failure. Browser-verified on android-container-vs-vm (gap/direction/padding changes work, SVG patching correct) and attention-qkv (bridge runs but text measurement differences cause visual variance — expected, will be resolved when TS engine owns full rendering).
 - **M5 complete:** Shared parity test fixtures. 6 fixtures (vertical-stack, fill-distribution, mixed-sizing, nested-containers, deep-nesting, alignment-grid) as JSON with serialized frame tree + expected coordinates. TS parity test (39 tests) and Python parity test (6 tests + 33 subtests) both verify identical coordinates using mock text adapter. Discovered `_refresh_coerced_heights` bug (overwrites explicit FIXED heights) — same in both engines, tracked for post-parity fix.
 - **M6 complete:** Server API cleanup. Removed `/api/relayout-v3/<slug>` endpoint, `_relayout_v3()`, `_serve_relayout_v3()`, and `test_relayout_v3.py`. `requestV3Relayout()` now uses client-side-only `performLocalRelayout()` with no server fallback. Browser-verified: 0 console errors.
-- **Port complete.** All 6 milestones done. Total: 119 TS tests + 151 Python tests passing.
+- **Port complete.** All 6 milestones done. Layout runs client-side via `performLocalRelayout()` in `layout-bridge.js`. Server role reduced to load/save/export.
 - **Coercion visibility wired into inspector.** When the engine coerces HUG→FIXED (FILL children rule), the sizing dropdown shows "Fixed (auto)" in gold italic. Key mapping fix: TS engine uses camelCase (`sizingH`), overrides use snake_case (`sizing_h`). Stale coerced keys cleaned after each relayout. Immediate feedback when changing child sizing. Browser-verified.
 - **Coercion lifecycle tests complete.** 7 new tests covering: lifecycle (coerce/revert), partial FILL removal, override values, horizontal axis, nested independent coercion, cross-axis non-coercion, and mixed FILL/HUG distribution. Tier 1 + Tier 3 edge cases fully covered.
 - Architecture audit peer-reviewed: no pre-port gates found. See TODO.md for details.
 
 **Stash:** `unverified-v3-ui-work` — old UI code superseded by M9/M11. Can be dropped.
 
-**Open work:** See `TODO.md` — snap to grid [H], swappable engine interface [H], force alignment guides [S], grid-aware resize [S], simplify force inspector [S], golden-value tests, API test, PNG export.
+**Open work:** See `TODO.md` — swappable engine interface Phase 3+ [S], constraint enforcement [S], arrow waypoint/endpoint editing [S], consistent stroke weight [S], force→declarative round-trip [S], preview_server.py decomposition [S], EditorState container [S], native text frames [H], Tier 4 advanced Figma parity [H].
 
 **Key files:**
 - `scripts/frame_model.py` — `Frame`, `FrameDiagram`, `Align`, `Sizing`, `Direction`
@@ -151,8 +151,10 @@ The project has evolved from a batch diagram generator into a **constrained inte
 - `scripts/layout_v3.py` — `measure()` → `place()` → `_render_frame()` → `LayoutResult`
 - `scripts/test_autolayout.py` — comprehensive test suite
 - `scripts/test_layout_v3.py` — original integration tests
-- `scripts/test_relayout_v3.py` — API endpoint tests
+- `scripts/test_svg_renderer.py` — SVG golden-file snapshot tests
 - `scripts/diagrams/frames/*.yaml` — native frame definitions
+- `packages/layout-engine/` — TypeScript layout engine (120 tests, IIFE browser bundle)
+- `scripts/preview/layout-bridge.js` — bridges server frame-tree JSON → TS layout engine client-side
 
 ### Repo infrastructure
 
@@ -173,7 +175,6 @@ The project has evolved from a batch diagram generator into a **constrained inte
 ### Known build issues
 
 - `build_v2.py` exits nonzero on pre-existing arrow-clearance violations in `example-platform-architecture`, `lightning-talk-engine`, `lt-diagram-generator`, `lt-a4-generator`, `lt-summit-identity`. Warning-only baseline-grid drift on several older diagrams.
-- Equal-split/outdent math still duplicated between `scripts/diagram_layout.py` and `scripts/preview/component-model.js`.
 
 ## Draw.io evolution plan
 
@@ -204,7 +205,7 @@ The project has evolved from a batch diagram generator into a **constrained inte
 | Layout engine | `scripts/diagram_layout.py` |
 | SVG renderer | `scripts/diagram_render_svg.py` |
 | Diagram definitions | `scripts/diagrams/` (e.g. `logic_data_vram.py`) |
-| Shared tokens and helpers | `scripts/diagram_shared.py` |
+| Shared tokens and helpers | `scripts/diagram_shared.py`, `scripts/design_tokens.py`, `scripts/text_metrics.py`, `scripts/grid_helpers.py` |
 | Visual comparison tool | `scripts/visual_compare.py` |
 | Canonical exemplar for current rules | `diagrams/2.output/svg/memory-wall-onbrand.svg` |
 | Spec-led workflow explainer exemplar | `diagrams/2.output/svg/diagram-language-workflow-onbrand.svg` |
@@ -218,7 +219,7 @@ The project has evolved from a batch diagram generator into a **constrained inte
 | SVG output set | `diagrams/2.output/svg/` |
 | Editable draw.io batch | `diagrams/2.output/draw.io/` |
 | Tracked draw.io library | `assets/drawio/diagram-generator-primitives.mxlibrary` |
-| Shared primitive source | `scripts/diagram_shared.py` |
+| Shared primitive source | `scripts/diagram_shared.py` (monolith, kept for compat) + focused modules: `design_tokens.py`, `text_metrics.py`, `grid_helpers.py` |
 | Primary build entrypoint | `scripts/build_outputs.py` |
 | Draw.io library exporter | `scripts/export_drawio_library.py` |
 | Draw.io exporter | `scripts/export_drawio_batch.py` |
@@ -253,3 +254,4 @@ The project has evolved from a batch diagram generator into a **constrained inte
 - Drain `AGENT-INBOX.md`.
 - Continue from `TODO.md`.
 - Read `docs/specs.md` before changing spec-governed behavior.
+- **Note:** The TS port is complete (M1–M6). Layout runs client-side. Remaining work is mostly [S]-tier feature work (force editor parity, arrow editing, engine interface Phase 3+) and [H]-tier advanced Figma parity (space-between, absolute positioning, native text frames). All remaining items need browser verification — start the preview server (`python scripts/preview_server.py`) and verify changes visually.

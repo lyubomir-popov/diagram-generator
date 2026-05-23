@@ -45,7 +45,7 @@ Before starting diagram work, ask the user:
 >
 > 1. **Pipeline 1 (stable)** – imperative builders in `generate_remaining_diagrams.py`, builds via `build_outputs.py`, outputs `*-onbrand.svg/drawio`
 > 2. **Pipeline 2 (declarative grid)** – declarative grid definitions in `scripts/diagrams/*.py`, builds via `build_v2.py`, outputs `*-onbrand-v2.svg/drawio`
-> 3. **Pipeline 3 (v3 frame engine)** – declarative YAML frames in `scripts/diagrams/frames/*.yaml`, Figma-like autolayout engine in `scripts/layout_v3.py`, preview at `http://127.0.0.1:8100/view/v3:<slug>`
+> 3. **Pipeline 3 (v3 frame engine)** – declarative YAML frames in `scripts/diagrams/frames/*.yaml`, Figma-like autolayout engine ported to TypeScript (`packages/layout-engine/`), runs client-side via `layout-bridge.js`, preview at `http://127.0.0.1:8100/view/v3:<slug>`. Python `layout_v3.py` stays for batch builds.
 
 This determines which files to edit, which build/test commands to run, and which validation mode matters. Do not assume one or the other.
 

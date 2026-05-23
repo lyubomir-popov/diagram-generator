@@ -60,7 +60,7 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
-### Client-side layout engine — TypeScript port (PRIORITY 0)
+### Client-side layout engine — TypeScript port (COMPLETE)
 
 **Why now:** Week 0 of a 6-month project. The layout algorithm is correct (174 tests, FILL distribution fix landed). The remaining autolayout bugs are caused by the Python server round-trip, not the algorithm. Fixing them in the current architecture means writing throwaway code. Porting first means every subsequent feature lands in the right architecture.
 
