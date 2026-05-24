@@ -18,6 +18,7 @@ from diagram_layout import (
     ArrowPrimitive,
     ComponentInfo,
     DashedLinePrimitive,
+    FrameBox,
     GridInfo,
     Icon,
     LayoutResult,
@@ -881,63 +882,67 @@ def _render_frame(frame: Frame, fg: list, bg: list, bounds_map: dict) -> None:
                                 component_id=cid, max_width=w - 2 * INSET))
         return
 
-    # Frame rect – every frame emits a Rect so the browser always has a
-    # bounding box for hit-testing, selection chrome, and keyboard navigation.
+    # ── Resolve style fields ──
     if frame.border == Border.NONE:
-        fg.append(Rect(x, y, w, h, fill="transparent", stroke="none",
-                       dashed=False, component_id=cid))
+        box_fill = "transparent"
+        box_stroke = "none"
+    elif frame.border == Border.FILL:
+        box_fill = frame.fill.value
+        box_stroke = "none"
     else:
-        stroke = "none" if frame.border == Border.FILL else "#000000"
-        fg.append(Rect(x, y, w, h, fill=frame.fill.value, stroke=stroke,
-                       dashed=(frame.border == Border.DASHED), component_id=cid))
+        box_fill = frame.fill.value
+        box_stroke = "#000000"
 
-    # Heading
+    # Effective padding: border=NONE frames compensate for the missing 1px
+    # border stroke so text baselines align with bordered siblings.
     pad_l = frame.padding_left
     pad_t = frame.padding_top
     pad_r = frame.padding_right
-    # Annotation style: border=NONE frames still get padding so their
-    # text baselines align with bordered siblings.  Account for the 1px
-    # border that bordered boxes have by adding 1px to annotation padding.
+    pad_b = frame.padding_bottom
     if frame.border == Border.NONE:
-        effective_pad_l = pad_l + 1
-        effective_pad_t = pad_t + 1
-        effective_pad_r = pad_r + 1
-    else:
-        effective_pad_l = pad_l
-        effective_pad_t = pad_t
-        effective_pad_r = pad_r
-    # Available text width (inside padding, minus icon column if present)
-    icon_col = (ICON_SIZE + INSET) if frame.icon else 0
-    text_max_w = w - effective_pad_l - effective_pad_r - icon_col
-    if frame.heading and not frame.is_leaf:
-        fg.append(TextBlock(x + effective_pad_l, y + effective_pad_t, _lines_to_dicts([frame.heading]),
-                            component_id=cid, max_width=text_max_w))
+        pad_l += 1
+        pad_t += 1
+        pad_r += 1
 
-    # Heading icon
-    if frame.icon and frame.is_container:
-        icon_f = frame.icon_fill or "#000000"
-        if frame.fill == Fill.BLACK and icon_f == "#000000":
-            icon_f = "#FFFFFF"
-        fg.append(Icon(x + w - effective_pad_r - ICON_SIZE, y + effective_pad_t, frame.icon,
-                       fill=icon_f, component_id=cid))
+    icon_col = (ICON_SIZE + INSET) if frame.icon else 0
+    text_max_w = w - pad_l - pad_r - icon_col
+
+    # ── Build text content ──
+    heading_lines: list[dict] = []
+    label_lines: list[dict] = []
+    icon_name = frame.icon
+    icon_fill_color = frame.icon_fill or "#000000"
+    if frame.fill == Fill.BLACK and icon_fill_color == "#000000":
+        icon_fill_color = "#FFFFFF"
 
     if frame.is_leaf:
-        # Leaf content: heading + label as a single text block, plus icon
         all_lines = _leaf_all_lines(frame)
         if all_lines:
-            text_fill = "#FFFFFF" if frame.fill == Fill.BLACK else "#000000"
             if frame.fill == Fill.BLACK:
-                all_lines = [{**ln, "fill": text_fill} for ln in all_lines]
-            fg.append(TextBlock(x + effective_pad_l, y + effective_pad_t, all_lines,
-                                component_id=cid, max_width=text_max_w))
-        if frame.icon:
-            icon_fill = frame.icon_fill or "#000000"
-            if frame.fill == Fill.BLACK and icon_fill == "#000000":
-                icon_fill = "#FFFFFF"
-            fg.append(Icon(x + w - effective_pad_r - ICON_SIZE, y + effective_pad_t, frame.icon,
-                           fill=icon_fill, component_id=cid))
+                all_lines = [{**ln, "fill": "#FFFFFF"} for ln in all_lines]
+            label_lines = all_lines
     else:
-        # Container: render children recursively
+        if frame.heading:
+            heading_lines = _lines_to_dicts([frame.heading])
+        # Container icon only (leaf icon goes via label_lines path)
+        # — icon_name is already set above
+
+    fg.append(FrameBox(
+        x=x, y=y, width=w, height=h,
+        fill=box_fill, stroke=box_stroke,
+        dashed=(frame.border == Border.DASHED),
+        padding_top=pad_t, padding_right=pad_r,
+        padding_bottom=pad_b, padding_left=pad_l,
+        heading_lines=heading_lines,
+        label_lines=label_lines,
+        text_max_width=text_max_w,
+        icon_name=icon_name if icon_name else None,
+        icon_fill=icon_fill_color,
+        component_id=cid,
+    ))
+
+    # Container: render children recursively
+    if frame.is_container:
         for child in frame.children:
             _render_frame(child, fg, bg, bounds_map)
 

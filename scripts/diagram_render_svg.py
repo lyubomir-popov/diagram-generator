@@ -16,6 +16,7 @@ from diagram_layout import (
     ArrowLabelPrimitive,
     CircleMarker,
     DashedLinePrimitive,
+    FrameBox,
     GridInfo,
     Icon,
     JaggedRect,
@@ -220,6 +221,26 @@ def _request_cluster(x, y) -> str:
     ])
 
 
+def _frame_box(prim: FrameBox) -> str:
+    """Render a FrameBox as rect + text + optional icon."""
+    parts: list[str] = []
+    # Background rect (always present for hit-testing)
+    parts.append(_rect(prim.x, prim.y, prim.width, prim.height,
+                       fill=prim.fill, stroke=prim.stroke, dashed=prim.dashed))
+    # Text: heading lines then label lines
+    all_lines = list(prim.heading_lines) + list(prim.label_lines)
+    if all_lines:
+        parts.append(_text_block(prim.x + prim.padding_left,
+                                 prim.y + prim.padding_top,
+                                 all_lines, max_width=prim.text_max_width))
+    # Icon (top-right, inside padding)
+    if prim.icon_name:
+        icon_x = prim.x + prim.width - prim.padding_right - ICON_SIZE
+        icon_y = prim.y + prim.padding_top
+        parts.append(_icon_group(icon_x, icon_y, prim.icon_name, prim.icon_fill))
+    return "\n".join(p for p in parts if p)
+
+
 # ---------------------------------------------------------------------------
 # Primitive dispatcher
 # ---------------------------------------------------------------------------
@@ -255,6 +276,8 @@ def _render_primitive(prim: Primitive) -> str:
             f' fill="none" stroke="#000000" stroke-width="1"'
             f' stroke-miterlimit="10" stroke-dasharray="{prim.dash}" />'
         )
+    if isinstance(prim, FrameBox):
+        return _frame_box(prim)
     return ""
 
 

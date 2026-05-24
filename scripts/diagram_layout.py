@@ -181,6 +181,45 @@ class DashedLinePrimitive:
     component_id: str | None = None
 
 
+@dataclass
+class FrameBox:
+    """A single design-system component: padded box with text and optional icon.
+
+    Every frame in the diagram is a FrameBox.  Visual differences are
+    controlled by ``fill``, ``stroke``, and per-line text specs — not by
+    the presence or absence of sub-primitives.
+
+    Style variants (informational — the renderer derives visuals from the
+    fields, not from a style enum):
+
+      parent:     fill=#F3F3F3, stroke=none,    bold heading text
+      default:    fill=#FFFFFF, stroke=#000000,  regular text
+      highlight:  fill=#000000, stroke=none,     white regular text
+      annotation: fill=transparent, stroke=none, regular text
+    """
+    x: float
+    y: float
+    width: float
+    height: float
+    fill: str = "#FFFFFF"
+    stroke: str = "#000000"
+    dashed: bool = False
+    # Padding (already resolved to px by the engine)
+    padding_top: float = 8
+    padding_right: float = 8
+    padding_bottom: float = 8
+    padding_left: float = 8
+    # Text content
+    heading_lines: list[dict] = field(default_factory=list)  # bold heading (containers)
+    label_lines: list[dict] = field(default_factory=list)    # body text (leaves)
+    text_max_width: float | None = None
+    # Icon (optional, top-right)
+    icon_name: str | None = None
+    icon_fill: str = "#000000"
+    # Identity
+    component_id: str | None = None
+
+
 Primitive = Union[
     Rect,
     TextBlock,
@@ -193,6 +232,7 @@ Primitive = Union[
     MatrixTile,
     RequestClusterPrimitive,
     DashedLinePrimitive,
+    FrameBox,
 ]
 
 
