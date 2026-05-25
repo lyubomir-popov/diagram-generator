@@ -780,8 +780,13 @@ async function initLayoutBridge(slug) {
  * Returns { coerced, width, height } or null on failure.
  *
  * This replaces requestV3Relayout() — no server round-trip needed.
+ *
+ * @param {object} opts
+ * @param {boolean} [opts.skipModelUpdate] - When true, the component model
+ *   is NOT updated after patching the SVG.  Used during live drag/resize so
+ *   snap calculations keep referencing the original positions.
  */
-function performLocalRelayout(model, overrides, gridOverrides) {
+function performLocalRelayout(model, overrides, gridOverrides, opts) {
   if (!_frameTreeJson || !_textAdapter) {
     console.warn("layout-bridge: not initialized, falling back to server");
     return null;
@@ -842,8 +847,10 @@ function performLocalRelayout(model, overrides, gridOverrides) {
       patchArrowsSvg(svgEl, routed);
     }
 
-    // Update component model
-    updateComponentModelFromLayout(model, diagram.root);
+    // Update component model (skip during live resize to keep snap stable)
+    if (!opts || !opts.skipModelUpdate) {
+      updateComponentModelFromLayout(model, diagram.root);
+    }
 
     return {
       coerced: result.coerced,

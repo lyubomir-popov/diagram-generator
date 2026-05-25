@@ -4094,6 +4094,8 @@ function startResize(e) {
     origOverrides,
     overrideSnapshotBefore: _captureOverrideEntries(touchedIds),
     hasMoved: false, snapshotRecorded: false,
+    v3BaseW: node ? node.data.width : 0,
+    v3BaseH: node ? node.data.height : 0,
   });
   document.addEventListener("mousemove", onResizeMove);
   document.addEventListener("mouseup", onResizeUp);
@@ -4125,6 +4127,55 @@ function _applyRelayoutRecursive(parentId, parentDx, parentDy, parentDw, parentD
       _applyRelayoutRecursive(childId, childEffDx, childEffDy, childEffDw, childEffDh, origOverrides, propagatedIds);
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Live v3 resize relayout — runs the TS engine each animation frame so the
+// diagram responds smoothly while the user drags a resize handle.
+// ---------------------------------------------------------------------------
+let _resizeRafId = null;
+let _resizeLatest = null;
+
+function _scheduleV3ResizeRelayout(cid, newW, newH, resizedW, resizedH) {
+  _resizeLatest = { cid, newW, newH, resizedW, resizedH };
+  if (_resizeRafId) return; // already scheduled for next paint frame
+  _resizeRafId = requestAnimationFrame(() => {
+    _resizeRafId = null;
+    const st = _resizeLatest;
+    if (!st) return;
+    _resizeLatest = null;
+
+    // Build temporary overrides with the tentative sizing
+    const tmpOverrides = {};
+    for (const [fid, ovr] of Object.entries(overrides)) {
+      tmpOverrides[fid] = Object.assign({}, ovr);
+    }
+    if (!tmpOverrides[st.cid]) tmpOverrides[st.cid] = {};
+    if (st.resizedW) {
+      tmpOverrides[st.cid].width = st.newW;
+      tmpOverrides[st.cid].sizing_w = "FIXED";
+    }
+    if (st.resizedH) {
+      tmpOverrides[st.cid].height = st.newH;
+      tmpOverrides[st.cid].sizing_h = "FIXED";
+    }
+    // Clear dx/dy/dw/dh deltas — they're baked into width/height
+    delete tmpOverrides[st.cid].dx;
+    delete tmpOverrides[st.cid].dy;
+    delete tmpOverrides[st.cid].dw;
+    delete tmpOverrides[st.cid].dh;
+
+    const gridOvr = _normaliseGridOverrides(model.gridOverrides || {});
+    performLocalRelayout(model, tmpOverrides, gridOvr, { skipModelUpdate: true });
+  });
+}
+
+function _cancelV3ResizeRelayout() {
+  if (_resizeRafId) {
+    cancelAnimationFrame(_resizeRafId);
+    _resizeRafId = null;
+  }
+  _resizeLatest = null;
 }
 
 function onResizeMove(e) {
@@ -4312,6 +4363,18 @@ function onResizeMove(e) {
 
   applyAllOverrides();
   if (selectedIds.has(s.cid)) updateInspector(s.cid);
+
+  // V3 live relayout — run the TS engine each frame for smooth feedback
+  if (ENGINE === "v3" && !s.selection) {
+    const own = getOwnDelta(s.cid);
+    const resizedW = own.dw !== 0;
+    const resizedH = own.dh !== 0;
+    if (resizedW || resizedH) {
+      const newW = Math.max(8, s.v3BaseW + own.dw);
+      const newH = Math.max(8, s.v3BaseH + own.dh);
+      _scheduleV3ResizeRelayout(s.cid, newW, newH, resizedW, resizedH);
+    }
+  }
 }
 
 function _persistResizeToV3(resizeIds, propagatedIds, triggerCid) {
@@ -4355,6 +4418,7 @@ function _persistResizeToV3(resizeIds, propagatedIds, triggerCid) {
 }
 
 function onResizeUp() {
+  _cancelV3ResizeRelayout();
   document.removeEventListener("mousemove", onResizeMove);
   document.removeEventListener("mouseup", onResizeUp);
   clearGuideLines();
