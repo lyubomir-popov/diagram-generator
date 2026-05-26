@@ -20,6 +20,8 @@ from layout_v3 import (
     measure, place, _enforce_fill_hug_invariant,
     layout_frame_diagram, _distribute_fill_space,
     _remeasure_with_width_constraints,
+    _astar_orthogonal, _simplify_path, _inflated_rect, _infer_sides,
+    _Pt, _segment_crosses_obstacle, ARROW_CLEARANCE,
 )
 from diagram_layout import DashedLinePrimitive, FrameBox, TextBlock
 from diagram_shared import measure_text_width, estimate_line_width, wrap_text_lines
@@ -743,6 +745,71 @@ def test_frame_box_style_contract():
 # Run all tests
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Arrow routing tests
+# ---------------------------------------------------------------------------
+
+def test_infer_sides_vertical():
+    """Vertically stacked boxes: bottom→top."""
+    src, tgt = _infer_sides(0, 0, 100, 50, 0, 100, 100, 50)
+    assert src == "bottom" and tgt == "top", f"Expected bottom→top, got {src}→{tgt}"
+    print("  PASS: infer sides vertical")
+
+
+def test_infer_sides_horizontal():
+    """Horizontally adjacent boxes: right→left."""
+    src, tgt = _infer_sides(0, 0, 100, 50, 200, 0, 100, 50)
+    assert src == "right" and tgt == "left", f"Expected right→left, got {src}→{tgt}"
+    print("  PASS: infer sides horizontal")
+
+
+def test_segment_crosses_obstacle():
+    """Horizontal segment through a box is detected."""
+    obs = [(50, 0, 150, 100)]  # box from (50,0) to (150,100)
+    assert _segment_crosses_obstacle(0, 50, 200, 50, obs), "Should cross"
+    assert not _segment_crosses_obstacle(0, 150, 200, 150, obs), "Should not cross (below)"
+    print("  PASS: segment crosses obstacle")
+
+
+def test_astar_direct_path():
+    """No obstacles: A* returns direct two-point path."""
+    start = _Pt(0, 50)
+    end = _Pt(300, 50)
+    path = _astar_orthogonal(start, end, [], "right", "left")
+    simplified = _simplify_path(path)
+    assert len(simplified) == 2, f"Expected 2 points, got {len(simplified)}"
+    assert simplified[0] == start
+    assert simplified[-1] == end
+    print("  PASS: A* direct path")
+
+
+def test_astar_avoids_obstacle():
+    """A* routes around an obstacle between source and target."""
+    start = _Pt(100, 25)
+    end = _Pt(300, 25)
+    # Obstacle at (150,0) size 100x50, inflated
+    obs = [_inflated_rect(150, 0, 100, 50, ARROW_CLEARANCE)]
+    path = _astar_orthogonal(start, end, obs, "right", "left")
+    simplified = _simplify_path(path)
+    # Must have waypoints (more than 2 points)
+    assert len(simplified) > 2, f"Expected waypoints, got {len(simplified)} points"
+    # No segment should cross the obstacle
+    for i in range(len(simplified) - 1):
+        a, b = simplified[i], simplified[i + 1]
+        assert not _segment_crosses_obstacle(a.x, a.y, b.x, b.y, obs), \
+            f"Segment ({a.x},{a.y})→({b.x},{b.y}) crosses obstacle"
+    print("  PASS: A* avoids obstacle")
+
+
+def test_simplify_removes_collinear():
+    """Collinear intermediate points are removed."""
+    path = [_Pt(0, 0), _Pt(50, 0), _Pt(100, 0), _Pt(100, 50)]
+    simplified = _simplify_path(path)
+    assert len(simplified) == 3, f"Expected 3 points, got {len(simplified)}: {simplified}"
+    assert simplified == [_Pt(0, 0), _Pt(100, 0), _Pt(100, 50)]
+    print("  PASS: simplify removes collinear")
+
+
 if __name__ == "__main__":
     tests = [
         test_vertical_stack_no_overflow,
@@ -778,6 +845,12 @@ if __name__ == "__main__":
         test_negative_constraint_rejected,
         test_hug_child_min_width_accounts_in_fill_distribution,
         test_separator_role_renders_dashed_line,
+        test_infer_sides_vertical,
+        test_infer_sides_horizontal,
+        test_segment_crosses_obstacle,
+        test_astar_direct_path,
+        test_astar_avoids_obstacle,
+        test_simplify_removes_collinear,
     ]
 
     passed = 0

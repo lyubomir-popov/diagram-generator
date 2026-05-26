@@ -1097,7 +1097,168 @@ def _render_frame(frame: Frame, fg: list, bg: list, bounds_map: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Arrow routing (reuses existing orthogonal router logic)
+# Arrow routing — obstacle-aware orthogonal router
+# ---------------------------------------------------------------------------
+#
+# Strategy: grid-based A* on orthogonal channels between boxes.
+#
+# 1. Collect obstacle rectangles from bounds_map (inflated by ARROW_CLEARANCE).
+# 2. Build a sparse set of candidate X and Y coordinates from obstacle edges,
+#    the start point, and the end point.
+# 3. A* search on the resulting grid graph, where each cell transition is
+#    blocked if the segment crosses an inflated obstacle.
+# 4. Simplify the resulting path (remove redundant collinear points).
+#
+# This replaces the naive midpoint router with ~200 lines of real routing.
+
+import heapq
+from typing import NamedTuple
+
+ARROW_CLEARANCE = 12  # px buffer around boxes for arrow paths
+
+
+class _Pt(NamedTuple):
+    x: float
+    y: float
+
+
+def _inflated_rect(x: float, y: float, w: float, h: float, margin: float):
+    """Return (x0, y0, x1, y1) inflated by margin."""
+    return (x - margin, y - margin, x + w + margin, y + h + margin)
+
+
+def _segment_crosses_obstacle(
+    ax: float, ay: float, bx: float, by: float,
+    obstacles: list[tuple[float, float, float, float]],
+) -> bool:
+    """Check if an axis-aligned segment (ax,ay)→(bx,by) crosses any obstacle interior."""
+    # Segment must be axis-aligned
+    if ax == bx:
+        # Vertical segment
+        x = ax
+        lo_y, hi_y = (min(ay, by), max(ay, by))
+        for ox0, oy0, ox1, oy1 in obstacles:
+            if ox0 < x < ox1 and oy0 < hi_y and oy1 > lo_y:
+                return True
+    elif ay == by:
+        # Horizontal segment
+        y = ay
+        lo_x, hi_x = (min(ax, bx), max(ax, bx))
+        for ox0, oy0, ox1, oy1 in obstacles:
+            if oy0 < y < oy1 and ox0 < hi_x and ox1 > lo_x:
+                return True
+    return False
+
+
+def _build_routing_grid(
+    start: _Pt, end: _Pt,
+    obstacles: list[tuple[float, float, float, float]],
+) -> tuple[list[float], list[float]]:
+    """Build sorted lists of candidate X and Y coordinates for routing grid."""
+    xs: set[float] = {start.x, end.x}
+    ys: set[float] = {start.y, end.y}
+    for x0, y0, x1, y1 in obstacles:
+        xs.update([x0, x1])
+        ys.update([y0, y1])
+    return sorted(xs), sorted(ys)
+
+
+def _astar_orthogonal(
+    start: _Pt, end: _Pt,
+    obstacles: list[tuple[float, float, float, float]],
+    src_side: str, tgt_side: str,
+) -> list[_Pt]:
+    """A* search on sparse orthogonal grid, returning waypoint list."""
+    xs, ys = _build_routing_grid(start, end, obstacles)
+
+    # Map coordinates to grid indices for fast lookup
+    xi = {x: i for i, x in enumerate(xs)}
+    yi = {y: i for i, y in enumerate(ys)}
+
+    if start.x not in xi or start.y not in yi or end.x not in xi or end.y not in yi:
+        # Fallback if start/end not on grid (shouldn't happen)
+        return [end]
+
+    start_node = (xi[start.x], yi[start.y])
+    end_node = (xi[end.x], yi[end.y])
+
+    # Direction vectors: right, left, down, up
+    dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+    # Priority queue: (f_score, counter, node, came_from_dir)
+    counter = 0
+    open_set: list[tuple[float, int, tuple[int, int], int | None]] = []
+    heapq.heappush(open_set, (0.0, counter, start_node, None))
+    counter += 1
+
+    g_score: dict[tuple[int, int], float] = {start_node: 0.0}
+    came_from: dict[tuple[int, int], tuple[int, int] | None] = {start_node: None}
+    came_dir: dict[tuple[int, int], int | None] = {start_node: None}
+
+    nx_max = len(xs) - 1
+    ny_max = len(ys) - 1
+
+    while open_set:
+        f, _, current, c_dir = heapq.heappop(open_set)
+
+        if current == end_node:
+            # Reconstruct path
+            path: list[_Pt] = []
+            node: tuple[int, int] | None = current
+            while node is not None:
+                path.append(_Pt(xs[node[0]], ys[node[1]]))
+                node = came_from.get(node)
+            path.reverse()
+            return path
+
+        cur_g = g_score[current]
+        cx, cy = current
+
+        for di, (ddx, ddy) in enumerate(dirs):
+            nx_i = cx + ddx
+            ny_i = cy + ddy
+            if nx_i < 0 or nx_i > nx_max or ny_i < 0 or ny_i > ny_max:
+                continue
+            neighbor = (nx_i, ny_i)
+
+            # Check segment for obstacle crossing
+            seg_ax, seg_ay = xs[cx], ys[cy]
+            seg_bx, seg_by = xs[nx_i], ys[ny_i]
+            if _segment_crosses_obstacle(seg_ax, seg_ay, seg_bx, seg_by, obstacles):
+                continue
+
+            seg_len = abs(seg_bx - seg_ax) + abs(seg_by - seg_ay)
+            # Bend penalty: changing direction costs extra to prefer fewer turns
+            bend_penalty = 0.0
+            if c_dir is not None and di != c_dir:
+                bend_penalty = 8.0
+
+            tentative_g = cur_g + seg_len + bend_penalty
+
+            if tentative_g < g_score.get(neighbor, float("inf")):
+                g_score[neighbor] = tentative_g
+                came_from[neighbor] = current
+                came_dir[neighbor] = di
+                h = abs(xs[nx_i] - end.x) + abs(ys[ny_i] - end.y)
+                heapq.heappush(open_set, (tentative_g + h, counter, neighbor, di))
+                counter += 1
+
+    # No path found — fall back to direct L-shape
+    return [_Pt(end.x, start.y), end]
+
+
+def _simplify_path(path: list[_Pt]) -> list[_Pt]:
+    """Remove collinear intermediate points from an orthogonal path."""
+    if len(path) <= 2:
+        return path
+    result = [path[0]]
+    for i in range(1, len(path) - 1):
+        prev, cur, nxt = path[i - 1], path[i], path[i + 1]
+        # Keep point if direction changes
+        if not ((prev.x == cur.x == nxt.x) or (prev.y == cur.y == nxt.y)):
+            result.append(cur)
+    result.append(path[-1])
+    return result
 # ---------------------------------------------------------------------------
 
 def _infer_sides(
@@ -1122,7 +1283,12 @@ def _infer_sides(
 
 
 def _route_arrows(arrows: list[Arrow], bounds_map: dict) -> list[ArrowPrimitive]:
-    """Route arrows using component bounds."""
+    """Route arrows using obstacle-aware orthogonal A* router."""
+    # Build obstacle list from all boxes (inflated for clearance)
+    obstacles = []
+    for bid, (bx, by, bw, bh) in bounds_map.items():
+        obstacles.append(_inflated_rect(bx, by, bw, bh, ARROW_CLEARANCE))
+
     result = []
     for arrow in arrows:
         src_id, src_side = _parse_ref(arrow.source)
@@ -1138,13 +1304,23 @@ def _route_arrows(arrows: list[Arrow], bounds_map: dict) -> list[ArrowPrimitive]
                 src_side = inferred_src
             if tgt_side is None:
                 tgt_side = inferred_tgt
-        start = _edge_point(sx, sy, sw, sh, src_side)
-        end = _edge_point(tx, ty, tw, th, tgt_side)
-        # Simple direct routing for now - orthogonal with midpoint
-        waypoints = _orthogonal_waypoints(start, end, src_side, tgt_side)
+        start = _Pt(*_edge_point(sx, sy, sw, sh, src_side))
+        end = _Pt(*_edge_point(tx, ty, tw, th, tgt_side))
+
+        # Exclude source and target boxes from obstacle set for this arrow
+        src_obs = _inflated_rect(sx, sy, sw, sh, ARROW_CLEARANCE)
+        tgt_obs = _inflated_rect(tx, ty, tw, th, ARROW_CLEARANCE)
+        arrow_obstacles = [o for o in obstacles if o != src_obs and o != tgt_obs]
+
+        path = _astar_orthogonal(start, end, arrow_obstacles, src_side, tgt_side)
+        path = _simplify_path(path)
+
+        # Extract waypoints (everything between start and end)
+        waypoints = [(p.x, p.y) for p in path[1:-1]] if len(path) > 2 else []
+
         prim = ArrowPrimitive(
-            start=start,
-            end=end,
+            start=(start.x, start.y),
+            end=(end.x, end.y),
             waypoints=waypoints,
             direction=tgt_side,
             component_id=f"{arrow.source}->{arrow.target}",
@@ -1179,32 +1355,6 @@ def _edge_point(x: float, y: float, w: float, h: float, side: str) -> tuple[floa
     elif side == "bottom":
         return (x + w / 2, y + h)
     return (x + w, y + h / 2)
-
-
-def _orthogonal_waypoints(
-    start: tuple[float, float],
-    end: tuple[float, float],
-    src_side: str,
-    tgt_side: str,
-) -> list[tuple[float, float]]:
-    """Compute orthogonal waypoints between two edge points."""
-    sx, sy = start
-    ex, ey = end
-    # Simple midpoint routing for horizontal connections
-    if src_side == "right" and tgt_side == "left":
-        mid_x = (sx + ex) / 2
-        return [(mid_x, sy), (mid_x, ey)]
-    elif src_side == "bottom" and tgt_side == "top":
-        mid_y = (sy + ey) / 2
-        return [(sx, mid_y), (ex, mid_y)]
-    elif src_side == "left" and tgt_side == "right":
-        mid_x = (sx + ex) / 2
-        return [(mid_x, sy), (mid_x, ey)]
-    elif src_side == "top" and tgt_side == "bottom":
-        mid_y = (sy + ey) / 2
-        return [(sx, mid_y), (ex, mid_y)]
-    # Default: L-shaped
-    return [(ex, sy)]
 
 
 # ---------------------------------------------------------------------------
