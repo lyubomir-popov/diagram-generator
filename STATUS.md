@@ -18,7 +18,7 @@ Several paths below refer to locally generated or team-internal assets that are 
 
 There are now **three diagram generation pipelines**. Pipeline 3 (v3 frame engine) is the active development surface. On a cold start, ask the user which pipeline to work on if unclear.
 
-**Active focus (2026-05-27):** Component model unification (Roadmap Stage 10a). Phase 1 (type-agnostic selection) complete. Phase 2 (heading-as-child) implemented. Phase 2b (dead heading code cleanup + TS port) complete — all heading special-casing removed from both Python and TS engines, `clampToConstraints` added to TS leaf measure for min_height parity. 191 Python + 175 TS tests pass.
+**Active focus (2026-05-27):** Arrow routing overhauled — A*-based obstacle-aware orthogonal router replaces naive midpoint router. fill_weight grid-column snapping implemented. Component model Phase 2b complete. 200 Python + 175 TS tests pass. Arrow routing and grid snap are Python-only (TS parity deferred).
 
 ### Pipeline 1: imperative (original v1 batch)
 
