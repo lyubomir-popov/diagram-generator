@@ -943,14 +943,18 @@ def place(frame: Frame, x: float, y: float, available_w: float, available_h: flo
 
     # Grid-column snapping: when grid info is available and we're distributing
     # horizontally, snap FILL widths to integer column spans.
+    # Only snap when the container's own gap matches the grid col_gap — nested
+    # containers with different gaps (e.g. services__body with gap=8 inside a
+    # grid with col_gap=32) should use normal fill distribution, not grid snap.
     if grid_snap and frame.direction == Direction.HORIZONTAL and fill_sizes:
         col_w, col_gap_g, total_cols = grid_snap
-        # Only snap when fill_weights are explicitly set (not all default 1)
-        has_explicit_weights = any(w != 1.0 for w in fill_weights)
-        if has_explicit_weights or len(fill_sizes) > 1:
-            fill_sizes = _snap_fills_to_grid_columns(
-                fill_sizes, fill_weights, col_w, col_gap_g, total_cols,
-            )
+        gap_matches_grid = (frame.gap == col_gap_g)
+        if gap_matches_grid:
+            has_explicit_weights = any(w != 1.0 for w in fill_weights)
+            if has_explicit_weights or len(fill_sizes) > 1:
+                fill_sizes = _snap_fills_to_grid_columns(
+                    fill_sizes, fill_weights, col_w, col_gap_g, total_cols,
+                )
 
     total_fill_placed = sum(fill_sizes)
     content_main = hug_total + total_fill_placed + total_gap
