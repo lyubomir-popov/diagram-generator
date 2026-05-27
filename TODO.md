@@ -60,6 +60,12 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
+### Forward ontology – build pipeline integration
+
+- [x] `[S]` **Wire `svg_meta()` into the build pipeline.** `build_v2.py` and `build_outputs.py` should pass `diagram.svg_meta()` to `render_svg()` / `write_svg()` so generated SVGs carry metadata automatically. DONE 2026-05-27.
+- [x] `[S]` **Add meta validation in `frame_loader.py`.** Warn on unknown `diagram_type` or `abstraction_level` values. Allowed values should come from the JSON schema enum in `docs/diagram-schema.json`. DONE 2026-05-27.
+- [ ] `[M]` **After ontology-to-layout mapping lands, use `diagram_type` + `layout_engine` to auto-select the engine.** Depends on the mapping layer from `diagram-generator-planning`.
+
 ### Client-side layout engine — TypeScript port (COMPLETE)
 
 TS port milestones M1–M6 done. See HISTORY.md for detailed entries. Remaining post-port items:

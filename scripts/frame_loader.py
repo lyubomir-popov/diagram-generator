@@ -207,6 +207,36 @@ def _parse_arrow(data: dict) -> Arrow:
     )
 
 
+# Allowed meta field values (from docs/diagram-schema.json)
+_META_ENUMS: dict[str, set[str]] = {
+    "diagram_type": {
+        "system_architecture", "infrastructure_and_network_topology",
+        "layered_stack", "interaction_and_sequence",
+        "process_and_workflow", "data_flow_and_integration",
+        "state_and_lifecycle", "data_model_and_relationships",
+    },
+    "abstraction_level": {"context", "container", "component", "code"},
+    "layout_engine": {
+        "elk-layered", "elk-force", "vertical-stack",
+        "sequence", "state-machine", "grid-matrix",
+    },
+    "presentation_form": {"matrix", "swimlane", "tree"},
+}
+
+
+def _validate_meta(meta: dict, source: str) -> None:
+    """Warn on unknown meta field names or values."""
+    import warnings
+    for key, value in meta.items():
+        if key not in _META_ENUMS:
+            warnings.warn(f"{source}: unknown meta field '{key}'")
+        elif value not in _META_ENUMS[key]:
+            warnings.warn(
+                f"{source}: meta.{key} = '{value}' is not a recognised value "
+                f"(expected one of: {', '.join(sorted(_META_ENUMS[key]))})"
+            )
+
+
 def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:
     """Load a native Frame YAML file into a FrameDiagram.
 
@@ -226,6 +256,7 @@ def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:
 
     # Ontology metadata (optional)
     meta = data.get("meta", {}) if isinstance(data.get("meta"), dict) else {}
+    _validate_meta(meta, str(p))
 
     return FrameDiagram(
         title=data.get("title", ""),

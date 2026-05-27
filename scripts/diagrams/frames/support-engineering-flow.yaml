@@ -1,5 +1,8 @@
 engine: v3
 title: "Support engineering flow"
+meta:
+  diagram_type: process_and_workflow
+  abstraction_level: container
 grid:
   cols: 5
   col_gap: 24

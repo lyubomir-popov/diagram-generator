@@ -297,3 +297,48 @@ def test_svg_meta_returns_none_when_all_fields_empty():
 
     d = FrameDiagram()
     assert d.svg_meta() is None
+
+
+def test_meta_unknown_field_warns(tmp_path):
+    import warnings
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        _load(
+            tmp_path,
+            """
+engine: v3
+meta:
+  diagram_type: system_architecture
+  bogus_field: hello
+root:
+  id: root
+  children:
+    - id: child
+      label:
+        - Hello
+""",
+        )
+    assert any("unknown meta field 'bogus_field'" in str(x.message) for x in w)
+
+
+def test_meta_unknown_value_warns(tmp_path):
+    import warnings
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        _load(
+            tmp_path,
+            """
+engine: v3
+meta:
+  diagram_type: not_a_real_type
+root:
+  id: root
+  children:
+    - id: child
+      label:
+        - Hello
+""",
+        )
+    assert any("not a recognised value" in str(x.message) for x in w)

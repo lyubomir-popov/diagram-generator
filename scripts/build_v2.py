@@ -19,6 +19,7 @@ from diagram_render_svg import write_svg
 from diagram_render_drawio import write_drawio
 from diagram_shared import SVG_DIR, DRAWIO_DIR, cleanup_legacy_output_root_svgs
 from frame_adapter import diagram_to_frame
+from frame_loader import load_frame_yaml
 from layout_v3 import layout_frame_diagram
 
 
@@ -80,6 +81,26 @@ def _load_diagrams() -> list[tuple[str, object]]:
     return diagrams
 
 
+def _load_frame_diagrams() -> list[tuple[str, object]]:
+    """Load v3 frame YAML definitions from scripts/diagrams/frames/.
+
+    Skips files whose stem starts with ``test-`` (test fixtures).
+    """
+    frames = []
+    frames_dir = pathlib.Path(__file__).parent / "diagrams" / "frames"
+    if frames_dir.is_dir():
+        for p in sorted(frames_dir.iterdir()):
+            if p.suffix in (".yaml", ".yml") and not p.stem.startswith("test-"):
+                slug = p.stem
+                if not slug.endswith("-onbrand"):
+                    slug += "-onbrand"
+                try:
+                    frames.append((slug, load_frame_yaml(p)))
+                except Exception as exc:
+                    print(f"  {slug}: skipped ({exc})")
+    return frames
+
+
 def main() -> None:
     emit_grid = "--grid" in sys.argv
     use_v3 = "--engine" in sys.argv and "v3" in sys.argv
@@ -102,17 +123,37 @@ def main() -> None:
     total_arrow_crossings = 0
     total_grid_violations = 0
     diagrams = _load_diagrams()
+
+    # Build a list of (slug, result, meta_dict, title) for uniform output
+    built: list[tuple[str, object, dict | None, str]] = []
+
     for slug, diagram in diagrams:
         if use_v3:
             frame_diagram = diagram_to_frame(diagram)
             result = layout_frame_diagram(frame_diagram)
+            meta = frame_diagram.svg_meta()
         else:
             result = layout(diagram)
+            meta = None
+        built.append((slug, result, meta, diagram.title))
+
+    # v3 frame YAML definitions (only when building with v3 engine)
+    if use_v3:
+        v2_slugs = {s for s, _ in diagrams}
+        for slug, frame_diagram in _load_frame_diagrams():
+            if slug in v2_slugs:
+                print(f"  {slug}: skipped (collides with v2 definition)")
+                continue
+            result = layout_frame_diagram(frame_diagram)
+            meta = frame_diagram.svg_meta()
+            built.append((slug, result, meta, frame_diagram.title or slug))
+
+    for slug, result, meta, title in built:
         suffix = "-v3" if use_v3 else "-v2"
         svg_path = out_svg / f"{slug}{suffix}.svg"
         drawio_path = out_drawio / f"{slug}{suffix}.drawio"
-        write_svg(svg_path, result)
-        write_drawio(drawio_path, result, name=diagram.title)
+        write_svg(svg_path, result, meta=meta)
+        write_drawio(drawio_path, result, name=title)
 
         # Grid overlay SVG
         if emit_grid:
