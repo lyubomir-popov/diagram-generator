@@ -15,7 +15,7 @@ import pathlib
 import yaml
 
 from diagram_model import Arrow, Border, Fill, Line
-from frame_model import Align, Direction, Frame, FrameDiagram, Justify, Sizing
+from frame_model import Align, Direction, Frame, FrameDiagram, Justify, Overlay, Sizing
 from diagram_shared import ICON_SIZE, INSET
 
 # ── Enum maps (lowercase YAML strings → Python enums) ──────────────
@@ -54,8 +54,52 @@ def _parse_line(raw) -> Line:
     return Line(str(raw))
 
 
+# ── Variant overlays ────────────────────────────────────────────────
+#
+# Variants are visual treatments applied to any box (leaf or parent).
+# They merge UNDER explicit YAML — explicit keys always win.
+#
+# The engine already auto-detects leaf vs parent from the presence of
+# children and applies the correct defaults (leaf: solid border, white
+# fill; parent: no border, grey fill, bold heading).  Variants only
+# override color, not structure or font weight.
+#
+#   highlight  — black fill, white text/icon.  Applies to leaf or parent.
+#   annotation — borderless leaf.  Same padding and text as a regular
+#                leaf, just no visible border or fill.
+
+_VARIANT_OVERLAYS: dict[str, dict] = {
+    "highlight": {
+        "fill": "black",
+        "icon_fill": "#FFFFFF",
+    },
+    "annotation": {
+        "border": "none",
+    },
+}
+
+
+def _apply_variant(data: dict) -> dict:
+    """Merge variant overlay under explicit YAML fields.
+
+    Returns a new dict with variant defaults filled in.  Explicit YAML
+    keys always take priority over variant values.
+    """
+    variant = data.get("variant")
+    if not variant or variant not in _VARIANT_OVERLAYS:
+        return data
+
+    merged = dict(_VARIANT_OVERLAYS[variant])
+    merged.update(data)
+    return merged
+
+
 def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
     """Recursively parse a Frame dict from YAML.
+
+    Variants (``variant: highlight``, ``variant: annotation``) apply
+    visual overlays that can be overridden by explicit YAML keys.
+    The engine auto-detects leaf vs parent from children.
 
     Sizing accepts three forms:
       sizing: fill           → sets both sizing_w and sizing_h
@@ -67,6 +111,8 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
       padding: 8             → sets all four sides
       padding_top/right/bottom/left: N  → per-side overrides
     """
+    # Apply variant overlay before parsing
+    data = _apply_variant(data)
     children_data = data.get("children", [])
     children = [_parse_frame(c) for c in children_data]
     is_container = len(children) > 0
@@ -112,10 +158,10 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
     if "height" in data and "sizing_h" not in data and "sizing" not in data:
         sizing_h = Sizing.FIXED
 
-    # Padding: default is 8 for bordered nodes, 0 for borderless containers.
-    # Borderless wrappers are pure layout groups — padding would misalign
-    # their children relative to siblings at the same nesting level.
-    default_padding = 0 if (is_container and border == Border.NONE) else 8
+    # Padding: default is 8 for bordered nodes and containers with headings,
+    # 0 for borderless containers without headings (pure layout wrappers).
+    has_heading = "heading" in data
+    default_padding = 0 if (is_container and border == Border.NONE and not has_heading) else 8
     uniform_padding = int(data.get("padding", default_padding))
     pad_t = int(data["padding_top"]) if "padding_top" in data else None
     pad_r = int(data["padding_right"]) if "padding_right" in data else None
@@ -134,6 +180,7 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
         sizing_w=sizing_w,
         sizing_h=sizing_h,
         fill_weight=float(data.get("fill_weight", 1)),
+        col_span=int(data["col_span"]) if "col_span" in data else None,
         align=_ALIGN.get(data.get("align", "top-left"), Align.TOP_LEFT),
         justify=_JUSTIFY.get(data.get("justify", "packed"), Justify.PACKED),
         wrap=bool(data.get("wrap", False)),
@@ -161,6 +208,10 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
     # role="heading".  For horizontal containers the existing children are
     # wrapped in a ``__body`` sub-frame so the heading spans the full width.
     if heading_line and frame.is_container:
+        heading_fill = frame.fill if frame.fill == Fill.BLACK else Fill.WHITE
+        heading_icon_fill = data.get("icon_fill")
+        if frame.fill == Fill.BLACK and not heading_icon_fill:
+            heading_icon_fill = "#FFFFFF"
         heading_child = Frame(
             id=f"{frame.id}__heading" if frame.id else "__heading",
             role="heading",
@@ -168,10 +219,11 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
             sizing_h=Sizing.HUG,
             min_height=ICON_SIZE + INSET,
             border=Border.NONE,
+            fill=heading_fill,
             padding=INSET,
             label=[heading_line],
             icon=data.get("icon"),
-            icon_fill=data.get("icon_fill"),
+            icon_fill=heading_icon_fill,
         )
         if frame.direction == Direction.HORIZONTAL:
             # Wrap original children in a body sub-frame that preserves the
@@ -204,6 +256,15 @@ def _parse_arrow(data: dict) -> Arrow:
         source=data.get("source", ""),
         target=data.get("target", ""),
         label=data.get("label"),
+    )
+
+
+def _parse_overlay(data: dict) -> Overlay:
+    """Parse an overlay (cross-cutting visual group) from YAML."""
+    return Overlay(
+        id=data.get("id", ""),
+        label=data.get("label", ""),
+        members=list(data.get("members", [])),
     )
 
 
@@ -252,6 +313,7 @@ def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:
     root = _parse_frame(root_data, is_root=True)
 
     arrows = [_parse_arrow(a) for a in data.get("arrows", [])]
+    overlays = [_parse_overlay(o) for o in data.get("overlays", [])]
     grid = data.get("grid", {}) if isinstance(data.get("grid", {}), dict) else {}
 
     # Ontology metadata (optional)
@@ -262,6 +324,7 @@ def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:
         title=data.get("title", ""),
         root=root,
         arrows=arrows,
+        overlays=overlays,
         grid_cols=int(grid.get("cols", 2)),
         grid_col_gap=int(grid["col_gap"]) if "col_gap" in grid else None,
         grid_row_gap=int(grid["row_gap"]) if "row_gap" in grid else None,

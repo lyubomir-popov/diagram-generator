@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from frame_loader import load_frame_yaml
 from frame_model import Sizing
+from diagram_model import Border, Fill
 from diagram_model import Border
 
 
@@ -342,3 +343,236 @@ root:
 """,
         )
     assert any("not a recognised value" in str(x.message) for x in w)
+
+
+# ── Variant overlays ───────────────────────────────────────────────
+
+
+def test_variant_highlight_sets_black_fill(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: page
+  children:
+    - id: a
+      variant: highlight
+      label: [Hello]
+""",
+    )
+    a = diagram.root.children[0]
+    assert a.fill == Fill.BLACK
+    assert a.icon_fill == "#FFFFFF"
+
+
+def test_variant_annotation_removes_border(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: page
+  children:
+    - id: note
+      variant: annotation
+      label: [Some note]
+""",
+    )
+    note = diagram.root.children[0]
+    assert note.border == Border.NONE
+
+
+def test_explicit_yaml_overrides_variant(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: page
+  children:
+    - id: a
+      variant: highlight
+      fill: grey
+      label: [Hello]
+""",
+    )
+    a = diagram.root.children[0]
+    assert a.fill == Fill.GREY  # explicit override wins over variant
+
+
+def test_no_variant_works_as_before(tmp_path):
+    """Existing raw YAMLs without variant: continue to work unchanged."""
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: page
+  children:
+    - id: a
+      border: solid
+      fill: grey
+      label: [Hello]
+""",
+    )
+    a = diagram.root.children[0]
+    assert a.border == Border.SOLID
+    assert a.fill == Fill.GREY
+
+
+# ── Column span ─────────────────────────────────────────────────────
+
+
+def test_col_span_parsed_into_frame(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+grid:
+  cols: 3
+  col_gap: 24
+  outer_margin: 24
+root:
+  id: page
+  direction: horizontal
+  children:
+    - id: a
+      col_span: 2
+      label: [Wide]
+    - id: b
+      label: [Narrow]
+""",
+    )
+    a = diagram.root.children[0]
+    assert a.col_span == 2
+
+
+def test_col_span_resolves_to_fixed_width(tmp_path):
+    from layout_v3 import layout_frame_diagram
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+grid:
+  cols: 4
+  col_gap: 24
+  outer_margin: 24
+root:
+  id: page
+  direction: horizontal
+  padding: 24
+  children:
+    - id: wide
+      col_span: 2
+      label: [Wide box]
+    - id: narrow
+      label: [Narrow]
+""",
+    )
+    result = layout_frame_diagram(diagram)
+    wide = diagram.root.children[0]
+    assert wide.sizing_w == Sizing.FIXED
+    # col_span=2 means 2*col_w + 1*col_gap
+    assert wide.width is not None
+    assert wide.width > 0
+
+
+def test_highlighted_section_heading_inherits_black_fill(tmp_path):
+    """variant: highlight on a parent propagates fill to the heading child."""
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: page
+  children:
+    - id: panel
+      variant: highlight
+      heading: Services
+      children:
+        - id: b
+          label: [Hello]
+""",
+    )
+    panel = diagram.root.children[0]
+    assert panel.fill == Fill.BLACK
+    # The synthetic heading child should also be black
+    heading_child = panel.children[0]
+    assert heading_child.role == "heading"
+    assert heading_child.fill == Fill.BLACK
+    assert heading_child.icon_fill == "#FFFFFF"
+
+
+# ── Overlays ────────────────────────────────────────────────────────
+
+
+def test_overlays_parsed_from_yaml(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+overlays:
+  - id: devteam
+    label: "Dev team"
+    members: [a, b]
+root:
+  id: page
+  direction: horizontal
+  children:
+    - id: a
+      label: [Alice]
+    - id: b
+      label: [Bob]
+""",
+    )
+    assert len(diagram.overlays) == 1
+    ov = diagram.overlays[0]
+    assert ov.id == "devteam"
+    assert ov.label == "Dev team"
+    assert ov.members == ["a", "b"]
+
+
+def test_overlay_renders_bounding_rect(tmp_path):
+    from layout_v3 import layout_frame_diagram
+    from diagram_layout import Rect
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+overlays:
+  - id: team
+    label: "Team"
+    members: [a, b]
+root:
+  id: page
+  direction: horizontal
+  children:
+    - id: a
+      label: [Alice]
+    - id: b
+      label: [Bob]
+    - id: c
+      label: [Charlie]
+""",
+    )
+    result = layout_frame_diagram(diagram)
+    overlay_rects = [p for p in result.foreground if isinstance(p, Rect) and p.stroke_dasharray]
+    assert len(overlay_rects) == 1
+    assert overlay_rects[0].component_id == "team"
+    assert overlay_rects[0].stroke_dasharray == "2 4"
+
+
+def test_no_overlays_when_absent(tmp_path):
+    diagram = _load(
+        tmp_path,
+        """
+engine: v3
+root:
+  id: page
+  children:
+    - id: a
+      label: [Hello]
+""",
+    )
+    assert diagram.overlays == []

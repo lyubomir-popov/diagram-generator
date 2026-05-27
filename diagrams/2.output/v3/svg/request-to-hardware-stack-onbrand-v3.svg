@@ -1,21 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1056" height="904" viewBox="0 0 1056 904" xml:space="preserve">
-  <rect width="1056" height="904" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="1056" height="632" viewBox="0 0 1056 632" xml:space="preserve">
+  <rect width="1056" height="632" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="1056" height="632" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="user">
-  <rect x="24" y="24" width="1008" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="24" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#000000">User request</tspan>
   </text>
-  <g class="dg-icon" transform="translate(976 32)">
+  <g class="dg-icon" transform="translate(160 32)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M27.1855 10C32.1958 10 36.2166 13.9999 36.2168 18.9229L36.2109 19.1426C36.1874 19.6524 36.0941 20.1474 36.0928 20.1543C41.0412 20.2158 45 24.1541 45 29.0771L44.9883 29.5361C44.7475 34.2463 40.8223 38 35.9688 38H12.0312L11.5645 37.9883C6.9281 37.7568 3.24476 34.0945 3.01172 29.5361L3 29.0771C3.00003 24.9541 5.78376 21.3518 9.86621 20.4287V18.9844C9.86638 15.9076 12.4024 13.4463 15.4951 13.4463L15.749 13.4521C17.0168 13.5096 18.2202 13.996 19.2061 14.8613C20.7525 11.9076 23.8454 10 27.1855 10ZM27.1855 11C24.2244 11 21.4689 12.6948 20.0918 15.3252L19.502 16.4521L18.5469 15.6133C17.674 14.8471 16.608 14.4464 15.4951 14.4463C12.9354 14.4463 10.8664 16.479 10.8662 18.9844V21.2275L10.0869 21.4033C6.47196 22.2207 4.00003 25.4093 4 29.0771C4.00012 33.4385 7.56395 37 12.0312 37H35.9688C40.4361 37 43.9999 33.4385 44 29.0771C44 24.7135 40.4931 21.2082 36.0801 21.1533L34.8877 21.1387L35.1104 19.9668V19.9648C35.1109 19.9617 35.1119 19.9557 35.1133 19.9482C35.116 19.9332 35.121 19.91 35.126 19.8799C35.1361 19.8188 35.1493 19.7305 35.1631 19.626C35.1914 19.4107 35.2168 19.151 35.2168 18.9229C35.2166 14.5615 31.6528 11 27.1855 11Z" fill="#000000" />
 
   </g>
   </g>
   <g data-component-id="orch">
-  <rect x="24" y="112" width="1008" height="144" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="32" y="136.92" font-size="18" font-weight="700" fill="#000000">Orchestration layer</tspan>
-  </text>
-  <g class="dg-icon" transform="translate(976 120)">
+  <rect x="24" y="112" width="608" height="80" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <g class="dg-icon" transform="translate(576 120)">
 <path d="M33.1848 19.803L24.4993 24.6477V34.5657L24.0002 34.8518L23.4993 34.5647V24.6477L14.8147 19.804L15.2102 18.8792L23.9993 23.7805L32.7874 18.8792L33.1848 19.803Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M41.4845 13.9658C41.8027 14.1419 42.0002 14.477 42.0002 14.8407V33.5866C42.0002 33.9503 41.8027 34.2853 41.4845 34.4615L24.4845 43.8709C24.1832 44.0377 23.8173 44.0377 23.516 43.8709L6.51598 34.4615C6.19774 34.2853 6.00024 33.9503 6.00024 33.5866V14.8407C6.00024 14.477 6.19776 14.1419 6.51602 13.9658L23.516 4.5573C23.8173 4.39055 24.1832 4.39055 24.4845 4.5573L41.4845 13.9658ZM7.47388 14.5657L14.1897 18.3108C13.9578 18.4437 13.8147 18.6905 13.8147 18.9578V19.2463L6.99048 15.4397V33.592L23.4993 42.7297V35.717L23.5032 35.72C23.8107 35.8958 24.189 35.896 24.4963 35.72L24.4993 35.718V42.7307L41.01 33.592V15.4397L34.1848 19.2454V18.96C34.1848 18.6914 34.041 18.4433 33.8079 18.3098L40.5237 14.5647L24.0002 5.42017L7.47388 14.5657Z" fill="#000000" />
@@ -24,25 +24,22 @@
 
   </g>
   </g>
-  <rect x="32" y="184" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="120" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="208.92" font-size="18" font-weight="400" fill="#000000">Ollama</tspan>
+    <tspan x="40" y="144.92" font-size="18" font-weight="400" fill="#000000">Ollama</tspan>
   </text>
-  <rect x="232" y="184" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="232" y="120" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="240" y="208.92" font-size="18" font-weight="400" fill="#000000">Lemonade</tspan>
-    <tspan x="240" y="232.92" font-size="18" font-weight="400" fill="#000000">Server</tspan>
+    <tspan x="240" y="144.92" font-size="18" font-weight="400" fill="#000000">Lemonade</tspan>
+    <tspan x="240" y="168.92" font-size="18" font-weight="400" fill="#000000">Server</tspan>
   </text>
-  <rect x="432" y="184" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="432" y="120" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="440" y="208.92" font-size="18" font-weight="400" fill="#000000">vLLM</tspan>
+    <tspan x="440" y="144.92" font-size="18" font-weight="400" fill="#000000">vLLM</tspan>
   </text>
   <g data-component-id="runtime">
-  <rect x="24" y="280" width="1008" height="144" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="32" y="304.92" font-size="18" font-weight="700" fill="#000000">Model runtime</tspan>
-  </text>
-  <g class="dg-icon" transform="translate(976 288)">
+  <rect x="24" y="216" width="1008" height="80" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <g class="dg-icon" transform="translate(976 224)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30.1585 29.5527C31.5389 29.553 32.6585 30.6722 32.6585 32.0527C32.6584 33.4332 31.5389 34.5525 30.1585 34.5527C28.7778 34.5527 27.6585 33.4334 27.6585 32.0527C27.6585 30.672 28.7778 29.5527 30.1585 29.5527ZM30.1585 30.5527C29.33 30.5527 28.6585 31.2243 28.6585 32.0527C28.6585 32.8811 29.3301 33.5527 30.1585 33.5527C30.9866 33.5525 31.6584 32.8809 31.6585 32.0527C31.6585 31.2245 30.9867 30.553 30.1585 30.5527Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M16.8948 20.0791C18.2755 20.0791 19.3948 21.1984 19.3948 22.5791C19.3947 23.9597 18.2755 25.0791 16.8948 25.0791C15.5141 25.0791 14.3949 23.9597 14.3948 22.5791C14.3948 21.1984 15.5141 20.0791 16.8948 20.0791ZM16.8948 21.0791C16.0664 21.0791 15.3948 21.7507 15.3948 22.5791C15.3949 23.4075 16.0664 24.0791 16.8948 24.0791C17.7232 24.0791 18.3947 23.4075 18.3948 22.5791C18.3948 21.7507 17.7232 21.0791 16.8948 21.0791Z" fill="#000000" />
@@ -53,81 +50,72 @@
 
   </g>
   </g>
-  <rect x="32" y="352" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="224" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="376.92" font-size="18" font-weight="400" fill="#000000">llama.cpp</tspan>
+    <tspan x="40" y="248.92" font-size="18" font-weight="400" fill="#000000">llama.cpp</tspan>
   </text>
-  <rect x="232" y="352" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="232" y="224" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="240" y="376.92" font-size="18" font-weight="400" fill="#000000">OpenVINO</tspan>
+    <tspan x="240" y="248.92" font-size="18" font-weight="400" fill="#000000">OpenVINO</tspan>
   </text>
-  <rect x="432" y="352" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="432" y="224" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="440" y="376.92" font-size="18" font-weight="400" fill="#000000">vLLM</tspan>
+    <tspan x="440" y="248.92" font-size="18" font-weight="400" fill="#000000">vLLM</tspan>
   </text>
-  <rect x="632" y="352" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="632" y="224" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="640" y="376.92" font-size="18" font-weight="400" fill="#000000">TensorRT-</tspan>
-    <tspan x="640" y="400.92" font-size="18" font-weight="400" fill="#000000">LLM</tspan>
+    <tspan x="640" y="248.92" font-size="18" font-weight="400" fill="#000000">TensorRT-</tspan>
+    <tspan x="640" y="272.92" font-size="18" font-weight="400" fill="#000000">LLM</tspan>
   </text>
-  <rect x="832" y="352" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="832" y="224" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="840" y="376.92" font-size="18" font-weight="400" fill="#000000">ONNX Runtime</tspan>
+    <tspan x="840" y="248.92" font-size="18" font-weight="400" fill="#000000">ONNX Runtime</tspan>
   </text>
   <g data-component-id="kernel">
-  <rect x="24" y="448" width="1008" height="120" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="32" y="472.92" font-size="18" font-weight="700" fill="#000000">Compute kernel</tspan>
-  </text>
-  <g class="dg-icon" transform="translate(976 456)">
+  <rect x="24" y="320" width="808" height="80" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <g class="dg-icon" transform="translate(776 328)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 5.5C27.1471 5.5 30.1115 6.2877 32.707 7.6748C32.857 7.74682 33.0057 7.82312 33.1514 7.90723C34.4287 8.64487 35.3834 9.76487 36.0352 11.1475C36.7654 12.64 37.1302 14.3839 37.0967 16.0801C37.099 16.1631 37.1044 16.2464 37.1055 16.3301C37.1055 16.3361 37.1091 16.3425 37.1143 16.3457C37.2236 16.4106 37.3298 16.4792 37.4365 16.5459C37.4608 16.5611 37.4853 16.5763 37.5098 16.5918C39.0601 17.5722 40.3262 18.7352 41.1855 20.0371C41.9568 21.1715 42.5 22.5061 42.5 24C42.5 34.2173 34.2173 42.5 24 42.5C13.7827 42.5 5.5 34.2173 5.5 24C5.5 13.7827 13.7827 5.5 24 5.5ZM24 6.5C14.335 6.5 6.5 14.335 6.5 24C6.5 33.665 14.335 41.5 24 41.5C32.2124 41.5 39.1014 35.8426 40.9873 28.2129C40.3944 29.0405 39.6396 29.8112 38.75 30.5068C36.4856 32.2774 33.3267 33.6139 29.6904 34.3115C29.6579 34.3208 29.626 34.3263 29.5957 34.3291C28.0189 34.6262 26.3496 34.8079 24.6191 34.8486L23.8682 34.8574C18.8708 34.8574 14.3179 33.7079 10.9717 31.8223C10.7698 31.7426 10.6286 31.5459 10.6299 31.3174L10.6494 30.5859C10.8181 26.8905 12.0928 22.6344 14.4521 18.5479L14.9355 17.7383C17.3973 13.747 20.5128 10.6446 23.6523 8.82227C25.2605 7.88883 26.8981 7.28042 28.4658 7.0752C27.0404 6.70018 25.5437 6.5 24 6.5ZM32.2383 8.55762C30.0271 7.51835 27.1498 7.94786 24.1543 9.68652C21.1805 11.4126 18.1767 14.387 15.7871 18.2607L15.3174 19.0479C12.9334 23.1771 11.7163 27.4467 11.6367 31.0459C14.7936 32.7769 19.0998 33.8574 23.8682 33.8574L24.5957 33.8486C26.2843 33.8089 27.911 33.6316 29.4443 33.3408C29.4481 33.3401 29.4521 33.3395 29.4561 33.3389C29.4594 33.3381 29.4627 33.3375 29.4658 33.3369L30.123 33.2031C33.3754 32.5006 36.1484 31.2712 38.1338 29.7188C40.253 28.0617 41.4336 26.0743 41.4336 23.9844C41.4336 22.7958 41.0503 21.6388 40.3311 20.5576C40.1338 20.2713 39.9184 19.9953 39.6885 19.7314C38.6387 18.5267 37.3324 17.6029 36.332 17.0527L36.0508 16.8984L36.0742 16.5781C36.0864 16.413 36.0929 16.2475 36.0967 16.082C36.0472 14.363 35.7254 12.8469 35.1445 11.6045C34.5515 10.3891 33.7017 9.38209 32.6445 8.78027C32.5104 8.70393 32.3746 8.63048 32.2383 8.55762Z" fill="#000000" />
 
 <path d="M21.8291 21.455C23.606 18.3772 26.0951 16.6803 28.0322 17.1171C31.5034 17.5866 32.75 21.3823 32.75 23.5497C32.7497 25.4018 30.6556 26.9717 27.7529 27.5243V27.5253C27.7517 27.5253 27.7502 27.5252 27.749 27.5253C27.0279 27.6623 26.2572 27.7372 25.4561 27.7372C23.4568 27.7372 21.6457 27.2752 20.3281 26.5272C20.3231 26.5262 20.3176 26.5253 20.3125 26.5243C20.3185 25.0045 20.8244 23.1951 21.8291 21.455Z" fill="#000000" />
 
   </g>
   </g>
-  <rect x="32" y="520" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="328" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="544.92" font-size="18" font-weight="400" fill="#000000">CUDA</tspan>
+    <tspan x="40" y="352.92" font-size="18" font-weight="400" fill="#000000">CUDA</tspan>
   </text>
-  <rect x="232" y="520" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="232" y="328" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="240" y="544.92" font-size="18" font-weight="400" fill="#000000">ROCm</tspan>
+    <tspan x="240" y="352.92" font-size="18" font-weight="400" fill="#000000">ROCm</tspan>
   </text>
-  <rect x="432" y="520" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="432" y="328" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="440" y="544.92" font-size="18" font-weight="400" fill="#000000">Metal</tspan>
+    <tspan x="440" y="352.92" font-size="18" font-weight="400" fill="#000000">Metal</tspan>
   </text>
-  <rect x="632" y="520" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="632" y="328" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="640" y="544.92" font-size="18" font-weight="400" fill="#000000">oneDNN</tspan>
+    <tspan x="640" y="352.92" font-size="18" font-weight="400" fill="#000000">oneDNN</tspan>
   </text>
   <g data-component-id="driver">
-  <rect x="24" y="592" width="1008" height="120" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="32" y="616.92" font-size="18" font-weight="700" fill="#000000">Driver</tspan>
-  </text>
-  <g class="dg-icon" transform="translate(976 600)">
+  <rect x="24" y="424" width="408" height="80" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <g class="dg-icon" transform="translate(376 432)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M12.789 7.83005C14.4743 7.08293 16.3386 6.83255 18.1611 7.10934C19.9836 7.38622 21.6898 8.17868 23.0771 9.39255C24.4644 10.6065 25.4758 12.1923 25.9922 13.9619C26.4804 15.6354 26.5049 17.4076 26.0693 19.0918L40.5361 33.5595C40.8331 33.8618 40.9999 34.2686 41 34.6924C40.9999 35.1161 40.8331 35.5229 40.5361 35.8252L35.8252 40.5361C35.5229 40.8331 35.1161 40.9999 34.6924 41C34.2686 40.9999 33.8618 40.8331 33.5595 40.5361L19.0918 26.0693C17.4076 26.5049 15.6354 26.4804 13.9619 25.9922C12.1923 25.4758 10.6065 24.4644 9.39255 23.0771C8.17868 21.6898 7.38622 19.9836 7.10934 18.1611C6.83255 16.3386 7.08293 14.4743 7.83005 12.789L8.12399 12.1259L13.8877 17.8466L17.8466 13.8877L12.1259 8.12399L12.789 7.83005ZM18.0107 8.0986C16.6207 7.88751 15.204 8.0185 13.8818 8.47458L19.2588 13.8906L13.8906 19.2588L8.47458 13.8818C8.0185 15.204 7.88751 16.6207 8.0986 18.0107C8.34684 19.6447 9.05717 21.1741 10.1455 22.4179C11.2339 23.6618 12.6555 24.5692 14.2422 25.0322C15.8287 25.495 17.5151 25.4945 19.1015 25.0312L19.3857 24.9482L19.5947 25.1582L34.2636 39.8261C34.3785 39.9374 34.5323 39.9999 34.6924 40C34.8538 39.9999 35.0088 39.9364 35.124 39.8232L39.8232 35.124C39.9364 35.0088 39.9999 34.8538 40 34.6924C39.9999 34.5323 39.9374 34.3785 39.8261 34.2636L25.1582 19.5947L24.9482 19.3857L25.0312 19.1015C25.4945 17.5151 25.495 15.8287 25.0322 14.2422C24.5692 12.6555 23.6618 11.2339 22.4179 10.1455C21.1741 9.05717 19.6447 8.34684 18.0107 8.0986Z" fill="#000000" />
 
 <path d="M35.5 34.5C35.5 35.0523 35.0523 35.5 34.5 35.5C33.9477 35.5 33.5 35.0523 33.5 34.5C33.5 33.9477 33.9477 33.5 34.5 33.5C35.0523 33.5 35.5 33.9477 35.5 34.5Z" fill="#000000" />
 
   </g>
   </g>
-  <rect x="32" y="664" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="432" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="688.92" font-size="18" font-weight="400" fill="#000000">CUDA</tspan>
+    <tspan x="40" y="456.92" font-size="18" font-weight="400" fill="#000000">CUDA</tspan>
   </text>
-  <rect x="232" y="664" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="232" y="432" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="240" y="688.92" font-size="18" font-weight="400" fill="#000000">ROCm</tspan>
+    <tspan x="240" y="456.92" font-size="18" font-weight="400" fill="#000000">ROCm</tspan>
   </text>
   <g data-component-id="hardware">
-  <rect x="24" y="736" width="1008" height="144" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="32" y="760.92" font-size="18" font-weight="700" fill="#000000">Hardware</tspan>
-  </text>
-  <g class="dg-icon" transform="translate(976 744)">
+  <rect x="24" y="528" width="808" height="80" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <g class="dg-icon" transform="translate(776 536)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M40.6533 6.00684C41.4096 6.08363 41.9999 6.72247 42 7.49902V40.499L41.9922 40.6523C41.9205 41.3583 41.3593 41.9195 40.6533 41.9912L40.5 41.999H7.5C6.72334 41.999 6.08461 41.4087 6.00781 40.6523L6 40.499V7.49902C6.00013 6.67071 6.67165 5.99902 7.5 5.99902H40.5L40.6533 6.00684ZM7.5 6.99902C7.25837 6.99902 7.05638 7.17059 7.00977 7.39844L7 7.49902V40.499C7 40.7752 7.22386 40.999 7.5 40.999H28V29.0908L18.5 19.2383V27.2998H17.5V6.99902H7.5ZM18.5 17.7979L28.8604 28.542L29 28.6875V40.999H40.5C40.7761 40.999 41 40.7752 41 40.499V7.49902C40.9999 7.25742 40.8285 7.0553 40.6006 7.00879L40.5 6.99902H27.2002V15.208L29.1729 17.417L28.7998 17.75L28.4277 18.083L26.3271 15.7334L26.2002 15.5908V6.99902H18.5V17.7979Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M18 29C19.3807 29 20.5 30.1193 20.5 31.5C20.5 32.8807 19.3807 34 18 34C16.6193 34 15.5 32.8807 15.5 31.5C15.5 30.1193 16.6193 29 18 29ZM18 30C17.1716 30 16.5 30.6716 16.5 31.5C16.5 32.3284 17.1716 33 18 33C18.8284 33 19.5 32.3284 19.5 31.5C19.5 30.6716 18.8284 30 18 30Z" fill="#000000" />
@@ -136,21 +124,21 @@
 
   </g>
   </g>
-  <rect x="32" y="808" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="536" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="832.92" font-size="18" font-weight="400" fill="#000000">CPU</tspan>
+    <tspan x="40" y="560.92" font-size="18" font-weight="400" fill="#000000">CPU</tspan>
   </text>
-  <g class="dg-icon" transform="translate(168 816)">
+  <g class="dg-icon" transform="translate(168 544)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M33.5 45H32.5V39H24.5V45H23.5V39H15.5V45H14.5V39H10.5C9.72334 39 9.08461 38.4097 9.00781 37.6533L9 37.5V33.5H3V32.5H9V24.5H3V23.5H9V15.5H3V14.5H9V10.5C9 9.67157 9.67157 9 10.5 9H14.5V3H15.5V9H23.5V3H24.5V9H32.5V3H33.5V9H37.5L37.6533 9.00781C38.4097 9.08461 39 9.72334 39 10.5V14.5H45V15.5H39V23.5H45V24.5H39V32.5H45V33.5H39V37.5L38.9922 37.6533C38.9205 38.3593 38.3593 38.9205 37.6533 38.9922L37.5 39H33.5V45ZM10.5 10C10.2239 10 10 10.2239 10 10.5V37.5C10 37.7761 10.2239 38 10.5 38H37.5C37.7761 38 38 37.7761 38 37.5V10.5C38 10.2239 37.7761 10 37.5 10H10.5Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30 30H18V18H30V30ZM19 29H29V19H19V29Z" fill="#000000" />
 
   </g>
-  <rect x="232" y="808" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="232" y="536" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="240" y="832.92" font-size="18" font-weight="400" fill="#000000">GPU</tspan>
+    <tspan x="240" y="560.92" font-size="18" font-weight="400" fill="#000000">GPU</tspan>
   </text>
-  <g class="dg-icon" transform="translate(368 816)">
+  <g class="dg-icon" transform="translate(368 544)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M38.5 42H37.5V36H31.5V42H30.5V36H24.5V42H23.5V36H17.5V42H16.5V36H10.5V42H9.5V36H4.5L4.34668 35.9922C3.59028 35.9154 3 35.2767 3 34.5V13.5C3 12.6716 3.67157 12 4.5 12H9.5V6H10.5V12H16.5V6H17.5V12H23.5V6H24.5V12H30.5V6H31.5V12H37.5V6H38.5V12H43.5C44.3284 12 45 12.6716 45 13.5V34.5C45 35.2767 44.4097 35.9154 43.6533 35.9922L43.5 36H38.5V42ZM4.5 13C4.22386 13 4 13.2239 4 13.5V34.5C4 34.7761 4.22386 35 4.5 35H43.5C43.7761 35 44 34.7761 44 34.5V13.5C44 13.2239 43.7761 13 43.5 13H4.5Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M15 30H9V18H15V30ZM10 29H14V19H10V29Z" fill="#000000" />
@@ -162,55 +150,55 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M39 30H33V18H39V30ZM34 29H38V19H34V29Z" fill="#000000" />
 
   </g>
-  <rect x="432" y="808" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="432" y="536" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="440" y="832.92" font-size="18" font-weight="400" fill="#000000">NPU</tspan>
+    <tspan x="440" y="560.92" font-size="18" font-weight="400" fill="#000000">NPU</tspan>
   </text>
-  <g class="dg-icon" transform="translate(568 816)">
+  <g class="dg-icon" transform="translate(568 544)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M40.6533 6.00781C41.4097 6.08461 42 6.72334 42 7.5V40.5L41.9922 40.6533C41.9205 41.3593 41.3593 41.9205 40.6533 41.9922L40.5 42H7.5C6.72334 42 6.08461 41.4097 6.00781 40.6533L6 40.5V7.5C6 6.67157 6.67157 6 7.5 6H40.5L40.6533 6.00781ZM7.5 7C7.25829 7 7.05629 7.17145 7.00977 7.39941L7 7.5V40.5C7 40.7761 7.22386 41 7.5 41H40.5C40.7761 41 41 40.7761 41 40.5V7.5C41 7.25829 40.8286 7.05629 40.6006 7.00977L40.5 7H7.5Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M19.9248 15.5996H23.7256V11.4004H24.7256V15.5996H28.5254V11.4004H29.5254V15.5996H32.4004V18.7002H36.8252V19.7002H32.4004V23.5H36.8252V24.5H32.4004V28.2998H36.8252V29.2998H32.4004V32.3994H29.5254V36.5996H28.5254V32.3994H24.7256V36.5996H23.7256V32.3994H19.9248V36.5996H18.9248V32.3994H15.6006V29.2998H11.625V28.2998H15.6006V24.5H11.625V23.5H15.6006V19.7002H11.625V18.7002H15.6006V15.5996H18.9248V11.4004H19.9248V15.5996ZM16.6006 31.3994H31.4004V16.5996H16.6006V31.3994Z" fill="#000000" />
 
   </g>
-  <rect x="632" y="808" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="632" y="536" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="640" y="832.92" font-size="18" font-weight="400" fill="#000000">RAM &amp;</tspan>
-    <tspan x="640" y="856.92" font-size="18" font-weight="400" fill="#000000">VRAM</tspan>
+    <tspan x="640" y="560.92" font-size="18" font-weight="400" fill="#000000">RAM &amp;</tspan>
+    <tspan x="640" y="584.92" font-size="18" font-weight="400" fill="#000000">VRAM</tspan>
   </text>
-  <g class="dg-icon" transform="translate(768 816)">
+  <g class="dg-icon" transform="translate(768 544)">
 <path d="M34.5 23.5C35.6046 23.5 36.5 24.3954 36.5 25.5V39H35.5V25.5C35.5 24.9477 35.0523 24.5 34.5 24.5H13.5C12.9477 24.5 12.5 24.9477 12.5 25.5V39H11.5V25.5C11.5 24.3954 12.3954 23.5 13.5 23.5H34.5Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M40.5 6C41.3284 6 42 6.67157 42 7.5V40.5C42 41.3284 41.3284 42 40.5 42H7.5C6.67157 42 6 41.3284 6 40.5V13.9141C6.00004 13.682 6.08071 13.4582 6.22656 13.2803L6.29297 13.207L13.207 6.29297C13.3945 6.10547 13.6489 6.00004 13.9141 6H40.5ZM7 13.9141V40.5C7 40.7761 7.22386 41 7.5 41H40.5C40.7761 41 41 40.7761 41 40.5V7.5C41 7.22386 40.7761 7 40.5 7H36.5V15H35.5V7H30.5V15H29.5V7H24.5V15H23.5V7H18.5V15H17.5V7H13.9141L7 13.9141Z" fill="#000000" />
 
   </g>
   <g data-component-id="user.bottom-&gt;orch.top">
-  <line x1="528" y1="88" x2="528" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="100" x2="528" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="100" x2="528" y2="101.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="525.0947,101.1592 528,112 530.9053,101.1592" fill="#E95420" />
+  <line x1="120" y1="88" x2="120" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="100" x2="328" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="328" y1="100" x2="328" y2="101.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="325.0947,101.1592 328,112 330.9053,101.1592" fill="#E95420" />
   </g>
   <g data-component-id="orch.bottom-&gt;runtime.top">
-  <line x1="528" y1="256" x2="528" y2="268" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="268" x2="528" y2="268" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="268" x2="528" y2="269.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="525.0947,269.1592 528,280 530.9053,269.1592" fill="#E95420" />
+  <line x1="328" y1="192" x2="328" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="328" y1="204" x2="528" y2="204" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="528" y1="204" x2="528" y2="205.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="525.0947,205.1592 528,216 530.9053,205.1592" fill="#E95420" />
   </g>
   <g data-component-id="runtime.bottom-&gt;kernel.top">
-  <line x1="528" y1="424" x2="528" y2="436" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="436" x2="528" y2="436" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="436" x2="528" y2="437.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="525.0947,437.1592 528,448 530.9053,437.1592" fill="#E95420" />
+  <line x1="528" y1="296" x2="528" y2="308" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="528" y1="308" x2="428" y2="308" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="428" y1="308" x2="428" y2="309.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="425.0947,309.1592 428,320 430.9053,309.1592" fill="#E95420" />
   </g>
   <g data-component-id="kernel.bottom-&gt;driver.top">
-  <line x1="528" y1="568" x2="528" y2="580" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="580" x2="528" y2="580" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="580" x2="528" y2="581.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="525.0947,581.1592 528,592 530.9053,581.1592" fill="#E95420" />
+  <line x1="428" y1="400" x2="428" y2="412" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="428" y1="412" x2="228" y2="412" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="228" y1="412" x2="228" y2="413.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="225.0947,413.1592 228,424 230.9053,413.1592" fill="#E95420" />
   </g>
   <g data-component-id="driver.bottom-&gt;hardware.top">
-  <line x1="528" y1="712" x2="528" y2="724" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="724" x2="528" y2="724" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="528" y1="724" x2="528" y2="725.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="525.0947,725.1592 528,736 530.9053,725.1592" fill="#E95420" />
+  <line x1="228" y1="504" x2="228" y2="516" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="228" y1="516" x2="428" y2="516" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="428" y1="516" x2="428" y2="517.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="425.0947,517.1592 428,528 430.9053,517.1592" fill="#E95420" />
   </g>
 </svg>

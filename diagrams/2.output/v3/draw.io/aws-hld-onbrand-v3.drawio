@@ -1,100 +1,99 @@
 <mxfile host="app.diagrams.net" agent="diagram-generator" version="29.3.7">
-  <diagram name="Design-language engine" id="declarative">
-    <mxGraphModel grid="1" gridSize="8" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1304" pageHeight="464" background="light-dark(#ffffff, #ffffff)" adaptiveColors="none" math="0" shadow="0">
+  <diagram name="AWS high level design" id="declarative">
+    <mxGraphModel grid="1" gridSize="8" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1216" pageHeight="4488" background="light-dark(#ffffff, #ffffff)" adaptiveColors="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="2" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="336" y="104" as="sourcePoint" />
-            <mxPoint x="544" y="136" as="targetPoint" />
+            <mxPoint x="128" y="1488" as="sourcePoint" />
+            <mxPoint x="624" y="24" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="336" y="120" />
-              <mxPoint x="544" y="120" />
+              <mxPoint x="128" y="756" />
+              <mxPoint x="624" y="756" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="3" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="968" y="88" as="sourcePoint" />
-            <mxPoint x="544" y="136" as="targetPoint" />
+            <mxPoint x="384" y="352" as="sourcePoint" />
+            <mxPoint x="624" y="24" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="968" y="112" />
-              <mxPoint x="544" y="112" />
+              <mxPoint x="384" y="188" />
+              <mxPoint x="624" y="188" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="4" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1184" y="88" as="sourcePoint" />
-            <mxPoint x="544" y="136" as="targetPoint" />
+            <mxPoint x="856" y="176" as="sourcePoint" />
+            <mxPoint x="624" y="24" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="1184" y="112" />
-              <mxPoint x="544" y="112" />
+              <mxPoint x="856" y="100" />
+              <mxPoint x="624" y="100" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="5" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
+        <mxCell id="5" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="216" y="56" as="sourcePoint" />
-            <mxPoint x="240" y="176" as="targetPoint" />
+            <mxPoint x="1088" y="176" as="sourcePoint" />
+            <mxPoint x="624" y="24" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="240" y="56" />
+              <mxPoint x="1088" y="100" />
+              <mxPoint x="624" y="100" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="6" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
+        <mxCell id="6" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="216" y="152" as="sourcePoint" />
-            <mxPoint x="240" y="176" as="targetPoint" />
+            <mxPoint x="520" y="56" as="sourcePoint" />
+            <mxPoint x="480" y="540" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="240" y="152" />
+              <mxPoint x="500" y="56" />
+              <mxPoint x="500" y="540" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="7" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="216" y="248" as="sourcePoint" />
-            <mxPoint x="240" y="176" as="targetPoint" />
+            <mxPoint x="728" y="56" as="sourcePoint" />
+            <mxPoint x="984" y="276" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="240" y="248" />
+              <mxPoint x="984" y="56" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="8" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="544" y="216" as="sourcePoint" />
-            <mxPoint x="336" y="248" as="targetPoint" />
+            <mxPoint x="624" y="88" as="sourcePoint" />
+            <mxPoint x="136" y="2256" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="544" y="232" />
-              <mxPoint x="336" y="232" />
+              <mxPoint x="624" y="2256" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="9" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="336" y="328" as="sourcePoint" />
-            <mxPoint x="336" y="360" as="targetPoint" />
+            <mxPoint x="136" y="2416" as="sourcePoint" />
+            <mxPoint x="136" y="3008" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="10" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="336" y="328" as="sourcePoint" />
-            <mxPoint x="968" y="120" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="336" y="224" />
-              <mxPoint x="968" y="224" />
-            </Array>
+            <mxPoint x="136" y="2504" as="sourcePoint" />
+            <mxPoint x="136" y="3168" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="11" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="336" y="328" as="sourcePoint" />
-            <mxPoint x="1184" y="120" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="336" y="224" />
-              <mxPoint x="1184" y="224" />
-            </Array>
+            <mxPoint x="136" y="2592" as="sourcePoint" />
+            <mxPoint x="136" y="3400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="12" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#E95420;strokeWidth=1;startArrow=none;startFill=0;endArrow=blockThin;endFill=1;endSize=8;" value="" edge="1" data-dg-source="diagram-generator" data-dg-role="edge" tags="dg-generated dg-role-edge dg-token-edge-orange dg-token-edge-arrow" data-dg-style-tokens="edge-orange,edge-arrow">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="136" y="2680" as="sourcePoint" />
+            <mxPoint x="136" y="3560" as="targetPoint" />
           </mxGeometry>
         </mxCell>
       </root>

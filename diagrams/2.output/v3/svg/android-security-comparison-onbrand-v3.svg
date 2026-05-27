@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="816" height="984" viewBox="0 0 816 984" xml:space="preserve">
+  <rect width="816" height="984" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="816" height="984" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="240" height="680" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__ann_2268206370192__">
+  <rect x="24" y="24" width="240" height="152" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="lxd_container">
+  <rect x="24" y="200" width="208" height="152" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  </g>
+  <g data-component-id="lxd_headline">
+  <rect x="32" y="208" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="40" y="232.92" font-size="18" font-weight="700" fill="#000000">SELinux removed</tspan>
+  </text>
+  </g>
+  <g data-component-id="lxd_system">
+  <rect x="32" y="280" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="40" y="304.92" font-size="18" font-weight="400" fill="#000000">Android system</tspan>
+  </text>
+  </g>
+  <g data-component-id="__sep_2268206371600__">
+  <rect x="24" y="376" width="240" height="152" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="host_container">
+  <rect x="24" y="552" width="240" height="152" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="32" y="576.92" font-size="18" font-weight="400" fill="#000000">Host kernel (AppArmor)</tspan>
+  </text>
+  </g>
+  <g data-component-id="__col_1__">
+  <rect x="288" y="24" width="240" height="936" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__ann_2268206370320__">
+  <rect x="288" y="24" width="240" height="296" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="vm">
+  <rect x="288" y="344" width="208" height="296" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  </g>
+  <g data-component-id="vm_headline">
+  <rect x="296" y="352" width="192" height="136" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="376.92" font-size="18" font-weight="700" fill="#000000">SELinux ON</tspan>
+    <tspan x="304" y="400.92" font-size="18" font-weight="400" fill="#000000">/enforcing mode</tspan>
+    <tspan x="304" y="424.92" font-size="18" font-weight="400" fill="#000000">App sandboxing</tspan>
+    <tspan x="304" y="448.92" font-size="18" font-weight="400" fill="#000000">System service</tspan>
+    <tspan x="304" y="472.92" font-size="18" font-weight="400" fill="#000000">isolation</tspan>
+  </text>
+  </g>
+  <g data-component-id="vm_system">
+  <rect x="296" y="496" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="520.92" font-size="18" font-weight="400" fill="#000000">Android system</tspan>
+  </text>
+  </g>
+  <g data-component-id="vm_kernel">
+  <rect x="296" y="568" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="592.92" font-size="18" font-weight="400" fill="#000000">Android kernel</tspan>
+  </text>
+  </g>
+  <g data-component-id="host_vm">
+  <rect x="288" y="664" width="240" height="296" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="296" y="688.92" font-size="18" font-weight="400" fill="#000000">Host kernel (AppArmor)</tspan>
+  </text>
+  </g>
+  <g data-component-id="__col_2__">
+  <rect x="552" y="24" width="240" height="152" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="note_left">
+  <rect x="552" y="24" width="240" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__ann_2268206372048__">
+  <rect x="552" y="112" width="240" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+</svg>

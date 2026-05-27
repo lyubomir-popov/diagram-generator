@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="552" viewBox="0 0 240 552" xml:space="preserve">
   <rect width="240" height="552" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="240" height="552" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="192" height="504" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="commit">
-  <rect x="24" y="24" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="24" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#000000">Developer</tspan>
     <tspan x="32" y="72.92" font-size="18" font-weight="400" fill="#000000">commit</tspan>
@@ -20,7 +26,7 @@
   </g>
   </g>
   <g data-component-id="build">
-  <rect x="24" y="112" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="112" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="136.92" font-size="18" font-weight="400" fill="#000000">Build &amp;</tspan>
     <tspan x="32" y="160.92" font-size="18" font-weight="400" fill="#000000">lint</tspan>
@@ -31,7 +37,7 @@
   </g>
   </g>
   <g data-component-id="test">
-  <rect x="24" y="200" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="224.92" font-size="18" font-weight="400" fill="#000000">Automated</tspan>
     <tspan x="32" y="248.92" font-size="18" font-weight="400" fill="#000000">tests</tspan>
@@ -46,7 +52,7 @@
   </g>
   </g>
   <g data-component-id="staging">
-  <rect x="24" y="288" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="288" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="312.92" font-size="18" font-weight="400" fill="#000000">Staging</tspan>
     <tspan x="32" y="336.92" font-size="18" font-weight="400" fill="#000000">environment</tspan>
@@ -57,7 +63,7 @@
   </g>
   </g>
   <g data-component-id="approval">
-  <rect x="24" y="376" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="376" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="400.92" font-size="18" font-weight="400" fill="#000000">Manual</tspan>
     <tspan x="32" y="424.92" font-size="18" font-weight="400" fill="#000000">approval</tspan>
@@ -72,7 +78,7 @@
   </g>
   </g>
   <g data-component-id="production">
-  <rect x="24" y="464" width="192" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="464" width="192" height="64" fill="#000000" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="488.92" font-size="18" font-weight="400" fill="#FFFFFF">Production</tspan>
     <tspan x="32" y="512.92" font-size="18" font-weight="400" fill="#FFFFFF">deploy</tspan>
@@ -89,33 +95,23 @@
   </g>
   </g>
   <g data-component-id="commit.bottom-&gt;build.top">
-  <line x1="120" y1="88" x2="120" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="100" x2="120" y2="100" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="100" x2="120" y2="101.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="88" x2="120" y2="101.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,101.1592 120,112 122.9053,101.1592" fill="#E95420" />
   </g>
   <g data-component-id="build.bottom-&gt;test.top">
-  <line x1="120" y1="176" x2="120" y2="188" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="188" x2="120" y2="188" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="188" x2="120" y2="189.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="176" x2="120" y2="189.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,189.1592 120,200 122.9053,189.1592" fill="#E95420" />
   </g>
   <g data-component-id="test.bottom-&gt;staging.top">
-  <line x1="120" y1="264" x2="120" y2="276" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="276" x2="120" y2="276" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="276" x2="120" y2="277.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="264" x2="120" y2="277.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,277.1592 120,288 122.9053,277.1592" fill="#E95420" />
   </g>
   <g data-component-id="staging.bottom-&gt;approval.top">
-  <line x1="120" y1="352" x2="120" y2="364" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="364" x2="120" y2="364" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="364" x2="120" y2="365.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="352" x2="120" y2="365.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,365.1592 120,376 122.9053,365.1592" fill="#E95420" />
   </g>
   <g data-component-id="approval.bottom-&gt;production.top">
-  <line x1="120" y1="440" x2="120" y2="452" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="452" x2="120" y2="452" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="452" x2="120" y2="453.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="440" x2="120" y2="453.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,453.1592 120,464 122.9053,453.1592" fill="#E95420" />
   </g>
 </svg>

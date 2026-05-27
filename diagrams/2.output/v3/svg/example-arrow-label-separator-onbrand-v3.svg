@@ -1,7 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="232" viewBox="0 0 240 232" xml:space="preserve">
-  <rect width="240" height="232" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="288" viewBox="0 0 240 288" xml:space="preserve">
+  <rect width="240" height="288" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="240" height="288" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="192" height="240" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="source">
-  <rect x="24" y="24" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="24" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#000000">Source</tspan>
   </text>
@@ -16,12 +22,15 @@
 
   </g>
   </g>
+  <g data-component-id="__sep_2268206677584__">
+  <rect x="24" y="112" width="192" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="target">
-  <rect x="24" y="144" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="168.92" font-size="18" font-weight="400" fill="#000000">Target</tspan>
+    <tspan x="32" y="224.92" font-size="18" font-weight="400" fill="#000000">Target</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 152)">
+  <g class="dg-icon" transform="translate(160 208)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M35.9878 11.6991C36.3041 11.8759 36.5 12.2098 36.5 12.5721V25.3693C36.5 25.7316 36.3041 26.0655 35.9878 26.2423L24 32.9414L12.0122 26.2423C11.6959 26.0655 11.5 25.7316 11.5 25.3693V12.5721C11.5 12.2098 11.6959 11.8759 12.0122 11.6991L23.5122 5.27261C23.8153 5.1032 24.1847 5.1032 24.4878 5.27261L35.9878 11.6991ZM12.5 25.3682L23.5 31.5146V19.3613L12.5 13.166V25.3682ZM24.5 19.3613V31.5146L35.5 25.3682V13.167L24.5 19.3613ZM12.9922 12.2969L24 18.4941L35.0068 12.2969L24 6.14551L12.9922 12.2969Z" fill="#000000" />
 
 <path d="M20.0322 40C20.0118 40.1638 20 40.3306 20 40.5C20 40.6694 20.0118 40.8362 20.0322 41H9V40H20.0322Z" fill="#000000" />
@@ -35,9 +44,7 @@
   </g>
   </g>
   <g data-component-id="source.bottom-&gt;target.top">
-  <line x1="120" y1="88" x2="120" y2="116" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="116" x2="120" y2="116" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="116" x2="120" y2="133.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="117.0947,133.1592 120,144 122.9053,133.1592" fill="#E95420" />
+  <line x1="120" y1="88" x2="120" y2="189.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="117.0947,189.1592 120,200 122.9053,189.1592" fill="#E95420" />
   </g>
 </svg>

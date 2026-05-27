@@ -75,8 +75,13 @@ def _svg_open(width: int, height: int, *, meta: dict | None = None) -> list[str]
     return lines
 
 
-def _rect(x, y, w, h, *, fill=WHITE, stroke=BLACK, dashed=False) -> str:
-    dash = ' stroke-dasharray="8 8"' if dashed else ""
+def _rect(x, y, w, h, *, fill=WHITE, stroke=BLACK, dashed=False, stroke_dasharray=None) -> str:
+    if stroke_dasharray:
+        dash = f' stroke-dasharray="{stroke_dasharray}"'
+    elif dashed:
+        dash = ' stroke-dasharray="8 8"'
+    else:
+        dash = ""
     return (
         f'  <rect x="{fmt(x)}" y="{fmt(y)}" width="{fmt(w)}" height="{fmt(h)}" '
         f'fill="{fill}" stroke="{stroke}" stroke-width="1" stroke-miterlimit="10"{dash} />'
@@ -267,7 +272,8 @@ def _frame_box(prim: FrameBox) -> str:
 def _render_primitive(prim: Primitive) -> str:
     if isinstance(prim, Rect):
         return _rect(prim.x, prim.y, prim.width, prim.height,
-                     fill=prim.fill, stroke=prim.stroke, dashed=prim.dashed)
+                     fill=prim.fill, stroke=prim.stroke, dashed=prim.dashed,
+                     stroke_dasharray=prim.stroke_dasharray)
     if isinstance(prim, TextBlock):
         return _text_block(prim.x, prim.y, prim.lines, max_width=prim.max_width)
     if isinstance(prim, Icon):

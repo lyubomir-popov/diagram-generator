@@ -6,7 +6,7 @@ Turn this repo into Canonical's shared diagram production system and a validatio
 
 ## Architecture blueprint
 
-This is the non-negotiable layered architecture for the diagram system. All stages below must conform to it. The architecture is informed by the vision and standalone-tool proposal in the sibling `diagram-generator-planning` repo, and by architectural benchmarks of D2, ELK, Penrose, Structurizr, and five other tools.
+This is the non-negotiable layered architecture for the diagram system. All stages below must conform to it. The architecture is informed by the vision and constrained-editor proposal in the sibling `diagram-generator-planning` repo, and by architectural benchmarks of D2, ELK, Penrose, Structurizr, and five other tools.
 
 ### Layer model
 
@@ -70,7 +70,7 @@ The canonical type scale, spacing, and grid specs each describe three tiers: app
 
 ### Decision gate
 
-A layout algorithm survey must evaluate which algorithms the competition uses, which diagram types each serves best, and which are worth porting or integrating. The survey informs which engines to add beyond the existing v3 Frame solver and D3-force port. See `diagram-generator-planning/docs/vision/benchmarks/` for per-tool architectural analysis and `standalone-tool-proposal.md` for the spike plan. Each candidate engine must be validated with grid-snap post-processing on real diagrams before committing to production integration.
+A layout algorithm survey must evaluate which algorithms the competition uses, which diagram types each serves best, and which are worth porting or integrating. The survey informs which engines to add beyond the existing v3 Frame solver and D3-force port. See `diagram-generator-planning/docs/vision/benchmarks/` for per-tool architectural analysis and `constrained-editor-proposal.md` for the hard problems inventory. Each candidate engine must be validated with grid-snap post-processing on real diagrams before committing to production integration.
 
 ## Stages
 

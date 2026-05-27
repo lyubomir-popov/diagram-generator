@@ -106,6 +106,7 @@ class Frame:
     sizing_w: Sizing = Sizing.HUG   # how this node sizes on X
     sizing_h: Sizing = Sizing.HUG   # how this node sizes on Y
     fill_weight: float = 1          # proportional weight when sizing is FILL (like flex-grow)
+    col_span: int | None = None # grid column span — resolved to FIXED width by layout engine
     width: int | None = None    # explicit width (when sizing_w=FIXED)
     height: int | None = None   # explicit height (when sizing_h=FIXED)
     min_width: int | None = None
@@ -180,15 +181,33 @@ class Frame:
 
 
 # ---------------------------------------------------------------------------
-# Diagram root (Frame + arrows + metadata)
+# Overlay (cross-cutting visual group)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class Overlay:
+    """A cross-cutting visual group that references nodes from different parents.
+
+    Overlays are rendered as a bounding rectangle around their member nodes,
+    with an optional label.  Members keep their primary parent — the overlay
+    is a secondary visual grouping only.
+    """
+    id: str = ""
+    label: str = ""
+    members: list[str] = field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Diagram root (Frame + arrows + overlays + metadata)
 # ---------------------------------------------------------------------------
 
 @dataclass
 class FrameDiagram:
-    """Root of a diagram: a Frame tree plus connectors and metadata."""
+    """Root of a diagram: a Frame tree plus connectors, overlays, and metadata."""
     title: str = ""
     root: Frame = field(default_factory=Frame)
     arrows: list = field(default_factory=list)  # list of Arrow from diagram_model
+    overlays: list[Overlay] = field(default_factory=list)
     grid_cols: int = 2
     grid_col_gap: int | None = None
     grid_row_gap: int | None = None

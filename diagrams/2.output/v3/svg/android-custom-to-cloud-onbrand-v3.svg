@@ -1,49 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1232" height="264" viewBox="0 0 1232 264" xml:space="preserve">
-  <rect width="1232" height="264" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="1232" height="272" viewBox="0 0 1232 272" xml:space="preserve">
+  <rect width="1232" height="272" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="1232" height="272" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="208" height="224" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="custom_files">
-  <rect x="24" y="24" width="208" height="216" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="32" y="48.92" font-size="18" font-weight="700" fill="#000000">Custom Android files</tspan>
-  </text>
+  <rect x="24" y="24" width="208" height="224" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   </g>
   <g data-component-id="partitions">
-  <rect x="32" y="96" width="192" height="40" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="32" width="192" height="64" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="120.92" font-size="18" font-weight="700" fill="#000000">Partitions</tspan>
+    <tspan x="40" y="56.92" font-size="18" font-weight="700" fill="#000000">Partitions</tspan>
   </text>
   </g>
   <g data-component-id="system_image">
-  <rect x="32" y="144" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="104" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="168.92" font-size="18" font-weight="400" fill="#000000">Android system image</tspan>
+    <tspan x="40" y="128.92" font-size="18" font-weight="400" fill="#000000">Android system</tspan>
+    <tspan x="40" y="152.92" font-size="18" font-weight="400" fill="#000000">image</tspan>
   </text>
   </g>
   <g data-component-id="kernel">
-  <rect x="32" y="192" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="176" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="216.92" font-size="18" font-weight="400" fill="#000000">Kernel</tspan>
+    <tspan x="40" y="200.92" font-size="18" font-weight="400" fill="#000000">Kernel</tspan>
   </text>
+  </g>
+  <g data-component-id="__col_1__">
+  <rect x="264" y="24" width="208" height="168" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
   </g>
   <g data-component-id="host_tools">
-  <rect x="264" y="24" width="208" height="216" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="272" y="48.92" font-size="18" font-weight="700" fill="#000000">Host-side tools</tspan>
-  </text>
+  <rect x="264" y="24" width="208" height="168" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   </g>
   <g data-component-id="cvd">
-  <rect x="272" y="112" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="272" y="32" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="280" y="136.92" font-size="18" font-weight="400" fill="#000000">cvd</tspan>
+    <tspan x="280" y="56.92" font-size="18" font-weight="400" fill="#000000">cvd</tspan>
   </text>
   </g>
   <g data-component-id="launchers">
-  <rect x="272" y="176" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="272" y="120" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="280" y="200.92" font-size="18" font-weight="400" fill="#000000">Launchers</tspan>
+    <tspan x="280" y="144.92" font-size="18" font-weight="400" fill="#000000">Launchers</tspan>
   </text>
   </g>
+  <g data-component-id="__col_2__">
+  <rect x="504" y="24" width="336" height="88" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="anbox_cloud">
-  <rect x="504" y="24" width="336" height="216" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="504" y="24" width="336" height="88" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="512" y="48.92" font-size="18" font-weight="700" fill="#000000">Anbox Cloud</tspan>
     <tspan x="512" y="72.92" font-size="18" font-weight="400" fill="#000000">- Consumes system images</tspan>
@@ -54,8 +61,11 @@
 
   </g>
   </g>
+  <g data-component-id="__col_3__">
+  <rect x="872" y="24" width="336" height="112" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="virt_instance">
-  <rect x="872" y="24" width="336" height="216" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="872" y="24" width="336" height="112" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="880" y="48.92" font-size="18" font-weight="700" fill="#000000">Virtualized Android instance</tspan>
     <tspan x="880" y="72.92" font-size="18" font-weight="400" fill="#000000">- Unmodified</tspan>
@@ -70,21 +80,18 @@
   </g>
   </g>
   <g data-component-id="custom_files.right-&gt;host_tools.left">
-  <line x1="232" y1="132" x2="248" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="248" y1="132" x2="248" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="248" y1="132" x2="253.1592" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="253.1592,129.0947 264,132 253.1592,134.9053" fill="#E95420" />
+  <line x1="232" y1="136" x2="264" y2="136" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="264" y1="136" x2="264" y2="118.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="261.0947,118.8408 264,108 266.9053,118.8408" fill="#E95420" />
   </g>
   <g data-component-id="host_tools.right-&gt;anbox_cloud.left">
-  <line x1="472" y1="132" x2="488" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="488" y1="132" x2="488" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="488" y1="132" x2="493.1592" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="493.1592,129.0947 504,132 493.1592,134.9053" fill="#E95420" />
+  <line x1="472" y1="108" x2="504" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="504" y1="108" x2="504" y2="78.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="501.0947,78.8408 504,68 506.9053,78.8408" fill="#E95420" />
   </g>
   <g data-component-id="anbox_cloud.right-&gt;virt_instance.left">
-  <line x1="840" y1="132" x2="856" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="856" y1="132" x2="856" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="856" y1="132" x2="861.1592" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="861.1592,129.0947 872,132 861.1592,134.9053" fill="#E95420" />
+  <line x1="840" y1="68" x2="872" y2="68" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="872" y1="68" x2="872" y2="69.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="869.0947,69.1592 872,80 874.9053,69.1592" fill="#E95420" />
   </g>
 </svg>

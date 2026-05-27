@@ -1,7 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="456" height="472" viewBox="0 0 456 472" xml:space="preserve">
-  <rect width="456" height="472" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="456" height="528" viewBox="0 0 456 528" xml:space="preserve">
+  <rect width="456" height="528" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="456" height="528" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="192" height="480" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="ingest">
-  <rect x="24" y="24" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="24" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="400" fill="#000000">Data</tspan>
     <tspan x="32" y="72.92" font-size="18" font-weight="400" fill="#000000">ingestion</tspan>
@@ -12,7 +18,7 @@
   </g>
   </g>
   <g data-component-id="validate">
-  <rect x="24" y="128" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="128" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="152.92" font-size="18" font-weight="400" fill="#000000">Validate</tspan>
     <tspan x="32" y="176.92" font-size="18" font-weight="400" fill="#000000">&amp; clean</tspan>
@@ -26,12 +32,12 @@
 
   </g>
   </g>
+  <g data-component-id="__sep_2268206606352__">
+  <rect x="24" y="232" width="192" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="storage">
-  <rect x="24" y="280" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
-  <text font-family="Ubuntu Sans">
-    <tspan x="32" y="304.92" font-size="18" font-weight="700" fill="#000000">Storage tiers</tspan>
-  </text>
-  <g class="dg-icon" transform="translate(160 288)">
+  <rect x="24" y="336" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
+  <g class="dg-icon" transform="translate(160 344)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M35.9878 11.6991C36.3041 11.8759 36.5 12.2098 36.5 12.5721V25.3693C36.5 25.7316 36.3041 26.0655 35.9878 26.2423L24 32.9414L12.0122 26.2423C11.6959 26.0655 11.5 25.7316 11.5 25.3693V12.5721C11.5 12.2098 11.6959 11.8759 12.0122 11.6991L23.5122 5.27261C23.8153 5.1032 24.1847 5.1032 24.4878 5.27261L35.9878 11.6991ZM12.5 25.3682L23.5 31.5146V19.3613L12.5 13.166V25.3682ZM24.5 19.3613V31.5146L35.5 25.3682V13.167L24.5 19.3613ZM12.9922 12.2969L24 18.4941L35.0068 12.2969L24 6.14551L12.9922 12.2969Z" fill="#000000" />
 
 <path d="M20.0322 40C20.0118 40.1638 20 40.3306 20 40.5C20 40.6694 20.0118 40.8362 20.0322 41H9V40H20.0322Z" fill="#000000" />
@@ -45,12 +51,12 @@
   </g>
   </g>
   <g data-component-id="warehouse">
-  <rect x="24" y="384" width="192" height="64" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="440" width="192" height="64" fill="#000000" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="32" y="408.92" font-size="18" font-weight="400" fill="#FFFFFF">Data</tspan>
-    <tspan x="32" y="432.92" font-size="18" font-weight="400" fill="#FFFFFF">warehouse</tspan>
+    <tspan x="32" y="464.92" font-size="18" font-weight="400" fill="#FFFFFF">Data</tspan>
+    <tspan x="32" y="488.92" font-size="18" font-weight="400" fill="#FFFFFF">warehouse</tspan>
   </text>
-  <g class="dg-icon" transform="translate(160 392)">
+  <g class="dg-icon" transform="translate(160 448)">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M35.9878 11.6991C36.3041 11.8759 36.5 12.2098 36.5 12.5721V25.3693C36.5 25.7316 36.3041 26.0655 35.9878 26.2423L24 32.9414L12.0122 26.2423C11.6959 26.0655 11.5 25.7316 11.5 25.3693V12.5721C11.5 12.2098 11.6959 11.8759 12.0122 11.6991L23.5122 5.27261C23.8153 5.1032 24.1847 5.1032 24.4878 5.27261L35.9878 11.6991ZM12.5 25.3682L23.5 31.5146V19.3613L12.5 13.166V25.3682ZM24.5 19.3613V31.5146L35.5 25.3682V13.167L24.5 19.3613ZM12.9922 12.2969L24 18.4941L35.0068 12.2969L24 6.14551L12.9922 12.2969Z" fill="#FFFFFF" />
 
 <path d="M20.0322 40C20.0118 40.1638 20 40.3306 20 40.5C20 40.6694 20.0118 40.8362 20.0322 41H9V40H20.0322Z" fill="#FFFFFF" />
@@ -63,13 +69,19 @@
 
   </g>
   </g>
+  <g data-component-id="__col_1__">
+  <rect x="240" y="24" width="192" height="272" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="ingest_note">
+  <rect x="240" y="24" width="192" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="enrich">
-  <rect x="240" y="176" width="192" height="112" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="128" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="248" y="200.92" font-size="18" font-weight="400" fill="#000000">Enrich</tspan>
-    <tspan x="248" y="224.92" font-size="18" font-weight="400" fill="#000000">&amp; join</tspan>
+    <tspan x="248" y="152.92" font-size="18" font-weight="400" fill="#000000">Enrich</tspan>
+    <tspan x="248" y="176.92" font-size="18" font-weight="400" fill="#000000">&amp; join</tspan>
   </text>
-  <g class="dg-icon" transform="translate(376 184)">
+  <g class="dg-icon" transform="translate(376 136)">
 <path d="M39.5 26.5557C39.4999 32.5189 34.9609 37.4213 29.1494 37.998L30.7979 39.6465L30.0908 40.3535L27.293 37.5557L30.0908 34.7578L30.7979 35.4648L29.2881 36.9736C34.4792 36.3384 38.4999 31.9184 38.5 26.5557H39.5Z" fill="#000000" />
 
 <path d="M20.707 10.4443L17.9092 13.2422L17.2021 12.5352L18.7109 11.0254C13.5202 11.661 9.50005 16.0819 9.5 21.4443H8.5C8.50006 15.4814 13.0385 10.5781 18.8496 10.001L17.2021 8.35352L17.9092 7.64648L20.707 10.4443Z" fill="#000000" />
@@ -89,12 +101,12 @@
   </g>
   </g>
   <g data-component-id="dashboard">
-  <rect x="240" y="328" width="192" height="112" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="232" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="248" y="352.92" font-size="18" font-weight="400" fill="#000000">Analytics</tspan>
-    <tspan x="248" y="376.92" font-size="18" font-weight="400" fill="#000000">dashboard</tspan>
+    <tspan x="248" y="256.92" font-size="18" font-weight="400" fill="#000000">Analytics</tspan>
+    <tspan x="248" y="280.92" font-size="18" font-weight="400" fill="#000000">dashboard</tspan>
   </text>
-  <g class="dg-icon" transform="translate(376 336)">
+  <g class="dg-icon" transform="translate(376 240)">
 <path d="M7.5 40.5H42V41.5H6.5V6H7.5V40.5Z" fill="#000000" />
 
 <path d="M12.5 37H11.5V20H12.5V37Z" fill="#000000" />
@@ -116,27 +128,24 @@
   </g>
   </g>
   <g data-component-id="ingest.bottom-&gt;validate.top">
-  <line x1="120" y1="88" x2="120" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="108" x2="120" y2="108" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="108" x2="120" y2="117.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="88" x2="120" y2="117.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
   <polygon points="117.0947,117.1592 120,128 122.9053,117.1592" fill="#E95420" />
   </g>
   <g data-component-id="ingest.bottom-&gt;enrich.top">
-  <line x1="120" y1="88" x2="120" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="132" x2="336" y2="132" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="336" y1="132" x2="336" y2="165.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="333.0947,165.1592 336,176 338.9053,165.1592" fill="#E95420" />
+  <line x1="120" y1="88" x2="120" y2="116" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="116" x2="336" y2="116" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="336" y1="116" x2="336" y2="117.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="333.0947,117.1592 336,128 338.9053,117.1592" fill="#E95420" />
   </g>
   <g data-component-id="validate.bottom-&gt;warehouse.top">
-  <line x1="120" y1="192" x2="120" y2="288" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="288" x2="120" y2="288" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="120" y1="288" x2="120" y2="373.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="117.0947,373.1592 120,384 122.9053,373.1592" fill="#E95420" />
+  <line x1="120" y1="192" x2="120" y2="324" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="324" x2="228" y2="324" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="228" y1="324" x2="228" y2="440" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="228" y1="440" x2="130.8408" y2="440" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="130.8408,437.0947 120,440 130.8408,442.9053" fill="#E95420" />
   </g>
   <g data-component-id="enrich.bottom-&gt;dashboard.top">
-  <line x1="336" y1="288" x2="336" y2="308" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="336" y1="308" x2="336" y2="308" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="336" y1="308" x2="336" y2="317.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="333.0947,317.1592 336,328 338.9053,317.1592" fill="#E95420" />
+  <line x1="336" y1="192" x2="336" y2="221.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="333.0947,221.1592 336,232 338.9053,221.1592" fill="#E95420" />
   </g>
 </svg>

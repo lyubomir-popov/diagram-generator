@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from frame_model import Frame, FrameDiagram, Direction, Sizing, Align, Justify
+from frame_model import Frame, FrameDiagram, Direction, Overlay, Sizing, Align, Justify
 from diagram_model import Arrow, Line, Fill, Border
 from diagram_layout import (
     ArrowPrimitive,
@@ -33,6 +33,7 @@ from diagram_shared import (
     ICON_SIZE,
     BODY_LINE_STEP,
     estimate_line_width,
+    make_line,
     round_up_to_grid,
     size_to_px,
     stepped_lines_height,
@@ -537,6 +538,23 @@ def _align_offset(align: Align, available: float, content: float, axis: str) -> 
 
 # ---------------------------------------------------------------------------
 # Pass 2: Place (top-down)
+# ---------------------------------------------------------------------------
+
+def _resolve_col_spans(frame: Frame, col_w: int, col_gap: int) -> None:
+    """Walk the tree and convert col_span to explicit width + FIXED sizing.
+
+    ``col_span: N`` means the frame should span exactly N grid columns:
+    ``width = N * col_w + (N - 1) * col_gap``.  This sets ``sizing_w``
+    to FIXED and assigns the computed ``width``, making the frame a
+    first-class autolayout citizen with a grid-derived fixed dimension.
+    """
+    if frame.col_span is not None and frame.col_span >= 1:
+        n = frame.col_span
+        frame.width = n * col_w + max(0, n - 1) * col_gap
+        frame.sizing_w = Sizing.FIXED
+    for child in frame.children:
+        _resolve_col_spans(child, col_w, col_gap)
+
 # ---------------------------------------------------------------------------
 
 def _enforce_fill_hug_invariant(frame: Frame, coerced: dict | None = None) -> dict:
@@ -1751,6 +1769,58 @@ def _edge_point(x: float, y: float, w: float, h: float, side: str) -> tuple[floa
 
 
 # ---------------------------------------------------------------------------
+# Overlay rendering
+# ---------------------------------------------------------------------------
+
+OVERLAY_PADDING = 6  # px outset around member bounding box
+
+
+def _render_overlays(
+    overlays: list[Overlay],
+    bounds_map: dict[str, tuple],
+) -> list:
+    """Render overlays as dashed bounding rects with labels.
+
+    Each overlay computes the bounding box of its member nodes (looked up
+    in ``bounds_map``) and emits a dashed Rect plus a TextBlock label
+    positioned outside the top-left corner.
+    """
+    prims: list = []
+    for ov in overlays:
+        # Collect bounds of all resolved members
+        member_bounds = [bounds_map[m] for m in ov.members if m in bounds_map]
+        if not member_bounds:
+            continue
+
+        min_x = min(b[0] for b in member_bounds)
+        min_y = min(b[1] for b in member_bounds)
+        max_x = max(b[0] + b[2] for b in member_bounds)
+        max_y = max(b[1] + b[3] for b in member_bounds)
+
+        rx = min_x - OVERLAY_PADDING
+        ry = min_y - OVERLAY_PADDING
+        rw = (max_x - min_x) + 2 * OVERLAY_PADDING
+        rh = (max_y - min_y) + 2 * OVERLAY_PADDING
+
+        prims.append(Rect(
+            x=rx, y=ry, width=rw, height=rh,
+            fill="transparent", stroke="#FFFFFF",
+            stroke_dasharray="2 4",
+            component_id=ov.id,
+        ))
+
+        if ov.label:
+            prims.append(TextBlock(
+                x=rx + OVERLAY_PADDING,
+                y=ry - 16,
+                lines=[make_line(ov.label, fill="#FFFFFF")],
+                component_id=ov.id,
+            ))
+
+    return prims
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -1782,6 +1852,8 @@ def layout_frame_diagram(diagram: FrameDiagram) -> LayoutResult:
     # Only activate when grid was explicitly configured (grid_col_gap is set,
     # which is the signal that the YAML had a grid: section).
     grid_snap = None
+    col_w = 0
+    col_gap_g = 0
     grid_cols = int(diagram.grid_cols or 0)
     if grid_cols > 1 and diagram.grid_col_gap is not None:
         outer_margin = int(
@@ -1795,6 +1867,10 @@ def layout_frame_diagram(diagram: FrameDiagram) -> LayoutResult:
         col_w = int((col_w_raw // BASELINE_UNIT) * BASELINE_UNIT)
         if col_w > 0:
             grid_snap = (float(col_w), float(col_gap_g), grid_cols)
+
+    # Resolve col_span → explicit width before layout.
+    if col_w > 0:
+        _resolve_col_spans(root, col_w, col_gap_g)
 
     # Pass 2: place
     place(root, 0, 0, root_w, root_h, grid_snap=grid_snap)
@@ -1811,6 +1887,10 @@ def layout_frame_diagram(diagram: FrameDiagram) -> LayoutResult:
     # Route arrows
     arrow_prims = _route_arrows(diagram.arrows, bounds_map)
     fg.extend(arrow_prims)
+
+    # Render overlays (cross-cutting visual groups)
+    overlay_prims = _render_overlays(diagram.overlays, bounds_map)
+    fg.extend(overlay_prims)
 
     # Build component tree for editor interactivity
     component_tree = _build_component_tree(root)

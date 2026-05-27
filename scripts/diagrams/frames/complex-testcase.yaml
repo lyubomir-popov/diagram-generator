@@ -1,0 +1,45 @@
+engine: v3
+title: "Complex Testcase"
+grid:
+  cols: 3
+  col_gap: 24
+  row_gap: 24
+  outer_margin: 24
+arrows:
+  - source: define
+    target: implement
+  - source: measure
+    target: spike
+  - source: spike
+    target: review
+overlays:
+  - id: devteam
+    label: "Dev team"
+    members: [define, implement]
+root:
+  id: page
+  direction: horizontal
+  gap: 24
+  padding: 24
+  children:
+    - id: planning
+      heading: "Planning"
+      children:
+        - id: define
+          label: [Define ingress, pipeline]
+        - id: measure
+          label: [Measure current, performance]
+
+    - id: implementation
+      heading: "Implementation"
+      children:
+        - id: implement
+          label: [Implement Ingress, pipeline]
+        - id: spike
+          label: "Build spike"
+
+    - id: delivery
+      heading: "Delivery"
+      children:
+        - id: review
+          label: [Review performance, improvement]

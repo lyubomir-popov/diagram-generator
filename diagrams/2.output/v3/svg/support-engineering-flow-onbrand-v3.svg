@@ -1,85 +1,80 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1672" height="352" viewBox="0 0 1672 352" xml:space="preserve" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <rect width="1672" height="352" fill="#FFFFFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1464" height="280" viewBox="0 0 1464 280" xml:space="preserve">
+  <rect width="1464" height="280" fill="#FFFFFF" />
+  <g data-component-id="page">
+  <rect x="0" y="0" width="1464" height="280" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="step_problem">
-  <rect x="24" y="24" width="296" height="304" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" data-orig-width="296" data-orig-height="304" data-orig-fill="#F3F3F3"/>
-  <text font-family="Ubuntu Sans" data-orig-inner="&#10;    &lt;tspan x=&quot;32&quot; y=&quot;48.92&quot; font-size=&quot;18&quot; font-weight=&quot;700&quot; fill=&quot;#000000&quot;&gt;The problem&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;32&quot; y=&quot;72.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;32&quot; y=&quot;96.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;Databases have crawled to&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;32&quot; y=&quot;120.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;a halt. Services are&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;32&quot; y=&quot;144.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;unusably slow.&lt;/tspan&gt;&#10;  ">
+  <rect x="24" y="24" width="264" height="136" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="700" fill="#000000">The problem</tspan>
-    <tspan x="32" y="72.92" font-size="18" font-weight="400" fill="#000000"/>
-    <tspan x="32" y="96.92" font-size="18" font-weight="400" fill="#000000">Databases have crawled to</tspan>
-    <tspan x="32" y="120.92" font-size="18" font-weight="400" fill="#000000">a halt. Services are</tspan>
-    <tspan x="32" y="144.92" font-size="18" font-weight="400" fill="#000000">unusably slow.</tspan>
+    <tspan x="32" y="72.92" font-size="18" font-weight="400" fill="#000000"></tspan>
+    <tspan x="32" y="96.92" font-size="18" font-weight="400" fill="#000000">Databases have crawled to a</tspan>
+    <tspan x="32" y="120.92" font-size="18" font-weight="400" fill="#000000">halt. Services are unusably</tspan>
+    <tspan x="32" y="144.92" font-size="18" font-weight="400" fill="#000000">slow.</tspan>
   </text>
   </g>
   <g data-component-id="step_investigation">
-  <rect x="352" y="24" width="296" height="304" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" data-orig-width="296" data-orig-height="304" data-orig-fill="#F3F3F3"/>
-  <text font-family="Ubuntu Sans" data-orig-inner="&#10;    &lt;tspan x=&quot;360&quot; y=&quot;48.92&quot; font-size=&quot;18&quot; font-weight=&quot;700&quot; fill=&quot;#000000&quot;&gt;The initial investigation&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;360&quot; y=&quot;72.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;360&quot; y=&quot;96.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;Customer believes getent&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;360&quot; y=&quot;120.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;to be the issue. They open&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;360&quot; y=&quot;144.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;a support ticket.&lt;/tspan&gt;&#10;  ">
-    <tspan x="360" y="48.92" font-size="18" font-weight="700" fill="#000000">The initial investigation</tspan>
-    <tspan x="360" y="72.92" font-size="18" font-weight="400" fill="#000000"/>
-    <tspan x="360" y="96.92" font-size="18" font-weight="400" fill="#000000">Customer believes getent</tspan>
-    <tspan x="360" y="120.92" font-size="18" font-weight="400" fill="#000000">to be the issue. They open</tspan>
-    <tspan x="360" y="144.92" font-size="18" font-weight="400" fill="#000000">a support ticket.</tspan>
+  <rect x="312" y="24" width="264" height="136" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="320" y="48.92" font-size="18" font-weight="700" fill="#000000">The initial investigation</tspan>
+    <tspan x="320" y="72.92" font-size="18" font-weight="400" fill="#000000"></tspan>
+    <tspan x="320" y="96.92" font-size="18" font-weight="400" fill="#000000">Customer believes getent to</tspan>
+    <tspan x="320" y="120.92" font-size="18" font-weight="400" fill="#000000">be the issue. They open a</tspan>
+    <tspan x="320" y="144.92" font-size="18" font-weight="400" fill="#000000">support ticket.</tspan>
   </text>
   </g>
   <g data-component-id="step_analysis">
-  <rect x="680" y="24" width="296" height="304" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" data-orig-width="296" data-orig-height="304" data-orig-fill="#F3F3F3"/>
-  <text font-family="Ubuntu Sans" data-orig-inner="&#10;    &lt;tspan x=&quot;688&quot; y=&quot;48.92&quot; font-size=&quot;18&quot; font-weight=&quot;700&quot; fill=&quot;#000000&quot;&gt;Support Engineering&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;688&quot; y=&quot;72.92&quot; font-size=&quot;18&quot; font-weight=&quot;700&quot; fill=&quot;#000000&quot;&gt;analysis&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;688&quot; y=&quot;96.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;688&quot; y=&quot;120.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;The issue isn’t a quick&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;688&quot; y=&quot;144.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;package fix. Canonical&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;688&quot; y=&quot;168.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;Support engineers dive&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;688&quot; y=&quot;192.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;deep into the source code.&lt;/tspan&gt;&#10;  ">
-    <tspan x="688" y="48.92" font-size="18" font-weight="700" fill="#000000">Support Engineering</tspan>
-    <tspan x="688" y="72.92" font-size="18" font-weight="700" fill="#000000">analysis</tspan>
-    <tspan x="688" y="96.92" font-size="18" font-weight="400" fill="#000000"/>
-    <tspan x="688" y="120.92" font-size="18" font-weight="400" fill="#000000">The issue isn’t a quick</tspan>
-    <tspan x="688" y="144.92" font-size="18" font-weight="400" fill="#000000">package fix. Canonical</tspan>
-    <tspan x="688" y="168.92" font-size="18" font-weight="400" fill="#000000">Support engineers dive</tspan>
-    <tspan x="688" y="192.92" font-size="18" font-weight="400" fill="#000000">deep into the source code.</tspan>
+  <rect x="600" y="24" width="264" height="160" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="608" y="48.92" font-size="18" font-weight="700" fill="#000000">Support Engineering analysis</tspan>
+    <tspan x="608" y="72.92" font-size="18" font-weight="400" fill="#000000"></tspan>
+    <tspan x="608" y="96.92" font-size="18" font-weight="400" fill="#000000">The issue isn’t a quick package</tspan>
+    <tspan x="608" y="120.92" font-size="18" font-weight="400" fill="#000000">fix. Canonical Support</tspan>
+    <tspan x="608" y="144.92" font-size="18" font-weight="400" fill="#000000">engineers dive deep into the</tspan>
+    <tspan x="608" y="168.92" font-size="18" font-weight="400" fill="#000000">source code.</tspan>
   </text>
   </g>
   <g data-component-id="step_fix">
-  <rect x="1008" y="24" width="304" height="304" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" data-orig-width="304" data-orig-height="304" data-orig-fill="#F3F3F3"/>
-  <text font-family="Ubuntu Sans" data-orig-inner="&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;48.92&quot; font-size=&quot;18&quot; font-weight=&quot;700&quot; fill=&quot;#000000&quot;&gt;The fix&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;72.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;96.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;Canonical Support engineers&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;120.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;fix the code in a&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;144.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;12-year-old repo,&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;168.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;upstreaming the fix for&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;192.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;all. They patch the issue,&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;216.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;reducing nearly 49,000 disk&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;240.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;reads to a single, fast&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1016&quot; y=&quot;264.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;alternative.&lt;/tspan&gt;&#10;  ">
-    <tspan x="1016" y="48.92" font-size="18" font-weight="700" fill="#000000">The fix</tspan>
-    <tspan x="1016" y="72.92" font-size="18" font-weight="400" fill="#000000"/>
-    <tspan x="1016" y="96.92" font-size="18" font-weight="400" fill="#000000">Canonical Support engineers</tspan>
-    <tspan x="1016" y="120.92" font-size="18" font-weight="400" fill="#000000">fix the code in a</tspan>
-    <tspan x="1016" y="144.92" font-size="18" font-weight="400" fill="#000000">12-year-old repo,</tspan>
-    <tspan x="1016" y="168.92" font-size="18" font-weight="400" fill="#000000">upstreaming the fix for</tspan>
-    <tspan x="1016" y="192.92" font-size="18" font-weight="400" fill="#000000">all. They patch the issue,</tspan>
-    <tspan x="1016" y="216.92" font-size="18" font-weight="400" fill="#000000">reducing nearly 49,000 disk</tspan>
-    <tspan x="1016" y="240.92" font-size="18" font-weight="400" fill="#000000">reads to a single, fast</tspan>
-    <tspan x="1016" y="264.92" font-size="18" font-weight="400" fill="#000000">alternative.</tspan>
+  <rect x="888" y="24" width="264" height="232" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="896" y="48.92" font-size="18" font-weight="700" fill="#000000">The fix</tspan>
+    <tspan x="896" y="72.92" font-size="18" font-weight="400" fill="#000000"></tspan>
+    <tspan x="896" y="96.92" font-size="18" font-weight="400" fill="#000000">Canonical Support engineers</tspan>
+    <tspan x="896" y="120.92" font-size="18" font-weight="400" fill="#000000">fix the code in a 12-year-old</tspan>
+    <tspan x="896" y="144.92" font-size="18" font-weight="400" fill="#000000">repo, upstreaming the fix for</tspan>
+    <tspan x="896" y="168.92" font-size="18" font-weight="400" fill="#000000">all. They patch the issue,</tspan>
+    <tspan x="896" y="192.92" font-size="18" font-weight="400" fill="#000000">reducing nearly 49,000 disk</tspan>
+    <tspan x="896" y="216.92" font-size="18" font-weight="400" fill="#000000">reads to a single, fast</tspan>
+    <tspan x="896" y="240.92" font-size="18" font-weight="400" fill="#000000">alternative.</tspan>
   </text>
   </g>
   <g data-component-id="step_result">
-  <rect x="1344" y="24" width="304" height="304" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" data-orig-width="304" data-orig-height="304" data-orig-fill="#F3F3F3"/>
-  <text font-family="Ubuntu Sans" data-orig-inner="&#10;    &lt;tspan x=&quot;1352&quot; y=&quot;48.92&quot; font-size=&quot;18&quot; font-weight=&quot;700&quot; fill=&quot;#000000&quot;&gt;The result&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1352&quot; y=&quot;72.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1352&quot; y=&quot;96.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;The databases are all&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1352&quot; y=&quot;120.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;online and back to their&lt;/tspan&gt;&#10;    &lt;tspan x=&quot;1352&quot; y=&quot;144.92&quot; font-size=&quot;18&quot; font-weight=&quot;400&quot; fill=&quot;#000000&quot;&gt;desired speed.&lt;/tspan&gt;&#10;  ">
-    <tspan x="1352" y="48.92" font-size="18" font-weight="700" fill="#000000">The result</tspan>
-    <tspan x="1352" y="72.92" font-size="18" font-weight="400" fill="#000000"/>
-    <tspan x="1352" y="96.92" font-size="18" font-weight="400" fill="#000000">The databases are all</tspan>
-    <tspan x="1352" y="120.92" font-size="18" font-weight="400" fill="#000000">online and back to their</tspan>
-    <tspan x="1352" y="144.92" font-size="18" font-weight="400" fill="#000000">desired speed.</tspan>
+  <rect x="1176" y="24" width="264" height="136" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="1184" y="48.92" font-size="18" font-weight="700" fill="#000000">The result</tspan>
+    <tspan x="1184" y="72.92" font-size="18" font-weight="400" fill="#000000"></tspan>
+    <tspan x="1184" y="96.92" font-size="18" font-weight="400" fill="#000000">The databases are all online</tspan>
+    <tspan x="1184" y="120.92" font-size="18" font-weight="400" fill="#000000">and back to their desired</tspan>
+    <tspan x="1184" y="144.92" font-size="18" font-weight="400" fill="#000000">speed.</tspan>
   </text>
   </g>
-  <g data-component-id="step_problem-&gt;step_investigation"><line x1="336" y1="176" x2="341.1592" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="336" y1="176" x2="336" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="320" y1="176" x2="336" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/>
-  <line x1="320" y1="176" x2="336" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="336" y1="176" x2="336" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="336" y1="176" x2="341.1592" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <polygon points="341.1592,173.0947 352,176 341.1592,178.9053" fill="#E95420"/>
+  <g data-component-id="step_problem-&gt;step_investigation">
+  <line x1="288" y1="92" x2="301.1592" y2="92" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="301.1592,89.0947 312,92 301.1592,94.9053" fill="#E95420" />
   </g>
-  <g data-component-id="step_investigation-&gt;step_analysis"><line x1="664" y1="176" x2="669.1592" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="664" y1="176" x2="664" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="648" y1="176" x2="664" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/>
-  <line x1="648" y1="176" x2="664" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="664" y1="176" x2="664" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="664" y1="176" x2="669.1592" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <polygon points="669.1592,173.0947 680,176 669.1592,178.9053" fill="#E95420"/>
+  <g data-component-id="step_investigation-&gt;step_analysis">
+  <line x1="576" y1="92" x2="600" y2="92" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="600" y1="92" x2="600" y2="93.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="597.0947,93.1592 600,104 602.9053,93.1592" fill="#E95420" />
   </g>
-  <g data-component-id="step_analysis-&gt;step_fix"><line x1="992" y1="176" x2="997.1592" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="992" y1="176" x2="992" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="976" y1="176" x2="992" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/>
-  <line x1="976" y1="176" x2="992" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="992" y1="176" x2="992" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="992" y1="176" x2="997.1592" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <polygon points="997.1592,173.0947 1008,176 997.1592,178.9053" fill="#E95420"/>
+  <g data-component-id="step_analysis-&gt;step_fix">
+  <line x1="864" y1="104" x2="888" y2="104" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="888" y1="104" x2="888" y2="129.1592" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="885.0947,129.1592 888,140 890.9053,129.1592" fill="#E95420" />
   </g>
-  <g data-component-id="step_fix-&gt;step_result"><line x1="1328" y1="176" x2="1333.1592" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="1328" y1="176" x2="1328" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/><line x1="1312" y1="176" x2="1328" y2="176" stroke="transparent" stroke-width="12" style="pointer-events: stroke;"/>
-  <line x1="1312" y1="176" x2="1328" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="1328" y1="176" x2="1328" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <line x1="1328" y1="176" x2="1333.1592" y2="176" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10"/>
-  <polygon points="1333.1592,173.0947 1344,176 1333.1592,178.9053" fill="#E95420"/>
+  <g data-component-id="step_fix-&gt;step_result">
+  <line x1="1152" y1="140" x2="1176" y2="140" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1176" y1="140" x2="1176" y2="102.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1173.0947,102.8408 1176,92 1178.9053,102.8408" fill="#E95420" />
   </g>
-<rect x="-4" y="-4" width="8" height="8" class="dg-handle dg-handle-tl" data-resize-cid="page" data-resize-axis="tl"/><rect x="832" y="-4" width="8" height="8" class="dg-handle dg-handle-t" data-resize-cid="page" data-resize-axis="t"/><rect x="1668" y="-4" width="8" height="8" class="dg-handle dg-handle-tr" data-resize-cid="page" data-resize-axis="tr"/><rect x="1668" y="172" width="8" height="8" class="dg-handle dg-handle-r" data-resize-cid="page" data-resize-axis="r"/><rect x="1668" y="348" width="8" height="8" class="dg-handle dg-handle-br" data-resize-cid="page" data-resize-axis="br"/><rect x="832" y="348" width="8" height="8" class="dg-handle dg-handle-b" data-resize-cid="page" data-resize-axis="b"/><rect x="-4" y="348" width="8" height="8" class="dg-handle dg-handle-bl" data-resize-cid="page" data-resize-axis="bl"/><rect x="-4" y="172" width="8" height="8" class="dg-handle dg-handle-l" data-resize-cid="page" data-resize-axis="l"/></svg>
+</svg>

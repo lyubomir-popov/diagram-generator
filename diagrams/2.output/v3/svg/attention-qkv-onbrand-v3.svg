@@ -1,107 +1,106 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1784" height="344" viewBox="0 0 1784 344" xml:space="preserve">
-  <rect width="1784" height="344" fill="#FFFFFF" />
+<svg xmlns="http://www.w3.org/2000/svg" width="1784" height="232" viewBox="0 0 1784 232" xml:space="preserve">
+  <rect width="1784" height="232" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="1784" height="232" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="856" height="184" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="query">
-  <text font-family="Ubuntu Sans">
-    <tspan x="24" y="40.92" font-size="18" font-weight="700" fill="#000000">The query (Q): the &quot;question&quot;</tspan>
-  </text>
+  <rect x="24" y="24" width="208" height="80" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
   </g>
   <g data-component-id="q_ubuntu">
-  <rect x="32" y="112" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="32" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="136.92" font-size="18" font-weight="400" fill="#000000">Ubuntu:</tspan>
+    <tspan x="40" y="56.92" font-size="18" font-weight="400" fill="#000000">Ubuntu:</tspan>
   </text>
   </g>
   <g data-component-id="match">
-  <text font-family="Ubuntu Sans">
-    <tspan x="24" y="200.92" font-size="18" font-weight="700" fill="#000000">The match (QK^T): the &quot;relevance check&quot;</tspan>
-  </text>
+  <rect x="24" y="128" width="856" height="80" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
   </g>
   <g data-component-id="m_linux">
-  <rect x="32" y="272" width="192" height="40" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="136" width="192" height="64" fill="#000000" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="40" y="296.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
+    <tspan x="40" y="160.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
   </text>
   </g>
   <g data-component-id="m_for">
-  <rect x="248" y="272" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="248" y="136" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="256" y="296.92" font-size="18" font-weight="400" fill="#000000">for</tspan>
+    <tspan x="256" y="160.92" font-size="18" font-weight="400" fill="#000000">for</tspan>
   </text>
   </g>
   <g data-component-id="m_human">
-  <rect x="464" y="272" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="464" y="136" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="472" y="296.92" font-size="18" font-weight="400" fill="#000000">human</tspan>
+    <tspan x="472" y="160.92" font-size="18" font-weight="400" fill="#000000">human</tspan>
   </text>
   </g>
   <g data-component-id="m_beings">
-  <rect x="680" y="272" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="680" y="136" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="688" y="296.92" font-size="18" font-weight="400" fill="#000000">beings</tspan>
+    <tspan x="688" y="160.92" font-size="18" font-weight="400" fill="#000000">beings</tspan>
   </text>
+  </g>
+  <g data-component-id="__col_1__">
+  <rect x="904" y="24" width="856" height="184" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
   </g>
   <g data-component-id="keys">
-  <text font-family="Ubuntu Sans">
-    <tspan x="904" y="40.92" font-size="18" font-weight="700" fill="#000000">The keys (K): the &quot;advertisements&quot;</tspan>
-  </text>
+  <rect x="904" y="24" width="856" height="80" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
   </g>
   <g data-component-id="k_linux">
-  <rect x="912" y="112" width="192" height="40" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="912" y="32" width="192" height="64" fill="#000000" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="920" y="136.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
+    <tspan x="920" y="56.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
   </text>
   </g>
   <g data-component-id="k_for">
-  <rect x="1128" y="112" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1128" y="32" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1136" y="136.92" font-size="18" font-weight="400" fill="#000000">for</tspan>
+    <tspan x="1136" y="56.92" font-size="18" font-weight="400" fill="#000000">for</tspan>
   </text>
   </g>
   <g data-component-id="k_human">
-  <rect x="1344" y="112" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1344" y="32" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1352" y="136.92" font-size="18" font-weight="400" fill="#000000">human</tspan>
+    <tspan x="1352" y="56.92" font-size="18" font-weight="400" fill="#000000">human</tspan>
   </text>
   </g>
   <g data-component-id="k_beings">
-  <rect x="1560" y="112" width="192" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1560" y="32" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1568" y="136.92" font-size="18" font-weight="400" fill="#000000">beings</tspan>
+    <tspan x="1568" y="56.92" font-size="18" font-weight="400" fill="#000000">beings</tspan>
   </text>
   </g>
   <g data-component-id="value">
-  <text font-family="Ubuntu Sans">
-    <tspan x="904" y="200.92" font-size="18" font-weight="700" fill="#000000">The value (V): the &quot;knowledge transfer&quot;</tspan>
-  </text>
+  <rect x="904" y="128" width="640" height="80" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
   </g>
   <g data-component-id="v_ubuntu">
-  <rect x="912" y="272" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="912" y="136" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="920" y="296.92" font-size="18" font-weight="400" fill="#000000">Ubuntu:</tspan>
+    <tspan x="920" y="160.92" font-size="18" font-weight="400" fill="#000000">Ubuntu:</tspan>
   </text>
   </g>
   <g data-component-id="v_linux">
-  <rect x="1128" y="272" width="192" height="40" fill="#000000" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1128" y="136" width="192" height="64" fill="#000000" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1136" y="296.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
+    <tspan x="1136" y="160.92" font-size="18" font-weight="400" fill="#FFFFFF">Linux</tspan>
   </text>
   </g>
   <g data-component-id="value_transfer">
-  <rect x="1344" y="272" width="192" height="40" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1344" y="136" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
-    <tspan x="1352" y="296.92" font-size="18" font-weight="700" fill="#000000">Value transfer (V)</tspan>
+    <tspan x="1352" y="160.92" font-size="18" font-weight="700" fill="#000000">Value transfer (V)</tspan>
   </text>
   </g>
   <g data-component-id="v_ubuntu.right-&gt;v_linux.left">
-  <line x1="1104" y1="292" x2="1116" y2="292" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1116" y1="292" x2="1116" y2="292" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1116" y1="292" x2="1117.1592" y2="292" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="1117.1592,289.0947 1128,292 1117.1592,294.9053" fill="#E95420" />
+  <line x1="1104" y1="168" x2="1117.1592" y2="168" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1117.1592,165.0947 1128,168 1117.1592,170.9053" fill="#E95420" />
   </g>
   <g data-component-id="v_linux.bottom-&gt;value_transfer.top">
-  <line x1="1224" y1="312" x2="1224" y2="292" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1224" y1="292" x2="1440" y2="292" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="1440" y1="292" x2="1440" y2="282.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="1437.0947,282.8408 1440,272 1442.9053,282.8408" fill="#E95420" />
+  <line x1="1224" y1="200" x2="1224" y2="168" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1224" y1="168" x2="1440" y2="168" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="1440" y1="168" x2="1440" y2="146.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="1437.0947,146.8408 1440,136 1442.9053,146.8408" fill="#E95420" />
   </g>
 </svg>

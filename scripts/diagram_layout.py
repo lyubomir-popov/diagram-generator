@@ -82,6 +82,7 @@ class Rect:
     fill: str = "#FFFFFF"
     stroke: str = "#000000"
     dashed: bool = False
+    stroke_dasharray: str | None = None
     component_id: str | None = None
 
 

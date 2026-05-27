@@ -1,7 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="688" height="288" viewBox="0 0 688 288" xml:space="preserve">
   <rect width="688" height="288" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="688" height="288" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="192" height="240" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <rect x="24" y="24" width="96" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
   <g data-component-id="gpu">
-  <rect x="24" y="112" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="112" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="136.92" font-size="18" font-weight="700" fill="#000000">GPU</tspan>
   </text>
@@ -12,8 +19,14 @@
 
   </g>
   </g>
+  <g data-component-id="__ann_2268206476880__">
+  <rect x="24" y="200" width="96" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_1__">
+  <rect x="240" y="24" width="304" height="200" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="scheduler">
-  <rect x="240" y="24" width="304" height="120" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="24" width="304" height="88" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="248" y="48.92" font-size="18" font-weight="700" fill="#000000">Scheduler</tspan>
     <tspan x="248" y="72.92" font-size="18" font-weight="400" fill="#000000">AI inference</tspan>
@@ -28,9 +41,16 @@
 
   </g>
   </g>
+  <rect x="240" y="136" width="96" height="88" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  <g data-component-id="__col_2__">
+  <rect x="568" y="24" width="96" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="queued">
+  <rect x="568" y="24" width="96" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="gpu.top-&gt;scheduler.left">
-  <line x1="120" y1="112" x2="240" y2="112" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <line x1="240" y1="112" x2="240" y2="94.8408" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
-  <polygon points="237.0947,94.8408 240,84 242.9053,94.8408" fill="#E95420" />
+  <line x1="120" y1="112" x2="120" y2="68" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <line x1="120" y1="68" x2="229.1592" y2="68" fill="none" stroke="#E95420" stroke-width="1" stroke-miterlimit="10" />
+  <polygon points="229.1592,65.0947 240,68 229.1592,70.9053" fill="#E95420" />
   </g>
 </svg>

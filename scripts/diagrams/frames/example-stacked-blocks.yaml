@@ -27,7 +27,6 @@ root:
     - id: row0
       direction: horizontal
       gap: 24
-      border: none
       children:
         - id: cloud
           label: [Cloud]
@@ -43,7 +42,6 @@ root:
     - id: services
       direction: horizontal
       gap: 24
-      padding: 8
       border: solid
       heading: "Managed services"
       children:
@@ -64,7 +62,6 @@ root:
     - id: row2
       direction: horizontal
       gap: 24
-      border: none
       children:
         - id: lockman
           label: [Lock, manager]

@@ -60,6 +60,21 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
+### Variant overlays and col_span
+
+- [x] `[M]` **Variant overlays.** `variant: highlight` (black fill, white text/icon) and `variant: annotation` (borderless leaf). Explicit YAML keys override variants. Engine auto-detects leaf vs parent — no type presets needed.
+- [x] `[S]` **Highlight heading propagation.** When a highlighted parent has a heading, the synthetic heading child inherits `fill: black` and white icon.
+- [x] `[S]` **`col_span` field.** `Frame.col_span: int | None` added to `frame_model.py`. Parsed in `frame_loader.py`. Resolved to `width = N * col_w + (N-1) * col_gap` with `sizing_w = FIXED` in `layout_v3.py` via `_resolve_col_spans()`.
+- [x] `[S]` **Tests.** 7 tests in `test_frame_loader.py` covering highlight, annotation, explicit override, backward compatibility, col_span parsing/resolution, and heading propagation.
+
+### Overlays (cross-cutting visual groups)
+
+- [x] `[M]` **Overlay model and rendering.** `Overlay` dataclass in `frame_model.py`, parsed from `overlays:` YAML key. Rendered as dashed bounding rect + label around member nodes. Named "overlay" (not "span") to avoid collision with `col_span`.
+- [x] `[S]` **Mermaid structured testcase ports.** `simple-testcase.yaml` and `complex-testcase.yaml` recreated from canonical/mermaid examples. Complex testcase demonstrates the overlay feature.
+- [x] `[S]` **Tests.** 3 tests covering overlay parsing, bounding-rect rendering, and absent-overlay backward compatibility.
+- [ ] `[M]` **Mermaid structured import/export adapter.** Parse/emit the `structured-beta` DSL format for interchange with canonical/mermaid.
+- [ ] `[S]` **Overlay SVG rendering.** Verify dashed rect renders correctly in SVG output (currently uses existing `Rect` primitive which supports `dashed: true`).
+
 ### Forward ontology – build pipeline integration
 
 - [x] `[S]` **Wire `svg_meta()` into the build pipeline.** `build_v2.py` and `build_outputs.py` should pass `diagram.svg_meta()` to `render_svg()` / `write_svg()` so generated SVGs carry metadata automatically. DONE 2026-05-27.

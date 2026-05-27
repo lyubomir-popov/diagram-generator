@@ -61,7 +61,7 @@ The specs are living documents maintained in the sibling `canonical-specs` repo.
 | `repo-workflow-boilerplate` | Workflow upstream | Centralized workflow template for the root file layout, inbox split, source precedence, and cold-start rules |
 | `baseline-foundry` | Read-only reference and refresh source | Upstream BF contract reference; a sibling checkout is only needed when refreshing the vendored preview-shell snapshot under `assets/baseline-foundry/` |
 | `canonical-specs` | Design compass (living upstream) | Upstream source for the type scale, spacing, and grid specs that govern DIAGRAM.md tokens. Diagrams will become a 4th tier in these specs. See "Design compass" section above. |
-| `diagram-generator-planning` | Product vision and architecture | Vision document, standalone-tool proposal, architectural benchmarks (D2, ELK, Penrose, Structurizr, etc.), and the spike plan that informs the architecture blueprint in ROADMAP.md |
+| `diagram-generator-planning` | Product vision and architecture | Vision document, constrained-editor proposal, architectural benchmarks (D2, ELK, Penrose, Structurizr, etc.), and the hard-problem inventory that informs the architecture blueprint in ROADMAP.md |
 | `diagram-generator-planning` | Ontology contract source | `docs/corpus-scrape/diagram_ontology_schema_seed.py` defines the canonical taxonomy families, abstraction levels, layout engines, and presentation forms used by the `meta` block in frame YAML and SVG metadata |
 | `design.md` | Read-only format reference | Used as a structure reference for the plain-text `DIAGRAM.md` spec; Google's DESIGN.md format inspired our token+prose approach |
 

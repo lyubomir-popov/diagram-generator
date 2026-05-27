@@ -1,63 +1,9 @@
 <mxfile host="app.diagrams.net" agent="diagram-generator" version="29.3.7">
   <diagram name="Android security comparison" id="declarative">
-    <mxGraphModel grid="1" gridSize="8" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="816" pageHeight="488" background="light-dark(#ffffff, #ffffff)" adaptiveColors="none" math="0" shadow="0">
+    <mxGraphModel grid="1" gridSize="8" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="816" pageHeight="984" background="light-dark(#ffffff, #ffffff)" adaptiveColors="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
-          <mxGeometry x="288" y="112" width="240" height="288" as="geometry" />
-        </mxCell>
-        <mxCell id="3" parent="2" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;VM&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="224" height="272" as="geometry" />
-        </mxCell>
-        <mxCell id="4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
-          <mxGeometry x="24" y="128" width="240" height="184" as="geometry" />
-        </mxCell>
-        <mxCell id="5" parent="4" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;LXD container&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="224" height="168" as="geometry" />
-        </mxCell>
-        <mxCell id="6" parent="2" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
-          <mxGeometry x="8" y="72" width="224" height="112" as="geometry" />
-        </mxCell>
-        <mxCell id="7" parent="6" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;SELinux ON&lt;/b&gt;&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px&quot;&gt;/enforcing mode&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px&quot;&gt;App sandboxing&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;font-size:18px&quot;&gt;System service isolation&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="208" height="96" as="geometry" />
-        </mxCell>
-        <mxCell id="8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
-          <mxGeometry x="24" y="384" width="240" height="64" as="geometry" />
-        </mxCell>
-        <mxCell id="9" parent="8" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;Host kernel (AppArmor)&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="224" height="48" as="geometry" />
-        </mxCell>
-        <mxCell id="10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
-          <mxGeometry x="288" y="424" width="240" height="64" as="geometry" />
-        </mxCell>
-        <mxCell id="11" parent="10" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;Host kernel (AppArmor)&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="224" height="48" as="geometry" />
-        </mxCell>
-        <mxCell id="12" parent="4" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
-          <mxGeometry x="8" y="72" width="224" height="64" as="geometry" />
-        </mxCell>
-        <mxCell id="13" parent="12" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;&lt;b&gt;SELinux removed&lt;/b&gt;&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="208" height="48" as="geometry" />
-        </mxCell>
-        <mxCell id="14" parent="4" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#F3F3F3;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-accent" data-dg-style-tokens="box-accent" connectable="1">
-          <mxGeometry x="8" y="120" width="224" height="64" as="geometry" />
-        </mxCell>
-        <mxCell id="15" parent="14" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;Android system&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="208" height="48" as="geometry" />
-        </mxCell>
-        <mxCell id="16" parent="2" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
-          <mxGeometry x="8" y="192" width="224" height="64" as="geometry" />
-        </mxCell>
-        <mxCell id="17" parent="16" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;Android system&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="208" height="48" as="geometry" />
-        </mxCell>
-        <mxCell id="18" parent="2" style="rounded=0;whiteSpace=wrap;html=1;shadow=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1;" value="" vertex="1" data-dg-source="diagram-generator" data-dg-role="box" tags="dg-generated dg-role-box dg-token-box-default" data-dg-style-tokens="box-default" connectable="1">
-          <mxGeometry x="8" y="240" width="224" height="64" as="geometry" />
-        </mxCell>
-        <mxCell id="19" parent="18" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;fillColor=none;strokeColor=none;strokeWidth=0;shadow=0;fontFamily=Ubuntu Sans;fontSize=18;fontColor=#000000;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DUbuntu%2BSans;" value="&lt;span style=&quot;font-size:18px&quot;&gt;Android kernel&lt;/span&gt;" vertex="1" data-dg-source="diagram-generator" data-dg-role="label" tags="dg-generated dg-role-label dg-token-label-box" data-dg-style-tokens="label-box" connectable="0">
-          <mxGeometry x="8" y="8" width="208" height="48" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

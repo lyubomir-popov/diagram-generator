@@ -1,11 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1672" height="408" viewBox="0 0 1672 408" xml:space="preserve">
   <rect width="1672" height="408" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="1672" height="408" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="title">
-  <rect x="24" y="24" width="1624" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="24" y="24" width="616" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="32" y="48.92" font-size="18" font-weight="700" fill="#000000">Inference snaps</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1592 32)">
+  <g class="dg-icon" transform="translate(584 32)">
 <path d="M33.1848 19.803L24.4993 24.6477V34.5657L24.0002 34.8518L23.4993 34.5647V24.6477L14.8147 19.804L15.2102 18.8792L23.9993 23.7805L32.7874 18.8792L33.1848 19.803Z" fill="#000000" />
 
 <path fill-rule="evenodd" clip-rule="evenodd" d="M41.4845 13.9658C41.8027 14.1419 42.0002 14.477 42.0002 14.8407V33.5866C42.0002 33.9503 41.8027 34.2853 41.4845 34.4615L24.4845 43.8709C24.1832 44.0377 23.8173 44.0377 23.516 43.8709L6.51598 34.4615C6.19774 34.2853 6.00024 33.9503 6.00024 33.5866V14.8407C6.00024 14.477 6.19776 14.1419 6.51602 13.9658L23.516 4.5573C23.8173 4.39055 24.1832 4.39055 24.4845 4.5573L41.4845 13.9658ZM7.47388 14.5657L14.1897 18.3108C13.9578 18.4437 13.8147 18.6905 13.8147 18.9578V19.2463L6.99048 15.4397V33.592L23.4993 42.7297V35.717L23.5032 35.72C23.8107 35.8958 24.189 35.896 24.4963 35.72L24.4993 35.718V42.7307L41.01 33.592V15.4397L34.1848 19.2454V18.96C34.1848 18.6914 34.041 18.4433 33.8079 18.3098L40.5237 14.5647L24.0002 5.42017L7.47388 14.5657Z" fill="#000000" />
@@ -15,20 +18,20 @@
   </g>
   </g>
   <g data-component-id="frame">
-  <rect x="24" y="112" width="1624" height="168" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
+  <rect x="24" y="112" width="1624" height="168" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" stroke-dasharray="8 8" />
   </g>
-  <rect x="32" y="120" width="1608" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="120" width="600" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="40" y="144.92" font-size="18" font-weight="700" fill="#000000">Inference snap</tspan>
   </text>
-  <g class="dg-icon" transform="translate(1584 128)">
+  <g class="dg-icon" transform="translate(576 128)">
 <path d="M33.0005 9.0566L41.4847 13.7516C41.803 13.9278 42.0005 14.2628 42.0005 14.6266V33.3725C42.0005 33.7362 41.803 34.0713 41.4848 34.2474L24.4848 43.6568C24.1834 43.8236 23.8175 43.8236 23.5162 43.6568L6.51622 34.2474C6.19799 34.0713 6.00049 33.7362 6.00049 33.3725V14.6266C6.00049 14.2628 6.19802 13.9278 6.5163 13.7516L15.0005 9.0566L23.5162 4.34317C23.8175 4.1764 24.1834 4.1764 24.4848 4.34317L33.0005 9.0566ZM24.4995 24.4336V42.505L32.5161 38.0684L41.0005 33.3721V15.2304L24.4995 24.4336ZM7.00049 33.3721L15.4849 38.0684L23.4995 42.504V24.4336L15.5249 19.9853V25.583L14.5288 25.0274V19.4297L7.00049 15.2314V33.3721ZM15.9204 19.0605L23.9995 23.5664L40.5151 14.3574L32.5161 9.9316L32.4038 9.8691L15.9204 19.0605ZM15.4849 9.9316L7.48486 14.3574L14.8989 18.4912L31.3774 9.30171L24.0005 5.21772L15.4849 9.9316Z" fill="#000000" />
 
   </g>
   <g data-component-id="pad">
-  <rect x="32" y="192" width="1608" height="80" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="192" width="1608" height="80" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
   </g>
-  <rect x="40" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="40" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="48" y="224.92" font-size="18" font-weight="400" fill="#000000">Model</tspan>
   </text>
@@ -44,7 +47,7 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 5.5C30.0019 5.5 35.088 9.41707 36.8438 14.834C36.8885 14.9047 36.9156 14.9865 36.9199 15.0752C37.2967 16.3172 37.5 17.6349 37.5 19C37.5 20.3651 37.2967 21.6828 36.9199 22.9248C36.9155 23.0132 36.8883 23.0945 36.8438 23.165C35.0882 28.5824 30.0022 32.5 24 32.5C17.9976 32.5 12.9107 28.5826 11.1553 23.165C11.1115 23.0954 11.0849 23.0148 11.0801 22.9277C10.7027 21.6849 10.5 20.3661 10.5 19C10.5 17.6336 10.7026 16.3144 11.0801 15.0713C11.085 14.9843 11.1114 14.9035 11.1553 14.834C12.911 9.41693 17.998 5.5 24 5.5ZM12.2988 23.3994C13.8797 27.6019 17.657 30.7276 22.2334 31.375C19.5017 29.4002 17.5593 26.576 16.6689 23.3994H12.2988ZM31.3311 23.3994C30.4406 26.5762 28.4977 29.4001 25.7656 31.375C30.3425 30.7279 34.1202 27.6022 35.7012 23.3994H31.3311ZM17.7109 23.3994C18.5969 26.3285 20.4466 28.9195 23.0215 30.7109L23.499 31.043V23.3994H17.7109ZM24.499 31.043L24.9775 30.7109C27.5525 28.9195 29.4021 26.3286 30.2881 23.3994H24.499V31.043ZM31.418 15.5996C31.7202 16.8376 31.8779 18.1184 31.8779 19.418C31.8779 20.4298 31.7727 21.4278 31.5723 22.3994H36.0312C36.3361 21.3185 36.5 20.1784 36.5 19C36.5 17.8213 36.3362 16.6808 36.0312 15.5996H31.418ZM24.499 22.3994H30.5508C30.766 21.4303 30.8779 20.4314 30.8779 19.418C30.8779 18.1159 30.7102 16.8338 30.3877 15.5996H24.499V22.3994ZM17.6133 15.5996C17.2908 16.8339 17.1211 18.1159 17.1211 19.418C17.1211 20.4314 17.234 21.4303 17.4492 22.3994H23.499V15.5996H17.6133ZM11.9688 15.5996C11.6638 16.6808 11.5 17.8213 11.5 19C11.5 20.1784 11.664 21.3185 11.9688 22.3994H16.4277C16.2273 21.4278 16.1211 20.4298 16.1211 19.418C16.1211 18.1183 16.2799 16.8376 16.582 15.5996H11.9688ZM25.9004 6.89453C28.3956 8.91296 30.2005 11.6047 31.1396 14.5996H35.7012C34.0927 10.3245 30.2108 7.16335 25.5273 6.59277L25.9004 6.89453ZM24.499 14.5996H30.0879C29.1827 11.9111 27.5283 9.49843 25.2715 7.67285L24.499 7.04688V14.5996ZM22.7266 7.67285C20.4701 9.49843 18.816 11.9112 17.9111 14.5996H23.499V7.04688L22.7266 7.67285ZM22.4697 6.59277C17.7876 7.16429 13.907 10.3253 12.2988 14.5996H16.8594C17.7982 11.6048 19.6026 8.91297 22.0977 6.89453L22.4697 6.59277Z" fill="#000000" />
 
   </g>
-  <rect x="240" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="240" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="248" y="224.92" font-size="18" font-weight="400" fill="#000000">Workload</tspan>
     <tspan x="248" y="248.92" font-size="18" font-weight="400" fill="#000000">identity</tspan>
@@ -55,7 +58,7 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M24 6.5C28.4182 6.50009 32 10.0818 32 14.5C32 18.9182 28.4182 22.4999 24 22.5C19.5817 22.5 16 18.9183 16 14.5C16 10.0817 19.5817 6.5 24 6.5ZM24 7.5C20.134 7.5 17 10.634 17 14.5C17 18.366 20.134 21.5 24 21.5C27.8659 21.4999 31 18.3659 31 14.5C31 10.6341 27.8659 7.50009 24 7.5Z" fill="#000000" />
 
   </g>
-  <rect x="440" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="440" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="448" y="224.92" font-size="18" font-weight="400" fill="#000000">Runtime</tspan>
   </text>
@@ -67,7 +70,7 @@
 <path d="M45.15 33.15H35.87L35.85 32.67C35.76 30.29 34.96 28.02 33.54 26.11L33.28 25.76L39.87 19.17L40.22 19.59C43.28 23.24 45.02 27.88 45.14 32.64V33.15H45.15ZM36.82 32.15H44.12C43.92 27.92 42.43 23.97 39.8 20.65L34.59 25.86C35.88 27.73 36.64 29.89 36.82 32.15Z" fill="#000000" />
 
   </g>
-  <rect x="640" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="640" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="648" y="224.92" font-size="18" font-weight="400" fill="#000000">Heterogeneous</tspan>
     <tspan x="648" y="248.92" font-size="18" font-weight="400" fill="#000000">hardware</tspan>
@@ -80,7 +83,7 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M31.7998 18.5C33.1805 18.5 34.2998 19.6193 34.2998 21C34.2998 22.3807 33.1805 23.5 31.7998 23.5C30.4191 23.4999 29.2998 22.3807 29.2998 21C29.2998 19.6193 30.4192 18.5001 31.7998 18.5ZM31.7998 19.5C30.9714 19.5001 30.2998 20.1716 30.2998 21C30.2998 21.8284 30.9714 22.4999 31.7998 22.5C32.6282 22.5 33.2998 21.8284 33.2998 21C33.2998 20.1716 32.6282 19.5 31.7998 19.5Z" fill="#000000" />
 
   </g>
-  <rect x="840" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="840" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="848" y="224.92" font-size="18" font-weight="400" fill="#000000">Dependencies</tspan>
   </text>
@@ -90,7 +93,7 @@
 <path d="M35.5 34.5C35.5 35.0523 35.0523 35.5 34.5 35.5C33.9477 35.5 33.5 35.0523 33.5 34.5C33.5 33.9477 33.9477 33.5 34.5 33.5C35.0523 33.5 35.5 33.9477 35.5 34.5Z" fill="#000000" />
 
   </g>
-  <rect x="1040" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1040" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="1048" y="224.92" font-size="18" font-weight="400" fill="#000000">Reproducibility</tspan>
   </text>
@@ -104,7 +107,7 @@
 <path d="M37.65 7.14H30.06C29.68 4.8 27.67 3 25.23 3H22.77C20.33 3 18.32 4.8 17.94 7.14H10.5C9.67 7.14 9 7.81 9 8.64V43.44C9 44.27 9.67 44.94 10.5 44.94H37.65C38.41 44.86 39 44.22 39 43.44V8.64C39 7.86 38.41 7.22 37.65 7.15V7.14ZM18.86 8.51V7.92C18.86 5.76 20.62 4.01 22.77 4.01H25.23C27.39 4.01 29.14 5.77 29.14 7.92V8.51L29.47 8.63C31.03 9.18 31.96 10.43 31.96 11.97V13.67C31.96 13.87 31.8 14.02 31.61 14.02H16.39C16.19 14.02 16.04 13.86 16.04 13.67V11.97C16.04 10.43 16.97 9.18 18.53 8.63L18.86 8.51ZM38 43.44C38 43.72 37.78 43.94 37.5 43.94H10.5C10.22 43.94 10 43.72 10 43.44V8.64C10 8.36 10.22 8.14 10.5 8.14H17.23C15.86 8.97 15.04 10.36 15.04 11.97V13.67C15.04 14.42 15.65 15.02 16.39 15.02H31.61C32.36 15.02 32.96 14.41 32.96 13.67V11.97C32.96 10.36 32.14 8.97 30.77 8.14H37.5C37.78 8.14 38 8.36 38 8.64V43.44Z" fill="#000000" />
 
   </g>
-  <rect x="1240" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1240" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="1248" y="224.92" font-size="18" font-weight="400" fill="#000000">Hardware</tspan>
     <tspan x="1248" y="248.92" font-size="18" font-weight="400" fill="#000000">config</tspan>
@@ -115,7 +118,7 @@
 <path fill-rule="evenodd" clip-rule="evenodd" d="M30 30H18V18H30V30ZM19 29H29V19H19V29Z" fill="#000000" />
 
   </g>
-  <rect x="1440" y="200" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="1440" y="200" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="1448" y="224.92" font-size="18" font-weight="400" fill="#000000">Operational</tspan>
     <tspan x="1448" y="248.92" font-size="18" font-weight="400" fill="#000000">observability</tspan>
@@ -140,8 +143,11 @@
 <path d="M29.001 15.1094L24.0918 21.501L21 18.5957L21.6865 17.8672L23.9717 20.0146L28.208 14.5L29.001 15.1094Z" fill="#000000" />
 
   </g>
+  <g data-component-id="hardware">
+  <rect x="24" y="304" width="608" height="80" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
   <g data-component-id="hw_cpu">
-  <rect x="32" y="312" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="32" y="312" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="40" y="336.92" font-size="18" font-weight="400" fill="#000000">CPU</tspan>
   </text>
@@ -153,7 +159,7 @@
   </g>
   </g>
   <g data-component-id="hw_gpu">
-  <rect x="232" y="312" width="192" height="64" fill="#F3F3F3" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="232" y="312" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="240" y="336.92" font-size="18" font-weight="400" fill="#000000">GPU</tspan>
   </text>
@@ -171,7 +177,7 @@
   </g>
   </g>
   <g data-component-id="hw_npu">
-  <rect x="432" y="312" width="192" height="64" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <rect x="432" y="312" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
   <text font-family="Ubuntu Sans">
     <tspan x="440" y="336.92" font-size="18" font-weight="400" fill="#000000">NPU</tspan>
   </text>

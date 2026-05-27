@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="816" height="768" viewBox="0 0 816 768" xml:space="preserve">
+  <rect width="816" height="768" fill="#FFFFFF" />
+  <g data-component-id="__root__">
+  <rect x="0" y="0" width="816" height="768" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__col_0__">
+  <rect x="24" y="24" width="240" height="680" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__ann_2268206373904__">
+  <rect x="24" y="24" width="240" height="152" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="anbox_container">
+  <rect x="24" y="200" width="208" height="152" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  </g>
+  <g data-component-id="container_system">
+  <rect x="32" y="208" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="40" y="232.92" font-size="18" font-weight="400" fill="#000000">Android system</tspan>
+    <tspan x="40" y="256.92" font-size="18" font-weight="400" fill="#000000">(App/Framework/API)</tspan>
+  </text>
+  </g>
+  <g data-component-id="container_runtime">
+  <rect x="32" y="280" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="40" y="304.92" font-size="18" font-weight="400" fill="#000000">Android runtime</tspan>
+  </text>
+  </g>
+  <g data-component-id="__sep_2268206375824__">
+  <rect x="24" y="376" width="240" height="152" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="host_container">
+  <rect x="24" y="552" width="208" height="152" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  </g>
+  <g data-component-id="host_container_kernel">
+  <rect x="32" y="560" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="40" y="584.92" font-size="18" font-weight="400" fill="#000000">Host Linux kernel</tspan>
+    <tspan x="40" y="608.92" font-size="18" font-weight="400" fill="#000000">(shared kernel)</tspan>
+  </text>
+  </g>
+  <g data-component-id="host_container_hw">
+  <rect x="32" y="632" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="40" y="656.92" font-size="18" font-weight="400" fill="#000000">Host hardware</tspan>
+  </text>
+  </g>
+  <g data-component-id="__col_1__">
+  <rect x="288" y="24" width="240" height="720" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__ann_2268206374032__">
+  <rect x="288" y="24" width="240" height="224" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="anbox_vm">
+  <rect x="288" y="272" width="208" height="224" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  </g>
+  <g data-component-id="vm_system">
+  <rect x="296" y="280" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="304.92" font-size="18" font-weight="400" fill="#000000">Android system</tspan>
+    <tspan x="304" y="328.92" font-size="18" font-weight="400" fill="#000000">(App/Framework/API)</tspan>
+  </text>
+  </g>
+  <g data-component-id="vm_runtime">
+  <rect x="296" y="352" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="376.92" font-size="18" font-weight="400" fill="#000000">Android runtime</tspan>
+  </text>
+  </g>
+  <g data-component-id="vm_kernel">
+  <rect x="296" y="424" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="448.92" font-size="18" font-weight="400" fill="#000000">Android kernel</tspan>
+  </text>
+  </g>
+  <g data-component-id="host_vm">
+  <rect x="288" y="520" width="208" height="224" fill="#F3F3F3" stroke="none" stroke-width="1" stroke-miterlimit="10" />
+  </g>
+  <g data-component-id="host_vm_kernel">
+  <rect x="296" y="528" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="552.92" font-size="18" font-weight="400" fill="#000000">Host Linux kernel</tspan>
+  </text>
+  </g>
+  <g data-component-id="host_vm_hw">
+  <rect x="296" y="600" width="192" height="64" fill="transparent" stroke="#000000" stroke-width="1" stroke-miterlimit="10" />
+  <text font-family="Ubuntu Sans">
+    <tspan x="304" y="624.92" font-size="18" font-weight="400" fill="#000000">Host hardware</tspan>
+  </text>
+  </g>
+  <g data-component-id="__col_2__">
+  <rect x="552" y="24" width="240" height="152" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__ann_2268206375760__">
+  <rect x="552" y="24" width="240" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+  <g data-component-id="__ann_2268206377296__">
+  <rect x="552" y="112" width="240" height="64" fill="transparent" stroke="none" stroke-width="1" stroke-miterlimit="10" pointer-events="none" />
+  </g>
+</svg>

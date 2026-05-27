@@ -17,24 +17,19 @@ root:
   direction: vertical
   gap: 24
   padding: 24
-  border: none
   children:
     # Row 0: input panel (right side)
     - id: row0
       direction: horizontal
       gap: 32
-      border: none
       children:
         - id: spacer0
-          border: none
+          variant: annotation
           label: []
           sizing_h: hug
         - id: input_panel
           direction: horizontal
           gap: 8
-          padding: 8
-          border: solid
-          fill: grey
           fill_weight: 2
           heading: "2. Input"
           children:
@@ -49,14 +44,9 @@ root:
     - id: row1
       direction: horizontal
       gap: 32
-      border: none
       children:
         - id: guidelines
-          direction: vertical
           gap: 8
-          padding: 8
-          border: solid
-          fill: grey
           heading: "1. Guidelines"
           children:
             - id: typo
@@ -69,11 +59,7 @@ root:
               label: [Layout]
               icon: Document.svg
         - id: engine
-          direction: vertical
           gap: 8
-          padding: 8
-          border: solid
-          fill: grey
           fill_weight: 2
           heading: "3. Engine"
           children:
@@ -91,30 +77,22 @@ root:
     - id: row2
       direction: horizontal
       gap: 32
-      border: none
       children:
         - id: spacer2
-          border: none
+          variant: annotation
           label: []
           sizing_h: hug
         - id: export_panel
           direction: horizontal
           gap: 8
-          padding: 8
-          border: solid
-          fill: grey
           fill_weight: 2
           heading: "4. Export"
           children:
             - id: output_svg
-              label:
-                - {text: SVG, fill: "#FFFFFF"}
-              fill: black
+              variant: highlight
+              label: [SVG]
               icon: Document.svg
-              icon_fill: "#FFFFFF"
             - id: output_drawio
-              label:
-                - {text: "Draw.io native format", fill: "#FFFFFF"}
-              fill: black
+              variant: highlight
+              label: ["Draw.io native format"]
               icon: Design.svg
-              icon_fill: "#FFFFFF"
