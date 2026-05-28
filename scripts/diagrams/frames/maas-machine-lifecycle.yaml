@@ -1,0 +1,152 @@
+engine: v3
+title: "MAAS machine lifecycle"
+# Source: MAAS documentation — machine lifecycle states
+# Vertical flow: New → Commissioning → Ready → Allocated → Deploying → Releasing
+arrows:
+  - source: new_box
+    target: commissioning_box
+  - source: commissioning_box
+    target: ready_box
+  - source: ready_box
+    target: allocated_box
+  - source: allocated_box
+    target: deploying_box
+  - source: deploying_box
+    target: releasing_box
+root:
+  id: page
+  direction: vertical
+  gap: 24
+  padding: 24
+  align: top-center
+  children:
+    # ── New ──
+    - id: new_row
+      direction: horizontal
+      gap: 16
+      sizing_w: hug
+      children:
+        - id: new_box
+          label: []
+          icon: Server.svg
+          sizing_w: hug
+        - id: new_desc
+          border: none
+          width: 280
+          label:
+            - {text: "New", weight: "700"}
+            - Machines newly discovered
+            - by MAAS.
+
+    # ── Commissioning ──
+    - id: commissioning_row
+      direction: horizontal
+      gap: 16
+      sizing_w: hug
+      children:
+        - id: commissioning_box
+          direction: horizontal
+          gap: 8
+          sizing_w: hug
+          children:
+            - id: comm_ram
+              label: [RAM]
+              icon: RAM.svg
+              width: 96
+            - id: comm_cpu
+              label: [CPU]
+              icon: CPU.svg
+              width: 96
+            - id: comm_disks
+              label: [disks]
+              icon: Storage node.svg
+              width: 96
+            - id: comm_nics
+              label: [NICs]
+              icon: Networking.svg
+              width: 96
+        - id: commissioning_desc
+          border: none
+          width: 280
+          label:
+            - {text: "Commissioning", weight: "700"}
+            - Detailed inventory of RAM,
+            - CPU, disks, NICs, and
+            - accelerators like GPUs.
+
+    # ── Ready ──
+    - id: ready_row
+      direction: horizontal
+      gap: 16
+      sizing_w: hug
+      children:
+        - id: ready_box
+          label: []
+          icon: Server.svg
+          sizing_w: hug
+        - id: ready_desc
+          border: none
+          width: 280
+          label:
+            - {text: "Ready", weight: "700"}
+            - A machine ready for
+            - allocation.
+
+    # ── Allocated ──
+    - id: allocated_row
+      direction: horizontal
+      gap: 16
+      sizing_w: hug
+      children:
+        - id: allocated_box
+          label: []
+          icon: Server.svg
+          sizing_w: hug
+        - id: allocated_desc
+          border: none
+          width: 280
+          label:
+            - {text: "Allocated", weight: "700"}
+            - Ready machines can be
+            - allocated to users. Users
+            - can further configure the
+            - intended deployment.
+
+    # ── Deploying ──
+    - id: deploying_row
+      direction: horizontal
+      gap: 16
+      sizing_w: hug
+      children:
+        - id: deploying_box
+          label: []
+          icon: Server.svg
+          sizing_w: hug
+        - id: deploying_desc
+          border: none
+          width: 280
+          label:
+            - {text: "Deploying", weight: "700"}
+            - Users can ask MAAS to turn
+            - the machine on and install a
+            - server operating system from
+            - scratch without manual
+            - intervention.
+
+    # ── Releasing ──
+    - id: releasing_row
+      direction: horizontal
+      gap: 16
+      sizing_w: hug
+      children:
+        - id: releasing_box
+          label: []
+          icon: Server.svg
+          sizing_w: hug
+        - id: releasing_desc
+          border: none
+          width: 280
+          label:
+            - {text: "Releasing", weight: "700"}
+            - The machine is securely released
+            - back to the shared pool of capacity.

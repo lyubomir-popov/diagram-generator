@@ -1,9 +1,11 @@
 engine: v3
 title: "Complex Testcase"
-# Source: mermaid/examples/complex-testcase.drawio
-# 3 dashed columns (Planning, Implementation, Delivery)
-# 4 boxes, 2 arrows, 1 overlay (Dev team spans define + implement)
-# NO "Build spike" — that is in complex-routing-usecase.drawio
+# Source: mermaid structured-beta test case
+# Reference: mermaid/examples/complex-testcase.drawio
+# 3 parent columns (Planning, Implementation, Delivery)
+# Dev team is a nested group inside Implementation
+# 4 leaf boxes, 2 arrows
+# NO "Build spike" — that is in complex-routing-usecase
 grid:
   cols: 3
   col_gap: 24
@@ -14,10 +16,6 @@ arrows:
     target: implement
   - source: measure
     target: review
-overlays:
-  - id: devteam
-    label: "Dev team"
-    members: [define, implement]
 root:
   id: page
   direction: horizontal
@@ -35,11 +33,15 @@ root:
     - id: implementation
       heading: "Implementation"
       children:
-        - id: implement
-          label: [Implement Ingress, pipeline]
+        - id: devteam
+          heading: "Dev team"
+          children:
+            - id: implement
+              label: [Implement Ingress, pipeline]
 
     - id: delivery
       heading: "Delivery"
+      justify: space-between
       children:
         - id: review
           label: [Review performance, improvement]

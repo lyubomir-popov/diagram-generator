@@ -540,6 +540,25 @@ def _resolve_col_spans(frame: Frame, col_w: int, col_gap: int) -> None:
     for child in frame.children:
         _resolve_col_spans(child, col_w, col_gap)
 
+
+def _equalize_grid_columns(root: Frame) -> None:
+    """Equalize column heights in a horizontal grid parent.
+
+    When a grid is active, columns are the root's direct children.  Each
+    column stacks its own children vertically.  Without equalization, columns
+    with fewer children are shorter — breaking cross-column row alignment.
+
+    This sets every column child to ``sizing_h = FILL`` so all columns
+    stretch to the tallest column's height during ``place()``.  The tallest
+    column is the parent's measured height (since root sizing_h is HUG,
+    the parent measured to its tallest child).
+    """
+    for child in root.children:
+        if child.position_type == "ABSOLUTE":
+            continue
+        if child.sizing_h == Sizing.HUG:
+            child.sizing_h = Sizing.FILL
+
 # ---------------------------------------------------------------------------
 
 def _enforce_fill_hug_invariant(frame: Frame, coerced: dict | None = None) -> dict:
@@ -1113,19 +1132,29 @@ def _render_frame(frame: Frame, fg: list, bg: list, bounds_map: dict,
         fg.append(DashedLinePrimitive(x, y, x + w, y, component_id=cid))
 
     # ── Resolve style fields ──
+    # The four allowed box styles from DIAGRAM.md:
+    #   1. Outlined box  — solid 1px black, transparent fill (default leaf)
+    #   2. Grey box       — no border, grey fill (parent/container)
+    #   3. Annotation     — no border, transparent fill (borderless leaf)
+    #   4. Highlight box  — no border, black fill, white text
+    # Synthetic layout wrappers (__body, __heading) stay transparent.
+    _is_layout_wrapper = (frame.id or "").startswith("__")
     if frame.fill == Fill.BLACK:
         box_fill = Fill.BLACK.value
         box_stroke = "none"
     elif frame.border == Border.FILL:
         box_fill = frame.fill.value
         box_stroke = "none"
+    elif frame.border == Border.NONE and frame.is_container and not _is_layout_wrapper:
+        # Parent/container boxes: grey fill, no stroke (Grey box style)
+        box_fill = Fill.GREY.value if frame.fill == Fill.WHITE else frame.fill.value
+        box_stroke = "none"
     elif frame.border == Border.NONE:
+        # Leaf annotation or layout wrapper: transparent
         box_fill = frame.fill.value if frame.fill != Fill.WHITE else "transparent"
         box_stroke = "none"
-    elif frame.is_container and frame.border != Border.DASHED:
-        box_fill = Fill.GREY.value
-        box_stroke = "none"
     else:
+        # Bordered box (SOLID or DASHED): transparent fill, black stroke
         box_fill = "transparent"
         box_stroke = "#000000"
 
@@ -1413,12 +1442,14 @@ def _infer_sides(
                 return "bottom", "top"
             else:
                 return "top", "bottom"
-        elif v_gap <= h_gap:
+        elif v_gap >= h_gap:
+            # Dominant separation is vertical → route vertically (fewer turns)
             if gap_below >= gap_above:
                 return "bottom", "top"
             else:
                 return "top", "bottom"
         else:
+            # Dominant separation is horizontal → route horizontally (fewer turns)
             if gap_right >= gap_left:
                 return "right", "left"
             else:
@@ -1673,6 +1704,21 @@ def _route_arrows(arrows: list[Arrow], bounds_map: dict) -> list[ArrowPrimitive]
         start = _Pt(*_edge_point(sx, sy, sw, sh, src_side))
         end = _Pt(*_edge_point(tx, ty, tw, th, tgt_side))
 
+        # Snap near-aligned endpoints: when both sides are horizontal
+        # (left/right) and the Y difference is small (< half baseline),
+        # snap to a common Y to eliminate trivial routing kinks caused by
+        # sub-grid measurement differences (e.g. stroke_space offsets).
+        if (src_side in ("left", "right") and tgt_side in ("left", "right")
+                and abs(start.y - end.y) < BASELINE_UNIT / 2):
+            avg_y = (start.y + end.y) / 2
+            start = _Pt(start.x, avg_y)
+            end = _Pt(end.x, avg_y)
+        elif (src_side in ("top", "bottom") and tgt_side in ("top", "bottom")
+              and abs(start.x - end.x) < BASELINE_UNIT / 2):
+            avg_x = (start.x + end.x) / 2
+            start = _Pt(avg_x, start.y)
+            end = _Pt(avg_x, end.y)
+
         # Per-arrow obstacle set: exclude source, target, and all their
         # ancestors.  Ancestor exclusion lets arrows from a nested child
         # route through parent container boundaries.
@@ -1857,6 +1903,12 @@ def layout_frame_diagram(diagram: FrameDiagram) -> LayoutResult:
     # Resolve col_span → explicit width before layout.
     if col_w > 0:
         _resolve_col_spans(root, col_w, col_gap_g)
+
+    # Grid row equalization: when a grid is active and the root is
+    # horizontal, equalize column heights so children at the same row
+    # index align across columns (like CSS grid implicit rows).
+    if grid_cols > 1 and root.direction == Direction.HORIZONTAL:
+        _equalize_grid_columns(root)
 
     # Pass 2: place
     place(root, 0, 0, root_w, root_h, grid_snap=grid_snap)

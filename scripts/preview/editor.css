@@ -544,6 +544,23 @@ body.dg-preview {
        padding: 16px 32px 0;
 }
 
+/* Remove BF default tab-list margin so tabs sit flush on the rule line. */
+.dg-nav-tabs .bf-tabs-list,
+.dg-view-tabs .bf-tabs-list {
+       margin-bottom: 0;
+}
+
+/* Kill the BF baseline-snap margin on tab links so they sit on the rule. */
+.dg-nav-tabs .bf-tabs-link,
+.dg-view-tabs .bf-tabs-link {
+       margin-bottom: 0;
+}
+
+/* Remove BF panel-header bottom padding so tab rule meets content edge. */
+.dg-nav-tabs-header.bf-panel-header {
+       padding-bottom: 0;
+}
+
 .dg-view-tabs {
        min-inline-size: 0;
 }

@@ -23,7 +23,7 @@ from diagram_shared import ICON_SIZE, INSET
 _DIRECTION = {"vertical": Direction.VERTICAL, "horizontal": Direction.HORIZONTAL}
 _SIZING = {"hug": Sizing.HUG, "fill": Sizing.FILL, "fixed": Sizing.FIXED}
 _FILL = {"white": Fill.WHITE, "grey": Fill.GREY, "black": Fill.BLACK}
-_BORDER = {"solid": Border.SOLID, "none": Border.NONE}  # DASHED gated out of YAML; use programmatically only
+_BORDER = {"solid": Border.SOLID, "none": Border.NONE, "dashed": Border.DASHED, "fill": Border.FILL}
 _ALIGN = {
     "top-left": Align.TOP_LEFT, "top-center": Align.TOP_CENTER, "top-right": Align.TOP_RIGHT,
     "center-left": Align.CENTER_LEFT, "center": Align.CENTER, "center-right": Align.CENTER_RIGHT,
@@ -245,7 +245,22 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
             frame.children = [heading_child, body]
             frame.direction = Direction.VERTICAL
         else:
-            frame.children = [heading_child] + list(frame.children)
+            # Wrap original children in a body sub-frame so the heading is
+            # separate from the content group.  This lets justify modes
+            # (e.g. space-between) distribute space between heading and
+            # content without spreading individual content children apart.
+            body = Frame(
+                id=f"{frame.id}__body" if frame.id else "__body",
+                direction=Direction.VERTICAL,
+                gap=frame.gap,
+                align=frame.align,
+                sizing_w=Sizing.FILL,
+                sizing_h=Sizing.HUG,
+                border=Border.NONE,
+                padding=0,
+                children=list(frame.children),
+            )
+            frame.children = [heading_child, body]
         # Icon moved to heading child; clear from parent
         frame.icon = None
 

@@ -32,6 +32,7 @@ root:
 
     - id: delivery
       heading: "Delivery"
+      justify: space-between
       children:
         - id: review
           label: [Review performance, improvement]

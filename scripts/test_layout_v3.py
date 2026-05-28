@@ -718,7 +718,7 @@ def test_frame_box_style_contract():
         direction=Direction.VERTICAL,
         gap=8,
         padding=8,
-        border=Border.SOLID,
+        border=Border.NONE,
         heading=Line("Parent", weight="700"),
         children=[child, highlight],
     )

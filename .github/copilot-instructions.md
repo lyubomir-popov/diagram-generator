@@ -219,6 +219,15 @@ python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_
 
 After any layout, render, or preview change, browser-verify the affected diagram at `http://127.0.0.1:8100/view/v3:<slug>`.
 
+### Adding a new diagram
+
+When a new frame YAML is added to `scripts/diagrams/frames/`:
+
+1. The preview server sidenav auto-populates from the filesystem — no manual registration is needed. The new slug appears in the **Autolayout** group on the next page load.
+2. After creating or modifying the YAML, **always open the diagram in the browser** at `http://127.0.0.1:8100/view/v3:<slug>` and take a screenshot to verify the output before treating the task as done.
+3. Run the focused v3 test suite to confirm no regressions.
+4. Render all diagrams (`glob diagrams/frames/*.yaml`) to confirm no existing diagram broke.
+
 ### v2 declarative pipeline (Pipeline 2)
 
 ```bash

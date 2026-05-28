@@ -1,0 +1,106 @@
+engine: v3
+title: "MAAS vendor support"
+# Source: MAAS documentation — OS and hardware vendor support
+# Top: CLI + UI → MAAS, then OS row, then hardware vendor rows
+# Original uses brand logos; this version uses text-only boxes
+arrows:
+  - source: cli
+    target: maas
+  - source: ui
+    target: maas
+root:
+  id: page
+  direction: vertical
+  gap: 24
+  padding: 24
+  align: top-center
+  children:
+    # Top row: CLI + UI
+    - id: top_row
+      direction: horizontal
+      gap: 24
+      sizing_w: hug
+      children:
+        - id: cli
+          label: [CLI]
+          icon: Screen with code.svg
+          sizing_w: hug
+        - id: ui
+          label: [UI]
+          icon: Laptop with window.svg
+          sizing_w: hug
+
+    # MAAS box
+    - id: maas
+      label: [MAAS]
+      icon: Deployment.svg
+      sizing_w: hug
+
+    # Operating systems
+    - id: os_section
+      sizing_w: hug
+      heading: "Supported operating systems"
+      children:
+        - id: os_row
+          direction: horizontal
+          gap: 8
+          sizing_w: hug
+          children:
+            - id: centos
+              label: [CentOS]
+              width: 112
+            - id: redhat
+              label: [Red Hat]
+              width: 112
+            - id: ubuntu
+              label: [Ubuntu]
+              width: 112
+            - id: vmware
+              label: [VMware]
+              width: 112
+            - id: windows
+              label: [Windows]
+              width: 112
+
+    # Hardware vendors — two rows
+    - id: hw_section
+      sizing_w: hug
+      heading: "Certified hardware vendors"
+      children:
+        - id: hw_row1
+          direction: horizontal
+          gap: 8
+          sizing_w: hug
+          children:
+            - id: hpe
+              label: [HPE]
+              width: 112
+            - id: ibm
+              label: [IBM]
+              width: 112
+            - id: lenovo
+              label: [Lenovo]
+              width: 112
+            - id: dell
+              label: [Dell]
+              width: 112
+            - id: ocp
+              label: [Open Compute]
+              width: 112
+        - id: hw_row2
+          direction: horizontal
+          gap: 8
+          sizing_w: hug
+          children:
+            - id: huawei
+              label: [Huawei]
+              width: 112
+            - id: cisco
+              label: [Cisco]
+              width: 112
+            - id: qct
+              label: [QCT]
+              width: 112
+            - id: supermicro
+              label: [Supermicro]
+              width: 112

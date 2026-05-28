@@ -1,9 +1,10 @@
 engine: v3
 title: "Complex Routing Usecase"
-# Source: mermaid/examples/complex-routing-usecase.drawio
-# Same as complex-testcase PLUS "Build spike" in Implementation
-# 3 dashed columns, 5 boxes, 2 arrows, 1 overlay
-# Arrows: define→implement, measure→review (routed around spike in source)
+# Source: mermaid structured-beta test case
+# Reference: mermaid/examples/complex-routing-usecase.drawio
+# Same as complex-testcase PLUS "Build spike" in Dev team group
+# 3 parent columns, 5 leaf boxes, 2 arrows
+# Arrows: define→implement, measure→review (routed around spike)
 grid:
   cols: 3
   col_gap: 24
@@ -14,10 +15,6 @@ arrows:
     target: implement
   - source: measure
     target: review
-overlays:
-  - id: devteam
-    label: "Dev team"
-    members: [define, implement]
 root:
   id: page
   direction: horizontal
@@ -35,13 +32,17 @@ root:
     - id: implementation
       heading: "Implementation"
       children:
-        - id: implement
-          label: [Implement Ingress, pipeline]
-        - id: spike
-          label: "Build spike"
+        - id: devteam
+          heading: "Dev team"
+          children:
+            - id: implement
+              label: [Implement Ingress, pipeline]
+            - id: spike
+              label: "Build spike"
 
     - id: delivery
       heading: "Delivery"
+      justify: space-between
       children:
         - id: review
           label: [Review performance, improvement]

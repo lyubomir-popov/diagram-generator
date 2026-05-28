@@ -1,0 +1,165 @@
+engine: v3
+title: "MAAS architecture"
+# Source: MAAS documentation — regiond/rackd architecture
+# Top-down: Web API → regiond → region cluster → rackd × 2 → managed machines
+arrows:
+  - source: api_label
+    target: regiond
+  - source: region_cluster
+    target: rackd_left
+  - source: region_cluster
+    target: rackd_right
+root:
+  id: page
+  direction: vertical
+  gap: 24
+  padding: 24
+  align: top-center
+  children:
+    # Top annotation
+    - id: api_label
+      border: none
+      sizing_w: hug
+      label:
+        - "Web interface, CLI, and REST API"
+
+    # regiond badge
+    - id: regiond
+      label: [regiond]
+      sizing_w: hug
+
+    # Region controller cluster
+    - id: region_cluster
+      direction: horizontal
+      gap: 8
+      sizing_w: hug
+      children:
+        - id: region_server
+          label: []
+          icon: Server.svg
+          width: 72
+        - id: region_db
+          label: []
+          icon: Data.svg
+          width: 72
+        - id: region_maas
+          label: []
+          icon: Deployment.svg
+          width: 72
+
+    # Services annotation
+    - id: services_label
+      border: none
+      sizing_w: hug
+      label:
+        - "DNS, NTP, Syslog, Squid Proxy"
+
+    # Rack controllers — two columns
+    - id: rack_row
+      direction: horizontal
+      gap: 48
+      sizing_w: hug
+      children:
+        # Left rack
+        - id: rack_left_col
+          direction: vertical
+          gap: 16
+          sizing_w: hug
+          align: top-center
+          children:
+            - id: rackd_left
+              label: [rackd]
+              sizing_w: hug
+            - id: rack_left_cluster
+              direction: horizontal
+              gap: 8
+              sizing_w: hug
+              children:
+                - id: rack_left_server
+                  label: []
+                  icon: Server.svg
+                  width: 72
+                - id: rack_left_maas
+                  label: []
+                  icon: Deployment.svg
+                  width: 72
+            - id: rack_left_services
+              border: none
+              sizing_w: hug
+              label:
+                - "PXE, IPMI, DHCP,"
+                - "TFTP, iSCSI, NTP"
+            - id: rack_left_label
+              border: none
+              sizing_w: hug
+              label:
+                - {text: "Managed machines", weight: "700"}
+            - id: rack_left_machines
+              direction: horizontal
+              gap: 8
+              sizing_w: hug
+              children:
+                - id: rlm1
+                  label: []
+                  icon: Server.svg
+                  width: 72
+                - id: rlm2
+                  label: []
+                  icon: Server.svg
+                  width: 72
+                - id: rlm3
+                  label: []
+                  icon: Server.svg
+                  width: 72
+
+        # Right rack
+        - id: rack_right_col
+          direction: vertical
+          gap: 16
+          sizing_w: hug
+          align: top-center
+          children:
+            - id: rackd_right
+              label: [rackd]
+              sizing_w: hug
+            - id: rack_right_cluster
+              direction: horizontal
+              gap: 8
+              sizing_w: hug
+              children:
+                - id: rack_right_server
+                  label: []
+                  icon: Server.svg
+                  width: 72
+                - id: rack_right_maas
+                  label: []
+                  icon: Deployment.svg
+                  width: 72
+            - id: rack_right_services
+              border: none
+              sizing_w: hug
+              label:
+                - "PXE, IPMI, DHCP,"
+                - "TFTP, iSCSI, NTP"
+            - id: rack_right_label
+              border: none
+              sizing_w: hug
+              label:
+                - {text: "Managed machines", weight: "700"}
+            - id: rack_right_machines
+              direction: horizontal
+              gap: 8
+              sizing_w: hug
+              children:
+                - id: rrm1
+                  label: []
+                  icon: Server.svg
+                  width: 72
+                - id: rrm2
+                  label: []
+                  icon: Server.svg
+                  width: 72
+                - id: rrm3
+                  label: []
+                  icon: Server.svg
+                  width: 72
