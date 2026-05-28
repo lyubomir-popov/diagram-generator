@@ -129,27 +129,40 @@ Both containers and leaf boxes can have icons. Icons always sit in the top-right
 - Arrow styling and routing are out of scope for this feature (covered by feature 003).
 - Existing diagram YAMLs may need configuration updates (covered by feature 004) after this contract is implemented.
 
-## Naming convention
+## Level system
 
-Visual tiers are computed from nesting depth, not declared as types. There are no "parent", "child", or "level-N" keywords in the schema.
+Levels are a prominence ladder – higher number means more visual weight. The engine computes a default level from nesting depth; `level:` in YAML overrides it.
 
-| Depth | Conversational name | Visual treatment |
-|-------|--------------------|-----------------|
-| 0 | Root frame | Invisible layout container |
-| 1 | Panel | Grey fill, bold heading, fill-matched stroke |
-| 2+ | Box | Outlined, regular text |
+| Level | Name | Visual treatment | Default depth |
+|-------|------|-----------------|---------------|
+| 1 | Box | 1px black border, transparent fill, regular text | depth 2+ |
+| 2 | Panel | Grey fill, fill-matched stroke, bold heading | depth 1 |
+| 3+ | *(future)* | Heavier treatments (small caps bold, darker fill, accent bar, etc.) | — |
 
-"Panel" and "box" are documentation vocabulary only – they do not appear in the YAML schema. The engine computes depth and resolves the default style.
+The depth→level default mapping:
 
-### Depth overrides
+```
+depth 0 → root (invisible, no level)
+depth 1 → level 2 (panel)
+depth 2+ → level 1 (box)
+```
 
-Depth sets the default visual tier, but semantic fields override it. No new `depth:` field is needed – the existing fields already serve as override signals:
+Annotation and highlight are **variants**, not levels. They're orthogonal modes on a separate axis:
 
-- A depth-2 frame with `fill: grey` → renders as a panel (grey fill, fill-matched stroke) instead of an outlined box
-- A depth-1 frame with `fill: white` + `border: solid` → renders as an outlined box instead of a grey panel
-- A depth-1 frame with no children but `heading:` → still gets panel treatment (it is not downgraded)
+- `variant: annotation` strips chrome from any level → floating helper text (below the ladder)
+- `variant: highlight` inverts any level → black fill, white text (applies to all)
 
-The rule: depth resolves first, then explicit semantic fields win. No `role:` or `type:` field is needed for the primary hierarchy.
+Annotation is the floor – you won't need less prominence than that. Future growth is upward: level 3, 4, etc. for increasingly heavy treatments.
+
+### Level overrides
+
+A YAML `level:` field overrides the depth-computed default. Levels are designations (like army ranks) – an agreed role, not a computed fact.
+
+- A depth-2 frame with `level: 2` → renders as a panel (grey fill, bold heading)
+- A depth-1 frame with `level: 1` → renders as an outlined box instead of a grey panel
+- A depth-1 frame with no children but `heading:` → still gets level 2 treatment (it is not downgraded)
+
+The rule: depth sets the default level, `level:` overrides it, then the style resolver maps the level to visual treatment. No `fill:`, `stroke:`, or other visual properties in YAML.
 
 ## Semantic YAML principle
 

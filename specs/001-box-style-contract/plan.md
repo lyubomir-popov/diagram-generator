@@ -75,12 +75,12 @@ Every visible box has a 1px stroke. The stroke colour matches the fill for boxes
 
 | Style | Condition | Fill | Stroke colour | Text weight |
 |-------|-----------|------|---------------|-------------|
-| Outlined box | Level 2 (default for depth 2+), no variant | transparent | `#000000` | 400 (regular) |
-| Grey box | Level 1 (default for depth 1), or explicit `level: 1` | `#F3F3F3` | `#F3F3F3` | 700 for heading, 400 for label |
+| Outlined box | Level 1 (default for depth 2+), no variant | transparent | `#000000` | 400 (regular) |
+| Grey box | Level 2 (default for depth 1), or explicit `level: 2` | `#F3F3F3` | `#F3F3F3` | 700 for heading, 400 for label |
 | Annotation | `variant: annotation` | transparent | `transparent` | 400 |
+| Highlight | Any frame with `variant: highlight` | `#000000` | `#000000` | preserved, text forced white |
 
 Note: `border: dotted` (renamed from legacy `dashed`) is reserved for panels acting as network boundaries and future zone overlays. It is not one of the four primary box styles – it is a border mode applied to a panel.
-| Highlight | Any frame with `variant: highlight` | `#000000` | `#000000` | preserved, text forced white |
 
 Separators and all box types share the same outer footprint because every rect includes the 1px stroke geometry.
 
