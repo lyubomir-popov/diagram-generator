@@ -12,8 +12,9 @@
 
 ## Phase 2: Consolidate style resolution into frame_loader.py
 
-- [ ] T004 Add a `resolve_styles()` post-processing pass in `frame_loader.py` that runs after `_apply_frame()`. This pass walks the Frame tree and sets `fill`, `border`, and text weight to their correct resolved values based on the two-tier rules + variant overlays.
+- [ ] T004 Add a `resolve_styles()` post-processing pass in `frame_loader.py` that runs after `_apply_frame()`. This pass walks the Frame tree and sets `fill`, `border`, stroke colour, and text weight to their correct resolved values based on the two-tier rules + variant overlays. Every box gets a 1px stroke; the stroke colour matches the fill for invisible borders (`#F3F3F3` for grey, `transparent` for annotations, `#000000` for highlight and outlined).
 - [ ] T005 Ensure `resolve_styles()` handles: (a) leaf defaults, (b) container defaults, (c) explicit YAML overrides preserved, (d) variant overlays applied last.
+- [ ] T005b Delete the `+1px` padding compensation hack from `_render_frame()` in `layout_v3.py`. With universal 1px strokes, padding is uniform and the hack is no longer needed.
 - [ ] T006 [P] Ensure heading lines synthesised for containers always get `weight: 700` and are positioned top-left.
 
 **Checkpoint**: T002 tests pass (green). The loader now produces fully resolved styles.

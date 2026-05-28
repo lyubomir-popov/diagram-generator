@@ -61,18 +61,24 @@ scripts/
 
 3. **Heading text position is not enforced.** The heading is synthesised as a `__heading` child frame, but its text position depends on the child's layout – which can end up centred or offset depending on alignment defaults.
 
+4. **The `+1px` padding hack.** Borderless frames (annotations, containers) add 1px to padding_left, padding_top, and padding_right to compensate for the missing stroke width. This is fragile, makes padding non-uniform, and breaks when boxes change style dynamically.
+
 ### Target state
 
-1. **Single style resolver in frame_loader.py.** After loading, every Frame has fully resolved `fill`, `border`, and text-weight fields. The renderer reads these directly – zero style logic in `_render_frame()`.
+1. **Single style resolver in frame_loader.py.** After loading, every Frame has fully resolved `fill`, `border`, stroke colour, and text-weight fields. The renderer reads these directly – zero style logic in `_render_frame()`. The `+1px` padding compensation is deleted; every box has a 1px stroke, making padding uniform.
 
-2. **Four styles map to clear conditions:**
+2. **Four styles map to clear conditions – universal 1px stroke rule:**
 
-| Style | Condition | Resolved fill | Resolved border | Text weight |
-|-------|-----------|---------------|-----------------|-------------|
-| Outlined box | Leaf, no variant, border≠none | transparent | SOLID | 400 (regular) |
-| Grey box | Container, or leaf with explicit `fill: grey` | `#F3F3F3` | NONE | 700 for heading, 400 for label |
-| Annotation | Leaf with `border: none`, no fill override | transparent | NONE | 400 |
-| Highlight | Any frame with `variant: highlight` | `#000000` | NONE | preserved, text forced white |
+Every visible box has a 1px stroke. The stroke colour matches the fill for boxes that shouldn't show a border, or is `transparent` for annotations. This eliminates the `+1px` padding compensation hack entirely – padding is uniform across all box types.
+
+| Style | Condition | Fill | Stroke colour | Text weight |
+|-------|-----------|------|---------------|-------------|
+| Outlined box | Leaf, no variant, border≠none | transparent | `#000000` | 400 (regular) |
+| Grey box | Container, or leaf with explicit `fill: grey` | `#F3F3F3` | `#F3F3F3` | 700 for heading, 400 for label |
+| Annotation | Leaf with `border: none`, no fill override | transparent | `transparent` | 400 |
+| Highlight | Any frame with `variant: highlight` | `#000000` | `#000000` | preserved, text forced white |
+
+Separators and all box types share the same outer footprint because every rect includes the 1px stroke geometry.
 
 3. **Heading is always top-left.** The `__heading` synthetic child uses top-left alignment, padding from INSET token.
 

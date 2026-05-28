@@ -88,8 +88,8 @@ Both containers and leaf boxes can have icons. Icons always sit in the top-right
 ### Edge Cases
 
 - What happens when a container has no heading and no children? → It should render as an empty grey box.
-- What happens when `variant: highlight` is applied to an annotation (border: none, no fill)? → It should override to black fill, white text.
-- What happens when a leaf explicitly sets `fill: grey`? → It renders as a grey box with no border (card style), matching the grey-box row in the allowed styles table.
+- What happens when `variant: highlight` is applied to an annotation (border: none, no fill)? → It should override to black fill, black stroke, white text.
+- What happens when a leaf explicitly sets `fill: grey`? → It renders as a grey box with `stroke: #F3F3F3` (card style), matching the grey-box row in the allowed styles table.
 - What happens when a container explicitly sets `border: solid`? → It renders with a solid border AND its fill (grey or explicit), overriding the default no-border container style.
 
 ## Requirements
@@ -99,7 +99,7 @@ Both containers and leaf boxes can have icons. Icons always sit in the top-right
 - **FR-001**: The engine MUST auto-detect leaf vs container based on presence of children and apply the correct default style without explicit YAML overrides.
 - **FR-002**: The four allowed box styles (outlined, grey, annotation, highlight) MUST be the only styles the engine can produce. No other fill/border combinations are valid.
 - **FR-003**: Text in all boxes MUST be positioned starting from top-left (padding_left, padding_top), never centred.
-- **FR-004**: Padding MUST use the INSET token (8px) uniformly. Deprecated pixel values must be replaced.
+- **FR-004**: Every box MUST have a 1px stroke. Stroke colour matches fill for invisible borders (`#F3F3F3` for grey, `transparent` for annotations, `#000000` for highlight). This eliminates the `+1px` padding compensation hack – padding uses INSET (8px) uniformly everywhere.
 - **FR-005**: The `variant` overlay system MUST apply correctly to both leaf and container frames.
 - **FR-006**: Style resolution MUST happen in exactly one place (frame_loader.py defaults), not duplicated across loader and renderer.
 - **FR-007**: The renderer MUST NOT invent styling decisions – it MUST only read the resolved style from the Frame object.
