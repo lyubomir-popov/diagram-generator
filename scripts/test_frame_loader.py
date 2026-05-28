@@ -534,8 +534,9 @@ root:
 
 
 def test_overlay_renders_bounding_rect(tmp_path):
-    from layout_v3 import layout_frame_diagram
-    from diagram_layout import Rect
+    """Overlay rect wraps member nodes tightly, not full canvas width."""
+    from layout_v3 import layout_frame_diagram, OVERLAY_PADDING
+    from diagram_layout import Rect, FrameBox
     diagram = _load(
         tmp_path,
         """
@@ -559,8 +560,25 @@ root:
     result = layout_frame_diagram(diagram)
     overlay_rects = [p for p in result.foreground if isinstance(p, Rect) and p.stroke_dasharray]
     assert len(overlay_rects) == 1
-    assert overlay_rects[0].component_id == "team"
-    assert overlay_rects[0].stroke_dasharray == "2 4"
+    ov = overlay_rects[0]
+    assert ov.component_id == "team"
+    assert ov.stroke_dasharray == "2 4"
+
+    # Overlay should wrap members a and b, NOT span full canvas
+    # Get bounds of members a and b
+    a_boxes = [p for p in result.foreground if isinstance(p, FrameBox) and p.component_id == "a"]
+    b_boxes = [p for p in result.foreground if isinstance(p, FrameBox) and p.component_id == "b"]
+    c_boxes = [p for p in result.foreground if isinstance(p, FrameBox) and p.component_id == "c"]
+    assert len(a_boxes) == 1 and len(b_boxes) == 1 and len(c_boxes) == 1
+    a, b, c = a_boxes[0], b_boxes[0], c_boxes[0]
+
+    pad = OVERLAY_PADDING
+    expected_x = a.x - pad
+    expected_w = (b.x + b.width) - a.x + 2 * pad
+    assert ov.x == expected_x, f"overlay x={ov.x}, expected {expected_x}"
+    assert ov.width == expected_w, f"overlay w={ov.width}, expected {expected_w}"
+    # Overlay must NOT extend to cover c
+    assert ov.x + ov.width < c.x, "overlay should not cover non-member c"
 
 
 def test_no_overlays_when_absent(tmp_path):

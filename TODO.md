@@ -110,7 +110,36 @@ Two recent Python features have no TS equivalent yet:
 
 Both features operate correctly in the Python-rendered preview. TS parity is needed only if/when the TS engine runs client-side layout (currently only used for parity tests). Port when the TS engine gains production routing.
 
-### Code quality — open
+### Code quality — adversarial audit (2026-05-27)
+
+Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`. Two independent reviews (Opus, GPT 5.4) converged on these items.
+
+**HIGH — structural:**
+- [ ] `[H]` **H1. Layout mutates Frame tree.** `col_span` rewrites `width`/`sizing_w`; FILL/HUG coercion rewrites parent sizing; root width save/mutate/restore is fragile. Fix: layout-only derived fields, stop mutating semantic Frame fields.
+- [ ] `[H]` **H2. Style resolution duplicated (loader vs renderer).** Loader defaults fill=WHITE, renderer overrides containers to GREY. Explicit container fill can be overridden. Fix: one shared style resolver.
+- [ ] `[H]` **H3. Heading synthetic child incomplete.** `wrap`, `sizing_w`, `sizing_h`, `fill_weight` not copied to `__body`. Fix: copy all layout-affecting fields.
+- [x] `[H]` **H4. Overlay geometry contradicts model.** Full-width band vs member bounds. FIXED — now uses member bounds.
+- [ ] `[M]` **H5. Leaf measure vs render padding mismatch.** Measurement uses INSET, rendering uses per-side padding + 1px hack. Fix: use `frame.padding_*` in measurement.
+
+**MEDIUM — code quality:**
+- [x] `[M]` **M1. `_lines_to_dicts()` duplicated.** Two copies in `layout_v3.py` and `diagram_layout.py`. FIXED — v3 copy deleted, imports from `diagram_layout.py`.
+- [ ] `[M]` **M2. `ARROW_CLEARANCE` 3x defined (8/8/12).** Fix: one canonical value.
+- [x] `[S]` **M3. `padding: 0` truthiness bug.** `or` chain treats explicit 0 as false. FIXED.
+- [ ] `[M]` **M4. Silent enum fallbacks.** Bad `sizing`/`direction`/`align`/`variant` silently default. Fix: warn on unknown values.
+- [ ] `[M]` **M5. Preview JSON contract stale.** Missing `justify`, `col_span`, overlays.
+- [ ] `[S]` **M6. `estimate_line_width` duplicated.** `diagram_shared.py` vs `text_metrics.py`.
+
+**Mermaid testcase accuracy:**
+- [x] `[M]` **T1. complex-testcase.yaml was hybrid.** FIXED — split into faithful reproductions of source drawio files.
+
+**Test gaps:**
+- [ ] `[M]` Arrow routing tests
+- [ ] `[S]` Constrained re-measurement tests
+- [ ] `[S]` Layout idempotency test
+- [ ] `[S]` Negative parser tests for invalid enums
+- [x] `[S]` Overlay geometry test (now checks coordinates)
+
+### Code quality — legacy
 
 - [ ] `[L]` Triage the current `build_v2.py` corpus blockers separately from the 2026-05-13 autolayout slice: clearance violations on `example-platform-architecture`, `lightning-talk-engine`, `lt-diagram-generator`, `lt-a4-generator`, and `lt-summit-identity` (fix: increase row_gap/col_gap to ARROW_GAP where arrows route), plus 59 warning-only baseline-grid violations across several older diagrams (cosmetic, not blocking).
 

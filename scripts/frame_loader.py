@@ -119,6 +119,8 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
 
     # Label: list of strings/dicts → list of Line
     label_raw = data.get("label", [])
+    if isinstance(label_raw, str):
+        label_raw = [label_raw]
     label = [_parse_line(l) for l in label_raw]
 
     # Heading: string or dict → Line

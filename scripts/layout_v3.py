@@ -24,6 +24,7 @@ from diagram_layout import (
     LayoutResult,
     Rect,
     TextBlock,
+    _lines_to_dicts,
 )
 from diagram_shared import (
     BASELINE_UNIT,
@@ -183,22 +184,6 @@ def _snap_fills_to_grid_columns(
     return result
 
 
-def _lines_to_dicts(lines: list[Line]) -> list[dict]:
-    """Convert Line objects to the dict format renderers expect."""
-    result = []
-    for ln in lines:
-        result.append({
-            "content": ln.content,
-            "size": ln.size,
-            "weight": ln.weight,
-            "fill": ln.fill,
-            "small_caps": ln.small_caps if hasattr(ln, "small_caps") else False,
-            "line_step": str(ln.line_step) if ln.line_step else str(BODY_LINE_STEP),
-            "font_family": ln.font_family if hasattr(ln, "font_family") else None,
-        })
-    return result
-
-
 def _stroke_inset_per_side(frame: Frame) -> int:
     """Return the inside-stroke inset applied on each side of stroked frames."""
     return 1 if frame.border in (Border.SOLID, Border.DASHED) else 0
@@ -280,7 +265,7 @@ def _build_grid_info(diagram: FrameDiagram, root: Frame) -> GridInfo:
     outer_margin = int(
         diagram.grid_outer_margin
         if diagram.grid_outer_margin is not None
-        else (root.padding_top or root.padding or 0)
+        else (root.padding_top if root.padding_top is not None else (root.padding or 0))
     )
 
     svg_w = int(root._placed_w)
@@ -1779,13 +1764,14 @@ def _render_overlays(
     overlays: list[Overlay],
     bounds_map: dict[str, tuple],
 ) -> list:
-    """Render overlays as dashed bounding rects with labels.
+    """Render overlays as dotted bounding rects with labels.
 
     Each overlay computes the bounding box of its member nodes (looked up
-    in ``bounds_map``) and emits a dashed Rect plus a TextBlock label
-    positioned outside the top-left corner.
+    in ``bounds_map``) and emits a dotted Rect plus a TextBlock label
+    positioned at the top-left, outside the rect.
     """
     prims: list = []
+    pad = OVERLAY_PADDING
     for ov in overlays:
         # Collect bounds of all resolved members
         member_bounds = [bounds_map[m] for m in ov.members if m in bounds_map]
@@ -1797,23 +1783,23 @@ def _render_overlays(
         max_x = max(b[0] + b[2] for b in member_bounds)
         max_y = max(b[1] + b[3] for b in member_bounds)
 
-        rx = min_x - OVERLAY_PADDING
-        ry = min_y - OVERLAY_PADDING
-        rw = (max_x - min_x) + 2 * OVERLAY_PADDING
-        rh = (max_y - min_y) + 2 * OVERLAY_PADDING
+        rx = min_x - pad
+        ry = min_y - pad
+        rw = (max_x - min_x) + 2 * pad
+        rh = (max_y - min_y) + 2 * pad
 
         prims.append(Rect(
             x=rx, y=ry, width=rw, height=rh,
-            fill="transparent", stroke="#FFFFFF",
+            fill="transparent", stroke="#000000",
             stroke_dasharray="2 4",
             component_id=ov.id,
         ))
 
         if ov.label:
             prims.append(TextBlock(
-                x=rx + OVERLAY_PADDING,
+                x=rx + pad,
                 y=ry - 16,
-                lines=[make_line(ov.label, fill="#FFFFFF")],
+                lines=[make_line(ov.label, size="14")],
                 component_id=ov.id,
             ))
 
@@ -1859,7 +1845,7 @@ def layout_frame_diagram(diagram: FrameDiagram) -> LayoutResult:
         outer_margin = int(
             diagram.grid_outer_margin
             if diagram.grid_outer_margin is not None
-            else (root.padding_top or root.padding or 0)
+            else (root.padding_top if root.padding_top is not None else (root.padding or 0))
         )
         col_gap_g = int(diagram.grid_col_gap)
         content_w = max(0, root_w - 2 * outer_margin)

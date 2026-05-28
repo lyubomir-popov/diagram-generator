@@ -1,9 +1,9 @@
 engine: v3
-title: "Complex Testcase"
-# Source: mermaid/examples/complex-testcase.drawio
-# 3 dashed columns (Planning, Implementation, Delivery)
-# 4 boxes, 2 arrows, 1 overlay (Dev team spans define + implement)
-# NO "Build spike" — that is in complex-routing-usecase.drawio
+title: "Complex Routing Usecase"
+# Source: mermaid/examples/complex-routing-usecase.drawio
+# Same as complex-testcase PLUS "Build spike" in Implementation
+# 3 dashed columns, 5 boxes, 2 arrows, 1 overlay
+# Arrows: define→implement, measure→review (routed around spike in source)
 grid:
   cols: 3
   col_gap: 24
@@ -37,6 +37,8 @@ root:
       children:
         - id: implement
           label: [Implement Ingress, pipeline]
+        - id: spike
+          label: "Build spike"
 
     - id: delivery
       heading: "Delivery"
