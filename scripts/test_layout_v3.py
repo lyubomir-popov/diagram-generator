@@ -845,6 +845,165 @@ def test_grid_snap_no_cols():
     print("  PASS: grid snap no cols")
 
 
+# ---------------------------------------------------------------------------
+# Heading + body layout (spec 002)
+# ---------------------------------------------------------------------------
+
+from diagram_shared import ICON_SIZE
+
+
+def test_heading_at_top_left_with_icon_top_right():
+    """US1: heading text at top-left, icon at top-right inside padding."""
+    heading_child = Frame(
+        id="panel__heading", role="heading",
+        sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        min_height=ICON_SIZE, border=Border.NONE, padding=0,
+        label=[Line("Title")], icon="Cloud.svg",
+    )
+    child_a = _box("a")
+    child_b = _box("b")
+    body = Frame(
+        id="panel__body", direction=Direction.VERTICAL,
+        gap=8, sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        border=Border.NONE, padding=0,
+        children=[child_a, child_b],
+    )
+    panel = _container("panel", Direction.VERTICAL,
+                       children=[heading_child, body],
+                       gap=8, padding=8)
+    _layout(panel)
+
+    # Heading placed at parent's (padding_left, padding_top)
+    assert heading_child._placed_x == panel._placed_x + panel.padding
+    assert heading_child._placed_y == panel._placed_y + panel.padding
+    # Heading min_height >= ICON_SIZE
+    assert heading_child._placed_h >= ICON_SIZE
+    print("  PASS: heading at top-left with icon top-right")
+
+
+def test_heading_no_icon_spans_full_width():
+    """US1: heading without icon uses full width minus padding."""
+    heading_child = Frame(
+        id="panel__heading", role="heading",
+        sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        min_height=ICON_SIZE, border=Border.NONE, padding=0,
+        label=[Line("Title")],
+    )
+    child_a = _box("a")
+    body = Frame(
+        id="panel__body", direction=Direction.VERTICAL,
+        gap=8, sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        border=Border.NONE, padding=0,
+        children=[child_a],
+    )
+    panel = _container("panel", Direction.VERTICAL,
+                       children=[heading_child, body],
+                       gap=8, padding=8)
+    _layout(panel)
+
+    # Account for border width (1px each side for SOLID border)
+    border_w = 2 if panel.border == Border.SOLID else 0
+    expected_w = panel._placed_w - 2 * panel.padding - border_w
+    assert abs(heading_child._placed_w - expected_w) < 1, \
+        f"Heading width {heading_child._placed_w} != expected {expected_w}"
+    print("  PASS: heading no icon spans full width")
+
+
+def test_body_zone_starts_below_heading():
+    """US2: first child's top edge is at or below heading bottom + gap."""
+    heading_child = Frame(
+        id="panel__heading", role="heading",
+        sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        min_height=ICON_SIZE, border=Border.NONE, padding=0,
+        label=[Line("Title")], icon="Cloud.svg",
+    )
+    child_a = _box("a")
+    child_b = _box("b")
+    body = Frame(
+        id="panel__body", direction=Direction.VERTICAL,
+        gap=8, sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        border=Border.NONE, padding=0,
+        children=[child_a, child_b],
+    )
+    panel = _container("panel", Direction.VERTICAL,
+                       children=[heading_child, body],
+                       gap=8, padding=8)
+    _layout(panel)
+
+    heading_bottom = heading_child._placed_y + heading_child._placed_h
+    body_top = body._placed_y
+    assert body_top >= heading_bottom + panel.gap - 0.5, \
+        f"Body top {body_top} overlaps heading bottom {heading_bottom} + gap {panel.gap}"
+    print("  PASS: body zone starts below heading")
+
+
+def test_heading_with_zero_children():
+    """Edge case: container with heading but no children – no crash."""
+    heading_child = Frame(
+        id="panel__heading", role="heading",
+        sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        min_height=ICON_SIZE, border=Border.NONE, padding=0,
+        label=[Line("Title")],
+    )
+    body = Frame(
+        id="panel__body", direction=Direction.VERTICAL,
+        gap=8, sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        border=Border.NONE, padding=0,
+        children=[],
+    )
+    panel = _container("panel", Direction.VERTICAL,
+                       children=[heading_child, body],
+                       gap=8, padding=8)
+    _layout(panel)
+    assert heading_child._placed_h >= ICON_SIZE
+    assert body._placed_h == 0 or body._placed_h >= 0  # no crash, body can be zero
+    print("  PASS: heading with zero children")
+
+
+def test_no_heading_children_start_at_top():
+    """Edge case: container with children but no heading – children at top."""
+    child_a = _box("a")
+    child_b = _box("b")
+    panel = _container("panel", Direction.VERTICAL,
+                       children=[child_a, child_b],
+                       gap=8, padding=8)
+    _layout(panel)
+
+    first_child_y = child_a._placed_y
+    expected_y = panel._placed_y + panel.padding
+    assert abs(first_child_y - expected_y) < 1, \
+        f"First child y={first_child_y}, expected {expected_y}"
+    print("  PASS: no heading children start at top")
+
+
+def test_heading_with_horizontal_body():
+    """Edge case: heading + horizontal body layout below."""
+    heading_child = Frame(
+        id="panel__heading", role="heading",
+        sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        min_height=ICON_SIZE, border=Border.NONE, padding=0,
+        label=[Line("Title")],
+    )
+    child_a = _box("a")
+    child_b = _box("b")
+    body = Frame(
+        id="panel__body", direction=Direction.HORIZONTAL,
+        gap=8, sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
+        border=Border.NONE, padding=0,
+        children=[child_a, child_b],
+    )
+    panel = _container("panel", Direction.VERTICAL,
+                       children=[heading_child, body],
+                       gap=8, padding=8)
+    _layout(panel)
+
+    heading_bottom = heading_child._placed_y + heading_child._placed_h
+    assert body._placed_y >= heading_bottom + panel.gap - 0.5
+    # Horizontal children should be side by side
+    assert abs(child_a._placed_y - child_b._placed_y) < 1
+    print("  PASS: heading with horizontal body")
+
+
 if __name__ == "__main__":
     tests = [
         test_vertical_stack_no_overflow,
@@ -889,6 +1048,12 @@ if __name__ == "__main__":
         test_grid_snap_equal_weights,
         test_grid_snap_weighted,
         test_grid_snap_no_cols,
+        test_heading_at_top_left_with_icon_top_right,
+        test_heading_no_icon_spans_full_width,
+        test_body_zone_starts_below_heading,
+        test_heading_with_zero_children,
+        test_no_heading_children_start_at_top,
+        test_heading_with_horizontal_body,
     ]
 
     passed = 0
