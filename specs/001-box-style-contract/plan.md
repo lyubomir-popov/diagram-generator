@@ -57,15 +57,17 @@ scripts/
 
 1. **Style resolution is split across two layers.** `frame_loader.py` sets some defaults (leaf→SOLID border, container→NONE border). But `_render_frame()` in `layout_v3.py` re-derives fill colours at render time based on `is_container`, `border`, and `fill` – duplicating and sometimes contradicting the loader's intent.
 
-2. **Grey fill is inconsistent.** Some containers get grey from the renderer's `is_container + border==NONE → GREY` logic. But containers with explicit `border: solid` (like headed panels in request-to-hardware-stack) don't trigger this path, so their fill depends on what the YAML author wrote. Leaf boxes inside grey containers sometimes have `fill: grey` manually to look right.
+2. **Grey fill is inconsistent.** Some containers get grey from the renderer's `is_container + border==NONE → GREY` logic. But containers with explicit `border: solid` (like headed panels in request-to-hardware-stack) don't trigger this path, so their fill depends on what the YAML author wrote. Leaf boxes inside grey containers sometimes have `fill: grey` manually to look right – a style leak that violates the semantic YAML principle.
 
 3. **Heading text position is not enforced.** The heading is synthesised as a `__heading` child frame, but its text position depends on the child's layout – which can end up centred or offset depending on alignment defaults.
 
 4. **The `+1px` padding hack.** Borderless frames (annotations, containers) add 1px to padding_left, padding_top, and padding_right to compensate for the missing stroke width. This is fragile, makes padding non-uniform, and breaks when boxes change style dynamically.
 
+5. **Double padding.** Panel children sit at `panel_padding + child_padding` from the panel edge. When both use INSET (8px), the visual distance from panel edge to child text is 16px+, which looks like double spacing compared to a standalone box.
+
 ### Target state
 
-1. **Single style resolver in frame_loader.py.** After loading, every Frame has fully resolved `fill`, `border`, stroke colour, and text-weight fields. The renderer reads these directly – zero style logic in `_render_frame()`. The `+1px` padding compensation is deleted; every box has a 1px stroke, making padding uniform.
+1. **Single style resolver in frame_loader.py.** After loading, every Frame has fully resolved fill, border, stroke colour, and text-weight fields computed from its level (either depth-derived or explicit `level:` override). The renderer reads these directly – zero style logic in `_render_frame()`. The `+1px` padding compensation is deleted; every box has a 1px stroke, making padding uniform.
 
 2. **Four styles map to clear conditions – universal 1px stroke rule:**
 
@@ -73,11 +75,11 @@ Every visible box has a 1px stroke. The stroke colour matches the fill for boxes
 
 | Style | Condition | Fill | Stroke colour | Text weight |
 |-------|-----------|------|---------------|-------------|
-| Outlined box | Leaf, no variant, border≠none | transparent | `#000000` | 400 (regular) |
-| Grey box | Container, or leaf with explicit `fill: grey` | `#F3F3F3` | `#F3F3F3` | 700 for heading, 400 for label |
-| Annotation | Leaf with `border: none`, no fill override | transparent | `transparent` | 400 |
+| Outlined box | Level 2 (default for depth 2+), no variant | transparent | `#000000` | 400 (regular) |
+| Grey box | Level 1 (default for depth 1), or explicit `level: 1` | `#F3F3F3` | `#F3F3F3` | 700 for heading, 400 for label |
+| Annotation | `variant: annotation` | transparent | `transparent` | 400 |
 
-Note: `border: dotted` (renamed from legacy `dashed`) is reserved for network boundaries (tree containers) and future zone overlays. It is not one of the four primary box styles – it is a structural grouping mechanism.
+Note: `border: dotted` (renamed from legacy `dashed`) is reserved for panels acting as network boundaries and future zone overlays. It is not one of the four primary box styles – it is a border mode applied to a panel.
 | Highlight | Any frame with `variant: highlight` | `#000000` | `#000000` | preserved, text forced white |
 
 Separators and all box types share the same outer footprint because every rect includes the 1px stroke geometry.

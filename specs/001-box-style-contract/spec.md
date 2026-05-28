@@ -89,8 +89,8 @@ Both containers and leaf boxes can have icons. Icons always sit in the top-right
 
 - What happens when a container has no heading and no children? → It should render as an empty grey box.
 - What happens when `variant: highlight` is applied to an annotation (border: none, no fill)? → It should override to black fill, black stroke, white text.
-- What happens when a leaf explicitly sets `fill: grey`? → It renders as a grey box with `stroke: #F3F3F3` (card style), matching the grey-box row in the allowed styles table.
-- What happens when a container explicitly sets `border: solid`? → It renders with a solid border AND its fill (grey or explicit), overriding the default no-border container style.
+- What happens when a leaf explicitly sets `level: 1`? → It renders as a panel (grey fill, fill-matched stroke, bold heading) even though it has no children.
+- What happens when a container explicitly sets `level: 2`? → It renders as an outlined box (solid border, transparent fill) despite being a container.
 
 ## Requirements
 
@@ -100,14 +100,15 @@ Both containers and leaf boxes can have icons. Icons always sit in the top-right
 - **FR-002**: The four allowed box styles (outlined, grey, annotation, highlight) MUST be the only styles the engine can produce. No other fill/border combinations are valid.
 - **FR-003**: Text in all boxes MUST be positioned starting from top-left (padding_left, padding_top), never centred.
 - **FR-004**: Every box MUST have a 1px stroke. Stroke colour matches fill for invisible borders (`#F3F3F3` for grey, `transparent` for annotations, `#000000` for highlight). This eliminates the `+1px` padding compensation hack – padding uses INSET (8px) uniformly everywhere.
+- **FR-008**: Padding MUST be uniform across all box styles. Text starts at `(x + INSET, y + INSET)` regardless of fill, border, or nesting depth. A panel's child boxes sit at `(panel_x + INSET, panel_y + heading_height + gap)`, not at `(panel_x + INSET + child_INSET, ...)`. There is no double-padding – the panel's INSET positions children, the child's INSET positions its own text. The visual distance from panel edge to child text is `INSET + border + INSET` (panel padding + child padding), not `INSET + INSET + INSET`.
 - **FR-005**: The `variant` overlay system MUST apply correctly to both leaf and container frames.
 - **FR-006**: Style resolution MUST happen in exactly one place (frame_loader.py defaults), not duplicated across loader and renderer.
 - **FR-007**: The renderer MUST NOT invent styling decisions – it MUST only read the resolved style from the Frame object.
 
 ### Key Entities
 
-- **Frame**: The recursive tree node. Has `fill`, `border`, `icon`, `label`, `heading`, `children`, `variant`, `padding_*`.
-- **Fill**: Enum – `white`, `grey`, `black`.
+- **Frame**: The recursive tree node. Has `level`, `border`, `icon`, `label`, `heading`, `children`, `variant`, `padding_*`.
+- **Level**: Optional integer (1, 2, 3). When set, overrides the depth-computed visual tier. When absent, tier is computed from nesting depth.
 - **Border**: Enum – `solid`, `none`, `dotted`, `fill`.
 - **Variant**: String overlay – `highlight`, `annotation`. Applied after defaults, before rendering.
 
@@ -118,7 +119,7 @@ Both containers and leaf boxes can have icons. Icons always sit in the top-right
 - **SC-001**: All 20+ existing diagrams render without regression after the change.
 - **SC-002**: request-to-hardware-stack renders identically to the current screenshot (the reference implementation).
 - **SC-003**: A new minimal YAML with containers and leaves produces correct styling without any explicit `fill` or `border` fields.
-- **SC-004**: No diagram YAML needs `fill: grey` on individual leaf boxes inside a grey container – the container fill provides the visual grouping.
+- **SC-004**: No diagram YAML contains visual style properties (`fill: grey`, `fill: white`). Level designations (`level: 1`) are used for overrides instead.
 
 ## Assumptions
 
@@ -154,12 +155,14 @@ The rule: depth resolves first, then explicit semantic fields win. No `role:` or
 
 Frame YAML is a semantic document, not a stylesheet. Authors declare structure and intent, never raw visual values. The allowed semantic fields are:
 
-- `fill: white | grey | black` – semantic fill names, not hex colours
+- `level: 1 | 2 | 3` – role designation, overrides depth-computed default
 - `border: solid | none | dotted | fill` – semantic border modes
 - `variant: highlight | annotation` – semantic overlays
 - `heading:`, `label:`, `icon:` – content
 
-The style resolver maps these to the visual treatments defined in DIAGRAM.md (hex colours, stroke widths, etc.). Any YAML must be re-renderable under a different visual theme without editing the YAML.
+Explicitly banned from YAML: `fill:`, `stroke:`, `stroke-width:`, `font-weight:`, hex colour values, dash patterns. These are visual properties that belong in the style resolver, not the document.
+
+The style resolver maps levels, borders, and variants to the visual treatments defined in DIAGRAM.md. Any YAML must be re-renderable under a different visual theme without editing the YAML.
 
 ## Non-rectangular shapes (banned)
 
@@ -174,22 +177,11 @@ Rationale:
 
 If a diagram needs to communicate "this is a database" or "this is a cloud service", use the `icon:` field on a standard rectangular box.
 
-## Future work: zones and boundaries
+## Future work: zones (cross-cutting grouping)
 
-Some diagrams require a grouping that is orthogonal to the nesting tree – e.g. a "Dev team" boundary that spans nodes in two different panels, or a "DMZ" network boundary. These are visually identical (dotted border, no fill, label) but structurally different.
+A network boundary ("DMZ" wrapping three servers) is just a panel with `border: dotted` – it fits the tree, has children, and needs no new concept. The engine already handles it.
 
-### Network boundaries vs zones
-
-| | Network boundary | Zone |
-|---|---|---|
-| Structure | Tree container – cleanly wraps its children | Post-layout overlay – members span across panels |
-| YAML | A normal frame with `border: dotted` | `zones:` block with member IDs |
-| Example | "DMZ" wrapping three servers | "Dev team" spanning nodes in two different panels |
-| Visual | Dotted border, no fill, label | Dotted border, no fill, label |
-
-One visual treatment, two structural mechanisms. A network boundary fits the tree (it has children). A zone does not (its members live in different subtrees). Both render the same way because the user's intent is the same: "these things belong together."
-
-### Zone concept
+The genuinely new concept is a **zone**: a grouping that spans across panels and cannot be modelled as tree nesting (e.g. "Dev team" spanning nodes in two different subtrees).
 
 ```yaml
 zones:
@@ -200,4 +192,6 @@ zones:
 
 The engine would collect zone members post-layout, compute their bounding box, and render a dotted border overlay. Visual treatment comes from the semantic type name (`zone`), not from raw style properties in the YAML.
 
-This is out of scope for feature 001 but the architecture must not preclude it. A contrived test case combining both network boundaries (tree containers with `border: dotted`) and zones (cross-cutting overlays) should be created when Stage 15 begins, to validate that the visual treatment is consistent across both mechanisms.
+Zones and network-boundary panels share the same visual treatment (dotted border, no fill, label). A contrived test case combining both should be created when Stage 15 begins.
+
+This is out of scope for feature 001 but the architecture must not preclude it.

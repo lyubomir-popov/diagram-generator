@@ -24,7 +24,7 @@ Keep public function signatures of packages/layout-engine/ stable. Breaking chan
 Do not introduce persisted format identifiers that embed the package or repo name. Use short stable acronyms (e.g. `dg`) decoupled from naming so future renames are cheap.
 
 ### VIII. Semantic YAML, no visual properties
-Frame YAML is a semantic document, not a stylesheet. Authors declare structure and intent (`fill: grey`, `variant: highlight`, `type: zone`), never raw visual values (no hex colours, no dash patterns, no stroke widths). The style resolver maps semantic names to visual treatments defined in DIAGRAM.md. Any YAML must be re-renderable years later under a different visual theme without editing the YAML.
+Frame YAML is a semantic document, not a stylesheet. Authors declare structure and intent (`level: 1`, `variant: highlight`, `type: zone`), never raw visual values (no `fill:`, no hex colours, no dash patterns, no stroke widths). Level designations work like army ranks – an agreed role, not a computed property. The style resolver maps levels, variants, and borders to visual treatments defined in DIAGRAM.md. Any YAML must be re-renderable years later under a different visual theme without editing the YAML.
 
 ## Technology Stack
 
