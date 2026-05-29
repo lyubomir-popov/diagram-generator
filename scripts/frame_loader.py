@@ -363,10 +363,18 @@ def _compute_level(frame: Frame, depth: int) -> int:
     return 1
 
 
-def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = False) -> None:
-    """Walk the tree and set resolved_fill / resolved_stroke on every frame."""
+def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = False, _parent_is_section: bool = False) -> None:
+    """Walk the tree and set resolved_fill / resolved_stroke on every frame.
+
+    Implements the four-class hierarchy from ``docs/frame-classes.md``:
+      Section (level 3): small-caps bold heading, transparent, black border
+      Panel   (level 2): bold heading, grey fill, grey border
+      Leaf    (level 1): regular heading, transparent, black border
+      Annotation:        regular lighter-grey text, transparent, no border
+    """
     _is_layout_wrapper = "__" in (root.id or "")
     _this_is_panel = False
+    _this_is_section = False
 
     if _depth == 0:
         # Root frame: invisible
@@ -392,12 +400,28 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
         # Normal frame: resolve from level
         level = _compute_level(root, _depth)
 
-        # Panels are not nestable: grey-on-grey has no visible boundary.
-        # If the parent is already a panel, clamp to level 1 (box) and
-        # promote the heading to small caps for a third prominence tier.
+        # Nesting constraints: grey-on-grey has no visible boundary,
+        # and section-in-section is not meaningful.
         if level >= 2 and _parent_is_panel:
             level = 1
-            # Set small caps on the heading line of this container
+        if level >= 3 and _parent_is_section:
+            level = min(level, 2)
+
+        if level == 0:
+            # Level 0: headingless container / layout wrapper — invisible
+            root.resolved_fill = "transparent"
+            root.resolved_stroke = "none"
+        elif root.border == Border.NONE and not root.is_container and not _is_layout_wrapper:
+            # Annotation: borderless leaf — no fill, no stroke
+            root.resolved_fill = "transparent"
+            root.resolved_stroke = "none"
+        elif level >= 3:
+            # Section: small-caps bold heading, transparent fill, black border.
+            # Visually wraps panels/leaves with a visible outline.
+            root.resolved_fill = "transparent"
+            root.resolved_stroke = BLACK
+            _this_is_section = True
+            # Set small caps on the heading (keep bold weight)
             for child in root.children:
                 if child.role == "heading" and child.label:
                     child.label[0] = Line(
@@ -408,29 +432,38 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
                         line_step=child.label[0].line_step,
                         font_family=child.label[0].font_family,
                     )
-
-        if level == 0:
-            # Level 0: headingless container / layout wrapper — invisible
-            root.resolved_fill = "transparent"
-            root.resolved_stroke = "none"
-        elif root.border == Border.NONE and not root.is_container and not _is_layout_wrapper:
-            # Annotation: borderless leaf — no fill, no stroke
-            root.resolved_fill = "transparent"
-            root.resolved_stroke = "none"
         elif level >= 2:
-            # Panel: grey fill, fill-matched stroke
+            # Panel: grey fill, grey border (invisible against fill)
             root.resolved_fill = GREY
             root.resolved_stroke = GREY
             _this_is_panel = True
         else:
-            # Box: outlined
+            # Leaf (level 1): outlined box, regular-weight heading
             root.resolved_fill = "transparent"
             root.resolved_stroke = BLACK
+            # Demote heading from bold to regular weight for leaves
+            for child in root.children:
+                if child.role == "heading" and child.label:
+                    child.label[0] = Line(
+                        child.label[0].content,
+                        weight="400",
+                        fill=child.label[0].fill,
+                        small_caps=False,
+                        line_step=child.label[0].line_step,
+                        font_family=child.label[0].font_family,
+                    )
 
     for child in root.children:
-        # Layout wrappers pass through the parent's panel status
-        child_parent_panel = _this_is_panel if not _is_layout_wrapper else _parent_is_panel
-        resolve_styles(child, _depth=_depth + 1, _parent_is_panel=child_parent_panel)
+        # Layout wrappers pass through the parent's panel/section status
+        if _is_layout_wrapper:
+            child_parent_panel = _parent_is_panel
+            child_parent_section = _parent_is_section
+        else:
+            child_parent_panel = _this_is_panel
+            child_parent_section = _this_is_section
+        resolve_styles(child, _depth=_depth + 1,
+                       _parent_is_panel=child_parent_panel,
+                       _parent_is_section=child_parent_section)
 
 
 def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:

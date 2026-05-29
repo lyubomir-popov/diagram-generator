@@ -204,22 +204,27 @@ When in doubt, reduce color usage rather than expanding it.
 
 ### Allowed box styles
 
-The system has exactly four box treatments. Do not invent new combinations. Every box gets a universal 1px stroke; the stroke colour matches the fill to keep it invisible where borders aren't wanted.
+The frame class spec lives in [`docs/frame-classes.md`](docs/frame-classes.md).
+It defines the four legal visual treatments (section, panel, leaf,
+annotation) and the hierarchy rules that govern nesting. Every frame
+must resolve to exactly one class; diagrams that contain other styling
+fail acceptance.
 
-| Style | Border | Fill | Stroke | Text | Use for |
-|-------|--------|------|--------|------|---------|
-| Outlined box | solid 1px black | transparent | `#000000` | black | Default child boxes |
-| Grey box | solid 1px `#F3F3F3` | `#F3F3F3` | `#F3F3F3` | black | Grouped containers, substrate panels |
-| Annotation | none | transparent | none | black | Standalone text labels, notes beside boxes, arrow labels |
-| Highlight box | solid 1px black | `#000000` | `#000000` | white | At most one per diagram for emphasis |
+The system has exactly four box treatments plus two special cases. Do not invent new combinations. Every box gets a universal 1px stroke; the stroke colour matches the fill to keep it invisible where borders aren't wanted.
 
-Style resolution is centralised in `resolve_styles()` (called by `load_frame_yaml()` and `layout_frame_diagram()`). The YAML author controls style through `level:` (1=box, 2=panel) and `variant:` (annotation, highlight) – never through `fill:` or `stroke:` directly.
+| Class | Level | Heading | Fill | Border | Text |
+|-------|-------|---------|------|--------|------|
+| Section | 3 | small-caps, bold | transparent | black 1px | black |
+| Panel | 2 | bold | `#F3F3F3` | `#F3F3F3` 1px | black |
+| Leaf | 1 | regular weight | transparent | black 1px | black |
+| Annotation | — | — | transparent | none | `#666666` |
+| Highlight | — | — | `#000000` | `#000000` 1px | white |
+
+Style resolution is centralised in `resolve_styles()` (called by `load_frame_yaml()` and `layout_frame_diagram()`). The YAML author controls style through `level:` (1=leaf, 2=panel, 3=section) and `variant:` (annotation, highlight) – never through `fill:` or `stroke:` directly.
 
 The **annotation** style is the default for all text that sits outside a bordered box: row notes, explanatory labels, and arrow labels. In YAML, set `variant: annotation` or `border: none` on a leaf frame to get annotation style.
 
-**Panels are not nestable.** A grey panel inside another grey panel produces grey-on-grey with no visible boundary – the indent is inexplicable without a border. `resolve_styles()` enforces this: if the parent is already a panel, a child that would resolve to level 2 is clamped to level 1 (outlined box). If you need a nested grouping inside a panel, use an outlined box with a heading.
-
-Do not combine dashed borders with grey fills. Dashed borders are a legacy pattern retained only for explicit debugging or intake annotations, never for grouped layouts.
+**Sections** (level 3) wrap panels and leaves with a visible black border and small-caps heading. **Panels** (level 2) use grey fill and bold heading. **Leaves** (level 1) use a black outline and regular-weight heading. See [`docs/frame-classes.md`](docs/frame-classes.md) for the full hierarchy rules and validation contract.
 
 ### Box height invariant
 
