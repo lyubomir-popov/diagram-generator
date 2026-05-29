@@ -666,6 +666,27 @@ function _orthogonalWaypoints(start, end, srcSide, tgtSide) {
   return [[ex, sy]];
 }
 
+/**
+ * Remove collinear intermediate points from an orthogonal path.
+ * Mirrors Python's ``_simplify_path`` so the bridge produces the same
+ * clean segment list the engine does.
+ */
+function _simplifyPath(points) {
+  if (points.length <= 2) return points;
+  const result = [points[0]];
+  for (let i = 1; i < points.length - 1; i++) {
+    const [px, py] = points[i - 1];
+    const [cx, cy] = points[i];
+    const [nx, ny] = points[i + 1];
+    // Keep point only if direction changes (not collinear)
+    if (!((px === cx && cx === nx) || (py === cy && cy === ny))) {
+      result.push(points[i]);
+    }
+  }
+  result.push(points[points.length - 1]);
+  return result;
+}
+
 function routeArrows(arrows, boundsMap) {
   const result = [];
   for (const arrow of arrows) {
@@ -687,11 +708,17 @@ function routeArrows(arrows, boundsMap) {
 
     const start = _edgePoint(sb.x, sb.y, sb.w, sb.h, srcSide);
     const end = _edgePoint(tb.x, tb.y, tb.w, tb.h, tgtSide);
-    const waypoints = _orthogonalWaypoints(start, end, srcSide, tgtSide);
+    const rawWaypoints = _orthogonalWaypoints(start, end, srcSide, tgtSide);
+    // Simplify the full path to remove collinear points so the segment
+    // count matches the number of SVG <line> elements the Python renderer
+    // emitted.  Without this, straight arrows get extra midpoints and the
+    // shaft-to-arrowhead junction misaligns.
+    const fullPath = _simplifyPath([start, ...rawWaypoints, end]);
+    const waypoints = fullPath.slice(1, -1);
 
     result.push({
-      start,
-      end,
+      start: fullPath[0],
+      end: fullPath[fullPath.length - 1],
       waypoints,
       direction: tgtSide,
       componentId: `${arrow.source}->${arrow.target}`,
