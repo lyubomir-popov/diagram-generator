@@ -23,12 +23,10 @@
       "sizing_w": "FILL"
     },
     "lxd_container": {
-      "sizing_h": "FILL",
-      "align": "BOTTOM_LEFT"
+      "sizing_h": "FILL"
     },
     "vm": {
-      "sizing_h": "FILL",
-      "align": "BOTTOM_LEFT"
+      "sizing_h": "FILL"
     },
     "lxd_headline": {
       "sizing_h": "FILL"
