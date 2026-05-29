@@ -60,6 +60,46 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
+### Autolayout corpus audit (PRIORITY – 2026-05-29)
+
+The level/style simplification (depth-based `_compute_level`, uniform gap=24, padding=8/0, body-wrapper no longer inheriting wrap/fill_weight/justify) changed defaults that affect layout output across the diagram corpus. Tests pass but visual correctness needs a per-diagram audit.
+
+**What changed:**
+- Default gap: was INSET (8) for panels, GRID_GUTTER (24) for wrappers → now uniform 24 for all containers
+- Default padding: was INSET (8) for bordered + headed nodes, 0 for wrappers → now 8 unless borderless + headingless container
+- `__body` wrapper: no longer copies `wrap`, `fill_weight`, `justify` from parent
+- Grid col/row gap: was GRID_GUTTER fallback → now requires explicit YAML
+- Level classification: was bottom-up 4-level (0/1/2/3) → now depth-based 3-level (0/1/2) with panel non-nesting
+
+**Audit checklist** (user to report visual regressions per diagram):
+
+| Diagram | Status | Issues |
+|---------|--------|--------|
+| android-container-vs-vm | | |
+| android-custom-to-cloud | | |
+| android-graphics-stack | | |
+| android-security-comparison | | |
+| aws-hld | | |
+| complex-routing-usecase | | |
+| complex-testcase | | |
+| diagram-intake-workflow | | |
+| diagram-language-workflow | | |
+| example-deployment-pipeline | | |
+| example-platform-architecture | | |
+| example-stacked-blocks | | |
+| gpu-waiting-scheduler | | |
+| lightning-talk-engine | | |
+| lt-a4-generator | | |
+| lt-diagram-generator | | |
+| lt-summit-identity | | |
+| maas-architecture | | |
+| maas-machine-lifecycle | | |
+| maas-vendor-support | | |
+| request-to-hardware-stack | | |
+| rise-of-inference-economy | | |
+| simple-testcase | | |
+| support-engineering-flow | | |
+
 ### Variant overlays and col_span
 
 - [x] `[M]` **Variant overlays.** `variant: highlight` (black fill, white text/icon) and `variant: annotation` (borderless leaf). Explicit YAML keys override variants. Engine auto-detects leaf vs parent — no type presets needed.
@@ -117,7 +157,7 @@ Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`. Two independent
 **HIGH — structural:**
 - [ ] `[H]` **H1. Layout mutates Frame tree.** `col_span` rewrites `width`/`sizing_w`; FILL/HUG coercion rewrites parent sizing; root width save/mutate/restore is fragile. Fix: layout-only derived fields, stop mutating semantic Frame fields.
 - [ ] `[H]` **H2. Style resolution duplicated (loader vs renderer).** Loader defaults fill=WHITE, renderer overrides containers to GREY. Explicit container fill can be overridden. Fix: one shared style resolver.
-- [ ] `[H]` **H3. Heading synthetic child incomplete.** `wrap`, `sizing_w`, `sizing_h`, `fill_weight` not copied to `__body`. Fix: copy all layout-affecting fields.
+- [ ] `[H]` **H3. Heading synthetic child incomplete.** `__body` no longer copies `wrap`, `fill_weight`, `justify` from parent (deliberately removed in the depth-based simplification). If any diagram relied on these being inherited, it will regress. Needs corpus audit to determine whether explicit YAML fields are needed on affected diagrams.
 - [x] `[H]` **H4. Overlay geometry contradicts model.** Full-width band vs member bounds. FIXED — now uses member bounds.
 - [ ] `[M]` **H5. Leaf measure vs render padding mismatch.** Measurement uses INSET, rendering uses per-side padding + 1px hack. Fix: use `frame.padding_*` in measurement.
 

@@ -18,21 +18,27 @@ root:
   children:
     # Col 0: Custom Android files
     - id: custom_files
+      level: 3
       direction: vertical
       gap: 8
       padding: 8
       heading: "Custom Android files"
       children:
         - id: partitions
-          label:
-            - {text: Partitions, weight: "700"}
-        - id: system_image
-          label: [Android system image]
-        - id: kernel
-          label: [Kernel]
+          level: 2
+          direction: vertical
+          gap: 8
+          padding: 8
+          heading: "Partitions"
+          children:
+            - id: system_image
+              label: [Android system image]
+            - id: kernel
+              label: [Kernel]
 
     # Col 1: Host-side tools
     - id: host_tools
+      level: 3
       direction: vertical
       gap: 24
       padding: 8
@@ -45,6 +51,7 @@ root:
 
     # Col 2: Anbox Cloud
     - id: anbox_cloud
+      level: 3
       label:
         - {text: Anbox Cloud, weight: "700"}
         - "- Consumes system images"
@@ -53,6 +60,7 @@ root:
 
     # Col 3: Virtualized Android instance
     - id: virt_instance
+      level: 3
       label:
         - {text: Virtualized Android instance, weight: "700"}
         - "- Unmodified"

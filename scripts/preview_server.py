@@ -169,6 +169,12 @@ def _rebuild(grid: bool = False) -> bool:
     # Always clear v3 layout cache on file changes so live-rendered
     # diagrams pick up edits even if the v2 batch build fails.
     _layout_cache.clear()
+    # Reload v3 engine modules so code changes take effect without a
+    # full server restart.
+    for mod_name in ("frame_model", "frame_loader", "layout_v3",
+                     "diagram_render_svg", "diagram_layout", "diagram_shared"):
+        if mod_name in sys.modules:
+            importlib.reload(sys.modules[mod_name])
     cmd = [sys.executable, str(SCRIPTS / "build_v2.py")]
     if grid:
         cmd.append("--grid")

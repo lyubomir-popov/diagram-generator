@@ -421,7 +421,9 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
             root.resolved_fill = "transparent"
             root.resolved_stroke = BLACK
             _this_is_section = True
-            # Set small caps on the heading (keep bold weight)
+            # Set small caps on the heading (keep bold weight).
+            # Heading may be a synthetic child (containers) or a direct
+            # field (non-containers where Phase 2 didn't fire).
             for child in root.children:
                 if child.role == "heading" and child.label:
                     child.label[0] = Line(
@@ -432,6 +434,23 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
                         line_step=child.label[0].line_step,
                         font_family=child.label[0].font_family,
                     )
+            if root.heading is not None:
+                root.heading = Line(
+                    root.heading.content,
+                    weight=root.heading.weight,
+                    fill=root.heading.fill,
+                    small_caps=True,
+                    line_step=root.heading.line_step,
+                    font_family=root.heading.font_family,
+                )
+            # Non-container with first label line as heading
+            if not root.is_container and root.label:
+                ln = root.label[0]
+                root.label[0] = Line(
+                    ln.content, weight=ln.weight, fill=ln.fill,
+                    small_caps=True, line_step=ln.line_step,
+                    font_family=ln.font_family,
+                )
         elif level >= 2:
             # Panel: grey fill, grey border (invisible against fill)
             root.resolved_fill = GREY
@@ -441,7 +460,8 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
             # Leaf (level 1): outlined box, regular-weight heading
             root.resolved_fill = "transparent"
             root.resolved_stroke = BLACK
-            # Demote heading from bold to regular weight for leaves
+            # Demote heading from bold to regular weight for leaves.
+            # Heading may be a synthetic child or a direct field.
             for child in root.children:
                 if child.role == "heading" and child.label:
                     child.label[0] = Line(
@@ -452,6 +472,15 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
                         line_step=child.label[0].line_step,
                         font_family=child.label[0].font_family,
                     )
+            if root.heading is not None:
+                root.heading = Line(
+                    root.heading.content,
+                    weight="400",
+                    fill=root.heading.fill,
+                    small_caps=False,
+                    line_step=root.heading.line_step,
+                    font_family=root.heading.font_family,
+                )
 
     for child in root.children:
         # Layout wrappers pass through the parent's panel/section status

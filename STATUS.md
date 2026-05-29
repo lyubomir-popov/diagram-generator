@@ -18,7 +18,7 @@ Several paths below refer to locally generated or team-internal assets that are 
 
 There are now **three diagram generation pipelines**. Pipeline 3 (v3 frame engine) is the active development surface. On a cold start, ask the user which pipeline to work on if unclear.
 
-**Active focus (2026-05-28):** Spec 003 arrow gap fix done on `feat/003-arrow-gap-fix` — client-side layout bridge was producing a 1.2px gap between arrow shafts and arrowheads due to unsimplified collinear waypoints. Fixed with `_simplifyPath()` in `layout-bridge.js`. Specs 001 (box-style-contract) and 002 (heading-body-layout) merged to main. 235 Python tests + 51 subtests pass.
+**Active focus (2026-05-29):** Level/style system simplified – `_classify_levels()` replaced with depth-based `_compute_level()` inside `resolve_styles()`. Default gap, padding, and body-wrapper behaviour changed. 231 tests pass but the diagram corpus likely has autolayout regressions (wrong gaps, padding, missing body-wrapper field inheritance). Corpus-wide visual audit is next.
 
 ### Pipeline 1: imperative (original v1 batch)
 

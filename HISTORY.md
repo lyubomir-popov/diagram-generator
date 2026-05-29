@@ -4,6 +4,15 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-29 – Simplify level/style system: depth-based levels, panel non-nesting
+
+- **Replaced** bottom-up `_classify_levels()` with inline `_compute_level()` inside `resolve_styles()`. Levels now derive from nesting depth + container status: depth 0 → 0 (root), depth 1 + container → 2 (panel), depth 1 + leaf → 1 (box), depth 2+ → 1 (box).
+- **Panels are no longer nestable** – a level-2 frame inside a panel is clamped to level 1 (box) with small-caps heading promotion for a third visual tier.
+- **Defaults simplified**: gap → uniform 24 (was context-sensitive INSET/GRID_GUTTER), padding → 8 for bordered/headed nodes / 0 for wrappers. Heading `min_height` now includes INSET (56px). `__body` wrapper no longer copies `wrap`/`fill_weight`/`justify` from parent. Grid defaults require explicit YAML (no GRID_GUTTER fallback).
+- **Fixed broken import**: removed `_classify_levels` reference from `layout_v3.py` (was causing ImportError).
+- **Tests updated**: 8 tests renamed/rewritten for depth-based semantics. Removed level-3, headingless-container, and body-inheritance tests that no longer apply. 231 tests + 51 subtests pass.
+- **Known regression**: autolayout rigour degraded across the diagram corpus – gap, padding, and body-wrapper defaults changed. Corpus-wide visual audit needed.
+
 ### 2026-05-28 – Spec 004: diagram audit – remove all redundant YAML overrides
 
 - **Scope**: All 24 non-test frame YAMLs audited against the level system (spec 001).
