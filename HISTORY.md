@@ -4,6 +4,13 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-28 – Spec 003: arrow shaft–arrowhead gap fix
+
+- **Root cause**: The client-side layout bridge (`layout-bridge.js`) introduced a 1.2px gap between arrow shafts and arrowheads. `_orthogonalWaypoints()` generated 4 collinear points for straight arrows, but the Python renderer only emits 1 `<line>` per shaft. The bridge's `patchArrowsSvg()` could only patch segment 0 (start→midpoint), making `isLastSegment` never true, so the shaft endpoint was never replaced with `basePoint`.
+- **Fix**: Added `_simplifyPath()` to `layout-bridge.js` (mirrors Python's `_simplify_path`) to collapse collinear waypoints before SVG patching. Applied in `routeArrows()` after building the full path.
+- **Verified**: Zero gap on 17 arrows across 4 diagrams (vertical, horizontal, and multi-segment routes). All 235 Python tests + 51 subtests pass.
+- Commits: `87ca9cd` (heading override fix on the branch), `e1e041c` (arrow gap fix).
+
 ### 2026-05-27 – Obstacle-aware arrow router + grid-column snapping
 
 - **Obstacle-aware A* arrow router** replaces the naive midpoint router (~80 lines → ~200 lines). Builds sparse grid from inflated box edges, runs A* with bend penalty, simplifies collinear waypoints. Source/target boxes excluded from obstacle set per arrow. 12px clearance margin. 6 unit tests. All 16 diagrams with arrows route successfully. Commit `70830e4`.

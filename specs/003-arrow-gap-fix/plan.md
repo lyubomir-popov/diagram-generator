@@ -29,7 +29,7 @@ Add `_simplifyPath()` to the bridge (mirrors Python's `_simplify_path()`) and ca
 - [x] Verify zero gap on multi-segment arrows (complex-routing-usecase: 3-seg + 5-seg)
 - [x] Verify zero gap on lifecycle arrows (maas-machine-lifecycle: 5 arrows)
 - [x] Run full v3 test suite (235 tests + 51 subtests)
-- [ ] Commit fix on `feat/003-arrow-gap-fix`
+- [x] Commit fix on `feat/003-arrow-gap-fix`
 
 ## Verification summary
 
