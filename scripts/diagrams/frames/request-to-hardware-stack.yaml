@@ -17,7 +17,7 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     - id: user
       label: [User request]
@@ -27,17 +27,16 @@ root:
     - id: orch
       direction: horizontal
       padding: 8
-      border: solid
       heading: "Orchestration layer"
       icon: Snap.svg
       children:
         - id: orch_col
           direction: vertical
-          border: none
+          variant: annotation
           children:
             - id: orch_row0
               direction: horizontal
-              border: none
+              variant: annotation
               children:
                 - id: orch_ollama
                   label: [Ollama]
@@ -50,13 +49,12 @@ root:
     - id: runtime
       direction: vertical
       padding: 8
-      border: solid
       heading: "Model runtime"
       icon: AI.svg
       children:
         - id: rt_row0
           direction: horizontal
-          border: none
+          variant: annotation
           children:
             - id: rt_llama
               label: [llama.cpp]
@@ -64,7 +62,7 @@ root:
               label: [OpenVINO]
         - id: rt_row1
           direction: horizontal
-          border: none
+          variant: annotation
           children:
             - id: rt_vllm
               label: [vLLM]
@@ -77,13 +75,11 @@ root:
     - id: kernel
       direction: vertical
       padding: 8
-      border: solid
       heading: "Compute kernel"
       icon: kernel.svg
       children:
         - id: k_row0
           direction: horizontal
-          border: none
           children:
             - id: k_cuda
               label: [CUDA]
@@ -91,7 +87,7 @@ root:
               label: [ROCm]
         - id: k_row1
           direction: horizontal
-          border: none
+          variant: annotation
           children:
             - id: k_metal
               label: [Metal]
@@ -102,7 +98,6 @@ root:
     - id: driver
       direction: horizontal
       padding: 8
-      border: solid
       heading: "Driver"
       icon: Wrench 1.svg
       children:
@@ -115,13 +110,12 @@ root:
     - id: hardware
       direction: vertical
       padding: 8
-      border: solid
       heading: "Hardware"
       icon: Chip 1.svg
       children:
         - id: hw_row0
           direction: horizontal
-          border: none
+          variant: annotation
           children:
             - id: hw_cpu
               label: [CPU]
@@ -131,7 +125,7 @@ root:
               icon: RAM.svg
         - id: hw_row1
           direction: horizontal
-          border: none
+          variant: annotation
           children:
             - id: hw_npu
               label: [NPU]

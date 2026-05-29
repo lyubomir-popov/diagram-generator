@@ -29,7 +29,7 @@ root:
           icon: Server.svg
           sizing_w: hug
         - id: new_desc
-          border: none
+          variant: annotation
           width: 280
           label:
             - {text: "New", weight: "700"}
@@ -62,7 +62,6 @@ root:
               icon: Networking.svg
               width: 96
         - id: commissioning_desc
-          border: none
           width: 280
           label:
             - {text: "Commissioning", weight: "700"}
@@ -80,7 +79,7 @@ root:
           icon: Server.svg
           sizing_w: hug
         - id: ready_desc
-          border: none
+          variant: annotation
           width: 280
           label:
             - {text: "Ready", weight: "700"}
@@ -97,7 +96,7 @@ root:
           icon: Server.svg
           sizing_w: hug
         - id: allocated_desc
-          border: none
+          variant: annotation
           width: 280
           label:
             - {text: "Allocated", weight: "700"}
@@ -116,7 +115,7 @@ root:
           icon: Server.svg
           sizing_w: hug
         - id: deploying_desc
-          border: none
+          variant: annotation
           width: 280
           label:
             - {text: "Deploying", weight: "700"}
@@ -136,7 +135,7 @@ root:
           icon: Server.svg
           sizing_w: hug
         - id: releasing_desc
-          border: none
+          variant: annotation
           width: 280
           label:
             - {text: "Releasing", weight: "700"}

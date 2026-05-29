@@ -4,6 +4,20 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-28 – Spec 004: diagram audit – remove all redundant YAML overrides
+
+- **Scope**: All 24 non-test frame YAMLs audited against the level system (spec 001).
+- **Removed**: 126 redundant `border:` overrides total (94 in batch 3+4 first pass, 32 in second pass). Zero `border:` overrides remain in non-test YAMLs.
+  - `border: none` on root/wrapper/separator nodes (L0 default handles this)
+  - `border: solid` on headed containers (L2/L3 level system handles this)
+  - `border: none` on annotation leaves → converted to `variant: annotation` (semantic)
+- **Kept**: `fill: "#666666"` on inline text (intentional caption styling), `fill_weight` values (engine feature), `variant: highlight` (intentional).
+- **Text hierarchy**: All 24 files use consistent `{text: ..., weight: "700"}` format. No fixes needed.
+- **Tier assignments**: support-engineering-flow, android-security-comparison, lt-diagram-generator all verified correct.
+- **Verified**: All 235 tests + 51 subtests pass. Browser-verified android-graphics-stack, request-to-hardware-stack, aws-hld, gpu-waiting-scheduler, support-engineering-flow, android-security-comparison, lt-diagram-generator (all pixel-identical output).
+- Commits: `f92e613` (SDD artifacts), `082ae97` (batch 2), `85bec00` (batch 3+4 automated), `70d3f14` (second pass cleanup).
+- Branch: `feat/004-diagram-audit`
+
 ### 2026-05-28 – Spec 003: arrow shaft–arrowhead gap fix
 
 - **Root cause**: The client-side layout bridge (`layout-bridge.js`) introduced a 1.2px gap between arrow shafts and arrowheads. `_orthogonalWaypoints()` generated 4 collinear points for straight arrows, but the Python renderer only emits 1 `<line>` per shaft. The bridge's `patchArrowsSvg()` could only patch segment 0 (start→midpoint), making `isLastSegment` never true, so the shaft endpoint was never replaced with `basePoint`.

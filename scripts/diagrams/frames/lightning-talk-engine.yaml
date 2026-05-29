@@ -29,16 +29,16 @@ root:
   direction: vertical
   gap: 32
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Row 0: input formats (right side, with left spacer)
     - id: row0
       direction: horizontal
       gap: 24
-      border: none
+      variant: annotation
       children:
         - id: spacer_top
-          border: none
+          variant: annotation
           label: []
           sizing_h: hug
         - id: input_dg
@@ -55,12 +55,11 @@ root:
     - id: main_row
       direction: horizontal
       gap: 24
-      border: none
       children:
         - id: specs_col
           direction: vertical
           gap: 32
-          border: none
+          variant: annotation
           children:
             - id: spec_typo
               label: [Typography, spec]
@@ -75,7 +74,6 @@ root:
           direction: horizontal
           gap: 8
           padding: 8
-          border: solid
           fill_weight: 3
           heading: "Design-language engine"
           children:
@@ -93,10 +91,9 @@ root:
     - id: row4
       direction: horizontal
       gap: 24
-      border: none
+      variant: annotation
       children:
         - id: spacer_editor
-          border: none
           label: []
           sizing_h: hug
         - id: editor
@@ -107,10 +104,10 @@ root:
     - id: row5
       direction: horizontal
       gap: 24
-      border: none
+      variant: annotation
       children:
         - id: spacer_outputs
-          border: none
+          variant: annotation
           label: []
           sizing_h: hug
         - id: out_svg

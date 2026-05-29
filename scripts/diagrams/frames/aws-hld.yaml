@@ -29,7 +29,7 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Row 0: title
     - id: title
@@ -41,12 +41,11 @@ root:
     # Row 1: service account panels
     - id: row1
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: modernisation
           direction: vertical
           padding: 8
-          border: solid
           heading: "Modernisation"
           icon: Cloud.svg
           children:
@@ -56,7 +55,6 @@ root:
         - id: core
           direction: horizontal
           padding: 8
-          border: solid
           fill_weight: 2
           heading: "Core"
           icon: Cloud.svg
@@ -64,7 +62,6 @@ root:
             - id: logging
               direction: vertical
               padding: 8
-              border: solid
               heading: "Logging"
               icon: Document.svg
               children:
@@ -75,7 +72,6 @@ root:
             - id: network_svc
               direction: vertical
               padding: 8
-              border: solid
               heading: "Network Services"
               icon: Networking.svg
               children:
@@ -89,7 +85,6 @@ root:
         - id: security
           direction: vertical
           padding: 8
-          border: solid
           heading: "Security"
           icon: Security.svg
           children:
@@ -101,7 +96,6 @@ root:
         - id: shared_svc
           direction: vertical
           padding: 8
-          border: solid
           heading: "Shared-services"
           icon: Cloud support.svg
           children:
@@ -113,14 +107,13 @@ root:
     # Row 2: Transit Gateway hub area
     - id: row2
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: vpn_note
           label:
             - {text: "VPN attachments are", fill: "#666666"}
             - {text: "associated with", fill: "#666666"}
             - {text: "external route table", fill: "#666666"}
-          border: none
           sizing_w: hug
         - id: ca
           label: [Certificate, Authority]
@@ -131,7 +124,7 @@ root:
         - id: vpc_attach_note
           label:
             - {text: "vpc attachment", fill: "#666666"}
-          border: none
+          variant: annotation
           sizing_w: hug
         - id: customer_gw
           label: [Customer, Gateway]
@@ -141,14 +134,12 @@ root:
     - id: vpc_accounts
       direction: horizontal
       padding: 8
-      border: solid
       heading: "VPC_Accounts"
       icon: Document management.svg
       children:
         - id: vpc_prod
           direction: vertical
           padding: 8
-          border: solid
           heading: "core-vpc-production"
           children:
             - id: vpc_prod_bu
@@ -159,7 +150,6 @@ root:
         - id: vpc_preprod
           direction: vertical
           padding: 8
-          border: solid
           heading: "core-vpc-preprod"
           children:
             - id: vpc_preprod_bu
@@ -167,7 +157,6 @@ root:
         - id: vpc_test
           direction: vertical
           padding: 8
-          border: solid
           heading: "core-vpc-test"
           children:
             - id: vpc_test_bu
@@ -175,7 +164,6 @@ root:
         - id: vpc_dev
           direction: vertical
           padding: 8
-          border: solid
           heading: "core-vpc-dev"
           children:
             - id: vpc_dev_bu
@@ -183,7 +171,6 @@ root:
         - id: vpc_sandbox
           direction: vertical
           padding: 8
-          border: solid
           heading: "core-vpc-sandbox"
           children:
             - id: vpc_sandbox_bu
@@ -192,12 +179,11 @@ root:
     # Row 4: organisational units
     - id: ous_wrapper
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: ou_maatdb
           direction: vertical
           padding: 8
-          border: solid
           heading: "OU: MaatDB"
           icon: Document management.svg
           children:
@@ -208,7 +194,6 @@ root:
         - id: ou_nomis
           direction: vertical
           padding: 8
-          border: solid
           heading: "OU: Nomis"
           icon: Document management.svg
           children:
@@ -221,7 +206,6 @@ root:
         - id: ou_oasys
           direction: vertical
           padding: 8
-          border: solid
           heading: "OU: Oasys"
           icon: Document management.svg
           children:
@@ -232,7 +216,6 @@ root:
         - id: ou_ccr
           direction: vertical
           padding: 8
-          border: solid
           heading: "OU: CCR"
           icon: Document management.svg
           children:
@@ -247,5 +230,5 @@ root:
         - {text: "Key: Transit Gateway · AWS account · Route Table ·", fill: "#666666"}
         - {text: "OU · VPN · Private Link · Route 53 ·", fill: "#666666"}
         - {text: "Systems Manager · Subnet · NAT · Certificate Authority", fill: "#666666"}
-      border: none
+      variant: annotation
       sizing_h: hug

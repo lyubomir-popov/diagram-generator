@@ -6,7 +6,6 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
   children:
     # Top zone — headers + content in aligned columns
     - id: top_zone
@@ -42,14 +41,13 @@ root:
 
         - id: note_top
           label: [Android owns, everything above]
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Kernel boundary separator
     - id: kernel_boundary
       label: [Kernel boundary]
       role: separator
-      border: none
       sizing_h: hug
 
     # Bottom zone — below kernel boundary
@@ -76,5 +74,5 @@ root:
 
         - id: note_bottom
           label: [Android has no, control below]
-          border: none
+          variant: annotation
           sizing_w: hug

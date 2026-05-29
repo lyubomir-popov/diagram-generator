@@ -17,7 +17,6 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
   children:
     # Row 0: three standard boxes
     - id: row0
@@ -36,7 +35,6 @@ root:
     # Row 1: dashed wrapper panel spanning all 3 columns
     - id: services
       direction: horizontal
-      border: solid
       heading: "Managed services"
       children:
         - id: svc_db

@@ -17,7 +17,6 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
   children:
     - id: commit
       label: [Developer, commit]

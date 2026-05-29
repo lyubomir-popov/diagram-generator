@@ -15,14 +15,12 @@ root:
   direction: horizontal
   gap: 32
   padding: 24
-  border: none
   children:
     # Col 0: Custom Android files
     - id: custom_files
       direction: vertical
       gap: 8
       padding: 8
-      border: solid
       heading: "Custom Android files"
       children:
         - id: partitions
@@ -38,7 +36,6 @@ root:
       direction: vertical
       gap: 24
       padding: 8
-      border: solid
       heading: "Host-side tools"
       children:
         - id: cvd

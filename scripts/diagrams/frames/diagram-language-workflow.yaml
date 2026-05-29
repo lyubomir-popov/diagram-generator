@@ -19,13 +19,12 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Dashed input frame with three source boxes
     - id: inputs
       direction: horizontal
       padding: 8
-      border: solid
       heading: "Inputs and canonical context"
       children:
         - id: src_rough

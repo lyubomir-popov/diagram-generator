@@ -14,21 +14,20 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Row 0: input panel (right side)
     - id: row0
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: spacer0
-          border: none
+          variant: annotation
           label: []
           sizing_h: hug
         - id: input_panel
           direction: horizontal
           padding: 8
-          border: solid
           fill_weight: 2
           heading: "2. Input"
           children:
@@ -42,12 +41,11 @@ root:
     # Row 1: guidelines (left) + engine (right)
     - id: row1
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: guidelines
           direction: vertical
           padding: 8
-          border: solid
           heading: "1. Guidelines"
           children:
             - id: typo
@@ -62,7 +60,6 @@ root:
         - id: engine
           direction: vertical
           padding: 8
-          border: solid
           fill_weight: 2
           heading: "3. Engine"
           children:
@@ -79,16 +76,14 @@ root:
     # Row 2: export panel (right side)
     - id: row2
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: spacer2
-          border: none
           label: []
           sizing_h: hug
         - id: export_panel
           direction: horizontal
           padding: 8
-          border: solid
           fill_weight: 2
           heading: "4. Export"
           children:

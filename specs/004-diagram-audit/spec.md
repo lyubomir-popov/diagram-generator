@@ -56,16 +56,16 @@ Boxes that use the "card" pattern (bold title line + regular body text) should a
 
 ### Edge Cases
 
-- Diagrams with intentional explicit overrides (e.g. containers with `border: solid` for a specific visual effect) – these should be preserved, not removed.
-- Test/demo YAMLs (`test-*.yaml`) – these may have explicit styling for testing purposes and should be left as-is.
+- Diagrams with intentional non-default overrides (e.g. `fill: "#666666"` for annotation text colour, `variant: highlight`) – these stay. Only overrides that duplicate the engine's level-based defaults are removed.
+- `*-testcase.yaml` files (simple-testcase, complex-testcase) are production-like engine demos and are included in the audit. Unit test fixtures (`test-*.yaml`) are exempt.
 
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: Every non-test YAML MUST render correctly with the new two-tier defaults.
+- **FR-001**: Every non-test YAML MUST render correctly with the new level-system defaults.
 - **FR-002**: Redundant `fill` and `border` overrides MUST be removed where they match the engine's defaults.
-- **FR-003**: Each fixed YAML MUST produce visually identical or improved output compared to pre-audit rendering.
+- **FR-003**: US1 changes (redundant override removal) MUST produce pixel-identical output. US2 changes (tier-assignment fixes) may intentionally change output — document each such change.
 
 ## Success Criteria
 
@@ -75,6 +75,6 @@ Boxes that use the "card" pattern (bold title line + regular body text) should a
 
 ## Assumptions
 
-- Features 001 and 002 are merged before this audit begins.
+- Features 001, 002, and 003 are merged before this audit begins.
 - This is configuration-only work – no engine code changes.
-- Test YAMLs are exempt from the audit.
+- Unit test YAMLs (`test-*.yaml`) are exempt from the audit. Production testcase YAMLs (`*-testcase.yaml`) are included.

@@ -15,13 +15,12 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Dashed input frame with two source boxes
     - id: sources
       direction: horizontal
       padding: 8
-      border: solid
       heading: "Rough initial diagram sources"
       children:
         - id: src_chatgpt

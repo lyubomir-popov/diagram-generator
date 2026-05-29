@@ -19,7 +19,7 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Row 0: full-width title
     - id: title
@@ -30,7 +30,7 @@ root:
     # Row 1: Training vs Inference headers
     - id: row1
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: training_hdr
           label:
@@ -45,7 +45,7 @@ root:
     # Row 2: detail boxes
     - id: row2
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: training_detail
           label: ["Costly & episodic", High investment]
@@ -57,18 +57,17 @@ root:
     # Row 3: sub-panels
     - id: row3
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: compute
           direction: vertical
           padding: 8
-          border: solid
           heading: "Always-on compute"
           icon: Globe.svg
           children:
             - id: compute_row0
               direction: horizontal
-              border: none
+              variant: annotation
               children:
                 - id: c_dc
                   label: [Data centers]
@@ -83,13 +82,11 @@ root:
         - id: revenue
           direction: vertical
           padding: 8
-          border: solid
           heading: "Revenue impact"
           icon: Financial data.svg
           children:
             - id: rev_row0
               direction: horizontal
-              border: none
               children:
                 - id: r_latency
                   label: [Latency down]
@@ -99,7 +96,7 @@ root:
                   icon: Scale up.svg
             - id: rev_row1
               direction: horizontal
-              border: none
+              variant: annotation
               children:
                 - id: r_efficiency
                   label: [Efficiency up]

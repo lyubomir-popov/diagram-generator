@@ -18,13 +18,11 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
   children:
     # Row 0: User-facing services panel
     - id: frontend
       direction: horizontal
       padding: 8
-      border: solid
       heading: "User-facing services"
       children:
         - id: fe_web
@@ -43,7 +41,6 @@ root:
     - id: services
       direction: horizontal
       padding: 8
-      border: solid
       heading: "Backend services"
       children:
         - id: svc_auth
@@ -59,7 +56,6 @@ root:
     # Row 3: Data layer
     - id: row3
       direction: horizontal
-      border: none
       children:
         - id: database
           label: [Primary, database]

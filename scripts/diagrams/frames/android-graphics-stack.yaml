@@ -17,13 +17,13 @@ root:
   direction: vertical
   gap: 32
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Row 0: Applications
     - id: row_apps
       direction: horizontal
       gap: 24
-      border: none
+      variant: annotation
       children:
         - id: apps
           label:
@@ -34,14 +34,13 @@ root:
           width: 288
         - id: note_apps
           label: [Applications render into GPU-backed buffers]
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Row 1: Android Graphics Runtime
     - id: row_runtime
       direction: horizontal
       gap: 24
-      border: none
       children:
         - id: runtime
           label:
@@ -55,14 +54,13 @@ root:
           label:
             - EGL connects rendering APIs
             - to the native buffer system
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Row 2: System Composition and Display Policy
     - id: row_composition
       direction: horizontal
       gap: 24
-      border: none
       children:
         - id: composition
           label:
@@ -73,14 +71,13 @@ root:
           width: 288
         - id: note_composition
           label: [SurfaceFlinger composes buffers into a frame]
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Row 3: Kernel Graphics & Display Subsystems
     - id: row_kernel
       direction: horizontal
       gap: 24
-      border: none
       children:
         - id: kernel_gfx
           label:
@@ -94,14 +91,13 @@ root:
           label:
             - HWComposer and kernel graphics subsystems
             - interact with the GPU and display hardware
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Row 4: Display output
     - id: row_display
       direction: horizontal
       gap: 24
-      border: none
       children:
         - id: display
           label:

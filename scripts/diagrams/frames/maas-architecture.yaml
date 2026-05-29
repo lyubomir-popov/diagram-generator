@@ -17,7 +17,7 @@ root:
   children:
     # Top annotation
     - id: api_label
-      border: none
+      variant: annotation
       sizing_w: hug
       label:
         - "Web interface, CLI, and REST API"
@@ -47,7 +47,7 @@ root:
 
     # Services annotation
     - id: services_label
-      border: none
+      variant: annotation
       sizing_w: hug
       label:
         - "DNS, NTP, Syslog, Squid Proxy"
@@ -79,13 +79,13 @@ root:
                   icon: Deployment.svg
                   width: 72
             - id: rack_left_services
-              border: none
+              variant: annotation
               sizing_w: hug
               label:
                 - "PXE, IPMI, DHCP,"
                 - "TFTP, iSCSI, NTP"
             - id: rack_left_label
-              border: none
+              variant: annotation
               sizing_w: hug
               label:
                 - {text: "Managed machines", weight: "700"}
@@ -128,13 +128,13 @@ root:
                   icon: Deployment.svg
                   width: 72
             - id: rack_right_services
-              border: none
+              variant: annotation
               sizing_w: hug
               label:
                 - "PXE, IPMI, DHCP,"
                 - "TFTP, iSCSI, NTP"
             - id: rack_right_label
-              border: none
+              variant: annotation
               sizing_w: hug
               label:
                 - {text: "Managed machines", weight: "700"}

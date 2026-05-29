@@ -6,30 +6,29 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Top zone — headings + panels side by side
     - id: top_zone
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         # Left column: heading + LXD container panel
         - id: col_container
           direction: vertical
-          border: none
+          variant: annotation
           width: 288
           sizing_w: fixed
           children:
             - id: hdr_container
               label:
                 - { text: "Containerized Android", weight: "700" }
-              border: none
+              variant: annotation
               sizing_h: hug
 
             - id: lxd_container
               direction: vertical
               padding: 8
-              border: solid
               heading: LXD container
               children:
                 - id: lxd_headline
@@ -43,20 +42,18 @@ root:
         # Right column: heading + VM panel
         - id: col_vm
           direction: vertical
-          border: none
+          variant: annotation
           width: 288
           sizing_w: fixed
           children:
             - id: hdr_vm
               label:
                 - { text: "Virtualized Android", weight: "700" }
-              border: none
               sizing_h: hug
 
             - id: vm
               direction: vertical
               padding: 8
-              border: solid
               heading: VM
               children:
                 - id: vm_headline
@@ -77,19 +74,19 @@ root:
         - id: note_top
           label:
             - { text: "SELinux assumptions only", fill: "#666666" }
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Separator
     - id: security_separator
       role: separator
-      border: none
+      variant: annotation
       sizing_h: hug
 
     # Bottom zone — host kernel layer
     - id: bottom_zone
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: host_container
           label: [Host kernel (AppArmor)]
@@ -105,5 +102,5 @@ root:
           label:
             - { text: "AppArmor enforcement", fill: "#666666" }
             - { text: "/ VM confinement", fill: "#666666" }
-          border: none
+          variant: annotation
           sizing_w: hug

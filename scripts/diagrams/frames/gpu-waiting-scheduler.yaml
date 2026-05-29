@@ -9,15 +9,15 @@ root:
   id: page
   direction: vertical
   padding: 24
-  border: none
+  variant: annotation
   children:
     # Row 0: scheduler box (right, spanning 3 cols)
     - id: row0
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: spacer0
-          border: none
+          variant: annotation
           label: []
           sizing_h: hug
         - id: scheduler
@@ -31,38 +31,37 @@ root:
     # Row 1: document icon + annotation
     - id: row1
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: spacer1
-          border: none
+          variant: annotation
           label: []
           sizing_h: hug
         - id: doc_icon
           icon: Document.svg
           label: []
-          border: none
+          variant: annotation
           sizing_w: hug
         - id: queued
           label:
             - {text: Queued request, fill: "#666666"}
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Row 2: gauge icon (left)
     - id: row2
       direction: horizontal
-      border: none
       children:
         - id: gauge_icon
           icon: Gauge.svg
           label: []
-          border: none
+          variant: annotation
           sizing_w: hug
 
     # Row 3: GPU box (left)
     - id: row3
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: gpu
           label:
@@ -73,10 +72,10 @@ root:
     # Row 4: waiting annotation (left)
     - id: row4
       direction: horizontal
-      border: none
+      variant: annotation
       children:
         - id: waiting
           label:
             - {text: "Waiting...", weight: "700"}
-          border: none
+          variant: annotation
           sizing_w: hug
