@@ -164,8 +164,7 @@ Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`. Two independent
 
 **HIGH — structural:**
 - [ ] `[H]` **H1. Layout mutates Frame tree.** `col_span` rewrites `width`/`sizing_w`; FILL/HUG coercion rewrites parent sizing; root width save/mutate/restore is fragile. Fix: layout-only derived fields, stop mutating semantic Frame fields.
-- [ ] `[H]` **H2. Style resolution duplicated (loader vs renderer).** Loader defaults fill=WHITE, renderer overrides containers to GREY. Explicit container fill can be overridden. Fix: one shared style resolver.
-	Formal feature package: `specs/007-style-foundation-unification/` (`spec.md`, `plan.md`, `tasks.md`, `baseline.md`).
+- [x] `[H]` **H2. Style resolution duplicated (loader vs renderer).** FIXED — `resolveStyles()` ported to TS (`resolve-styles.ts`), `_frameBoxRenderState()` rewritten to consume resolved values. Remaining migration closure in spec 007 Phases 4–7.
 - [ ] `[H]` **H3. Heading synthetic child incomplete.** `__body` no longer copies `wrap`, `fill_weight`, `justify` from parent (deliberately removed in the depth-based simplification). If any diagram relied on these being inherited, it will regress. Needs corpus audit to determine whether explicit YAML fields are needed on affected diagrams.
 - [x] `[H]` **H4. Overlay geometry contradicts model.** Full-width band vs member bounds. FIXED — now uses member bounds.
 - [ ] `[M]` **H5. Leaf measure vs render padding mismatch.** Measurement uses INSET, rendering uses per-side padding + 1px hack. Fix: use `frame.padding_*` in measurement.

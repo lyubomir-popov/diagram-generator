@@ -18,9 +18,9 @@
 
 ## Phase 3: Local renderer cleanup (WS2)
 
-- [ ] T020 Remove heuristic style branches in local v3 frame rendering path
-- [ ] T021 Ensure local renderer consumes contract-aligned style state
-- [ ] T022 Add regression tests asserting local renderer does not override resolved semantics
+- [x] T020 Remove heuristic style branches in local v3 frame rendering path — ported `resolve_styles()` to TS (`resolve-styles.ts`), `_frameBoxRenderState()` now uses `resolvedFill`/`resolvedStroke`
+- [x] T021 Ensure local renderer consumes contract-aligned style state — `resolveStyles()` called after layout in `performLocalRelayout()`
+- [x] T022 Add regression tests asserting local renderer does not override resolved semantics — 15 tests in `resolve-styles.test.ts`
 
 ## Phase 4: Readiness + fallback hardening (WS3)
 

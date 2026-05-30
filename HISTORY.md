@@ -4,6 +4,15 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-30 – Style resolution ported to TypeScript (spec 007 Phase 3)
+
+- **`resolve_styles()` ported to TS.** New `resolve-styles.ts` in `packages/layout-engine/` — full port of Python's depth-aware 4-class style resolution (section/panel/leaf/annotation), nesting constraints (grey-on-grey demotion, section-in-section cap), heading weight and small-caps mutations. 15 tests covering all style classes.
+- **`_frameBoxRenderState()` rewritten.** No longer uses flat `fill`/`border` heuristics. Consumes `resolvedFill`/`resolvedStroke` set by `resolveStyles()` after layout in `performLocalRelayout()`.
+- **Frame model extended.** `level`, `resolvedFill`, `resolvedStroke` fields added to TS `Frame` and `FrameInit`. Python serializer includes `level` in frame tree JSON.
+- **Bug fixed: changing one frame's style no longer corrupts all other frames.** Root cause was `_frameBoxRenderState()` re-deriving style from raw `fill`/`border` for every frame during relayout. Now uses resolved values from the single-source-of-truth `resolveStyles()`.
+- **INBOX bug drained.** Style dropdown and section variant confirmed working in browser.
+- **diagram_type enum expansion (cross-repo).** 8→11 values in `docs/diagram-schema.json` and `frame_loader.py` (committed by previous agent).
+
 ### 2026-05-30 – Class-based styling: eliminate inline styles, heading on non-containers, delete overrides
 
 - **Inline style ban enforced.** All `weight:`, `fill:`, `size:` removed from YAML label lines across 12 production diagrams. `_parse_line()` rewritten to accept only `text`, `style` (named styles like `muted`), and `small_caps`. The `_LINE_STYLES` dict maps named styles to Line kwargs.
