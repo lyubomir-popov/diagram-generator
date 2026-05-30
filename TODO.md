@@ -75,30 +75,29 @@ The level/style simplification (depth-based `_compute_level`, uniform gap=24, pa
 
 | Diagram | Status | Issues |
 |---------|--------|--------|
-| android-container-vs-vm | | |
-| android-custom-to-cloud | | |
-| android-graphics-stack | | |
-| android-security-comparison | | |
-| aws-hld | | |
-| complex-routing-usecase | | |
-| complex-testcase | | |
-| diagram-intake-workflow | | |
-| diagram-language-workflow | | |
-| example-deployment-pipeline | | |
-| example-platform-architecture | | |
-| example-stacked-blocks | | |
-| gpu-waiting-scheduler | | |
-| lightning-talk-engine | | |
-| lt-a4-generator | | |
-| lt-diagram-generator | | |
-| lt-summit-identity | | |
-| maas-architecture | | |
-| maas-machine-lifecycle | | |
-| maas-vendor-support | | |
-| request-to-hardware-stack | | |
-| rise-of-inference-economy | | |
-| simple-testcase | | |
-| support-engineering-flow | | |
+| android-container-vs-vm | ✅ | |
+| android-custom-to-cloud | ✅ | overrides baked, border fixed |
+| android-graphics-stack | ✅ | |
+| android-security-comparison | ✅ | hdr_vm annotation fix, sizing reverted |
+| aws-hld | ✅ | |
+| complex-routing-usecase | ✅ | levels corrected |
+| complex-testcase | ✅ | levels corrected |
+| diagram-intake-workflow | ✅ | overrides baked |
+| diagram-language-workflow | ✅ | levels corrected |
+| example-deployment-pipeline | ✅ | |
+| example-platform-architecture | ✅ | |
+| example-stacked-blocks | ✅ | |
+| gpu-waiting-scheduler | ✅ | inline styles converted |
+| lightning-talk-engine | ✅ | |
+| lt-a4-generator | ✅ | |
+| lt-diagram-generator | ✅ | |
+| maas-architecture | ✅ | inline styles converted |
+| maas-machine-lifecycle | ✅ | inline styles converted |
+| maas-vendor-support | ✅ | levels corrected |
+| request-to-hardware-stack | ✅ | overrides baked, levels corrected |
+| rise-of-inference-economy | ✅ | inline styles converted |
+| simple-testcase | ✅ | levels corrected |
+| support-engineering-flow | ✅ | overrides baked, inline styles converted |
 
 ### Variant overlays and col_span
 

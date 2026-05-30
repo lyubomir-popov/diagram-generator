@@ -4,6 +4,17 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-05-30 – Class-based styling: eliminate inline styles, heading on non-containers, delete overrides
+
+- **Inline style ban enforced.** All `weight:`, `fill:`, `size:` removed from YAML label lines across 12 production diagrams. `_parse_line()` rewritten to accept only `text`, `style` (named styles like `muted`), and `small_caps`. The `_LINE_STYLES` dict maps named styles to Line kwargs.
+- **`heading:` on non-containers.** `frame_loader.py` now passes `heading_line` through to `frame.heading` for non-containers (was hardcoded `None`). `_leaf_all_lines()` in `layout_v3.py` prepends `frame.heading` to label lines for measurement and rendering.
+- **Leaf heading weight demotion.** `resolve_styles()` now demotes `label[0]` weight from bold to regular on non-container leaves, matching the existing demotion for synthetic `__heading` children and direct `heading` fields.
+- **Editor overrides deleted.** All 12 override JSON files under `diagrams/2.output/overrides/` deleted. Structural overrides (sizing, gap, width, grid) baked into YAML for android-custom-to-cloud, android-security-comparison, diagram-intake-workflow, support-engineering-flow, request-to-hardware-stack.
+- **Layout-bridge JS crash fixed.** `const` reassignment in `_buildFrameTextElement` small-caps block caused `TypeError: Assignment to constant variable`. Changed to `let size` and extracted `content` variable.
+- **Level-assignment skill created.** `.github/skills/level-assignment/SKILL.md` – covers sibling-consistency algorithm, inline style ban, heading field usage, exemptions for annotations/separators/highlights, runtime downgrade documentation. Adversarial-reviewed by Explore subagent.
+- **`frame-classes.md` updated.** Added "Choosing the right level" section with the sibling-consistency rule (3 numbered steps + example). Added "Non-container sections" rendering note. Updated YAML mapping section.
+- **android-security-comparison fix.** `hdr_vm` was missing `variant: annotation`, rendering as bordered leaf instead of matching `hdr_container`. Fixed; reverted stale `sizing_h: fill` on `lxd_headline` and `vm_headline`.
+
 ### 2026-05-29 – Simplify level/style system: depth-based levels, panel non-nesting
 
 - **Replaced** bottom-up `_classify_levels()` with inline `_compute_level()` inside `resolve_styles()`. Levels now derive from nesting depth + container status: depth 0 → 0 (root), depth 1 + container → 2 (panel), depth 1 + leaf → 1 (box), depth 2+ → 1 (box).

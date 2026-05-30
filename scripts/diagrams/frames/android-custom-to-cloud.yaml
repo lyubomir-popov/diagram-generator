@@ -15,13 +15,16 @@ root:
   direction: horizontal
   gap: 32
   padding: 24
+  width: 960
+  sizing_w: fixed
   children:
     # Col 0: Custom Android files
     - id: custom_files
       level: 3
       direction: vertical
-      gap: 8
+      gap: 16
       padding: 8
+      sizing_h: fill
       heading: "Custom Android files"
       children:
         - id: partitions
@@ -40,8 +43,9 @@ root:
     - id: host_tools
       level: 3
       direction: vertical
-      gap: 24
+      gap: 16
       padding: 8
+      sizing_h: fill
       heading: "Host-side tools"
       children:
         - id: cvd
@@ -52,8 +56,9 @@ root:
     # Col 2: Anbox Cloud
     - id: anbox_cloud
       level: 3
+      sizing_h: fill
+      heading: "Anbox Cloud"
       label:
-        - {text: Anbox Cloud, weight: "700"}
         - "- Consumes system images"
         - "- Consumes host-side tools"
       icon: Cloud.svg
@@ -61,8 +66,9 @@ root:
     # Col 3: Virtualized Android instance
     - id: virt_instance
       level: 3
+      sizing_h: fill
+      heading: "Virtualized Android instance"
       label:
-        - {text: Virtualized Android instance, weight: "700"}
         - "- Unmodified"
         - "  Cuttlefish-based Android"
         - "- No rebuild required"

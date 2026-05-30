@@ -19,7 +19,7 @@ root:
   padding: 24
   children:
     - id: planning
-      level: 2
+      level: 3
       heading: "Planning"
       children:
         - id: define
@@ -29,10 +29,11 @@ root:
 
     - id: implementation
 
-      level: 2
+      level: 3
       heading: "Implementation"
       children:
         - id: devteam
+          level: 2
           heading: "Dev team"
           children:
             - id: implement
@@ -40,7 +41,7 @@ root:
 
     - id: delivery
 
-      level: 2
+      level: 3
       heading: "Delivery"
       justify: space-between
       children:

@@ -31,8 +31,8 @@ root:
         - id: new_desc
           variant: annotation
           width: 280
+          heading: "New"
           label:
-            - {text: "New", weight: "700"}
             - Machines newly discovered
             - by MAAS.
 
@@ -63,8 +63,8 @@ root:
               width: 96
         - id: commissioning_desc
           width: 280
+          heading: "Commissioning"
           label:
-            - {text: "Commissioning", weight: "700"}
             - Detailed inventory of RAM,
             - CPU, disks, NICs, and
             - accelerators like GPUs.
@@ -81,8 +81,8 @@ root:
         - id: ready_desc
           variant: annotation
           width: 280
+          heading: "Ready"
           label:
-            - {text: "Ready", weight: "700"}
             - A machine ready for
             - allocation.
 
@@ -98,8 +98,8 @@ root:
         - id: allocated_desc
           variant: annotation
           width: 280
+          heading: "Allocated"
           label:
-            - {text: "Allocated", weight: "700"}
             - Ready machines can be
             - allocated to users. Users
             - can further configure the
@@ -117,8 +117,8 @@ root:
         - id: deploying_desc
           variant: annotation
           width: 280
+          heading: "Deploying"
           label:
-            - {text: "Deploying", weight: "700"}
             - Users can ask MAAS to turn
             - the machine on and install a
             - server operating system from
@@ -137,7 +137,7 @@ root:
         - id: releasing_desc
           variant: annotation
           width: 280
+          heading: "Releasing"
           label:
-            - {text: "Releasing", weight: "700"}
             - The machine is securely released
             - back to the shared pool of capacity.

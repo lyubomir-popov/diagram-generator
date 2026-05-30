@@ -26,8 +26,8 @@ root:
       variant: annotation
       children:
         - id: apps
+          heading: "Applications"
           label:
-            - {text: Applications, weight: "700"}
             - "• OpenGL / Vulkan"
             - "• UI toolkits"
           icon: Mobile.svg
@@ -43,8 +43,8 @@ root:
       gap: 24
       children:
         - id: runtime
+          heading: "Android graphics runtime"
           label:
-            - {text: Android graphics runtime, weight: "700"}
             - "• EGL"
             - "• Vulkan loader"
             - "• Buffer management abstractions"
@@ -63,8 +63,8 @@ root:
       gap: 24
       children:
         - id: composition
+          heading: "System composition and display policy"
           label:
-            - {text: "System composition and display policy", weight: "700"}
             - "• SurfaceFlinger"
             - "• HWComposer (capability & policy)"
           icon: Composable.svg
@@ -80,8 +80,8 @@ root:
       gap: 24
       children:
         - id: kernel_gfx
+          heading: "Kernel graphics & display subsystems"
           label:
-            - {text: "Kernel graphics & display subsystems", weight: "700"}
             - "• DRM / KMS"
             - "• GPU drivers"
             - "• Memory & synchronization primitives"
@@ -100,7 +100,6 @@ root:
       gap: 24
       children:
         - id: display
-          label:
-            - {text: Display output, weight: "700"}
+          heading: "Display output"
           icon: Desktop monitor.svg
           width: 288

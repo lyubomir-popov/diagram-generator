@@ -16,7 +16,7 @@
 
 The repo uses a single render engine: **v3 autolayout**. All v2/v1 pipeline code has been deleted.
 
-**Active focus (2026-05-29):** Level/style system simplified – `_classify_levels()` replaced with depth-based `_compute_level()` inside `resolve_styles()`. Small-caps rendering baked into SVG markup (uppercase + 85% size). Preview server cleaned to v3-only paths.
+**Active focus (2026-05-30):** Class-based styling enforced – all inline `weight:`/`fill:`/`size:` removed from YAML label lines. `_parse_line()` rewritten to accept only `style:` and `small_caps:` keys. `heading:` field now works on non-containers (prepended as bold first line via `_leaf_all_lines()`). Editor override files deleted; structural overrides baked into YAML. Layout-bridge small-caps JS crash fixed. Level-assignment skill created.
 
 ### Frame classes
 

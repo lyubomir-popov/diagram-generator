@@ -34,6 +34,31 @@ Plus two special cases that are not user-authored:
 - Layout wrappers (headingless containers, `__body`/`__heading`
   synthetics) are invisible and do not count as a tier.
 
+## Choosing the right level
+
+Level assignment follows from the **deepest nesting among siblings**,
+not from each item's own children.
+
+1. Start with all items as leaves (level 1).
+2. When any item at a given depth has children (introducing 1-level
+   nesting), promote **all siblings at that depth** to panel (level 2)
+   – including those without children. A childless panel is fine; it's
+   a grey card.
+3. When any item at a given depth contains a panel that itself contains
+   children (2-level nesting), promote **all siblings at that depth**
+   to section (level 3) – including those that only wrap leaves
+   directly.
+
+The rule ensures visual consistency across a row or column: siblings
+never mix classes. If one item needs to be a section, all its siblings
+are sections. If one item needs to be a panel, all its siblings are
+panels.
+
+**Example:** Planning, Implementation, and Delivery are siblings.
+Implementation wraps "Dev team" (a panel wrapping leaves) – 2-level
+nesting. Therefore all three are sections, even though Planning and
+Delivery only contain leaves directly.
+
 ## YAML mapping
 
 The YAML author sets `level:` explicitly on every headed container:

@@ -23,8 +23,7 @@ root:
   children:
     # Row 0: full-width title
     - id: title
-      label:
-        - {text: "The rise of the inference economy", weight: "700"}
+      heading: "The rise of the inference economy"
       icon: Cloud.svg
 
     # Row 1: Training vs Inference headers
@@ -33,12 +32,10 @@ root:
       variant: annotation
       children:
         - id: training_hdr
-          label:
-            - {text: Training, weight: "700"}
+          heading: "Training"
           icon: AI.svg
         - id: inference_hdr
-          label:
-            - {text: Inference, weight: "700"}
+          heading: "Inference"
           variant: highlight
           icon: CPU.svg
 
@@ -110,9 +107,7 @@ root:
 
     # Row 4: summary boxes
     - id: summary1
-      label:
-        - {text: "From training focused to inference focused", weight: "700"}
+      heading: "From training focused to inference focused"
 
     - id: summary2
-      label:
-        - {text: "Performance & cost efficiency", weight: "700"}
+      heading: "Performance & cost efficiency"

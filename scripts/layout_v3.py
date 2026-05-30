@@ -204,9 +204,14 @@ def _estimate_text_width(lines: list[Line]) -> float:
 
 
 def _leaf_all_lines(frame: Frame) -> list[dict]:
-    """Convert a leaf node's label lines to dicts for measurement/rendering."""
+    """Convert a leaf node's heading + label lines to dicts for measurement/rendering."""
+    lines: list = []
+    if frame.heading:
+        lines.append(frame.heading)
     if frame.label:
-        return _lines_to_dicts(frame.label)
+        lines.extend(frame.label)
+    if lines:
+        return _lines_to_dicts(lines)
     return []
 
 

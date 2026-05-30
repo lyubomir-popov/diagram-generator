@@ -87,8 +87,7 @@ root:
             - id: rack_left_label
               variant: annotation
               sizing_w: hug
-              label:
-                - {text: "Managed machines", weight: "700"}
+              heading: "Managed machines"
             - id: rack_left_machines
               direction: horizontal
               sizing_w: hug
@@ -136,8 +135,7 @@ root:
             - id: rack_right_label
               variant: annotation
               sizing_w: hug
-              label:
-                - {text: "Managed machines", weight: "700"}
+              heading: "Managed machines"
             - id: rack_right_machines
               direction: horizontal
               sizing_w: hug

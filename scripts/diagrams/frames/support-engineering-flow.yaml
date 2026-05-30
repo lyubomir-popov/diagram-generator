@@ -5,6 +5,7 @@ meta:
   abstraction_level: container
 grid:
   cols: 5
+  col_gap: 24
   row_gap: 48
 arrows:
   - source: step_problem
@@ -24,36 +25,41 @@ root:
   sizing_h: hug
   children:
     - id: step_problem
+      heading: "The problem"
       label:
-        - {text: The problem, weight: "700"}
         - ""
         - "Databases have crawled to a halt. Services are unusably slow."
       sizing_w: fill
+      sizing_h: fill
 
     - id: step_investigation
+      heading: "The initial investigation"
       label:
-        - {text: The initial investigation, weight: "700"}
         - ""
         - "Customer believes getent to be the issue. They open a support ticket."
       sizing_w: fill
+      sizing_h: fill
 
     - id: step_analysis
+      heading: "Support Engineering analysis"
       label:
-        - {text: Support Engineering analysis, weight: "700"}
         - ""
         - "The issue isn\u2019t a quick package fix. Canonical Support engineers dive deep into the source code."
       sizing_w: fill
+      sizing_h: fill
 
     - id: step_fix
+      heading: "The fix"
       label:
-        - {text: The fix, weight: "700"}
         - ""
         - "Canonical Support engineers fix the code in a 12-year-old repo, upstreaming the fix for all. They patch the issue, reducing nearly 49,000 disk reads to a single, fast alternative."
       sizing_w: fill
+      sizing_h: fill
 
     - id: step_result
+      heading: "The result"
       label:
-        - {text: The result, weight: "700"}
         - ""
         - "The databases are all online and back to their desired speed."
       sizing_w: fill
+      sizing_h: fill

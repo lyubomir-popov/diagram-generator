@@ -2,6 +2,8 @@ engine: v3
 title: "Request to hardware stack"
 grid:
   cols: 1
+  col_gap: 16
+  row_gap: 24
 arrows:
   - source: user
     target: orch

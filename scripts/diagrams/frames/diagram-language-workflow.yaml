@@ -35,48 +35,54 @@ root:
           label: [Local refs, "+ outputs"]
           icon: Document with Magnifying glass.svg
         - id: src_spec
+          heading: "DIAGRAM.md"
           label:
-            - {text: DIAGRAM.md, weight: "700"}
             - canonical spec
           variant: highlight
           icon: Book with Magnifying glass.svg
 
     - id: redraw
+      level: 2
+      heading: "Diagram redraw"
       label:
-        - {text: Diagram redraw, weight: "700"}
         - skill
       variant: highlight
       icon: Wrench 1.svg
 
     - id: generators
+      level: 2
+      heading: "Repo generators"
       label:
-        - {text: Repo generators, weight: "700"}
-        - {text: "shared tokens + library", fill: "#666666"}
+        - {text: "shared tokens + library", style: muted}
       icon: Screen with code.svg
 
     - id: validate
+      level: 2
+      heading: "Build + validate"
       label:
-        - {text: Build + validate, weight: "700"}
         - skill
       variant: highlight
       icon: Rosette with check.svg
 
     - id: review
+      level: 2
+      heading: "Compare + review lane"
       label:
-        - {text: Compare + review lane, weight: "700"}
-        - {text: "before / agent / refined", fill: "#666666"}
+        - {text: "before / agent / refined", style: muted}
       icon: Document with Magnifying glass.svg
 
     - id: drawio
+      level: 2
+      heading: "Protected draw.io"
       label:
-        - {text: Protected draw.io, weight: "700"}
         - review skill
       variant: highlight
       icon: Design.svg
 
     - id: outputs
+      level: 2
+      heading: "Editable draw.io +"
       label:
-        - {text: Editable draw.io +, weight: "700"}
         - SVG outputs
-        - {text: "ready for token ingest", fill: "#666666"}
+        - {text: "ready for token ingest", style: muted}
       icon: Storage image.svg

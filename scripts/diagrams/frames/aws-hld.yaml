@@ -33,8 +33,8 @@ root:
   children:
     # Row 0: title
     - id: title
+      heading: "AWS Organisations"
       label:
-        - {text: AWS Organisations, weight: "700"}
         - High Level Design
       icon: Cloud.svg
 
@@ -118,9 +118,9 @@ root:
       children:
         - id: vpn_note
           label:
-            - {text: "VPN attachments are", fill: "#666666"}
-            - {text: "associated with", fill: "#666666"}
-            - {text: "external route table", fill: "#666666"}
+            - {text: "VPN attachments are", style: muted}
+            - {text: "associated with", style: muted}
+            - {text: "external route table", style: muted}
           sizing_w: hug
         - id: ca
           label: [Certificate, Authority]
@@ -130,7 +130,7 @@ root:
           icon: Gateway.svg
         - id: vpc_attach_note
           label:
-            - {text: "vpc attachment", fill: "#666666"}
+            - {text: "vpc attachment", style: muted}
           variant: annotation
           sizing_w: hug
         - id: customer_gw
@@ -239,8 +239,8 @@ root:
     # Row 5: Key
     - id: key_note
       label:
-        - {text: "Key: Transit Gateway · AWS account · Route Table ·", fill: "#666666"}
-        - {text: "OU · VPN · Private Link · Route 53 ·", fill: "#666666"}
-        - {text: "Systems Manager · Subnet · NAT · Certificate Authority", fill: "#666666"}
+        - {text: "Key: Transit Gateway · AWS account · Route Table ·", style: muted}
+        - {text: "OU · VPN · Private Link · Route 53 ·", style: muted}
+        - {text: "Systems Manager · Subnet · NAT · Certificate Authority", style: muted}
       variant: annotation
       sizing_h: hug

@@ -35,19 +35,34 @@ _JUSTIFY = {
 }
 
 
+# Named text styles.  Use ``style: <name>`` in label-line dicts
+# instead of raw ``fill:`` or ``weight:`` overrides.
+_LINE_STYLES: dict[str, dict] = {
+    "muted": {"fill": "#666666"},
+}
+
+
 def _parse_line(raw) -> Line:
-    """Parse a label line from YAML — string or {text, weight, size, ...}."""
+    """Parse a label line from YAML — string or {text, style, ...}.
+
+    Accepts plain strings or dicts.  Dict keys:
+      text        — the text content
+      style       — named text style (e.g. ``muted``)
+      small_caps  — boolean flag
+
+    Raw ``weight:``, ``fill:``, and ``size:`` are not allowed in YAML.
+    Use ``heading:`` on the frame for bold, ``style: muted`` for grey,
+    and the class system (``level:``, ``variant:``) for everything else.
+    """
     if isinstance(raw, str):
         return Line(raw)
     if isinstance(raw, dict):
-        # Only pass keys that are actually present so Line defaults apply
         kw = {}
-        if "weight" in raw:
-            kw["weight"] = raw["weight"]
-        if "size" in raw:
-            kw["size"] = raw["size"]
-        if "fill" in raw:
-            kw["fill"] = raw["fill"]
+        # Named style overrides
+        style_name = raw.get("style")
+        if style_name:
+            style = _LINE_STYLES.get(style_name, {})
+            kw.update(style)
         if "small_caps" in raw:
             kw["small_caps"] = raw["small_caps"]
         return Line(raw.get("text", ""), **kw)
@@ -197,8 +212,8 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
         max_height=int(data["max_height"]) if "max_height" in data else None,
         fill=_FILL.get(data.get("fill", "white"), Fill.WHITE),
         border=border,
-        heading=None,
-        icon=data.get("icon") if not heading_line else None,
+        heading=heading_line if not is_container else None,
+        icon=data.get("icon") if (not heading_line or not is_container) else None,
         icon_fill=data.get("icon_fill"),
         label=label,
         role=data.get("role", ""),
@@ -481,6 +496,16 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
                     line_step=root.heading.line_step,
                     font_family=root.heading.font_family,
                 )
+            # Non-container leaves: demote first label line (used as
+            # visual heading) from bold to regular weight.
+            if not root.is_container and root.label:
+                ln = root.label[0]
+                if ln.weight == "700":
+                    root.label[0] = Line(
+                        ln.content, weight="400", fill=ln.fill,
+                        small_caps=False, line_step=ln.line_step,
+                        font_family=ln.font_family,
+                    )
 
     for child in root.children:
         # Layout wrappers pass through the parent's panel/section status

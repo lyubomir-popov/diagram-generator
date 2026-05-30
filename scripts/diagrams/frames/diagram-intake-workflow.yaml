@@ -15,6 +15,8 @@ root:
   id: page
   direction: vertical
   padding: 24
+  width: 576
+  sizing_w: fixed
   variant: annotation
   children:
     # Dashed input frame with two source boxes
@@ -27,31 +29,35 @@ root:
         - id: src_chatgpt
           label: [ChatGPT-generated, diagrams]
           icon: AI.svg
+          sizing_h: fill
         - id: src_other
           label: ["? Additional rough", source formats, from PMs]
 
     - id: workflow
+      level: 2
+      heading: "Agentic workflow"
       label:
-        - {text: Agentic workflow, weight: "700"}
         - in this repo
-        - {text: "playbook + generators", fill: "#666666"}
+        - {text: "playbook + generators", style: muted}
       icon: Screen with code.svg
 
     - id: compare
+      level: 2
+      heading: "Compare mode"
       label:
-        - {text: Compare mode, weight: "700"}
-        - {text: "HTML before / agent / refined", fill: "#666666"}
+        - {text: "HTML before / agent / refined", style: muted}
       icon: Document with Magnifying glass.svg
 
     - id: polish
+      level: 2
+      heading: "Designer polish"
       label:
-        - {text: Designer polish, weight: "700"}
-        - {text: "manual pass in generated draw.io", fill: "#666666"}
+        - {text: "manual pass in generated draw.io", style: muted}
       icon: Design.svg
 
     - id: final
+      heading: "Final SVGs"
       label:
-        - {text: Final SVGs, weight: "700"}
         - on-brand deliverables
       variant: highlight
       icon: Storage image.svg

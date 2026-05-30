@@ -21,8 +21,8 @@ root:
           label: []
           sizing_h: hug
         - id: scheduler
+          heading: "Scheduler"
           label:
-            - {text: Scheduler, weight: "700"}
             - AI inference
             - request
           icon: Desktop monitor.svg
@@ -44,7 +44,7 @@ root:
           sizing_w: hug
         - id: queued
           label:
-            - {text: Queued request, fill: "#666666"}
+            - {text: Queued request, style: muted}
           variant: annotation
           sizing_w: hug
 
@@ -64,8 +64,7 @@ root:
       variant: annotation
       children:
         - id: gpu
-          label:
-            - {text: GPU, weight: "700"}
+          heading: "GPU"
           icon: CPU.svg
           sizing_w: hug
 
@@ -75,7 +74,6 @@ root:
       variant: annotation
       children:
         - id: waiting
-          label:
-            - {text: "Waiting...", weight: "700"}
+          heading: "Waiting..."
           variant: annotation
           sizing_w: hug
