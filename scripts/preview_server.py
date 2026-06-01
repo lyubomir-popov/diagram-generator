@@ -282,6 +282,7 @@ def _serialize_frame_diagram(diagram) -> dict:
         "gridColGap": diagram.grid_col_gap,
         "gridRowGap": diagram.grid_row_gap,
         "gridOuterMargin": diagram.grid_outer_margin,
+        "overlays": [{"id": o.id, "label": o.label, "members": o.members} for o in diagram.overlays],
     }
 
 
@@ -737,6 +738,8 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self._serve_frame_tree(path[16:])
         elif path.startswith("/api/grid/"):
             self._serve_grid(path[10:])
+        elif path.startswith("/api/icon/"):
+            self._serve_icon(path[10:])
         elif path.startswith("/reference/"):
             self._serve_reference_image(path[11:])
         elif path == "/v3":
@@ -1317,6 +1320,19 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
                 time.sleep(0.3)
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
             pass
+
+    def _serve_icon(self, name: str):
+        """Serve an individual icon SVG from assets/icons/."""
+        # Prevent path traversal
+        safe_name = pathlib.PurePosixPath(name).name
+        if not safe_name or safe_name != name or '..' in name:
+            self.send_error(400, "Invalid icon name")
+            return
+        icon_path = ROOT / "assets" / "icons" / safe_name
+        if not icon_path.exists():
+            self.send_error(404, f"Icon not found: {safe_name}")
+            return
+        self._respond(200, "image/svg+xml", icon_path.read_bytes())
 
     def _respond(self, code: int, content_type: str, body: bytes):
         try:

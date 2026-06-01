@@ -122,6 +122,20 @@ The current A* router has structural issues: no port model, wrong obstacle handl
 - **Phase 5** `[S]` Pre-compute arrow geometry in layout pass (fix renderer layer violation)
 - **Phase 6** `[L]` Crossing minimization (stretch goal)
 
+### Client-side TS rendering – spec 009 (ACTIVE)
+
+Feature package: `specs/009-client-side-ts-rendering/`
+
+Phases 1–3 complete (T001–T012). The preview editor renders SVG from the TS pipeline on first load. Python SVG fetch eliminated from the interactive path.
+
+**Remaining:**
+- [ ] `[S]` T013: Browser-verify remaining ~20 diagrams (3/23 done: maas-architecture, complex-routing-usecase, aws-hld)
+- [ ] `[S]` T014–T015: Batch/export validation – confirm Python renderer and `/svg/` endpoint unchanged
+- [ ] `[S]` T016: Grid overlay verification with TS-rendered SVG
+- [ ] `[S]` T017–T019: Error handling (HarfBuzz load failure, icon fetch failure, empty diagram)
+- [ ] `[X]` T020–T021: Full test suite re-run
+- [ ] `[S]` T022: Final browser verification of all diagrams with edge cases
+
 ### Repo coherence and migration cleanup
 
 Active coordination package: `specs/008-repo-coherence-rewrite/`
@@ -149,7 +163,7 @@ Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`. Two independent
 - [ ] `[M]` **M2. `ARROW_CLEARANCE` 3x defined (8/8/12).** Fix: one canonical value.
 - [x] `[S]` **M3. `padding: 0` truthiness bug.** `or` chain treats explicit 0 as false. FIXED.
 - [ ] `[M]` **M4. Silent enum fallbacks.** Bad `sizing`/`direction`/`align`/`variant` silently default. Fix: warn on unknown values.
-- [ ] `[M]` **M5. Preview JSON contract stale.** Missing `justify`, `col_span`, overlays.
+- [ ] `[M]` **M5. Preview JSON contract stale.** Missing `justify`, `col_span`. (Overlays now serialised via T002.)
 - [ ] `[S]` **M6. `estimate_line_width` duplicated.** `diagram_shared.py` vs `text_metrics.py`.
 
 **Mermaid testcase accuracy:**

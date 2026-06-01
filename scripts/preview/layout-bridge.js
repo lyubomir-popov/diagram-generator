@@ -302,6 +302,53 @@ function applyOverridesToFrameTree(diagram, allOverrides, gridOverrides) {
 // ---------------------------------------------------------------------------
 
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+// ---------------------------------------------------------------------------
+// Icon fetching and caching
+// ---------------------------------------------------------------------------
+
+const _iconCache = new Map();
+
+async function fetchIconSvg(name) {
+  if (_iconCache.has(name)) return _iconCache.get(name);
+  try {
+    const resp = await fetch("/api/icon/" + encodeURIComponent(name));
+    if (!resp.ok) {
+      console.warn("layout-bridge: icon fetch failed for", name, resp.status);
+      _iconCache.set(name, null);
+      return null;
+    }
+    const text = await resp.text();
+    _iconCache.set(name, text);
+    return text;
+  } catch (e) {
+    console.warn("layout-bridge: icon fetch error for", name, e);
+    _iconCache.set(name, null);
+    return null;
+  }
+}
+
+function buildIconElement(name, svgContent, fill) {
+  if (!svgContent) return null;
+  const g = document.createElementNS(SVG_NS, "g");
+  g.setAttribute("class", "dg-icon");
+  // Parse the SVG content and extract children of the <svg> root
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgContent, "image/svg+xml");
+  const svgRoot = doc.documentElement;
+  // Copy children from parsed SVG into the group
+  for (const child of Array.from(svgRoot.childNodes)) {
+    g.appendChild(document.importNode(child, true));
+  }
+  // Apply fill to shape elements
+  if (fill) {
+    g.querySelectorAll("path, circle, rect, polygon, ellipse").forEach(el => {
+      el.setAttribute("fill", fill);
+    });
+  }
+  return g;
+}
+
 const _ASCENT_RATIO = 0.94;
 
 function _fmtSvgNumber(value) {
@@ -400,7 +447,7 @@ function _buildFrameTextElement(frame, renderState) {
   return textEl;
 }
 
-function patchFrameGroup(g, frame) {
+function patchFrameGroup(g, frame, iconElement) {
   const renderState = _frameBoxRenderState(frame);
   const existingIcon = g.querySelector(":scope > .dg-icon");
 
@@ -452,13 +499,14 @@ function patchFrameGroup(g, frame) {
     children.push(textEl);
   }
 
-  if (frame.icon && existingIcon) {
+  const iconToUse = iconElement || existingIcon;
+  if (frame.icon && iconToUse) {
     const iconX = frame._layout.placedX + frame._layout.placedW - renderState.padRight - LayoutEngine.ICON_SIZE;
     const iconY = frame._layout.placedY + renderState.padTop;
-    existingIcon.setAttribute("transform", `translate(${_fmtSvgNumber(iconX)} ${_fmtSvgNumber(iconY)})`);
-    existingIcon.setAttribute("data-orig-tx", _fmtSvgNumber(iconX));
-    existingIcon.setAttribute("data-orig-ty", _fmtSvgNumber(iconY));
-    children.push(existingIcon);
+    iconToUse.setAttribute("transform", `translate(${_fmtSvgNumber(iconX)} ${_fmtSvgNumber(iconY)})`);
+    iconToUse.setAttribute("data-orig-tx", _fmtSvgNumber(iconX));
+    iconToUse.setAttribute("data-orig-ty", _fmtSvgNumber(iconY));
+    children.push(iconToUse);
   }
 
   g.replaceChildren(...children);
@@ -1035,6 +1083,306 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Arrow SVG creation (T007–T008)
+// ---------------------------------------------------------------------------
+
+function _arrowheadPoints(tipX, tipY, prevX, prevY, headLen, headHalf) {
+  const dx = tipX - prevX;
+  const dy = tipY - prevY;
+  const length = Math.hypot(dx, dy);
+  if (length === 0) return null;
+  const ux = dx / length;
+  const uy = dy / length;
+  const bx = tipX - ux * headLen;
+  const by = tipY - uy * headLen;
+  const nx = -uy * headHalf;
+  const ny = ux * headHalf;
+  return {
+    base: [bx, by],
+    points: `${(bx + nx).toFixed(1)},${(by + ny).toFixed(1)} ${tipX.toFixed(1)},${tipY.toFixed(1)} ${(bx - nx).toFixed(1)},${(by - ny).toFixed(1)}`,
+  };
+}
+
+function createArrowsSvg(routedArrows) {
+  const frag = document.createDocumentFragment();
+  const HL = (window.__DG_CONFIG && window.__DG_CONFIG.head_len) || 12;
+  const HH = (window.__DG_CONFIG && window.__DG_CONFIG.head_half) || 6;
+
+  for (const arrow of routedArrows) {
+    const g = document.createElementNS(SVG_NS, "g");
+    if (arrow.componentId) {
+      g.setAttribute("data-component-id", arrow.componentId);
+    }
+    const points = [arrow.start, ...arrow.waypoints, arrow.end];
+    if (points.length < 2) continue;
+
+    // Compute arrowhead so shaft ends at the base
+    const [tx, ty] = points[points.length - 1];
+    const [px, py] = points[points.length - 2];
+    const head = _arrowheadPoints(tx, ty, px, py, HL, HH);
+    const shaftPoints = points.slice();
+    if (head) {
+      shaftPoints[shaftPoints.length - 1] = head.base;
+    }
+
+    const color = arrow.color || "#E95420";
+    // Shaft segments
+    for (let i = 0; i < shaftPoints.length - 1; i++) {
+      const line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("x1", shaftPoints[i][0].toFixed(1));
+      line.setAttribute("y1", shaftPoints[i][1].toFixed(1));
+      line.setAttribute("x2", shaftPoints[i + 1][0].toFixed(1));
+      line.setAttribute("y2", shaftPoints[i + 1][1].toFixed(1));
+      line.setAttribute("fill", "none");
+      line.setAttribute("stroke", color);
+      line.setAttribute("stroke-width", "1");
+      line.setAttribute("stroke-miterlimit", "10");
+      g.appendChild(line);
+    }
+
+    // Arrowhead polygon
+    if (head) {
+      const polygon = document.createElementNS(SVG_NS, "polygon");
+      polygon.setAttribute("points", head.points);
+      polygon.setAttribute("fill", color);
+      g.appendChild(polygon);
+    }
+
+    frag.appendChild(g);
+  }
+  return frag;
+}
+
+// ---------------------------------------------------------------------------
+// Overlay SVG rendering (T009)
+// ---------------------------------------------------------------------------
+
+function renderOverlaysSvg(overlays, boundsMap) {
+  const OVERLAY_PAD = 8;
+  const frag = document.createDocumentFragment();
+  if (!overlays || overlays.length === 0) return frag;
+
+  for (const ov of overlays) {
+    const memberBounds = ov.members
+      .filter(m => boundsMap[m])
+      .map(m => boundsMap[m]);
+    if (memberBounds.length === 0) continue;
+
+    const minX = Math.min(...memberBounds.map(b => b.x));
+    const minY = Math.min(...memberBounds.map(b => b.y));
+    const maxX = Math.max(...memberBounds.map(b => b.x + b.w));
+    const maxY = Math.max(...memberBounds.map(b => b.y + b.h));
+
+    const rx = minX - OVERLAY_PAD;
+    const ry = minY - OVERLAY_PAD;
+    const rw = (maxX - minX) + 2 * OVERLAY_PAD;
+    const rh = (maxY - minY) + 2 * OVERLAY_PAD;
+
+    const g = document.createElementNS(SVG_NS, "g");
+    if (ov.id) g.setAttribute("data-component-id", ov.id);
+
+    const rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("x", _fmtSvgNumber(rx));
+    rect.setAttribute("y", _fmtSvgNumber(ry));
+    rect.setAttribute("width", _fmtSvgNumber(rw));
+    rect.setAttribute("height", _fmtSvgNumber(rh));
+    rect.setAttribute("fill", "transparent");
+    rect.setAttribute("stroke", "#000000");
+    rect.setAttribute("stroke-width", "1");
+    rect.setAttribute("stroke-dasharray", "2 4");
+    g.appendChild(rect);
+
+    if (ov.label) {
+      const text = document.createElementNS(SVG_NS, "text");
+      text.setAttribute("font-family", "Ubuntu Sans");
+      text.setAttribute("font-size", "14");
+      text.setAttribute("font-weight", "400");
+      text.setAttribute("fill", "#000000");
+      const tspan = document.createElementNS(SVG_NS, "tspan");
+      tspan.setAttribute("x", _fmtSvgNumber(rx + OVERLAY_PAD));
+      tspan.setAttribute("y", _fmtSvgNumber(ry - 4));
+      tspan.textContent = ov.label;
+      text.appendChild(tspan);
+      g.appendChild(text);
+    }
+
+    frag.appendChild(g);
+  }
+  return frag;
+}
+
+// ---------------------------------------------------------------------------
+// Core rendering: renderFrameTreeToSvg (T010)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a complete SVG element from a laid-out FrameDiagram.
+ *
+ * @param {object} diagram  Deserialized FrameDiagram (with overlays, arrows)
+ * @param {object} result   Output of layoutFrameTree() – { width, height, coerced }
+ * @param {object} options
+ * @param {Map<string, Element>} [options.iconElements]  Pre-built icon <g> elements keyed by icon name
+ * @param {Array} [options.overlays]  Raw overlay objects from the JSON (not on TS FrameDiagram)
+ * @returns {SVGSVGElement}
+ */
+function renderFrameTreeToSvg(diagram, result, options) {
+  const width = result.width;
+  const height = result.height;
+  const iconElements = (options && options.iconElements) || new Map();
+  const overlays = (options && options.overlays) || [];
+
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("xmlns", SVG_NS);
+  svg.setAttribute("width", String(width));
+  svg.setAttribute("height", String(height));
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("xml:space", "preserve");
+
+  // White background
+  const bgRect = document.createElementNS(SVG_NS, "rect");
+  bgRect.setAttribute("width", String(width));
+  bgRect.setAttribute("height", String(height));
+  bgRect.setAttribute("fill", "#FFFFFF");
+  svg.appendChild(bgRect);
+
+  // Render frame tree depth-first
+  function _renderFrame(frame) {
+    const cid = frame.id || null;
+    const g = document.createElementNS(SVG_NS, "g");
+    if (cid) {
+      g.setAttribute("data-component-id", cid);
+    }
+
+    // Get pre-fetched icon element for this frame
+    let iconEl = null;
+    if (frame.icon && iconElements.has(frame.icon)) {
+      iconEl = iconElements.get(frame.icon).cloneNode(true);
+      // Apply per-frame icon fill
+      const iconFill = frame.iconFill || "#000000";
+      iconEl.querySelectorAll("path, circle, rect, polygon, ellipse").forEach(el => {
+        el.setAttribute("fill", iconFill);
+      });
+    }
+
+    patchFrameGroup(g, frame, iconEl);
+    svg.appendChild(g);
+
+    // Recurse into children
+    if (frame.children) {
+      for (const child of frame.children) {
+        _renderFrame(child);
+      }
+    }
+  }
+
+  _renderFrame(diagram.root);
+
+  // Route and render arrows
+  if (diagram.arrows && diagram.arrows.length > 0) {
+    const boundsMap = collectPlacedBounds(diagram.root, {});
+    const routed = routeArrows(diagram.arrows, boundsMap);
+    const arrowFrag = createArrowsSvg(routed);
+    svg.appendChild(arrowFrag);
+  }
+
+  // Render overlays
+  if (overlays.length > 0) {
+    const boundsMap = collectPlacedBounds(diagram.root, {});
+    const overlayFrag = renderOverlaysSvg(overlays, boundsMap);
+    svg.appendChild(overlayFrag);
+  }
+
+  return svg;
+}
+
+// ---------------------------------------------------------------------------
+// Full fresh-render pipeline (called by editor.js loadSVG)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a complete SVG element from scratch using the TS pipeline.
+ *
+ * Assumes initLayoutBridge() has already been called and the bridge is ready.
+ *
+ * @param {object} overrides       Frame-level overrides keyed by frame id
+ * @param {object|null} gridOverrides  Grid-level overrides (or null)
+ * @param {object} model           ComponentModel instance (for updateComponentModelFromLayout)
+ * @returns {Promise<{svg: SVGSVGElement, width: number, height: number, coerced: boolean}>}
+ */
+async function renderFreshSvg(overrides, gridOverrides, model) {
+  // Deep-clone the stored frame tree and deserialize
+  const diagramJson = JSON.parse(JSON.stringify(_frameTreeJson));
+  const rawOverlays = diagramJson.overlays || [];
+  const diagram = deserializeFrameDiagram(diagramJson);
+
+  // Build override map (same format as performLocalRelayout)
+  const FRAME_KEYS = [
+    "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
+    "sizing", "sizing_w", "sizing_h",
+    "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "min_height",
+    "max_height", "children_order", "fill", "border", "level", "text",
+    "position", "x", "y",
+  ];
+  const allFrameOverrides = {};
+  for (const [fid, ovr] of Object.entries(overrides)) {
+    const entry = {};
+    for (const key of FRAME_KEYS) {
+      if (ovr[key] !== undefined) entry[key] = ovr[key];
+    }
+    if (Object.keys(entry).length > 0) allFrameOverrides[fid] = entry;
+  }
+
+  applyOverridesToFrameTree(diagram, allFrameOverrides, gridOverrides);
+
+  // Resolve styles and run layout
+  LayoutEngine.resolveStyles(diagram.root);
+  const result = LayoutEngine.layoutFrameTree(diagram.root, _textAdapter);
+
+  // Collect unique icon names from the frame tree
+  const iconNames = new Set();
+  function _collectIcons(frame) {
+    if (frame.icon) iconNames.add(frame.icon);
+    if (frame.children) frame.children.forEach(_collectIcons);
+  }
+  _collectIcons(diagram.root);
+
+  // Fetch all icons in parallel
+  const iconElements = new Map();
+  if (iconNames.size > 0) {
+    const entries = await Promise.all(
+      Array.from(iconNames).map(async (name) => {
+        const svgContent = await fetchIconSvg(name);
+        if (svgContent) {
+          const el = buildIconElement(name, svgContent, null);
+          return [name, el];
+        }
+        return [name, null];
+      })
+    );
+    for (const [name, el] of entries) {
+      if (el) iconElements.set(name, el);
+    }
+  }
+
+  // Build SVG DOM
+  const svgElement = renderFrameTreeToSvg(diagram, result, { iconElements, overlays: rawOverlays });
+
+  // Update component model from layout
+  updateComponentModelFromLayout(model, diagram.root);
+
+  return {
+    svg: svgElement,
+    width: result.width,
+    height: result.height,
+    coerced: result.coerced,
+  };
+}
+
 window.isLocalRelayoutReady = isLocalRelayoutReady;
 window.getLocalRelayoutStatus = getLocalRelayoutStatus;
 window.__DG_TEST_setLocalRelayoutMode = setLocalRelayoutOverrideMode;
+window.renderFrameTreeToSvg = renderFrameTreeToSvg;
+window.fetchIconSvg = fetchIconSvg;
+window.buildIconElement = buildIconElement;
+window.renderFreshSvg = renderFreshSvg;

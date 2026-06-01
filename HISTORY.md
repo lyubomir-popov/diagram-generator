@@ -771,6 +771,17 @@ The following changes exist in the working tree but were NOT verified in a brows
 - **Component swap / style picker (commit b5d7d91):** Added `BOX_STYLES` constant (default/accent/highlight), `applyStyleOverride()` function, and style picker dropdown in inspector panel. Overrides persist in JSON, undo/redo works, constraint system validates highlight limit. Fixed case-sensitivity bug in `getComponentType()` comparison.
 - **Icon filter regression fix (commit 01419ae):** `applyAllOverrides()` now resets `.dg-icon` CSS filters in the restore phase so icons don't stay white after undoing a highlight style.
 
+### 2026-06-01 – Client-side TS rendering: Phases 1–3 (spec 009)
+
+- **Spec 009 created and committed (3c6ad6f).** Feature package at `specs/009-client-side-ts-rendering/` with spec, plan, quickstart, data model, contracts, and 22 tasks across 6 phases.
+- **Server-side prep (T002–T003).** `_serialize_frame_diagram()` now includes `overlays` array. New `GET /api/icon/<name>` endpoint with path-traversal protection.
+- **Icon fetching (T004–T006).** `fetchIconSvg()` with Map cache, `buildIconElement()` for SVG-to-DOM with fill recolouring, `patchFrameGroup()` accepts optional pre-fetched icon element.
+- **Arrow/overlay SVG creation (T007–T009).** `_arrowheadPoints()` helper, `createArrowsSvg()` for line segments + arrowhead polygons, `renderOverlaysSvg()` for dashed bounding rects with labels.
+- **Core rendering (T010–T012).** `renderFrameTreeToSvg()` builds complete SVG from frame tree with depth-first walk, icons, arrows, and overlays. `renderFreshSvg()` is the full pipeline: deserialise → overrides → resolveStyles → layout → fetch icons → render. `loadSVG()` rewritten to use the TS pipeline as the first and only paint – Python SVG fetch eliminated from the happy path.
+- **Critical bug fix: `buildIconElement()` infinite loop.** `document.importNode()` copies nodes without removing originals, so `while (svgRoot.firstChild) { importNode }` never terminated. Fixed to `for (const child of Array.from(svgRoot.childNodes))`.
+- **Browser-verified** 3 complex diagrams: maas-architecture (icons + arrows + nesting), complex-routing-usecase (arrows + containers), aws-hld (deep nesting + many icons + arrows). All render correctly from TS pipeline.
+- Tests: 198 TS + 271 Python all passing.
+
 ### 2026-05-12 – Lightning talk diagrams, fan-in merge rule, editor chevrons
 
 - Created `scripts/diagrams/lt_a4_generator.py` and `scripts/diagrams/lt_summit_identity.py` — two new pipeline diagrams for the lightning talk (A4/whitepaper generator and Ubuntu Summit identity generator).

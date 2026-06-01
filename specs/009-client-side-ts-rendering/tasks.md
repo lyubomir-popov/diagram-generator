@@ -18,7 +18,7 @@
 
 **Purpose**: Confirm green baseline before any changes
 
-- [ ] T001 Verify existing test suites pass: `npm --prefix packages/layout-engine test` (198 tests) and `python -m pytest scripts/test_frame_loader.py scripts/test_autolayout.py scripts/test_layout_v3.py scripts/test_parity.py scripts/test_frame_classes.py scripts/test_style_parity.py scripts/test_frame_yaml_persistence.py -q` (271 tests)
+- [x] T001 Verify existing test suites pass: `npm --prefix packages/layout-engine test` (198 tests) and `python -m pytest scripts/test_frame_loader.py scripts/test_autolayout.py scripts/test_layout_v3.py scripts/test_parity.py scripts/test_frame_classes.py scripts/test_style_parity.py scripts/test_frame_yaml_persistence.py -q` (271 tests)
 
 ---
 
@@ -30,17 +30,17 @@
 
 ### Step 1: Server-side changes
 
-- [ ] T002 [P] Add `overlays` array to `_serialize_frame_diagram()` in scripts/preview_server.py – serialise as `[{"id": o.id, "label": o.label, "members": o.members} for o in diagram.overlays]`
-- [ ] T003 [P] Add `GET /api/icon/<name>` endpoint in scripts/preview_server.py – validate name has no `/`, `\`, `..`; read from `assets/icons/<name>`; serve with `Content-Type: image/svg+xml`; return 404 if missing
+- [x] T002 [P] Add `overlays` array to `_serialize_frame_diagram()` in scripts/preview_server.py – serialise as `[{"id": o.id, "label": o.label, "members": o.members} for o in diagram.overlays]`
+- [x] T003 [P] Add `GET /api/icon/<name>` endpoint in scripts/preview_server.py – validate name has no `/`, `\`, `..`; read from `assets/icons/<name>`; serve with `Content-Type: image/svg+xml`; return 404 if missing
 
 ### Step 2: Icon fetching
 
-- [ ] T004 [P] Add module-level `_iconCache = new Map()` and `async function fetchIconSvg(name)` in scripts/preview/layout-bridge.js – fetch `/api/icon/<name>`, cache result, return SVG string
-- [ ] T005 [P] Add `function buildIconElement(name, svgContent, fill)` in scripts/preview/layout-bridge.js – create `<g class="dg-icon">`, set innerHTML to svgContent, recolour paths/circles/rects/polygons with fill attribute
+- [x] T004 [P] Add module-level `_iconCache = new Map()` and `async function fetchIconSvg(name)` in scripts/preview/layout-bridge.js – fetch `/api/icon/<name>`, cache result, return SVG string
+- [x] T005 [P] Add `function buildIconElement(name, svgContent, fill)` in scripts/preview/layout-bridge.js – create `<g class="dg-icon">`, set innerHTML to svgContent, recolour paths/circles/rects/polygons with fill attribute
 
 ### Step 3: Adapt patchFrameGroup
 
-- [ ] T006 Add optional third parameter `iconElement` to `patchFrameGroup(g, frame, iconElement)` in scripts/preview/layout-bridge.js – when provided and `frame.icon` is set, use it instead of `existingIcon`; existing callers pass no third argument so behaviour is unchanged
+- [x] T006 Add optional third parameter `iconElement` to `patchFrameGroup(g, frame, iconElement)` in scripts/preview/layout-bridge.js – when provided and `frame.icon` is set, use it instead of `existingIcon`; existing callers pass no third argument so behaviour is unchanged
 
 **Checkpoint**: Steps 1–3 complete. Verify: `curl http://127.0.0.1:8100/api/frame-tree/<slug>` shows `overlays` array; `curl http://127.0.0.1:8100/api/icon/Document.svg` returns SVG; existing relayout still works with icons.
 
@@ -54,22 +54,22 @@
 
 ### Step 4: Arrow SVG creation
 
-- [ ] T007 [P] [US1] Extract `_arrowheadPoints(tip, prev, headLen, headHalf)` helper from `patchArrowsSvg()` in scripts/preview/layout-bridge.js – returns polygon point coordinates for arrowhead geometry
-- [ ] T008 [US1] Add `function createArrowsSvg(routedArrows)` in scripts/preview/layout-bridge.js – create `<g data-component-id="...">` per arrow with `<line>` segments and `<polygon>` arrowhead using `_arrowheadPoints()`; stroke colour from `arrow.color`
+- [x] T007 [P] [US1] Extract `_arrowheadPoints(tip, prev, headLen, headHalf)` helper from `patchArrowsSvg()` in scripts/preview/layout-bridge.js – returns polygon point coordinates for arrowhead geometry
+- [x] T008 [US1] Add `function createArrowsSvg(routedArrows)` in scripts/preview/layout-bridge.js – create `<g data-component-id="...">` per arrow with `<line>` segments and `<polygon>` arrowhead using `_arrowheadPoints()`; stroke colour from `arrow.color`
 
 ### Step 5: Overlay SVG creation
 
-- [ ] T009 [P] [US1] Add `function renderOverlaysSvg(overlays, boundsMap)` in scripts/preview/layout-bridge.js – port of Python `_render_overlays()`: compute union bounding box of member frames, create `<g>` with dashed `<rect>` (stroke `#000`, `stroke-dasharray: "2 4"`, transparent fill, `OVERLAY_PADDING = 8`) and `<text>` label at `(rx + pad, ry - 16)` font size 14; skip overlays whose members have no placed bounds
+- [x] T009 [P] [US1] Add `function renderOverlaysSvg(overlays, boundsMap)` in scripts/preview/layout-bridge.js – port of Python `_render_overlays()`: compute union bounding box of member frames, create `<g>` with dashed `<rect>` (stroke `#000`, `stroke-dasharray: "2 4"`, transparent fill, `OVERLAY_PADDING = 8`) and `<text>` label at `(rx + pad, ry - 16)` font size 14; skip overlays whose members have no placed bounds
 
 ### Step 6: Core rendering function
 
-- [ ] T010 [US1] Add `function renderFrameTreeToSvg(diagram, layoutResult, options)` in scripts/preview/layout-bridge.js – per contract: create `<svg>` with viewBox/width/height, white background `<rect>`, depth-first walk of frame tree creating `<g data-component-id="...">` per frame via `patchFrameGroup(g, frame, iconElement)`, call `routeArrows()` + `createArrowsSvg()`, call `renderOverlaysSvg()`; `options.iconElements` is `Map<string, Element>` of pre-fetched icons; return `SVGSVGElement`
+- [x] T010 [US1] Add `function renderFrameTreeToSvg(diagram, layoutResult, options)` in scripts/preview/layout-bridge.js – per contract: create `<svg>` with viewBox/width/height, white background `<rect>`, depth-first walk of frame tree creating `<g data-component-id="...">` per frame via `patchFrameGroup(g, frame, iconElement)`, call `routeArrows()` + `createArrowsSvg()`, call `renderOverlaysSvg()`; `options.iconElements` is `Map<string, Element>` of pre-fetched icons; return `SVGSVGElement`
 
 ### Step 7: loadSVG rewrite
 
-- [ ] T011 [US1] Add loading indicator logic in scripts/preview/editor.js – show "Loading…" text in `#stage` while HarfBuzz WASM and fonts load; remove indicator after SVG is rendered
-- [ ] T012 [US1] Rewrite `loadSVG()` in scripts/preview/editor.js – new flow: (1) show loading indicator, (2) `initLayoutBridge(SLUG)`, (3) deserialise FrameDiagram from cached JSON, (4) apply overrides always (not conditionally), (5) `resolveStyles()` + `layoutFrameTree()`, (6) fetch icons in parallel for frames that need them, (7) `renderFrameTreeToSvg()`, (8) `stage.replaceChildren(svgElement)`, (9) load tree + grid info, (10) `bindInteraction()` + `renderGridOverlay()`, (11) remove loading indicator. Remove old `/svg/` fetch path and conditional relayout branch entirely.
-- [ ] T013 [US1] Browser-verify all 23 diagrams at `http://127.0.0.1:8100/view/v3:<slug>` – confirm correct rendering, no console errors, icons present, arrows correct, small-caps headings rendered, no flash of Python SVG
+- [x] T011 [US1] Add loading indicator logic in scripts/preview/editor.js – show "Loading…" text in `#stage` while HarfBuzz WASM and fonts load; remove indicator after SVG is rendered
+- [x] T012 [US1] Rewrite `loadSVG()` in scripts/preview/editor.js – new flow: (1) show loading indicator, (2) `initLayoutBridge(SLUG)`, (3) deserialise FrameDiagram from cached JSON, (4) apply overrides always (not conditionally), (5) `resolveStyles()` + `layoutFrameTree()`, (6) fetch icons in parallel for frames that need them, (7) `renderFrameTreeToSvg()`, (8) `stage.replaceChildren(svgElement)`, (9) load tree + grid info, (10) `bindInteraction()` + `renderGridOverlay()`, (11) remove loading indicator. Remove old `/svg/` fetch path and conditional relayout branch entirely.
+- [ ] T013 [US1] Browser-verify all 23 diagrams at `http://127.0.0.1:8100/view/v3:<slug>` – confirm correct rendering, no console errors, icons present, arrows correct, small-caps headings rendered, no flash of Python SVG (**3/23 verified:** maas-architecture, complex-routing-usecase, aws-hld)
 
 **Checkpoint**: US1 (correct first load), US2 (relayout stays TS – `performLocalRelayout()` unchanged, no fallback branch), and US3 (loading indicator) are all delivered. Verify US2 by opening a diagram, dragging a frame, confirming TS fidelity retained. Verify US3 by throttling network to Slow 3G and confirming loading indicator appears.
 

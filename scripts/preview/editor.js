@@ -385,34 +385,67 @@ async function loadSVG(options = {}) {
   // new diagram finishes booting.
   deselectAll();
 
-  const suffix = GRID ? `-${ENGINE}-grid.svg` : `-${ENGINE}.svg`;
-  const resp = await fetch("/svg/" + SLUG + "-onbrand" + suffix + "?t=" + Date.now());
-  if (!resp.ok) return;
-  document.getElementById("stage").innerHTML = await resp.text();
-  await loadTree();
-  await loadGridInfo();
+  const stage = document.getElementById("stage");
+  stage.innerHTML = '<div style="padding:24px;color:#666;font-family:Ubuntu Sans,sans-serif">Loading\u2026</div>';
+
+  // Initialize layout bridge (loads frame tree JSON + HarfBuzz)
   if (typeof initLayoutBridge !== "function") {
     throw new Error("preview layout bridge is required for the v3 editor");
   }
   await initLayoutBridge(SLUG);
-  // Wire diagram-level grid into the model so root nodes get sibling relayout
+
+  // Check readiness — fall back to Python SVG if bridge fails
+  const readiness = getLocalRelayoutStatus();
+  if (!readiness.ready) {
+    console.warn("TS bridge not ready, falling back to Python SVG:", readiness.reason);
+    const suffix = GRID ? `-${ENGINE}-grid.svg` : `-${ENGINE}.svg`;
+    const resp = await fetch("/svg/" + SLUG + "-onbrand" + suffix + "?t=" + Date.now());
+    if (!resp.ok) return;
+    stage.innerHTML = await resp.text();
+    await loadTree();
+    await loadGridInfo();
+    if (gridInfo) model.setDiagramGrid(gridInfo);
+    populateGridControls();
+    resetOverrideState();
+    applyWaypointOverrides();
+    applyAllOverrides();
+    bindInteraction();
+    renderGridOverlay();
+    if (preservedSelection) {
+      selectedIds.clear();
+      preservedSelection.forEach(id => selectedIds.add(id));
+    }
+    reapplySelection();
+    runConstraints();
+    lastSavedState = _serializeDirtyState();
+    setDirty(false);
+    return;
+  }
+
+  // Load tree + grid info
+  await loadTree();
+  await loadGridInfo();
   if (gridInfo) model.setDiagramGrid(gridInfo);
   populateGridControls();
   resetOverrideState();
-  // Apply saved grid overrides (gutter/margin changes) before rendering
+
+  // Build overrides
   const hasGridOverrides = model.gridOverrides && Object.keys(model.gridOverrides).length > 0;
-  // Check if any frame overrides need a relayout (text, sizing, etc.)
-  const hasFrameOverrides = Object.values(overrides).some(_hasV3FrameOverride);
   if (hasGridOverrides) {
     const go = model.gridOverrides;
     if (go.link_to_root !== false) _pruneLinkedRootGridOverrides();
-    const rootId = (model.roots[0] || {}).id || "root";
-    await requestV3Relayout(rootId);
-  } else if (hasFrameOverrides) {
-    // Text or frame overrides without grid overrides — still need relayout
-    const rootId = (model.roots[0] || {}).id || "root";
-    await requestV3Relayout(rootId);
   }
+
+  // Build complete SVG via TS pipeline
+  const renderResult = await renderFreshSvg(
+    overrides,
+    hasGridOverrides ? model.gridOverrides : null,
+    model
+  );
+
+  // Replace stage content with TS-rendered SVG
+  stage.replaceChildren(renderResult.svg);
+
   applyWaypointOverrides();
   applyAllOverrides();
   bindInteraction();
@@ -423,7 +456,6 @@ async function loadSVG(options = {}) {
   }
   reapplySelection();
   runConstraints();
-  // Re-baseline dirty state after initial load + relayout
   lastSavedState = _serializeDirtyState();
   setDirty(false);
 }
