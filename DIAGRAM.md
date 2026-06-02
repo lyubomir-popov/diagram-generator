@@ -90,75 +90,80 @@ typography:
     fontSize: 14px
     fontWeight: 400
     lineHeight: 20px
+token-roles:
+  # Legend for token classifications used throughout this frontmatter.
+  # invariant     – deliberate design decision; enforced by the engine; change requires spec amendment
+  # default       – reasonable starting point; overridable per-diagram or per-frame; never used as a floor/clamp
+  # frozen-sample – measured from initial sample artwork; kept for stability; treated as invariant until redesigned
 spacing:
-  baseline-unit: 8px
-  unit: 8px
-  rhythm-step: 8px
-  inset: 8px
-  panel-padding: 8px
-  icon-inset: 8px
-  compact-gap: 8px
-  grid-gutter: 24px
-  outer-margin: 24px
-  body-line-step: 24px
-  heading-line-step: 24px
-  title-line-step: 32px
+  baseline-unit: 8px          # role: invariant
+  unit: 8px                   # role: invariant – alias of baseline-unit
+  rhythm-step: 8px            # role: invariant – alias of baseline-unit
+  inset: 8px                  # role: invariant
+  panel-padding: 8px          # role: invariant
+  icon-inset: 8px             # role: invariant
+  compact-gap: 8px            # role: invariant
+  grid-gutter: 24px           # role: invariant
+  outer-margin: 24px          # role: invariant
+  body-line-step: 24px        # role: invariant
+  heading-line-step: 24px     # role: invariant
+  title-line-step: 32px       # role: invariant
 grid:
-  baseline-unit: 8px
-  unit: 8px
-  rhythm-step: 8px
+  baseline-unit: 8px          # role: invariant
+  unit: 8px                   # role: invariant – alias of baseline-unit
+  rhythm-step: 8px            # role: invariant – alias of baseline-unit
   column-counts: [4, 8, 16]
   span-rule: power-of-2 fractions only
-  application-gutter: 24px
-  application-outer-margin: 24px
-  default-box-width: 192px
-  default-box-min-height: 64px
-  default-box-growth-step: 8px
-  icon-size: 48px
+  application-gutter: 24px    # role: invariant
+  application-outer-margin: 24px  # role: invariant
+  default-box-width: 192px    # role: default – starting-point width for boxes; NOT a HUG floor
+  default-box-min-height: 64px  # role: invariant – ICON_SIZE + 2*INSET; ensures row rhythm
+  default-box-growth-step: 8px  # role: invariant – alias of baseline-unit
+  icon-size: 48px             # role: invariant
 components:
   box-default:
-    width: 192px
-    minHeight: 64px
-    growthStep: 8px
+    width: 192px               # role: default – same as default-box-width
+    minHeight: 64px            # role: invariant
+    growthStep: 8px            # role: invariant – alias of baseline-unit
     paddingX: 8px
     paddingY: 8px
     fill: transparent
     stroke: "{colors.ink}"
     strokeWidth: 1px
   box-accent:
-    width: 192px
-    minHeight: 64px
-    growthStep: 8px
+    width: 192px               # role: default – same as default-box-width
+    minHeight: 64px            # role: invariant
+    growthStep: 8px            # role: invariant
     paddingX: 8px
     paddingY: 8px
     fill: "{colors.surface-accent}"
     stroke: none
   box-emphasis:
-    width: 192px
-    minHeight: 64px
-    growthStep: 8px
+    width: 192px               # role: default – same as default-box-width
+    minHeight: 64px            # role: invariant
+    growthStep: 8px            # role: invariant
     fill: "{colors.emphasis-surface}"
     textColor: "{colors.emphasis-text}"
     stroke: none
   icon-default:
-    size: 48px
+    size: 48px                 # role: invariant
     placement: top-right
-    inset: 8px
+    inset: 8px                 # role: invariant
   connector-default:
     stroke: "{colors.connector}"
     strokeWidth: 1px
-    arrowHeadLength: 10.8408px
-    arrowHeadHalfWidth: 2.9053px
-    arrowClearance: 8px
-    minArrowSegment: 16px
-    arrowExitClearance: 8px
-    arrowGap: 24px
+    arrowHeadLength: 10.8408px  # role: frozen-sample – measured from initial SVG arrowhead
+    arrowHeadHalfWidth: 2.9053px  # role: frozen-sample – measured from initial SVG arrowhead
+    arrowClearance: 8px        # role: invariant
+    minArrowSegment: 16px      # role: invariant – arrowClearance + ceil(arrowHeadLength) on 8px grid
+    arrowExitClearance: 8px    # role: invariant
+    arrowGap: 24px             # role: invariant – minArrowSegment + arrowExitClearance
   terminal-bar:
-    height: 64px
-    chromeHeight: 20px
+    height: 64px               # role: frozen-sample – component dimension, NOT linked to BOX_MIN_HEIGHT
+    chromeHeight: 20px         # role: frozen-sample – from original terminal-bar SVG
   matrix-widget:
-    size: 48px
-    headerHeight: 20px
+    size: 48px                 # role: invariant – intentionally coupled to icon-size
+    headerHeight: 20px         # role: frozen-sample
   jagged-panel:
     fill: "{colors.surface-accent}"
     edgeTreatment: jagged-top-bottom
