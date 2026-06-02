@@ -20,9 +20,9 @@
 
 **Purpose**: Branch creation and baseline verification
 
-- [ ] T001 Create and checkout branch `feat/010-diagram-token-audit`
-- [ ] T002 Run `python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q` from `scripts/` to establish green baseline
-- [ ] T003 Run TypeScript parity tests with `npm test` from `packages/layout-engine/` to establish green baseline
+- [x] T001 Create and checkout branch `feat/010-diagram-token-audit`
+- [x] T002 Run `python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q` from `scripts/` to establish green baseline
+- [x] T003 Run TypeScript parity tests with `npm test` from `packages/layout-engine/` to establish green baseline
 
 **Checkpoint**: Both test suites green; baseline confirmed before any changes
 
@@ -32,10 +32,10 @@
 
 **Purpose**: Understand current token usage across the codebase before reclassifying
 
-- [ ] T004 Read `DIAGRAM.md` YAML frontmatter and catalogue every hardcoded value with its current location
-- [ ] T005 [P] Read `scripts/diagram_shared.py` and list every token constant (`BLOCK_WIDTH`, `BOX_MIN_HEIGHT`, `ICON_SIZE`, `INSET`, etc.) with their values and where each is consumed
-- [ ] T006 [P] Read `scripts/design_tokens.py` and list every arrow token constant (`ARROW_HEAD_LENGTH`, `ARROW_HEAD_HALF_WIDTH`, `ARROW_CLEARANCE`, etc.) with their values
-- [ ] T007 [P] Read `packages/layout-engine/src/tokens.ts` and confirm it mirrors the Python token values exactly
+- [x] T004 Read `DIAGRAM.md` YAML frontmatter and catalogue every hardcoded value with its current location
+- [x] T005 [P] Read `scripts/diagram_shared.py` and list every token constant (`BLOCK_WIDTH`, `BOX_MIN_HEIGHT`, `ICON_SIZE`, `INSET`, etc.) with their values and where each is consumed
+- [x] T006 [P] Read `scripts/design_tokens.py` and list every arrow token constant (`ARROW_HEAD_LENGTH`, `ARROW_HEAD_HALF_WIDTH`, `ARROW_CLEARANCE`, etc.) with their values
+- [x] T007 [P] Read `packages/layout-engine/src/tokens.ts` and confirm it mirrors the Python token values exactly
 
 **Checkpoint**: Full inventory of all token values, their locations, and cross-references complete
 
@@ -49,25 +49,25 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Update `DIAGRAM.md` frontmatter: annotate `baseline-unit: 8px` as invariant
-- [ ] T009 [US1] Update `DIAGRAM.md` frontmatter: annotate `grid-gutter: 24px` as invariant
-- [ ] T010 [US1] Update `DIAGRAM.md` frontmatter: annotate `outer-margin: 24px` as invariant
-- [ ] T011 [US1] Update `DIAGRAM.md` frontmatter: annotate `icon-size: 48px` as invariant
-- [ ] T012 [US1] Update `DIAGRAM.md` frontmatter: annotate `inset: 8px` as invariant
-- [ ] T013 [US1] Update `DIAGRAM.md` frontmatter: reclassify `default-box-width: 192px` from implicit invariant to **default** – add annotation explaining it is a starting-point width, not a HUG floor
-- [ ] T014 [US1] Update `DIAGRAM.md` frontmatter: annotate `default-box-min-height: 64px` as invariant with rationale (`ICON_SIZE + 2*INSET`)
-- [ ] T015 [US1] Update `DIAGRAM.md` frontmatter: annotate `growthStep: 8px` as invariant and document it as an alias of `baseline-unit`
-- [ ] T016 [US1] Update `DIAGRAM.md` frontmatter: annotate `arrowHeadLength: 10.8408px` as **frozen-sample** with provenance note (measured from initial SVG arrowhead)
-- [ ] T017 [US1] Update `DIAGRAM.md` frontmatter: annotate `arrowHeadHalfWidth: 2.9053px` as **frozen-sample** with provenance note
-- [ ] T018 [US1] Update `DIAGRAM.md` frontmatter: annotate `arrowClearance: 8px` as invariant
-- [ ] T019 [US1] Update `DIAGRAM.md` frontmatter: annotate `minArrowSegment: 16px` as invariant with derivation (`arrowClearance + ceil(arrowHeadLength)` snapped to 8px grid)
-- [ ] T020 [US1] Update `DIAGRAM.md` frontmatter: annotate `terminal-bar.height: 64px` as **frozen-sample** – document as component dimension, NOT linked to `BOX_MIN_HEIGHT`
-- [ ] T021 [US1] Update `DIAGRAM.md` frontmatter: annotate `chromeHeight: 20px` as **frozen-sample** – document as component dimension from original terminal-bar SVG
-- [ ] T022 [US1] Update `DIAGRAM.md` frontmatter: annotate `matrix-widget.size: 48px` as invariant with note documenting intentional coupling to `icon-size`
-- [ ] T023 [US1] Update `DIAGRAM.md` frontmatter: annotate `box-default.width`, `box-accent.width`, `box-emphasis.width` (all 192px) as **default** – same as `default-box-width`
-- [ ] T024 [US1] Add a legend/key to `DIAGRAM.md` explaining the three token roles: invariant, default, frozen-sample
-- [ ] T025 [US1] Run Python test suite: `python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q` – confirm no regressions (DIAGRAM.md changes are documentation-only at this point)
-- [ ] T026 [US1] Run TypeScript test suite: `npm test` from `packages/layout-engine/` – confirm no regressions
+- [x] T008 [US1] Update `DIAGRAM.md` frontmatter: annotate `baseline-unit: 8px` as invariant
+- [x] T009 [US1] Update `DIAGRAM.md` frontmatter: annotate `grid-gutter: 24px` as invariant
+- [x] T010 [US1] Update `DIAGRAM.md` frontmatter: annotate `outer-margin: 24px` as invariant
+- [x] T011 [US1] Update `DIAGRAM.md` frontmatter: annotate `icon-size: 48px` as invariant
+- [x] T012 [US1] Update `DIAGRAM.md` frontmatter: annotate `inset: 8px` as invariant
+- [x] T013 [US1] Update `DIAGRAM.md` frontmatter: reclassify `default-box-width: 192px` from implicit invariant to **default** – add annotation explaining it is a starting-point width, not a HUG floor
+- [x] T014 [US1] Update `DIAGRAM.md` frontmatter: annotate `default-box-min-height: 64px` as invariant with rationale (`ICON_SIZE + 2*INSET`)
+- [x] T015 [US1] Update `DIAGRAM.md` frontmatter: annotate `growthStep: 8px` as invariant and document it as an alias of `baseline-unit`
+- [x] T016 [US1] Update `DIAGRAM.md` frontmatter: annotate `arrowHeadLength: 10.8408px` as **frozen-sample** with provenance note (measured from initial SVG arrowhead)
+- [x] T017 [US1] Update `DIAGRAM.md` frontmatter: annotate `arrowHeadHalfWidth: 2.9053px` as **frozen-sample** with provenance note
+- [x] T018 [US1] Update `DIAGRAM.md` frontmatter: annotate `arrowClearance: 8px` as invariant
+- [x] T019 [US1] Update `DIAGRAM.md` frontmatter: annotate `minArrowSegment: 16px` as invariant with derivation (`arrowClearance + ceil(arrowHeadLength)` snapped to 8px grid)
+- [x] T020 [US1] Update `DIAGRAM.md` frontmatter: annotate `terminal-bar.height: 64px` as **frozen-sample** – document as component dimension, NOT linked to `BOX_MIN_HEIGHT`
+- [x] T021 [US1] Update `DIAGRAM.md` frontmatter: annotate `chromeHeight: 20px` as **frozen-sample** – document as component dimension from original terminal-bar SVG
+- [x] T022 [US1] Update `DIAGRAM.md` frontmatter: annotate `matrix-widget.size: 48px` as invariant with note documenting intentional coupling to `icon-size`
+- [x] T023 [US1] Update `DIAGRAM.md` frontmatter: annotate `box-default.width`, `box-accent.width`, `box-emphasis.width` (all 192px) as **default** – same as `default-box-width`
+- [x] T024 [US1] Add a legend/key to `DIAGRAM.md` explaining the three token roles: invariant, default, frozen-sample
+- [x] T025 [US1] Run Python test suite: `python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q` – confirm no regressions (DIAGRAM.md changes are documentation-only at this point)
+- [x] T026 [US1] Run TypeScript test suite: `npm test` from `packages/layout-engine/` – confirm no regressions
 
 **Checkpoint**: DIAGRAM.md fully annotated with token roles; both test suites green; no engine changes yet
 
@@ -81,16 +81,16 @@
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Update Python layout engine: in `scripts/layout_v3.py` around line 291, remove the `max(..., BLOCK_WIDTH)` floor from the HUG leaf width calculation – width becomes `round_up_to_grid(content_w)` only
-- [ ] T028 [US2] Verify Python layout engine: confirm the empty-box fallback to `BLOCK_WIDTH` (line ~295) is preserved – only the HUG-with-content path changes
-- [ ] T029 [US2] Verify Python layout engine: confirm the text wrapping default `text_max_w` using `BLOCK_WIDTH` (line ~268) is preserved unchanged
-- [ ] T030 [US2] Update TypeScript layout engine: in `packages/layout-engine/src/layout.ts` around line 150, apply the same change – remove `Math.max(..., BLOCK_WIDTH)` floor from HUG leaf width
-- [ ] T031 [US2] Verify TypeScript layout engine: confirm the empty-box fallback and text wrapping default using `BLOCK_WIDTH` are preserved
-- [ ] T032 [US2] Update or regenerate parity fixtures in `packages/layout-engine/tests/fixtures/parity-fixtures.json` if any fixture includes a HUG-sized box that was previously clamped to 192px
-- [ ] T033 [US2] Run Python test suite: `python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q` – all tests pass
-- [ ] T034 [US2] Run TypeScript test suite: `npm test` from `packages/layout-engine/` – all tests pass
-- [ ] T035 [US2] Start preview server (`python scripts/preview_server.py --port 8100`) and browser-verify all 24 production diagrams at `http://127.0.0.1:8100/view/v3:<slug>` – no regressions
-- [ ] T036 [US2] Specifically verify a HUG-sized annotation box (e.g. "Android owns / everything above" in `android-graphics-stack`) now renders narrower than 192px
+- [x] T027 [US2] Update Python layout engine: in `scripts/layout_v3.py` around line 291, remove the `max(..., BLOCK_WIDTH)` floor from the HUG leaf width calculation – width becomes `round_up_to_grid(content_w)` only
+- [x] T028 [US2] Verify Python layout engine: confirm the empty-box fallback to `BLOCK_WIDTH` (line ~295) is preserved – only the HUG-with-content path changes
+- [x] T029 [US2] Verify Python layout engine: confirm the text wrapping default `text_max_w` using `BLOCK_WIDTH` (line ~268) is preserved unchanged
+- [x] T030 [US2] Update TypeScript layout engine: in `packages/layout-engine/src/layout.ts` around line 150, apply the same change – remove `Math.max(..., BLOCK_WIDTH)` floor from HUG leaf width
+- [x] T031 [US2] Verify TypeScript layout engine: confirm the empty-box fallback and text wrapping default using `BLOCK_WIDTH` are preserved
+- [x] T032 [US2] Update or regenerate parity fixtures in `packages/layout-engine/tests/fixtures/parity-fixtures.json` if any fixture includes a HUG-sized box that was previously clamped to 192px
+- [x] T033 [US2] Run Python test suite: `python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q` – all tests pass
+- [x] T034 [US2] Run TypeScript test suite: `npm test` from `packages/layout-engine/` – all tests pass
+- [x] T035 [US2] Start preview server (`python scripts/preview_server.py --port 8100`) and browser-verify all 24 production diagrams at `http://127.0.0.1:8100/view/v3:<slug>` – no regressions
+- [x] T036 [US2] Specifically verify a HUG-sized annotation box (e.g. "Android owns / everything above" in `android-graphics-stack`) now renders narrower than 192px
 
 **Checkpoint**: HUG sizing fix complete; both engines in lockstep; all production diagrams verified; parity tests green
 
@@ -104,12 +104,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T037 [US3] In `scripts/preview/editor.js`, locate the width unit selector rendering (the `<option>` for "cols")
-- [ ] T038 [US3] Add a guard: only emit the "cols" `<option>` element when `gridInfo` is available and `gridInfo.col_widths` has entries
-- [ ] T039 [US3] Add a state reset: if `_inspectorWidthUnit` is `'cols'` and `gridInfo?.col_widths` becomes falsy (e.g. switching to a different diagram), reset `_inspectorWidthUnit` to `'px'`
-- [ ] T040 [US3] Browser-verify: open a diagram without explicit grid columns (e.g. `simple-testcase`) – confirm only "px" appears in the width unit selector
-- [ ] T041 [US3] Browser-verify: open a diagram with explicit grid columns (e.g. `example-platform-architecture` or any diagram using `col_widths` in its YAML) – confirm both "px" and "cols" appear
-- [ ] T042 [US3] Browser-verify: select a frame in a grid diagram, switch unit to "cols", then navigate to a non-grid diagram – confirm unit resets to "px"
+- [x] T037 [US3] In `scripts/preview/editor.js`, locate the width unit selector rendering (the `<option>` for "cols")
+- [x] T038 [US3] Add a guard: only emit the "cols" `<option>` element when `gridInfo` is available and `gridInfo.col_widths` has entries
+- [x] T039 [US3] Add a state reset: if `_inspectorWidthUnit` is `'cols'` and `gridInfo?.col_widths` becomes falsy (e.g. switching to a different diagram), reset `_inspectorWidthUnit` to `'px'`
+- [x] T040 [US3] Browser-verify: open a diagram without explicit grid columns (e.g. `simple-testcase`) – confirm only "px" appears in the width unit selector
+- [x] T041 [US3] Browser-verify: open a diagram with explicit grid columns (e.g. `example-platform-architecture` or any diagram using `col_widths` in its YAML) – confirm both "px" and "cols" appear
+- [x] T042 [US3] Browser-verify: select a frame in a grid diagram, switch unit to "cols", then navigate to a non-grid diagram – confirm unit resets to "px"
 
 **Checkpoint**: Column-span UI conditionally displayed; no regressions in inspector behaviour
 
@@ -119,10 +119,10 @@
 
 **Purpose**: Final validation and documentation
 
-- [ ] T043 [P] Update `scripts/diagram_shared.py`: add a comment above `BLOCK_WIDTH` clarifying it is a default, not a HUG floor
-- [ ] T044 [P] Update `packages/layout-engine/src/tokens.ts`: add matching comment above `BLOCK_WIDTH`
-- [ ] T045 Run full regression: all 24 production diagrams browser-verified one final time
-- [ ] T046 Update `HISTORY.md` in `diagram-generator` with completed spec 010 summary
+- [x] T043 [P] Update `scripts/diagram_shared.py`: add a comment above `BLOCK_WIDTH` clarifying it is a default, not a HUG floor
+- [x] T044 [P] Update `packages/layout-engine/src/tokens.ts`: add matching comment above `BLOCK_WIDTH`
+- [x] T045 Run full regression: all 24 production diagrams browser-verified one final time
+- [x] T046 Update `HISTORY.md` in `diagram-generator` with completed spec 010 summary
 
 ---
 

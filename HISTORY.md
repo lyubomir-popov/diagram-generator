@@ -4,6 +4,13 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-02 – DIAGRAM.md token audit and HUG sizing fix (spec 010)
+
+- **All 46 tasks done across 6 phases.** Token audit, HUG sizing fix, and column-span conditional display complete.
+- **Part 1 – Token audit.** Every DIAGRAM.md frontmatter value annotated with role classification: invariant (grid/spacing/sizing fundamentals), default (overridable starting points like `BLOCK_WIDTH`), or frozen-sample (measured from initial artwork, e.g. arrowhead geometry). Legend added to frontmatter.
+- **Part 2 – HUG sizing fix.** Removed the `BLOCK_WIDTH` (192px) floor from HUG leaf measurement in both Python and TypeScript engines. HUG boxes now shrink to `round_up_to_grid(content_w)`. Empty-box fallback and text wrapping default preserved. Parity fixtures regenerated. All 24 production diagrams pass.
+- **Part 3 – Column-span display.** Width inspector "cols" unit option now guarded behind `gridInfo.col_widths` availability. Unit resets to "px" when grid columns unavailable.
+
 ### 2026-06-01 – Client-side TS rendering complete (spec 009)
 
 - **All 6 phases (T001–T022) done.** TS pipeline renders SVG on first load in the preview editor. Python SVG fetch eliminated from the interactive path; Python renderer remains for batch/export.

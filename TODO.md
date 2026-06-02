@@ -34,19 +34,17 @@ Provide a cold-start-safe workflow and a consistent on-brand SVG system for rede
 
 ## Active TODO
 
-### DIAGRAM.md token audit and HUG sizing fix (spec 010)
+### Priority 1 – Spec-kit tracked work
 
-Feature package: `specs/010-diagram-token-audit/` – 0/46 tasks, 3 phases.
+#### ~~DIAGRAM.md token audit and HUG sizing fix (spec 010) – DONE~~
 
-- Part 1: Audit every hardcoded value in DIAGRAM.md – classify as invariant / default / sample-artifact
-- Part 2: Remove the `BLOCK_WIDTH` (192px) floor from HUG leaf measurement in both engines
-- Part 3: Column-span conditional display in the width inspector (P2, independent)
+Feature package: `specs/010-diagram-token-audit/` – 46/46 tasks, all 3 phases complete.
 
-### Highlight text contrast bug
+- ~~Part 1: Audit every hardcoded value in DIAGRAM.md – classify as invariant / default / sample-artifact~~
+- ~~Part 2: Remove the `BLOCK_WIDTH` (192px) floor from HUG leaf measurement in both engines~~
+- ~~Part 3: Column-span conditional display in the width inspector (P2, independent)~~
 
-- [ ] `[M]` **Highlight children have black text on black fill.** In `android-security-comparison`, the "Virtualized Android" panel uses highlight style (black fill), but its child boxes render black text instead of white. The highlight variant should propagate white text/icon colour to children. Screenshot: `image-3.png`. Likely a resolved-style propagation gap – the parent's highlight semantics aren't reaching nested leaves through the style resolver.
-
-### Autolayout hardening – semantic mutation removal (spec 005)
+#### Autolayout hardening – semantic mutation removal (spec 005) – NEXT
 
 Feature package: `specs/005-autolayout-hardening/` – 0/24 tasks done.
 
@@ -58,7 +56,7 @@ The corpus visual audit is complete (all 23 diagrams verified). The code hardeni
 - [ ] `[H]` **H3. Heading synthetic child incomplete.** `__body` no longer copies `wrap`, `fill_weight`, `justify` from parent. Corpus audit shows no regressions, but the behaviour is intentional – document as settled.
 - [ ] `[M]` **H5. Leaf measure vs render padding mismatch.** Measurement uses INSET, rendering uses per-side padding + 1px hack. Fix: use `frame.padding_*` in measurement.
 
-### Repo coherence – resolved-style validation (spec 008 Phase 5)
+#### Repo coherence – resolved-style validation (spec 008 Phase 5)
 
 Feature package: `specs/008-repo-coherence-rewrite/` – Phase 5 partially done in code, test closure pending.
 
@@ -66,7 +64,13 @@ Resolved-style fields (`resolvedFill`, `resolvedStroke`) exist and are consumed 
 
 - [ ] `[S]` T045–T047: Write resolved-style regression tests and run full suites.
 
-### Code quality – adversarial audit items
+### Priority 2 – Standalone bugs and code quality
+
+#### Highlight text contrast bug
+
+- [ ] `[M]` **Highlight children have black text on black fill.** In `android-security-comparison`, the "Virtualized Android" panel uses highlight style (black fill), but its child boxes render black text instead of white. The highlight variant should propagate white text/icon colour to children. Screenshot: `image-3.png`. Likely a resolved-style propagation gap – the parent's highlight semantics aren't reaching nested leaves through the style resolver.
+
+#### Code quality – adversarial audit items
 
 Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`.
 
