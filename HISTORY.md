@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-02 – Annotation heading bold bug fix
+
+- **Bug:** Annotation-variant frames with `heading:` rendered bold (weight 700) because the parser hardcodes `weight="700"` for string headings and the annotation class had no `headingText` override.
+- **Fix:** Added `heading_text` and `leaf_lead_text` with `weight="400"` to the annotation `FrameClassDefinition` in both Python and TypeScript engines.
+- **Validation:** 243 Python + 198 TS tests green. Confirmed `hdr_container` and `hdr_vm` in `android-security-comparison` now resolve to weight 400.
+
 ### 2026-06-02 – DIAGRAM.md token audit and HUG sizing fix (spec 010)
 
 - **All 46 tasks done across 6 phases.** Token audit, HUG sizing fix, and column-span conditional display complete.
