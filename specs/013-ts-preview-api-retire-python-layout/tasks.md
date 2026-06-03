@@ -8,3 +8,4 @@
 - [x] T050 Document JSON-as-transport in copilot-instructions + spec 008 pointer
 - [x] T051 Delete dead Python serialization helpers when unused
 - [x] T060 HTTP smoke tests `scripts/test_preview_ts_api.py`
+- [x] T070 TS preview hot-reload: watch layout pool + Node CLIs + `dist/`; recreate pools on `_rebuild()`

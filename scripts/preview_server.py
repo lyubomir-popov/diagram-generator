@@ -30,11 +30,13 @@ import traceback
 from urllib.parse import unquote, urlparse
 
 from frame_yaml_persistence import persist_override_payload_to_yaml
-from preview_ts_export import pool_from_env
-from preview_ts_layout import pool_from_env as layout_pool_from_env
+import preview_ts_export
+import preview_ts_layout
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
+_LAYOUT_ENGINE_SCRIPTS = ROOT / "packages" / "layout-engine" / "scripts"
+_LAYOUT_ENGINE_DIST = ROOT / "packages" / "layout-engine" / "dist"
 OUTPUT_SVG = ROOT / "diagrams" / "2.output" / "svg"
 V3_OUTPUT = ROOT / "diagrams" / "2.output" / "v3"
 V3_SVG = V3_OUTPUT / "svg"
@@ -52,8 +54,13 @@ WATCH_PATHS = [
     SCRIPTS / "diagram_render_svg.py",
     SCRIPTS / "diagram_shared.py",
     SCRIPTS / "preview_ts_export.py",
+    SCRIPTS / "preview_ts_layout.py",
     SCRIPTS / "preview",
-    ROOT / "packages" / "layout-engine" / "scripts" / "export-frame-svg.mjs",
+    _LAYOUT_ENGINE_SCRIPTS / "export-frame-svg.mjs",
+    _LAYOUT_ENGINE_SCRIPTS / "layout-frame-diagram.mjs",
+    _LAYOUT_ENGINE_SCRIPTS / "emit-frame-diagram-json.mjs",
+    _LAYOUT_ENGINE_SCRIPTS / "_dist-import.mjs",
+    _LAYOUT_ENGINE_DIST,
 ]
 
 _rebuild_generation = 0
@@ -61,20 +68,30 @@ _rebuild_lock = threading.Lock()
 _last_rebuild_error: str | None = None
 _layout_cache: dict[str, object] = {}
 _force_sessions: dict[str, object] = {}
-_TS_EXPORT_SCRIPT = ROOT / "packages" / "layout-engine" / "scripts" / "export-frame-svg.mjs"
-_ts_svg_pool = pool_from_env(
-    script_path=_TS_EXPORT_SCRIPT,
-    repo_root=ROOT,
-    frames_dir=FRAMES_DIR,
-)
-_TS_LAYOUT_SCRIPT = ROOT / "packages" / "layout-engine" / "scripts" / "layout-frame-diagram.mjs"
-_TS_EMIT_SCRIPT = ROOT / "packages" / "layout-engine" / "scripts" / "emit-frame-diagram-json.mjs"
-_ts_layout_pool = layout_pool_from_env(
-    layout_script=_TS_LAYOUT_SCRIPT,
-    emit_script=_TS_EMIT_SCRIPT,
-    repo_root=ROOT,
-    frames_dir=FRAMES_DIR,
-)
+_TS_EXPORT_SCRIPT = _LAYOUT_ENGINE_SCRIPTS / "export-frame-svg.mjs"
+_TS_LAYOUT_SCRIPT = _LAYOUT_ENGINE_SCRIPTS / "layout-frame-diagram.mjs"
+_TS_EMIT_SCRIPT = _LAYOUT_ENGINE_SCRIPTS / "emit-frame-diagram-json.mjs"
+
+
+def _recreate_ts_preview_pools() -> None:
+    """Reload TS pool modules and build fresh pool instances (hot-reload)."""
+    global _ts_svg_pool, _ts_layout_pool
+    importlib.reload(preview_ts_export)
+    importlib.reload(preview_ts_layout)
+    _ts_svg_pool = preview_ts_export.pool_from_env(
+        script_path=_TS_EXPORT_SCRIPT,
+        repo_root=ROOT,
+        frames_dir=FRAMES_DIR,
+    )
+    _ts_layout_pool = preview_ts_layout.pool_from_env(
+        layout_script=_TS_LAYOUT_SCRIPT,
+        emit_script=_TS_EMIT_SCRIPT,
+        repo_root=ROOT,
+        frames_dir=FRAMES_DIR,
+    )
+
+
+_recreate_ts_preview_pools()
 _watcher_fail_streak = 0
 
 
@@ -161,8 +178,6 @@ def _is_safe_slug(slug: str) -> bool:
 def _rebuild(grid: bool = False) -> bool:
     global _last_rebuild_error, _layout_cache, _viewer_template, _force_template, _unified_template, _force_sessions, _watcher_fail_streak
     _layout_cache.clear()
-    _ts_svg_pool.clear_cache()
-    _ts_layout_pool.clear_cache()
     _force_sessions.clear()
     _viewer_template = None
     _force_template = None
@@ -180,6 +195,13 @@ def _rebuild(grid: bool = False) -> bool:
                 print(f"  [preview] reload failed ({mod_name}): {exc}", flush=True)
                 traceback.print_exc()
                 return False
+    try:
+        _recreate_ts_preview_pools()
+    except Exception as exc:
+        _last_rebuild_error = f"TS preview pool reload failed: {exc}"
+        print(f"  [preview] TS pool reload failed: {exc}", flush=True)
+        traceback.print_exc()
+        return False
     _last_rebuild_error = None
     _watcher_fail_streak = 0
     return True
