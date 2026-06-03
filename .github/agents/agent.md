@@ -8,7 +8,9 @@ Use this agent when continuing work in `diagram-generator`.
 
 ## Bigger picture
 
-This repo's TS layout engine (`packages/layout-engine/`) is part of a multi-repo workspace converging on `design-foundry`. Read the DESIGN-FOUNDRY PIVOT section in `.github/copilot-instructions.md` for context. **All new work is TypeScript-first.** Python is batch/export + transitional parity testing only.
+This repo's TS layout engine (`packages/layout-engine/`) is part of a multi-repo workspace converging on `design-foundry`. Read the DESIGN-FOUNDRY PIVOT section in `.github/copilot-instructions.md` for context. **All new layout and measure work is TypeScript-only.** Python is YAML parse/serialize and batch export passthrough only — no new features.
+
+**Autolayout north star:** faithful Figma autolayout semantics — see `specs/011-figma-autolayout-fidelity/spec.md`.
 
 ## First read
 

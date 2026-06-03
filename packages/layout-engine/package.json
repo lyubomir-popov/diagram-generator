@@ -8,15 +8,18 @@
   "scripts": {
     "build": "tsc",
     "build:browser": "node build-browser.mjs",
+    "export:svg": "node scripts/export-frame-svg.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "esbuild": "^0.28.0",
     "typescript": "^5.8.0",
     "vitest": "^3.2.0"
   },
   "dependencies": {
-    "harfbuzzjs": "^1.2.0"
+    "harfbuzzjs": "^1.2.0",
+    "yaml": "^2.8.0"
   }
 }

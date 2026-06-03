@@ -26,6 +26,12 @@ export function getActiveGridStep(): number {
   return _activeGridStep;
 }
 
+/** Default typographic measure (Bringhurst ~45–75ch; canonical 66). */
+export const DEFAULT_MAX_WIDTH_CHARS = 66;
+
+/** Explicit opt-out: no character-based wrap cap (unbounded HUG line). */
+export const NO_WRAP_MAX_WIDTH_CHARS = 0;
+
 /** Default component (box) width in pixels. Not a HUG floor – HUG boxes shrink to content. */
 export const BLOCK_WIDTH = 192;
 

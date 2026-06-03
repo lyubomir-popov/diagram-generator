@@ -23,6 +23,10 @@ import {
   type TextMeasureAdapter, type LineSpec,
   estimateLineWidth, wrapTextLines, linesToSpecs, lineToSpec,
 } from './text-measure.js';
+import {
+  applyTextLayoutDefaults,
+  resolveLeafTextWrapWidth,
+} from './text-layout.js';
 
 
 // ---------------------------------------------------------------------------
@@ -131,14 +135,6 @@ function expandRootWidthForSnappedFillColumns(root: Frame, requestedW: number): 
   return Math.max(requestedW, compatibleW);
 }
 
-function estimateTextWidth(specs: readonly LineSpec[], adapter: TextMeasureAdapter): number {
-  let maxW = 0;
-  for (const spec of specs) {
-    maxW = Math.max(maxW, estimateLineWidth(spec, adapter));
-  }
-  return maxW;
-}
-
 function leafAllSpecs(frame: Frame): LineSpec[] {
   const specs: LineSpec[] = [];
   if (frame.heading) {
@@ -161,22 +157,13 @@ function leafNaturalSize(
   const padR = frame.paddingRight;
   const padT = frame.paddingTop;
   const padB = frame.paddingBottom;
+  const iconCol = hasIcon ? (ICON_SIZE + INSET) : 0;
 
   let w: number;
   let h: number;
-  let textMaxW = BLOCK_WIDTH - padL - padR;
 
   if (allSpecs.length > 0) {
-    const iconCol = hasIcon ? (ICON_SIZE + INSET) : 0;
-    if (constrainedW != null) {
-      textMaxW = constrainedW - padL - padR - iconCol;
-    } else if (frame.width != null) {
-      textMaxW = frame.width - padL - padR - iconCol;
-    } else {
-      textMaxW = BLOCK_WIDTH - padL - padR - iconCol;
-    }
-    textMaxW = Math.max(0, textMaxW);
-
+    const textMaxW = resolveLeafTextWrapWidth(frame, adapter, constrainedW);
     const wrappedSpecs = wrapTextLines(allSpecs, textMaxW, adapter);
     const textH = steppedLinesHeight(
       wrappedSpecs.map(s => ({ lineStep: s.lineStep != null ? sizeToPx(s.lineStep) : undefined, size: s.size })),
@@ -189,26 +176,23 @@ function leafNaturalSize(
     } else {
       h = textH;
     }
+
+    if (frame.height != null) {
+      h = Math.max(h, frame.height);
+    }
+
+    if (frame.width != null) {
+      w = frame.width;
+    } else {
+      let textW = 0;
+      for (const spec of wrappedSpecs) {
+        textW = Math.max(textW, estimateLineWidth(spec, adapter));
+      }
+      w = roundUpToGrid(padL + textW + padR + iconCol);
+    }
   } else {
     h = frame.height ?? BOX_MIN_HEIGHT;
-  }
-
-  // Explicit height overrides computed height if larger
-  if (frame.height != null) {
-    h = Math.max(h, frame.height);
-  }
-
-  // Width
-  if (frame.width != null) {
-    w = frame.width;
-  } else if (allSpecs.length > 0) {
-    let textW = estimateTextWidth(allSpecs, adapter);
-    textW = Math.min(textW, textMaxW);
-    const iconCol = hasIcon ? (ICON_SIZE + INSET) : 0;
-    const contentW = padL + textW + padR + iconCol;
-    w = roundUpToGrid(contentW);
-  } else {
-    w = BLOCK_WIDTH; // empty-box fallback (default, not a HUG floor)
+    w = frame.width ?? BLOCK_WIDTH;
   }
 
   return [w, h];
@@ -973,6 +957,7 @@ function _layoutFrameTreeInner(
   captureSemanticState(root, semanticState);
 
   try {
+    applyTextLayoutDefaults(root);
     // Pass 1: measure (root uses sum-based sizing)
     measure(root, adapter, true);
 

@@ -18,15 +18,20 @@ TypeScript is the standard for all new feature work. The rationale (from the des
 
 Python is retained for three things:
 
-1. **YAML parsing and defaults** — `frame_loader.py` reads frame YAML and resolves styles. This is the authoritative parser until a TS YAML loader replaces it.
-2. **Batch SVG export** — `diagram_render_svg.py` produces static SVGs for CI/batch pipelines. This stays until TS rendering covers the batch path.
-3. **Transitional parity oracle** — shared fixtures in `packages/layout-engine/tests/fixtures/parity-fixtures.json` verify TS and Python produce identical geometry. This was essential during the TS port. As the TS engine matures and gains its own comprehensive test coverage, the parity oracle role fades. It is not a permanent architecture — it is scaffolding.
+1. **YAML parsing (transitional)** — `frame_loader.py` still serves the preview JSON API. **TS YAML loader** (`packages/layout-engine/src/frame-yaml-loader.ts`) is authoritative for batch export.
+2. **Batch SVG export** — `node packages/layout-engine/scripts/export-frame-svg.mjs --slug <name>` (TS layout + HarfBuzz + `svg-render.ts`). Preview server uses this path first; `diagram_render_svg.py` is fallback only.
+3. **Transitional parity oracle** — TS-only fixtures under spec 011 semantics; Python layout parity is not required for new measure work.
 
-Python does NOT do: interactive relayout, text measurement, editor state, or any new feature development.
+Python does NOT do: interactive relayout, text measurement, editor state, or any new feature development. **Do not add new layout or measure logic to Python** — parse/serialize passthrough for YAML fields is acceptable.
+
+### Figma autolayout fidelity (north star)
+
+The TS layout engine targets a **faithful port of Figma autolayout semantics**. Spec: `specs/011-figma-autolayout-fidelity/`. Text-bearing frames default to `max_width_chars: 66` (Bringhurst measure); HUG boxes wrap at that measure and hug the resulting block. Deviations require an documented exception in spec 011 or `DIAGRAM.md`.
 
 ### Rules for ongoing work
 
-- **TS-first**: implement in `packages/layout-engine/` (TypeScript), then port to Python only if batch/export needs it.
+- **TS-only for layout/measure features**: implement in `packages/layout-engine/` only. Python gets YAML field passthrough at most — no new measure logic.
+- **TS-first**: legacy parity port to Python is optional and fading; do not block TS work on Python parity.
 - Continue shipping features here — do NOT block on the design-foundry port.
 - Do NOT migrate code to design-foundry yet. The target kernel operator interface is not ready.
 - **No-double-work guarantee:** design-foundry will not build a parallel autolayout.

@@ -153,12 +153,40 @@ def _rebuild(grid: bool = False) -> bool:
         if mod_name in sys.modules:
             try:
                 importlib.reload(sys.modules[mod_name])
-            except SyntaxError as exc:
+            except Exception as exc:
                 # File likely mid-save; skip this rebuild cycle.
-                _last_rebuild_error = f"SyntaxError reloading {mod_name}: {exc}"
+                _last_rebuild_error = f"Reload error in {mod_name}: {exc}"
                 return False
     _last_rebuild_error = None
     return True
+
+
+_TS_EXPORT_SCRIPT = ROOT / "packages" / "layout-engine" / "scripts" / "export-frame-svg.mjs"
+
+
+def _render_svg_via_ts(slug: str) -> bytes | None:
+    """Layout + render SVG via the TypeScript engine (HarfBuzz measure)."""
+    if slug.startswith("v3:"):
+        slug = slug[3:]
+    if not _TS_EXPORT_SCRIPT.exists():
+        return None
+    frame_yaml = FRAMES_DIR / (slug + ".yaml")
+    if not frame_yaml.exists():
+        return None
+    try:
+        proc = subprocess.run(
+            ["node", str(_TS_EXPORT_SCRIPT), "--slug", slug],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=True,
+        )
+        return proc.stdout.encode("utf-8")
+    except (subprocess.CalledProcessError, OSError) as exc:
+        err = getattr(exc, "stderr", None) or getattr(exc, "stdout", None) or str(exc)
+        print(f"TS SVG export failed for {slug}: {err}", file=sys.stderr)
+        return None
 
 
 def _get_layout_result(slug: str, engine: str = "v3"):
@@ -260,6 +288,7 @@ def _serialize_frame(frame) -> dict:
         "height": frame.height,
         "minWidth": frame.min_width,
         "maxWidth": frame.max_width,
+        "maxWidthChars": frame.max_width_chars,
         "minHeight": frame.min_height,
         "maxHeight": frame.max_height,
         "fill": frame.fill.value,
@@ -304,19 +333,22 @@ def _watch_loop(grid: bool = False, interval: float = 0.5):
     global _rebuild_generation, _viewer_template, _force_template, _unified_template
     prev_mtimes = _collect_mtimes()
     while True:
-        time.sleep(interval)
-        curr_mtimes = _collect_mtimes()
-        if curr_mtimes != prev_mtimes:
-            prev_mtimes = curr_mtimes
-            # Invalidate cached viewer template so HTML/CSS/JS changes are picked up
-            _viewer_template = None
-            _force_template = None
-            _unified_template = None
-            with _rebuild_lock:
-                ok = _rebuild(grid=grid)
-                _rebuild_generation += 1
-                status = "ok" if ok else "error"
-                print(f"  [preview] rebuild #{_rebuild_generation} ({status})")
+        try:
+            time.sleep(interval)
+            curr_mtimes = _collect_mtimes()
+            if curr_mtimes != prev_mtimes:
+                prev_mtimes = curr_mtimes
+                # Invalidate cached viewer template so HTML/CSS/JS changes are picked up
+                _viewer_template = None
+                _force_template = None
+                _unified_template = None
+                with _rebuild_lock:
+                    ok = _rebuild(grid=grid)
+                    _rebuild_generation += 1
+                    status = "ok" if ok else "error"
+                    print(f"  [preview] rebuild #{_rebuild_generation} ({status})")
+        except Exception as exc:
+            print(f"  [preview] watcher error (will retry): {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -967,14 +999,16 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
                 if prebuilt.exists():
                     self._respond(200, "image/svg+xml", prebuilt.read_bytes())
                     return
-            # Generate on-the-fly from layout engine
-            result = _get_layout_result(slug, engine="v3")
-            if result is None:
-                self.send_error(404, f"Cannot layout v3 diagram: {slug}")
-                return
-            import diagram_render_svg
-            svg_str = diagram_render_svg.render_svg(result)
-            self._respond(200, "image/svg+xml", svg_str.encode("utf-8"))
+            svg_bytes = _render_svg_via_ts(slug)
+            if svg_bytes is None:
+                result = _get_layout_result(slug, engine="v3")
+                if result is None:
+                    self.send_error(404, f"Cannot layout v3 diagram: {slug}")
+                    return
+                import diagram_render_svg
+                svg_str = diagram_render_svg.render_svg(result)
+                svg_bytes = svg_str.encode("utf-8")
+            self._respond(200, "image/svg+xml", svg_bytes)
             return
 
         if not _is_safe_slug(safe_name):
@@ -994,6 +1028,10 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         if engine == "v3":
             frame_yaml = FRAMES_DIR / (slug + ".yaml")
             if frame_yaml.exists():
+                svg_bytes = _render_svg_via_ts(slug)
+                if svg_bytes is not None:
+                    self._respond(200, "image/svg+xml", svg_bytes)
+                    return
                 result = _get_layout_result(slug, engine="v3")
                 if result is not None:
                     import diagram_render_svg
@@ -1010,6 +1048,10 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             return
         # No pre-built file — try on-the-fly v3 rendering
         if engine == "v3":
+            svg_bytes = _render_svg_via_ts(slug)
+            if svg_bytes is not None:
+                self._respond(200, "image/svg+xml", svg_bytes)
+                return
             result = _get_layout_result(slug, engine="v3")
             if result is not None:
                 import diagram_render_svg

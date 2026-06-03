@@ -13,7 +13,11 @@
  */
 function deserializeFrame(json) {
   const children = (json.children || []).map(deserializeFrame);
-  return new LayoutEngine.Frame({
+  const headingJson = json.heading;
+  const headingLine = headingJson
+    ? LayoutEngine.createLine(headingJson.content, headingJson)
+    : undefined;
+  const frame = new LayoutEngine.Frame({
     id: json.id || "",
     direction: json.direction || "VERTICAL",
     gap: json.gap ?? 24,
@@ -31,12 +35,13 @@ function deserializeFrame(json) {
     height: json.height ?? undefined,
     minWidth: json.minWidth ?? undefined,
     maxWidth: json.maxWidth ?? undefined,
+    maxWidthChars: json.maxWidthChars ?? json.max_width_chars ?? undefined,
     minHeight: json.minHeight ?? undefined,
     maxHeight: json.maxHeight ?? undefined,
     fill: json.fill || "#FFFFFF",
     border: json.border || "SOLID",
-    heading: json.heading ? LayoutEngine.createLine(json.heading.content, json.heading) : undefined,
-    icon: json.icon || undefined,
+    heading: headingLine && children.length === 0 ? headingLine : undefined,
+    icon: headingLine && children.length > 0 ? undefined : (json.icon || undefined),
     iconFill: json.iconFill || undefined,
     level: json.level ?? undefined,
     colSpan: json.colSpan ?? json.col_span ?? undefined,
@@ -47,6 +52,13 @@ function deserializeFrame(json) {
     x: json.x ?? 0,
     y: json.y ?? 0,
   });
+  if (headingLine && frame.isContainer) {
+    LayoutEngine.applyHeadingAsChild(frame, headingLine, {
+      icon: json.icon || undefined,
+      iconFill: json.iconFill || undefined,
+    });
+  }
+  return frame;
 }
 
 /**
@@ -216,11 +228,13 @@ function applyOverridesToFrameTree(diagram, allOverrides, gridOverrides) {
     if (ovr.height != null) {
       target.height = parseInt(ovr.height, 10);
     }
-    for (const key of ["minWidth", "maxWidth", "minHeight", "maxHeight"]) {
+    for (const key of ["minWidth", "maxWidth", "maxWidthChars", "minHeight", "maxHeight"]) {
       // Map snake_case override keys to camelCase Frame properties
-      const snakeKey = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+      const snakeKey = key === "maxWidthChars"
+        ? "max_width_chars"
+        : key.replace(/([A-Z])/g, "_$1").toLowerCase();
       if (snakeKey in ovr) {
-        if (ovr[snakeKey] == null) {
+        if (ovr[snakeKey] == null || ovr[snakeKey] === "") {
           target[key] = undefined;
         } else {
           const val = parseInt(ovr[snakeKey], 10);
@@ -633,6 +647,7 @@ function updateComponentModelFromLayout(model, frame) {
       fill_weight: f.fillWeight,
       min_width: f.minWidth,
       max_width: f.maxWidth,
+      max_width_chars: f.maxWidthChars,
       min_height: f.minHeight,
       max_height: f.maxHeight,
       align: f.align,
@@ -1027,7 +1042,7 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
     const FRAME_KEYS = [
       "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
       "sizing", "sizing_w", "sizing_h",
-      "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "min_height",
+      "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "max_width_chars", "min_height",
       "max_height", "children_order", "fill", "border", "level", "text",
       "position", "x", "y",
     ];
@@ -1337,7 +1352,7 @@ async function renderFreshSvg(overrides, gridOverrides, model) {
   const FRAME_KEYS = [
     "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
     "sizing", "sizing_w", "sizing_h",
-    "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "min_height",
+    "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "max_width_chars", "min_height",
     "max_height", "children_order", "fill", "border", "level", "text",
     "position", "x", "y",
   ];
@@ -1403,3 +1418,4 @@ window.renderFrameTreeToSvg = renderFrameTreeToSvg;
 window.fetchIconSvg = fetchIconSvg;
 window.buildIconElement = buildIconElement;
 window.renderFreshSvg = renderFreshSvg;
+window.getLayoutTextAdapter = () => _textAdapter;

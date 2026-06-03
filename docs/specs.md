@@ -11,6 +11,14 @@ Use this file to answer two questions quickly:
 1. What source material governs diagram behavior or workflow here?
 2. Which sibling repos are references versus sources of truth?
 
+## Active specs (spec-kit)
+
+| Spec | Path | Status | Summary |
+|------|------|--------|---------|
+| 011 Figma autolayout fidelity | `specs/011-figma-autolayout-fidelity/` | Complete | Default `max_width_chars: 66` on text frames; HUG wraps at HarfBuzz-derived measure and hugs longest line. TS-only measure; Python YAML passthrough. |
+| 005 Autolayout hardening | `specs/005-autolayout-hardening/` | In progress | Semantic mutation removal, coercion, preview save/reload. WS1 complete. |
+| 008 Repo coherence rewrite | `specs/008-repo-coherence-rewrite/` | In progress | Doc and workflow consolidation toward design-foundry port. |
+
 ## Source docs and reference assets
 
 Rows marked ⚠ reference assets excluded by `.gitignore`. Run the build or obtain them from the team.

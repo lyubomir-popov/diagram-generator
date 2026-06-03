@@ -209,6 +209,7 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
         height=int(data["height"]) if "height" in data else None,
         min_width=int(data["min_width"]) if "min_width" in data else None,
         max_width=int(data["max_width"]) if "max_width" in data else None,
+        max_width_chars=int(data["max_width_chars"]) if "max_width_chars" in data else None,
         min_height=int(data["min_height"]) if "min_height" in data else None,
         max_height=int(data["max_height"]) if "max_height" in data else None,
         fill=_FILL.get(data.get("fill", "white"), Fill.WHITE),

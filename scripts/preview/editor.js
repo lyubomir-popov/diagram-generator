@@ -84,6 +84,50 @@ const GRID_DEFAULTS = {
   slack_absorption: true,
 };
 
+function _nodeHasTextContent(node) {
+  if (!node) return false;
+  if (node.heading_text && String(node.heading_text).trim()) return true;
+  if (Array.isArray(node.label_text) && node.label_text.some((t) => String(t || "").trim())) return true;
+  return false;
+}
+
+function _inspectorMaxWidthChars(node, ovr) {
+  if (ovr && ovr.max_width_chars != null && ovr.max_width_chars !== "") return ovr.max_width_chars;
+  if (node && node.max_width_chars != null) return node.max_width_chars;
+  if (_nodeHasTextContent(node) && typeof LayoutEngine !== "undefined") {
+    return LayoutEngine.DEFAULT_MAX_WIDTH_CHARS;
+  }
+  return "";
+}
+
+function _inspectorHasExplicitMaxWidthPx(node, ovr) {
+  if (ovr && ovr.max_width !== undefined && ovr.max_width !== "") return true;
+  return !!(node && node.max_width != null && node.max_width !== "");
+}
+
+function _inspectorMaxWidthPxPreview(chars, node) {
+  if (!chars || chars === "0" || chars === 0) return "";
+  if (typeof LayoutEngine === "undefined" || !LayoutEngine.maxWidthPxFromChars) return "";
+  const adapter = (typeof window.getLayoutTextAdapter === "function")
+    ? window.getLayoutTextAdapter()
+    : null;
+  if (!adapter) return "";
+  let reference;
+  if (node && Array.isArray(node.label_text) && node.label_text.length) {
+    reference = { content: String(node.label_text[0]), size: String(LayoutEngine.BODY_SIZE), weight: "400" };
+  }
+  return Math.round(LayoutEngine.maxWidthPxFromChars(Number(chars), adapter, reference));
+}
+
+function _inspectorDisplayMaxWidth(node, ovr) {
+  if (ovr && ovr.max_width !== undefined && ovr.max_width !== "") return ovr.max_width;
+  if (node && node.max_width != null && node.max_width !== "") return node.max_width;
+  if (_inspectorHasExplicitMaxWidthPx(node, ovr)) return "";
+  const chars = _inspectorMaxWidthChars(node, ovr);
+  if (chars !== "" && chars !== 0 && chars !== "0") return _inspectorMaxWidthPxPreview(chars, node);
+  return "";
+}
+
 // ---- Guide mode (W key) ----
 const GUIDE_MODES = ["off", "all"];
 let guideMode = "off";
@@ -401,7 +445,7 @@ function _hasV3FrameOverride(ovr) {
   const keys = [
     "text", "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
     "sizing", "sizing_w", "sizing_h", "fill_weight", "align", "wrap",
-    "width", "height", "min_width", "max_width", "min_height", "max_height",
+    "width", "height", "min_width", "max_width", "max_width_chars", "min_height", "max_height",
     "fill", "border", "level", "position", "x", "y", "children_order",
   ];
   return keys.some(key => ovr[key] !== undefined && ovr[key] !== null);
@@ -1717,14 +1761,13 @@ function renderMultiSelectionInspector() {
       }
       html += '</div>';
 
-      // Min/max width constraints (shown when common sizing is FILL or FIXED)
       if (sizingInfo.sizingW === 'FILL' || sizingInfo.sizingW === 'FIXED') {
         html += '<div class="field dg-constraint-row"><span class="label">Min W</span>';
         html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value=""';
         html += ' placeholder="—"';
         html += ' onchange="setMultiFrameProp(\'min_width\',this.value)"';
         html += ' style="width:52px">';
-        html += '<span class="label" style="margin-left:4px">Max</span>';
+        html += '<span class="label" style="margin-left:4px">Max W</span>';
         html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value=""';
         html += ' placeholder="—"';
         html += ' onchange="setMultiFrameProp(\'max_width\',this.value)"';
@@ -1762,14 +1805,13 @@ function renderMultiSelectionInspector() {
       }
       html += '</div>';
 
-      // Min/max height constraints (shown when common sizing is FILL or FIXED)
       if (sizingInfo.sizingH === 'FILL' || sizingInfo.sizingH === 'FIXED') {
         html += '<div class="field dg-constraint-row"><span class="label">Min H</span>';
         html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value=""';
         html += ' placeholder="—"';
         html += ' onchange="setMultiFrameProp(\'min_height\',this.value)"';
         html += ' style="width:52px">';
-        html += '<span class="label" style="margin-left:4px">Max</span>';
+        html += '<span class="label" style="margin-left:4px">Max H</span>';
         html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value=""';
         html += ' placeholder="—"';
         html += ' onchange="setMultiFrameProp(\'max_height\',this.value)"';
@@ -1986,7 +2028,7 @@ window.applyMultiStyleOverride = applyMultiStyleOverride;
  * Apply a frame property to ALL selected items, then trigger a single relayout.
  */
 function setMultiFrameProp(prop, value) {
-  const isConstraintProp = prop === 'min_width' || prop === 'max_width' || prop === 'min_height' || prop === 'max_height';
+  const isConstraintProp = prop === 'min_width' || prop === 'max_width' || prop === 'max_width_chars' || prop === 'min_height' || prop === 'max_height';
   if (!isConstraintProp && (value === '' || value === null || value === undefined)) return; // ignore "Mixed" placeholder
   if (typeof value === 'number' && !Number.isFinite(value)) return; // ignore NaN from empty input
 
@@ -4976,7 +5018,7 @@ function buildAutolayoutPanel(cid, node) {
     html += '</select>';
   }
   html += '</div>';
-  // Min/max width constraints (shown when FILL or FIXED)
+  // Min/max width (FILL and FIXED always; typographic measure for text-bearing HUG)
   if (sizingW === 'FILL' || sizingW === 'FIXED') {
     const curMinW = ovr.min_width !== undefined ? ovr.min_width : (node.min_width !== undefined ? node.min_width : '');
     const curMaxW = ovr.max_width !== undefined ? ovr.max_width : (node.max_width !== undefined ? node.max_width : '');
@@ -4985,11 +5027,35 @@ function buildAutolayoutPanel(cid, node) {
     html += ' placeholder="—"';
     html += ' onchange="setFrameProp(\'' + cid + '\',\'min_width\',this.value)"';
     html += ' style="width:52px">';
-    html += '<span class="label" style="margin-left:4px">Max</span>';
+    html += '<span class="label" style="margin-left:4px">Max W</span>';
     html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value="' + curMaxW + '"';
     html += ' placeholder="—"';
     html += ' onchange="setFrameProp(\'' + cid + '\',\'max_width\',this.value)"';
     html += ' style="width:52px">';
+    html += '</div>';
+  }
+  if (sizingW === 'HUG' && _nodeHasTextContent(node)) {
+    const curMinW = ovr.min_width !== undefined ? ovr.min_width : (node.min_width !== undefined ? node.min_width : '');
+    const curMaxW = _inspectorDisplayMaxWidth(node, ovr);
+    const curMaxChars = _inspectorMaxWidthChars(node, ovr);
+    const charsDisabled = _inspectorHasExplicitMaxWidthPx(node, ovr);
+    html += '<div class="field dg-constraint-row"><span class="label">Min W</span>';
+    html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value="' + curMinW + '"';
+    html += ' placeholder="—"';
+    html += ' onchange="setFrameProp(\'' + cid + '\',\'min_width\',this.value)"';
+    html += ' style="width:52px">';
+    html += '<span class="label" style="margin-left:4px">Max W</span>';
+    html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value="' + curMaxW + '"';
+    html += ' placeholder="—"';
+    html += ' onchange="setFrameProp(\'' + cid + '\',\'max_width\',this.value)"';
+    html += ' style="width:52px">';
+    html += '</div>';
+    html += '<div class="field"><span class="label">Max chars</span>';
+    html += '<input class="bf-input" type="number" min="0" step="1" value="' + curMaxChars + '"';
+    if (charsDisabled) html += ' disabled title="Clear Max W (px) to edit character measure"';
+    html += ' onchange="setFrameProp(\'' + cid + '\',\'max_width_chars\',this.value)"';
+    html += ' style="width:52px" title="0 = unbounded single line">';
+    html += '<span class="label" style="margin-left:4px;font-size:11px;color:#666">0=off</span>';
     html += '</div>';
   }
   // Fill weight (shown when width sizing is FILL)
@@ -5022,7 +5088,7 @@ function buildAutolayoutPanel(cid, node) {
     html += '</select>';
   }
   html += '</div>';
-  // Min/max height constraints (shown when FILL or FIXED)
+  // Min/max height (FILL and FIXED)
   if (sizingH === 'FILL' || sizingH === 'FIXED') {
     const curMinH = ovr.min_height !== undefined ? ovr.min_height : (node.min_height !== undefined ? node.min_height : '');
     const curMaxH = ovr.max_height !== undefined ? ovr.max_height : (node.max_height !== undefined ? node.max_height : '');
@@ -5089,7 +5155,7 @@ function setFrameProp(cid, prop, value) {
   if (prop === 'padding_top' || prop === 'padding_right' || prop === 'padding_bottom' || prop === 'padding_left') {
     delete overrides[cid].padding;
   }
-  if (prop === 'min_width' || prop === 'max_width' || prop === 'min_height' || prop === 'max_height') {
+  if (prop === 'min_width' || prop === 'max_width' || prop === 'min_height' || prop === 'max_height' || prop === 'max_width_chars') {
     if (value === '' || value == null) {
       delete overrides[cid][prop];
       _coercedKeys.delete(cid + ':' + prop);

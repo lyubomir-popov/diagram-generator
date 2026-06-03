@@ -111,6 +111,7 @@ class Frame:
     height: int | None = None   # explicit height (when sizing_h=FIXED)
     min_width: int | None = None
     max_width: int | None = None
+    max_width_chars: int | None = None
     min_height: int | None = None
     max_height: int | None = None
 

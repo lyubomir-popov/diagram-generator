@@ -22,12 +22,11 @@ Don't create Jira issues for refactors or spec-level tasks. Jira is for mileston
 
 - **Engine:** v3 autolayout with TypeScript local-only relayout. HarfBuzz-backed browser text measurement. No Python relayout fallback.
 - **Authored state:** Frame YAML only. No JSON sidecar authority.
-- **Tests:** ~200 TS + ~240 Python passing. 9 shared parity fixtures.
+- **Tests:** 212 TS layout-engine tests passing (incl. parity fixtures under spec 011 + heading synthesis). Python batch tests unchanged.
+- **Export:** `node packages/layout-engine/scripts/export-frame-svg.mjs --slug <name>` (TS layout + HarfBuzz + SVG).
 - **Diagrams:** 32 v3 Frame YAML definitions.
 
-**Active focus (2026-06-03):** Spec 005 WS1 complete (coercion, col_span, root-width, grid equalization are runtime-only). P1 bugs fixed. Next: spec 005 WS2 (style ownership) or spec 008 Phase 5 (resolved-style snapshot).
-
-**Current slice:** WS1 semantic mutation removal landed in TS and Python. Highlight children inside highlight panels get white text contrast. Inspector FIXED height input persists through relayout.
+**Active focus (2026-06-03):** Spec 011 complete — 66ch default, TS batch SVG export (`export-frame-svg.mjs`), preview server uses TS path first. 212 TS tests green. Next: spec 005 WS2 or retire Python `layout_v3` from component-tree path.
 
 ## Key files
 

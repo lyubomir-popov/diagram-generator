@@ -184,6 +184,7 @@ export interface FrameInit {
   height?: number;
   minWidth?: number;
   maxWidth?: number;
+  maxWidthChars?: number;
   minHeight?: number;
   maxHeight?: number;
 
@@ -255,6 +256,7 @@ export class Frame {
   height: number | undefined;
   minWidth: number | undefined;
   maxWidth: number | undefined;
+  maxWidthChars: number | undefined;
   minHeight: number | undefined;
   maxHeight: number | undefined;
 
@@ -311,6 +313,7 @@ export class Frame {
     this.height = init?.height;
     this.minWidth = init?.minWidth;
     this.maxWidth = init?.maxWidth;
+    this.maxWidthChars = init?.maxWidthChars;
     this.minHeight = init?.minHeight;
     this.maxHeight = init?.maxHeight;
 

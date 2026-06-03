@@ -21,6 +21,8 @@ export {
 
 export {
   BASELINE_UNIT,
+  DEFAULT_MAX_WIDTH_CHARS,
+  NO_WRAP_MAX_WIDTH_CHARS,
   BLOCK_WIDTH,
   BOX_MIN_HEIGHT,
   INSET,
@@ -71,6 +73,16 @@ export {
   computeLevel,
   resolveStyles,
 } from './resolve-styles.js';
+
+export {
+  frameHasTextContent,
+  applyTextLayoutDefaults,
+  hasCharWrapCap,
+  maxWidthPxFromChars,
+  resolveLeafTextWrapWidth,
+} from './text-layout.js';
+
+export { applyHeadingAsChild } from './heading-synthesis.js';
 
 export {
   FRAME_CLASS_DEFS,

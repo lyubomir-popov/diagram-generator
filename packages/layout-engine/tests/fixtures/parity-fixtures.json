@@ -1,7 +1,7 @@
 [
   {
     "name": "test-vertical-stack",
-    "description": "Vertical stack \u2014 3 boxes",
+    "description": "Vertical stack — 3 boxes",
     "root": {
       "id": "page",
       "padding": 24,
@@ -74,26 +74,26 @@
           "x": 24,
           "y": 24,
           "w": 128,
-          "h": 64.0
+          "h": 64
         },
         "box_b": {
           "x": 24,
-          "y": 112.0,
+          "y": 112,
           "w": 128,
-          "h": 64.0
+          "h": 64
         },
         "box_c": {
           "x": 24,
-          "y": 200.0,
+          "y": 200,
           "w": 128,
-          "h": 64.0
+          "h": 64
         }
       }
     }
   },
   {
     "name": "test-fill-distribution",
-    "description": "Fill distribution \u2014 HUG + 2 FILL",
+    "description": "Fill distribution — HUG + 2 FILL",
     "root": {
       "id": "page",
       "padding": 24,
@@ -114,7 +114,7 @@
           "icon": "Cloud.svg",
           "label": [
             {
-              "content": "Header \u2014 HUG",
+              "content": "Header — HUG",
               "size": "18",
               "weight": "400"
             }
@@ -165,27 +165,27 @@
         "header": {
           "x": 24,
           "y": 24,
-          "w": 192,
+          "w": 208,
           "h": 64
         },
         "fill_a": {
           "x": 24,
           "y": 112,
           "w": 432,
-          "h": 160.0
+          "h": 160
         },
         "fill_b": {
           "x": 24,
-          "y": 296.0,
+          "y": 296,
           "w": 432,
-          "h": 160.0
+          "h": 160
         }
       }
     }
   },
   {
     "name": "test-mixed-sizing",
-    "description": "Mixed sizing \u2014 HUG + FILL + FIXED",
+    "description": "Mixed sizing — HUG + FILL + FIXED",
     "root": {
       "id": "page",
       "padding": 24,
@@ -206,7 +206,7 @@
           "icon": "Cloud.svg",
           "label": [
             {
-              "content": "HUG \u2014 shrinks to content",
+              "content": "HUG — shrinks to content",
               "size": "18",
               "weight": "400"
             }
@@ -221,7 +221,7 @@
           "border": "SOLID",
           "label": [
             {
-              "content": "FILL \u2014 takes remaining space",
+              "content": "FILL — takes remaining space",
               "size": "18",
               "weight": "400"
             }
@@ -238,7 +238,7 @@
           "border": "SOLID",
           "label": [
             {
-              "content": "FIXED \u2014 exactly 120px tall",
+              "content": "FIXED — exactly 120px tall",
               "size": "18",
               "weight": "400"
             }
@@ -259,18 +259,18 @@
         "hug_box": {
           "x": 24,
           "y": 24,
-          "w": 192,
-          "h": 88
+          "w": 336,
+          "h": 64
         },
         "fill_box": {
           "x": 24,
-          "y": 136,
+          "y": 112,
           "w": 432,
-          "h": 176.0
+          "h": 200
         },
         "fixed_box": {
           "x": 24,
-          "y": 336.0,
+          "y": 336,
           "w": 432,
           "h": 120
         }
@@ -279,7 +279,7 @@
   },
   {
     "name": "test-nested-containers",
-    "description": "Nested containers \u2014 V \u2192 H",
+    "description": "Nested containers — V → H",
     "root": {
       "id": "page",
       "padding": 24,
@@ -399,56 +399,56 @@
           "x": 24,
           "y": 24,
           "w": 488,
-          "h": 88.0
+          "h": 88
         },
         "row": {
           "x": 24,
-          "y": 136.0,
+          "y": 136,
           "w": 488,
-          "h": 88.0
+          "h": 88
         },
         "row__heading": {
           "x": 32,
-          "y": 144.0,
+          "y": 144,
           "w": 470,
           "h": 48
         },
         "row__body": {
           "x": 32,
-          "y": 200.0,
+          "y": 200,
           "w": 470,
           "h": 64
         },
         "child_1": {
           "x": 32,
-          "y": 200.0,
+          "y": 200,
           "w": 151.3,
           "h": 64
         },
         "child_2": {
           "x": 191.3,
-          "y": 200.0,
+          "y": 200,
           "w": 151.3,
           "h": 64
         },
         "child_3": {
           "x": 350.7,
-          "y": 200.0,
+          "y": 200,
           "w": 151.3,
           "h": 64
         },
         "bottom_box": {
           "x": 24,
-          "y": 248.0,
+          "y": 248,
           "w": 488,
-          "h": 88.0
+          "h": 88
         }
       }
     }
   },
   {
     "name": "test-deep-nesting",
-    "description": "Deep nesting \u2014 page \u2192 panel \u2192 columns \u2192 boxes",
+    "description": "Deep nesting — page → panel → columns → boxes",
     "root": {
       "id": "page",
       "padding": 24,
@@ -615,97 +615,109 @@
       ]
     },
     "expected": {
-      "width": 504,
+      "width": 552,
       "height": 592,
       "bounds": {
         "page": {
           "x": 0,
           "y": 0,
-          "w": 504,
+          "w": 552,
           "h": 592
         },
         "header": {
           "x": 24,
           "y": 24,
-          "w": 456,
+          "w": 504,
           "h": 165.3
         },
         "main_panel": {
           "x": 24,
           "y": 213.3,
-          "w": 456,
+          "w": 504,
           "h": 165.3
         },
         "main_panel__heading": {
           "x": 32,
           "y": 221.3,
-          "w": 438,
+          "w": 486,
           "h": 48
         },
         "main_panel__body": {
           "x": 32,
           "y": 293.3,
-          "w": 438,
+          "w": 486,
           "h": 280
         },
         "col_left": {
           "x": 32,
           "y": 293.3,
-          "w": 207.0,
+          "w": 231,
           "h": 280
         },
         "col_left__heading": {
           "x": 40,
           "y": 301.3,
-          "w": 189.0,
+          "w": 213,
           "h": 48
+        },
+        "col_left__body": {
+          "x": 40,
+          "y": 357.3,
+          "w": 213,
+          "h": 208
         },
         "vm_1": {
           "x": 40,
           "y": 357.3,
-          "w": 189.0,
-          "h": 63.3
+          "w": 213,
+          "h": 64
         },
         "vm_2": {
           "x": 40,
-          "y": 428.7,
-          "w": 189.0,
-          "h": 63.3
+          "y": 429.3,
+          "w": 213,
+          "h": 64
         },
         "vm_3": {
           "x": 40,
-          "y": 500.0,
-          "w": 189.0,
-          "h": 63.3
+          "y": 501.3,
+          "w": 213,
+          "h": 64
         },
         "col_right": {
-          "x": 263.0,
+          "x": 287,
           "y": 293.3,
-          "w": 207.0,
+          "w": 231,
           "h": 280
         },
         "col_right__heading": {
-          "x": 271.0,
+          "x": 295,
           "y": 301.3,
-          "w": 189.0,
+          "w": 213,
           "h": 48
         },
-        "disk_1": {
-          "x": 271.0,
+        "col_right__body": {
+          "x": 295,
           "y": 357.3,
-          "w": 189.0,
-          "h": 99.0
+          "w": 213,
+          "h": 136
+        },
+        "disk_1": {
+          "x": 295,
+          "y": 357.3,
+          "w": 213,
+          "h": 64
         },
         "disk_2": {
-          "x": 271.0,
-          "y": 464.3,
-          "w": 189.0,
-          "h": 99.0
+          "x": 295,
+          "y": 429.3,
+          "w": 213,
+          "h": 64
         },
         "footer": {
           "x": 24,
           "y": 402.7,
-          "w": 456,
+          "w": 504,
           "h": 165.3
         }
       }
@@ -713,7 +725,7 @@
   },
   {
     "name": "test-alignment-grid",
-    "description": "Alignment grid \u2014 centered child",
+    "description": "Alignment grid — centered child",
     "root": {
       "id": "page",
       "padding": 24,
@@ -751,7 +763,7 @@
               "border": "SOLID",
               "label": [
                 {
-                  "content": "Small box \u2014 change alignment",
+                  "content": "Small box — change alignment",
                   "size": "18",
                   "weight": "400"
                 }
@@ -779,13 +791,19 @@
         },
         "container__heading": {
           "x": 32,
-          "y": 139.0,
+          "y": 139,
           "w": 414,
           "h": 48
         },
+        "container__body": {
+          "x": 32,
+          "y": 195,
+          "w": 414,
+          "h": 64
+        },
         "small_box": {
-          "x": 143.0,
-          "y": 195.0,
+          "x": 143,
+          "y": 195,
           "w": 192,
           "h": 64
         }
@@ -895,7 +913,7 @@
   },
   {
     "name": "test-wrap-horizontal",
-    "description": "Horizontal wrap \u2014 3 children break into 2 rows",
+    "description": "Horizontal wrap — 3 children break into 2 rows",
     "root": {
       "id": "wrap_parent",
       "direction": "HORIZONTAL",
@@ -1054,13 +1072,13 @@
         "heavy": {
           "x": 0,
           "y": 0,
-          "w": 160.0,
+          "w": 160,
           "h": 24
         },
         "light": {
-          "x": 160.0,
+          "x": 160,
           "y": 0,
-          "w": 80.0,
+          "w": 80,
           "h": 24
         }
       }
