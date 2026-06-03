@@ -1,50 +1,61 @@
 # Adversarial review prompt (copy-paste for GPT / Composer)
 
-Use this after a coding session on `diagram-generator`. Replace `<BRANCH>` and `<COMMIT_RANGE>` before sending.
+Use this after a coding session on `diagram-generator`. Replace placeholders if the branch moved.
 
 ---
 
-## Prompt
+## Prompt (copy everything below this line)
 
 You are doing an **adversarial code review** of the `diagram-generator` repo. Be skeptical: assume something is broken until you verify otherwise. Do **not** rubber-stamp.
 
 ### Context
 
 - **North star:** TypeScript-only for layout/measure (`packages/layout-engine/`). Frame **YAML** is the only authored source of truth. JSON from `/api/frame-tree` is a **derived wire DTO**, not authority.
-- **Preview:** `scripts/preview_server.py` (threaded HTTP) + browser `layout-bridge.js` (HarfBuzz). Python `layout_v3.py` / `diagram_render_svg.py` are legacy fallback, being retired (specs 012–013).
-- **Recent specs:** 011 (66ch HUG), 014 (TS SVG export pool), 015 (port kill opt-in, diagram nav).
-- **Branch:** `<BRANCH>` — commits: `<COMMIT_RANGE>` (e.g. `main..HEAD` or last 5 SHAs).
+- **Preview:** `scripts/preview_server.py` + `layout-bridge.js` (HarfBuzz). TS pools: `preview_ts_export.py` (SVG), `preview_ts_layout.py` (frame-tree/grid/tree). Python `layout_v3` / `diagram_render_svg` remain **SVG fallback only** until spec 012.
+- **Recent specs on branch `feat/005-autolayout-hardening`:**
+  - 011 — 66ch HUG, `text-layout.ts`, TS export
+  - 013 — TS preview API (frame-tree/grid/tree); Python layout off preview paths
+  - 014 — TS SVG export pool (cache, semaphore, coalescing)
+  - 015 — port kill opt-in; force-mode diagram nav
+  - 016 — `DG_FRAMES_DIR` in Node CLIs; layout pool coalescing; force picker dedup
+  - 017 — frame delete (`removed_ids`, Delete/Backspace, tree context menu)
+- **Branch:** `feat/005-autolayout-hardening` — commits: `31bce6e..505fd98` (or `main..HEAD`)
 
 ### Your tasks
 
 1. **Git / branch hygiene**
-   - Is the branch name appropriate? Commits atomic and bisectable?
-   - Dirty tree: untracked junk vs intentional WIP?
-   - Should work split into multiple PRs?
+   - Branch name vs scope (005 + 011–017)? Commits atomic? Bisectable?
+   - Untracked junk (`image-*.png`, `.specify/`) vs intentional WIP?
+   - Should this split into multiple PRs (e.g. 011+014+015 vs 013+016 vs 017)?
 
 2. **Preview server stability** (P1)
-   - `preview_ts_export.py`: cache, semaphore, coalescing, `TimeoutExpired` → fallback?
-   - Port binding: is `DG_PREVIEW_KILL_PORT` still killing healthy servers?
-   - Threaded server + Node subprocess: remaining fan-out or deadlock risks?
-   - File watcher / `_rebuild`: silent failure modes?
+   - `preview_ts_export.py` / `preview_ts_layout.py`: cache, semaphore, coalescing, `TimeoutExpired`, `RLock` deadlocks?
+   - `DG_FRAMES_DIR` honored by all Node entrypoints (`_dist-import.mjs`)?
+   - Port: `DG_PREVIEW_KILL_PORT` still killing healthy servers?
+   - Watcher / `_rebuild` silent failures?
 
-3. **Correctness of TS layout** (P1)
-   - `applyTextLayoutDefaults`, `max_width_chars: 66`, opt-out `0`
-   - Heading synthesis (`heading-synthesis.ts`) vs Python `frame_loader.py`
-   - Parity fixtures: still aligned with `parity-fixture-builder.ts`?
+3. **TS layout correctness** (P1)
+   - `max_width_chars: 66`, opt-out `0`, `applyTextLayoutDefaults`
+   - Heading synthesis vs Python `frame_loader.py`
+   - Parity fixtures vs `parity-fixture-builder.ts`
 
 4. **Preview client** (P1)
-   - Force mode: `editor-base.js` diagram picker `change` → `location.assign`
-   - Grid mode: `loadSVG()` / `initLayoutBridge` failure = blank stage?
-   - Any duplicate `initDiagramPicker` / double handlers?
+   - Frame delete: undo restores frame tree (`f` in editor state)? `removed_ids` YAML roundtrip?
+   - `bindInteraction()` called after delete — duplicate listeners?
+   - Force mode diagram picker (single handler in `editor-base.js`)?
+   - Grid mode blank stage if bridge fails?
 
 5. **Architecture drift**
    - New Python layout/measure logic (forbidden)?
-   - Two YAML parsers (`frame_loader.py` vs `frame-yaml-loader.ts`) — drift risk?
+   - Dual YAML parsers drift?
+   - Two SVG render paths (TS `svg-render.ts` vs Python `diagram_render_svg.py`)?
 
-6. **Tests**
-   - Run (or cite): `npm test` in `packages/layout-engine`, `python -m pytest scripts/test_preview_ts_export.py scripts/test_preview_support_engineering_flow.py -q`
-   - Gaps that would let regressions ship?
+6. **Tests** — run and report pass/fail:
+   ```bash
+   cd packages/layout-engine && npm test
+   cd scripts && python -m pytest test_preview_ts_export.py test_preview_ts_layout.py test_preview_frames_dir.py test_preview_ts_api.py test_frame_yaml_persistence.py -q
+   cd scripts && python -m pytest test_preview_support_engineering_flow.py -q -k "roundtrip or per_side_padding or save"
+   ```
 
 ### Output format
 
@@ -54,14 +65,14 @@ You are doing an **adversarial code review** of the `diagram-generator` repo. Be
 
 Then:
 
-- **Top 3 risks** to fix before merge
+- **Top 3 risks** before merge
 - **Open questions** for the author
-- **What you verified** (commands run, pass/fail)
+- **What you verified** (commands + pass/fail)
 
-Do not propose large rewrites unless P0/P1. Prefer minimal, TS-first fixes.
+Prefer minimal TS-first fixes. No large rewrites unless P0/P1.
 
 ---
 
 ## Optional one-liner
 
-> Adversarial review `diagram-generator` branch `<BRANCH>` (`<COMMIT_RANGE>`): focus preview server stability, TS-vs-Python drift, diagram nav, 66ch layout, branch hygiene. P0/P1 table + top 3 risks. TS-only for new layout code.
+> Adversarial review `diagram-generator` `feat/005-autolayout-hardening` (`31bce6e..505fd98`): TS preview API, DG_FRAMES_DIR, frame delete, pools, 66ch layout, branch hygiene. P0/P1 table + top 3 risks. Run pytest bundle above.

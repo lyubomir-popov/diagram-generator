@@ -2,7 +2,7 @@
 
 **Branch**: `feat/012-ts-svg-renderer-retire-python`  
 **Created**: 2026-06-03  
-**Status**: Draft  
+**Status**: In progress (T010 gap inventory done)  
 **Depends on**: Spec 011 (TS layout + minimal `svg-render.ts`)
 
 ## Mission

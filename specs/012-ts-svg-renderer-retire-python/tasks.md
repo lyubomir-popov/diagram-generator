@@ -1,6 +1,6 @@
 # Tasks: Spec 012 – TS SVG renderer
 
-- [ ] T010 Inventory Python primitives vs TS `svg-render.ts` gap
+- [x] T010 Inventory Python primitives vs TS `svg-render.ts` gap (`research.md`)
 - [ ] T020 Port icon embedding (Node reads `assets/icons/`)
 - [ ] T030 Port arrow heads + labels (share logic with layout-bridge)
 - [ ] T040 Port overlays, separators, remaining primitives
