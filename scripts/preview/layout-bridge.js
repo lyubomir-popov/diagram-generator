@@ -278,22 +278,7 @@ function applyOverridesToFrameTree(diagram, allOverrides, gridOverrides) {
     }
     if (ovr.text && typeof ovr.text === "object") {
       if (ovr.text.heading != null) {
-        if (ovr.text.heading && target.heading) {
-          target.heading = LayoutEngine.createLine(ovr.text.heading, {
-            weight: target.heading.weight,
-            size: target.heading.size,
-            fill: target.heading.fill,
-            smallCaps: target.heading.smallCaps,
-            letterSpacing: target.heading.letterSpacing,
-            fontFamily: target.heading.fontFamily,
-          });
-        } else if (ovr.text.heading) {
-          target.heading = LayoutEngine.createLine(ovr.text.heading, {
-            weight: "700",
-          });
-        } else {
-          target.heading = undefined;
-        }
+        _applyTextHeadingOverride(target, ovr.text.heading);
       }
       if (Array.isArray(ovr.text.label)) {
         target.label = ovr.text.label.map((text, i) => {
@@ -981,13 +966,56 @@ function setFrameTreeJson(json) {
 }
 
 /**
- * Remove frames (and subtrees) from the cached frame-tree JSON.
+ * Apply a session text.heading override to the frame tree (mutates target in place).
+ * Containers with synthetic __heading children are updated there — clearing heading
+ * text must not strip panel/section structure or demote the parent to level 0.
+ */
+function _applyTextHeadingOverride(target, headingText) {
+  const headingChild = target.children.find(c => c.role === "heading");
+  if (headingChild) {
+    const styleSource = headingChild.label[0];
+    const lineOpts = styleSource
+      ? {
+        weight: styleSource.weight,
+        size: styleSource.size,
+        fill: styleSource.fill,
+        smallCaps: styleSource.smallCaps,
+        letterSpacing: styleSource.letterSpacing,
+        fontFamily: styleSource.fontFamily,
+      }
+      : { weight: "700" };
+    headingChild.label = [
+      LayoutEngine.createLine(headingText || "", lineOpts),
+    ];
+    return;
+  }
+  if (headingText && target.heading) {
+    target.heading = LayoutEngine.createLine(headingText, {
+      weight: target.heading.weight,
+      size: target.heading.size,
+      fill: target.heading.fill,
+      smallCaps: target.heading.smallCaps,
+      letterSpacing: target.heading.letterSpacing,
+      fontFamily: target.heading.fontFamily,
+    });
+  } else if (headingText) {
+    target.heading = LayoutEngine.createLine(headingText, {
+      weight: "700",
+    });
+  } else {
+    target.heading = undefined;
+  }
+}
+
+/**
+ * Remove frames (and subtrees) from a frame-tree JSON object (mutates in place).
+ * @param {object} treeJson
  * @param {string[]} frameIds  Top-level ids to remove (ancestors win over descendants).
  * @returns {string[]} ids actually removed from the tree
  */
-function applyFrameTreeRemovals(frameIds) {
-  if (!_frameTreeJson || !frameIds || frameIds.length === 0) return [];
-  const rootId = _frameTreeJson.root && _frameTreeJson.root.id;
+function applyFrameTreeRemovalsToJson(treeJson, frameIds) {
+  if (!treeJson || !treeJson.root || !frameIds || frameIds.length === 0) return [];
+  const rootId = treeJson.root && treeJson.root.id;
   const requested = [...new Set(frameIds.filter(id => id && id !== rootId))];
   if (requested.length === 0) return [];
 
@@ -1022,16 +1050,30 @@ function applyFrameTreeRemovals(frameIds) {
   }
 
   for (const id of requested) {
-    const node = findNode(_frameTreeJson.root, id);
+    const node = findNode(treeJson.root, id);
     if (node) collectDescendants(node);
   }
-  _frameTreeJson.root.children = pruneChildren(_frameTreeJson.root.children);
-  if (Array.isArray(_frameTreeJson.arrows)) {
-    _frameTreeJson.arrows = _frameTreeJson.arrows.filter(
+  treeJson.root.children = pruneChildren(treeJson.root.children);
+  if (Array.isArray(treeJson.arrows)) {
+    treeJson.arrows = treeJson.arrows.filter(
       a => a && !removed.has(a.source) && !removed.has(a.target),
     );
   }
   return [...removed];
+}
+
+/** @deprecated Prefer session-only removals via model.removedIds; mutates canonical cache. */
+function applyFrameTreeRemovals(frameIds) {
+  if (!_frameTreeJson) return [];
+  return applyFrameTreeRemovalsToJson(_frameTreeJson, frameIds);
+}
+
+function applySessionRemovalsToDiagramJson(diagramJson, model) {
+  if (!diagramJson || !model || !model.removedIds || model.removedIds.size === 0) return;
+  const topIds = typeof model.topLevelRemovalIds === "function"
+    ? model.topLevelRemovalIds()
+    : [...model.removedIds];
+  applyFrameTreeRemovalsToJson(diagramJson, topIds);
 }
 
 /**
@@ -1098,6 +1140,7 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
   try {
     // Deep-clone the stored frame tree and deserialize
     const diagramJson = JSON.parse(JSON.stringify(_frameTreeJson));
+    applySessionRemovalsToDiagramJson(diagramJson, model);
     const diagram = deserializeFrameDiagram(diagramJson);
 
     // Build override map (same format as requestV3Relayout sends)
@@ -1407,6 +1450,7 @@ function renderFrameTreeToSvg(diagram, result, options) {
 async function renderFreshSvg(overrides, gridOverrides, model) {
   // Deep-clone the stored frame tree and deserialize
   const diagramJson = JSON.parse(JSON.stringify(_frameTreeJson));
+  applySessionRemovalsToDiagramJson(diagramJson, model);
   const rawOverlays = diagramJson.overlays || [];
   const diagram = deserializeFrameDiagram(diagramJson);
 
@@ -1484,3 +1528,5 @@ window.getLayoutTextAdapter = () => _textAdapter;
 window.getFrameTreeJson = getFrameTreeJson;
 window.setFrameTreeJson = setFrameTreeJson;
 window.applyFrameTreeRemovals = applyFrameTreeRemovals;
+window.applyFrameTreeRemovalsToJson = applyFrameTreeRemovalsToJson;
+window.applySessionRemovalsToDiagramJson = applySessionRemovalsToDiagramJson;

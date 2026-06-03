@@ -378,7 +378,13 @@ async function _restoreEditorState(serializedState) {
 
   overrides = nextOverrides;
   model.gridOverrides = _cloneState(nextGridOverrides);
-  model.removedIds = new Set(Array.isArray(parsed.r) ? parsed.r : []);
+  const prevRemovedIds = model.removedIds || new Set();
+  const nextRemovedIds = new Set(Array.isArray(parsed.r) ? parsed.r : []);
+  const removalsChanged = (
+    prevRemovedIds.size !== nextRemovedIds.size
+    || [...prevRemovedIds].some(id => !nextRemovedIds.has(id))
+  );
+  model.removedIds = nextRemovedIds;
   if (parsed.f && typeof setFrameTreeJson === "function") {
     setFrameTreeJson(parsed.f);
   }
@@ -389,6 +395,7 @@ async function _restoreEditorState(serializedState) {
   const frameTreeChanged = Object.prototype.hasOwnProperty.call(parsed, "f");
   const needsV3Relayout = (
     frameTreeChanged
+    || removalsChanged
     || gridChanged
     || _snapshotNeedsV3Relayout(currentOverrides)
     || _snapshotNeedsV3Relayout(nextOverrides)
@@ -396,7 +403,7 @@ async function _restoreEditorState(serializedState) {
 
   if (needsV3Relayout) {
     const rootId = (model.roots[0] || {}).id || "root";
-    if (frameTreeChanged && typeof renderFreshSvg === "function") {
+    if ((frameTreeChanged || removalsChanged) && typeof renderFreshSvg === "function") {
       await _rerenderStageFromFrameTree();
     } else {
       await requestV3Relayout(rootId);
@@ -525,6 +532,7 @@ async function loadSVG(options = {}) {
     runConstraints();
     lastSavedState = _serializeDirtyState();
     setDirty(false);
+    _signalDiagramLoaded();
     return;
   }
 
@@ -564,7 +572,36 @@ async function loadSVG(options = {}) {
   runConstraints();
   lastSavedState = _serializeDirtyState();
   setDirty(false);
+  _signalDiagramLoaded();
 }
+
+/** Monotonic counter + promise hook for tests / navigation (not localReady). */
+let _diagramLoadGeneration = 0;
+let _diagramLoadedResolvers = [];
+
+function _signalDiagramLoaded() {
+  _diagramLoadGeneration += 1;
+  window.__DG_DIAGRAM_LOAD_GENERATION = _diagramLoadGeneration;
+  const resolvers = _diagramLoadedResolvers;
+  _diagramLoadedResolvers = [];
+  for (const resolve of resolvers) resolve(_diagramLoadGeneration);
+  window.dispatchEvent(new CustomEvent("dg-diagram-loaded", {
+    detail: { generation: _diagramLoadGeneration, slug: SLUG },
+  }));
+}
+
+function whenDiagramLoaded() {
+  return new Promise((resolve) => {
+    if (document.querySelector("#stage svg")) {
+      resolve(_diagramLoadGeneration);
+      return;
+    }
+    _diagramLoadedResolvers.push(resolve);
+  });
+}
+
+window.whenDiagramLoaded = whenDiagramLoaded;
+window.__DG_TEST_getDiagramLoadGeneration = () => _diagramLoadGeneration;
 
 async function loadTree() {
   try {
@@ -2926,9 +2963,6 @@ async function deleteSelectedFrames() {
   const action = beginUndoableAction("Delete frame");
   const subtreeIds = _collectSubtreeRemovalIds(topIds);
 
-  if (typeof applyFrameTreeRemovals === "function") {
-    applyFrameTreeRemovals(topIds);
-  }
   for (const id of subtreeIds) {
     model.removedIds.add(id);
     model.clearOverride(id);
@@ -6416,6 +6450,13 @@ function initDiagramPicker() {
 initPreviewShell();
 initDiagramPicker();
 initNavTabs();
+window.addEventListener("pageshow", (event) => {
+  // Back-forward cache can restore the full JS heap (mutated frame tree, undo stack).
+  // Always reload from the server so unsaved deletes do not survive navigation.
+  if (event.persisted) {
+    void loadSVG();
+  }
+});
 loadSVG();
 connectSSE();
 

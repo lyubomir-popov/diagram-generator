@@ -91,7 +91,10 @@ def _open_v3_page(
           typeof selectedIds !== 'undefined' &&
           typeof applyV3Style === 'function' &&
           typeof getV3RelayoutStatus === 'function' &&
+          typeof whenDiagramLoaded === 'function' &&
           typeof __DG_TEST_setLocalRelayoutMode === 'function' &&
+          window.__DG_DIAGRAM_LOAD_GENERATION > 0 &&
+          document.querySelector('#stage svg') !== null &&
           document.querySelector(`[data-component-id="${readyComponentId}"]`) !== null
         )
         """,
@@ -756,6 +759,120 @@ def test_v3_keyboard_delete_removes_frame_persists_and_undo(tmp_path):
                     for a in arrows
                     if isinstance(a, dict)
                 )
+            finally:
+                browser.close()
+
+
+def test_v3_clear_panel_heading_keeps_parent_stroke(tmp_path):
+    frames_dir = tmp_path / "frames"
+    frames_dir.mkdir()
+    source_frame = SCRIPTS / "diagrams" / "frames" / "simple-testcase.yaml"
+    shutil.copyfile(source_frame, frames_dir / "simple-testcase.yaml")
+
+    with _preview_server(extra_env={"DG_FRAMES_DIR": str(frames_dir)}) as base_url:
+        with sync_playwright() as playwright:
+            browser, page = _open_v3_page(playwright, base_url, "simple-testcase", "planning")
+            try:
+                page.wait_for_function("() => getV3RelayoutStatus().localReady")
+                page.evaluate(
+                    """
+                    async () => {
+                      setOverride('planning', {
+                        text: {
+                          heading: '',
+                          label: ['Define ingress, pipeline', 'Measure current, performance'],
+                        },
+                      });
+                      await requestV3Relayout('planning');
+                    }
+                    """
+                )
+                page.wait_for_function(
+                    """
+                    () => {
+                      const rect = document.querySelector('[data-component-id="planning"] rect');
+                      const stroke = rect && rect.getAttribute('stroke');
+                      return stroke && stroke !== 'none';
+                    }
+                    """
+                )
+            finally:
+                browser.close()
+
+
+def test_v3_unsaved_delete_restored_after_diagram_next_and_back(tmp_path):
+    frames_dir = tmp_path / "frames"
+    frames_dir.mkdir()
+    for name in ("simple-testcase.yaml", "diagram-intake-workflow.yaml"):
+        shutil.copyfile(SCRIPTS / "diagrams" / "frames" / name, frames_dir / name)
+
+    with _preview_server(extra_env={"DG_FRAMES_DIR": str(frames_dir)}) as base_url:
+        with sync_playwright() as playwright:
+            browser, page = _open_v3_page(playwright, base_url, "simple-testcase", "define")
+            try:
+                page.on("dialog", lambda dialog: dialog.accept())
+                page.wait_for_function("() => getV3RelayoutStatus().localReady")
+                page.locator('[data-component-id="define"] rect').click()
+                page.keyboard.press("Delete")
+                page.wait_for_function("() => model.get('define') === null")
+
+                page.evaluate(
+                    "() => window.location.assign('/view/v3:diagram-intake-workflow')"
+                )
+                page.wait_for_function(
+                    """
+                    () => (
+                      window.location.pathname.includes('diagram-intake-workflow')
+                      && window.__DG_DIAGRAM_LOAD_GENERATION > 0
+                      && document.querySelector('#stage svg')
+                    )
+                    """
+                )
+
+                page.evaluate("() => window.location.assign('/view/v3:simple-testcase')")
+                page.wait_for_function(
+                    """
+                    () => (
+                      window.location.pathname.endsWith('simple-testcase')
+                      && window.__DG_DIAGRAM_LOAD_GENERATION > 0
+                      && document.querySelector('#stage svg')
+                    )
+                    """
+                )
+                page.wait_for_function("() => model.get('define') !== null")
+                page.wait_for_function("() => __DG_TEST_treeHasFrameId('define')")
+            finally:
+                browser.close()
+
+
+def test_v3_delete_without_save_restored_on_reload(tmp_path):
+    frames_dir = tmp_path / "frames"
+    frames_dir.mkdir()
+    source_frame = SCRIPTS / "diagrams" / "frames" / "simple-testcase.yaml"
+    saved_frame = frames_dir / "simple-testcase.yaml"
+    shutil.copyfile(source_frame, saved_frame)
+    yaml_before = yaml.safe_load(saved_frame.read_text(encoding="utf-8"))
+
+    with _preview_server(extra_env={"DG_FRAMES_DIR": str(frames_dir)}) as base_url:
+        with sync_playwright() as playwright:
+            browser, page = _open_v3_page(playwright, base_url, "simple-testcase", "define")
+            try:
+                page.wait_for_function("() => getV3RelayoutStatus().localReady")
+                page.locator('[data-component-id="define"] rect').click()
+                page.keyboard.press("Delete")
+                page.wait_for_function("() => model.get('define') === null")
+
+                yaml_after_delete = yaml.safe_load(saved_frame.read_text(encoding="utf-8"))
+                assert _find_frame(yaml_after_delete["root"], "define") is not None
+
+                page.reload()
+                page.wait_for_function("() => getV3RelayoutStatus().localReady")
+                page.wait_for_function("() => model.get('define') !== null")
+                page.wait_for_function("() => __DG_TEST_treeHasFrameId('define')")
+                assert page.evaluate("() => canUndo()") is False
+
+                yaml_after_reload = yaml.safe_load(saved_frame.read_text(encoding="utf-8"))
+                assert yaml_after_reload == yaml_before
             finally:
                 browser.close()
 

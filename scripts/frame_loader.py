@@ -375,9 +375,14 @@ def _compute_level(frame: Frame, depth: int) -> int:
         return frame.level
     if depth == 0:
         return 0
-    # Headingless containers are layout wrappers — invisible
-    has_heading = any(c.role == "heading" for c in frame.children) or frame.heading is not None
-    if frame.is_container and not has_heading:
+    # Headingless containers are layout wrappers — invisible.
+    # __body means heading synthesis ran; keep panel chrome when heading text is cleared.
+    has_heading_structure = (
+        any(c.role == "heading" for c in frame.children)
+        or frame.heading is not None
+        or any((c.id or "").endswith("__body") for c in frame.children)
+    )
+    if frame.is_container and not has_heading_structure:
         return 0
     return 1
 

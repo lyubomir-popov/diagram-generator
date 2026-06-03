@@ -19,6 +19,12 @@ describe('computeLevel', () => {
     expect(computeLevel(f, 1)).toBe(0);
   });
 
+  it('returns 1 for container with __body but no heading child', () => {
+    const body = new Frame({ id: 'panel__body' });
+    const f = new Frame({ id: 'panel', children: [body] });
+    expect(computeLevel(f, 1)).toBe(1);
+  });
+
   it('returns 1 for container with heading', () => {
     const heading = new Frame({ id: '__heading', role: 'heading', label: [createLine('Title')] });
     const body = new Frame({ id: '__body' });
@@ -59,6 +65,16 @@ describe('resolveStyles', () => {
     expect(panel.resolvedStroke).toBe('#F3F3F3');
     expect(heading.label[0]!.weight).toBe('700');
     expect(heading.label[0]!.smallCaps).toBe(false);
+  });
+
+  it('panel (level=2) with cleared heading text stays visible (not level 0)', () => {
+    const heading = new Frame({ id: '__heading', role: 'heading', label: [createLine('')] });
+    const body = new Frame({ id: '__body', children: [new Frame({ id: 'leaf', label: [createLine('body')] })] });
+    const panel = new Frame({ id: 'p', level: 2, children: [heading, body] });
+    const root = new Frame({ id: 'root', children: [panel] });
+    resolveStyles(root);
+    expect(panel.resolvedStroke).not.toBe('none');
+    expect(panel.resolvedFill).toBe('#F3F3F3');
   });
 
   it('leaf (level=1) gets transparent fill and black stroke', () => {

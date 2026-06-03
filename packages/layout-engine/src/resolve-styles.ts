@@ -34,11 +34,14 @@ export function computeLevel(frame: Frame, depth: number): number {
   if (depth === 0) {
     return 0;
   }
-  // Headingless containers are layout wrappers — invisible
-  const hasHeading =
+  // Headingless containers are layout wrappers — invisible.
+  // A __body child means heading synthesis ran; keep panel chrome even when
+  // heading text is cleared (empty heading line on the __heading child).
+  const hasHeadingStructure =
     frame.children.some(c => c.role === 'heading') ||
-    frame.heading != null;
-  if (frame.isContainer && !hasHeading) {
+    frame.heading != null ||
+    frame.children.some(c => String(c.id || '').endsWith('__body'));
+  if (frame.isContainer && !hasHeadingStructure) {
     return 0;
   }
   return 1;
