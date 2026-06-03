@@ -230,10 +230,18 @@ function _cloneState(value) {
 }
 
 function _captureEditorState() {
-  return {
+  const state = {
     o: _cloneState(overrides),
     g: _cloneState(model.gridOverrides || {}),
   };
+  if (model.removedIds && model.removedIds.size > 0) {
+    state.r = [...model.removedIds];
+  }
+  if (typeof getFrameTreeJson === "function") {
+    const tree = getFrameTreeJson();
+    if (tree) state.f = tree;
+  }
+  return state;
 }
 
 function _normaliseGridOverrides(gridOverrides) {
@@ -370,19 +378,29 @@ async function _restoreEditorState(serializedState) {
 
   overrides = nextOverrides;
   model.gridOverrides = _cloneState(nextGridOverrides);
+  model.removedIds = new Set(Array.isArray(parsed.r) ? parsed.r : []);
+  if (parsed.f && typeof setFrameTreeJson === "function") {
+    setFrameTreeJson(parsed.f);
+  }
   if (nextGridOverrides.link_to_root !== false) {
     _pruneLinkedRootGridOverrides();
   }
 
+  const frameTreeChanged = Object.prototype.hasOwnProperty.call(parsed, "f");
   const needsV3Relayout = (
-    gridChanged
+    frameTreeChanged
+    || gridChanged
     || _snapshotNeedsV3Relayout(currentOverrides)
     || _snapshotNeedsV3Relayout(nextOverrides)
   );
 
   if (needsV3Relayout) {
     const rootId = (model.roots[0] || {}).id || "root";
-    await requestV3Relayout(rootId);
+    if (frameTreeChanged && typeof renderFreshSvg === "function") {
+      await _rerenderStageFromFrameTree();
+    } else {
+      await requestV3Relayout(rootId);
+    }
     if (gridInfo) populateGridControls();
   } else {
     applyWaypointOverrides();
@@ -1102,6 +1120,7 @@ function bindGridNumberInputSelection(input) {
 function resetOverrideState() {
   overrides = {};
   model.gridOverrides = {};
+  model.removedIds = new Set();
   updateOverrideSummary();
   // Initialize undo stack and saved state
   undoStack = [];
@@ -2832,6 +2851,103 @@ function autoFitArtboard() {
   }
 }
 
+// ---- Frame delete ----
+
+function _diagramRootFrameId() {
+  const tree = typeof getFrameTreeJson === "function" ? getFrameTreeJson() : null;
+  if (tree && tree.root && tree.root.id) return tree.root.id;
+  const rootNode = model.roots[0];
+  return rootNode ? rootNode.id : "page";
+}
+
+function _collectSubtreeRemovalIds(frameIds) {
+  const all = new Set();
+  for (const id of frameIds) {
+    const node = model.get(id);
+    if (!node) {
+      all.add(id);
+      continue;
+    }
+    all.add(id);
+    node.descendantIds.forEach(desc => all.add(desc));
+  }
+  return all;
+}
+
+function _topLevelRemovalTargets(frameIds) {
+  const set = new Set(frameIds);
+  return [...set].filter(id => {
+    const node = model.get(id);
+    if (!node) return true;
+    return !node.ancestorIds.some(ancestor => set.has(ancestor));
+  });
+}
+
+async function _rerenderStageFromFrameTree() {
+  const stage = document.getElementById("stage");
+  if (!stage || typeof renderFreshSvg !== "function") return false;
+  const hasGridOverrides = model.gridOverrides && Object.keys(model.gridOverrides).length > 0;
+  const renderResult = await renderFreshSvg(
+    overrides,
+    hasGridOverrides ? model.gridOverrides : null,
+    model,
+  );
+  stage.replaceChildren(renderResult.svg);
+  applyWaypointOverrides();
+  buildTreeUI();
+  bindInteraction();
+  applyAllOverrides();
+  renderGridOverlay();
+  reapplySelection();
+  refreshV3GridInfoFromLayout();
+  renderSelectionInspector();
+  updateOverrideSummary();
+  refreshTreeColors();
+  runConstraints();
+  return true;
+}
+
+async function deleteSelectedFrames() {
+  if (selectedIds.size === 0) return false;
+  if (mgr.isMode(InteractionMode.TEXT_EDITING)) return false;
+
+  const rootId = _diagramRootFrameId();
+  const candidates = [...selectedIds].filter(id => {
+    if (id === rootId) return false;
+    const node = model.get(id);
+    return node && node.type !== "arrow";
+  });
+  if (candidates.length === 0) {
+    alert("Cannot delete the diagram root.");
+    return false;
+  }
+
+  const topIds = _topLevelRemovalTargets(candidates);
+  const action = beginUndoableAction("Delete frame");
+  const subtreeIds = _collectSubtreeRemovalIds(topIds);
+
+  if (typeof applyFrameTreeRemovals === "function") {
+    applyFrameTreeRemovals(topIds);
+  }
+  for (const id of subtreeIds) {
+    model.removedIds.add(id);
+    model.clearOverride(id);
+    selectedIds.delete(id);
+  }
+
+  setDirty(true);
+  const ok = await _rerenderStageFromFrameTree();
+  if (!ok) {
+    alert("Relayout failed after delete.");
+  } else {
+    deselectAll();
+  }
+  commitUndoableAction(action);
+  return ok;
+}
+
+window.deleteSelectedFrames = deleteSelectedFrames;
+
 // ---- Interaction ----
 
 function buildTreeUI() {
@@ -2845,6 +2961,12 @@ function buildTreeUI() {
       item.textContent = node.id;
       if (overrides[node.id]) item.style.color = UI_AUTHORING_ACCENT;
       item.onclick = (e) => { e.stopPropagation(); selectComponent(node.id, e.shiftKey); };
+      item.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!selectedIds.has(node.id)) selectComponent(node.id, false);
+        _showTreeContextMenu(e.clientX, e.clientY);
+      });
       container.appendChild(item);
       if (node.children && node.children.length > 0) {
         buildTree(node.children, container, depth + 1);
@@ -2852,6 +2974,49 @@ function buildTreeUI() {
     }
   }
   buildTree(model._roots.map(n => n.data), treeEl, 0);
+}
+
+function _showTreeContextMenu(clientX, clientY) {
+  const existing = document.getElementById("dg-tree-context-menu");
+  if (existing) existing.remove();
+
+  const menu = document.createElement("div");
+  menu.id = "dg-tree-context-menu";
+  menu.className = "dg-context-menu";
+  menu.style.position = "fixed";
+  menu.style.left = clientX + "px";
+  menu.style.top = clientY + "px";
+  menu.style.zIndex = "10000";
+  menu.style.background = "#fff";
+  menu.style.border = "1px solid #ccc";
+  menu.style.borderRadius = "4px";
+  menu.style.padding = "4px";
+  menu.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.style.display = "block";
+  deleteBtn.style.width = "100%";
+  deleteBtn.style.textAlign = "left";
+  deleteBtn.style.border = "none";
+  deleteBtn.style.background = "transparent";
+  deleteBtn.style.padding = "6px 10px";
+  deleteBtn.style.cursor = "pointer";
+  deleteBtn.type = "button";
+  deleteBtn.textContent = "Delete frame";
+  deleteBtn.onclick = () => {
+    menu.remove();
+    deleteSelectedFrames();
+  };
+  menu.appendChild(deleteBtn);
+  document.body.appendChild(menu);
+
+  const dismiss = (ev) => {
+    if (!menu.contains(ev.target)) {
+      menu.remove();
+      document.removeEventListener("mousedown", dismiss, true);
+    }
+  };
+  setTimeout(() => document.addEventListener("mousedown", dismiss, true), 0);
 }
 
 function bindInteraction() {
@@ -5505,6 +5670,7 @@ async function saveOverrides() {
     return;
   }
   _coercedKeys.clear();
+  model.removedIds = new Set();
   await loadSVG({ preserveSelectionIds: preservedSelectionIds });
   if (typeof setStatus === "function") {
     setStatus("Ready", "ok");
@@ -5650,6 +5816,15 @@ document.addEventListener("keydown", (e) => {
   } else if ((e.ctrlKey && e.shiftKey && e.key === "Z") || (e.ctrlKey && e.key === "y")) {
     e.preventDefault();
     performRedo();
+  } else if ((e.key === "Delete" || e.key === "Backspace") && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.target.isContentEditable) {
+      return;
+    }
+    if (selectedIds.size > 0 && !mgr.isBusy) {
+      e.preventDefault();
+      deleteSelectedFrames();
+    }
   } else if (e.key === "Escape") {
     if (mgr.isMode(InteractionMode.TEXT_EDITING)) {
       cancelTextEdit();

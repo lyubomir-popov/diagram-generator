@@ -57,6 +57,44 @@ def test_persist_override_payload_writes_canonical_yaml_fields(tmp_path):
     assert "grid_overrides:" not in saved_text
 
 
+def test_persist_removed_ids_prunes_frames_and_arrows(tmp_path):
+    frame_path = tmp_path / "demo.yaml"
+    frame_path.write_text(
+        """
+engine: v3
+title: Demo
+arrows:
+  - source: leaf_a
+    target: leaf_b
+root:
+  id: page
+  direction: horizontal
+  children:
+    - id: panel
+      direction: vertical
+      children:
+        - id: leaf_a
+          label: [A]
+        - id: leaf_b
+          label: [B]
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    persist_override_payload_to_yaml(
+        frame_path,
+        {"overrides": {}, "removed_ids": ["leaf_a"]},
+    )
+
+    saved = yaml.safe_load(frame_path.read_text(encoding="utf-8"))
+    panel = _find_frame(saved["root"], "panel")
+    assert panel is not None
+    assert _find_frame(saved["root"], "leaf_a") is None
+    assert _find_frame(saved["root"], "leaf_b") is not None
+    assert saved["arrows"] == []
+
+
 def test_empty_payload_is_a_no_op_without_rewriting_yaml(tmp_path):
     frame_path = tmp_path / "support-engineering-flow.yaml"
     baseline_text = FRAME_FIXTURE.read_text(encoding="utf-8")

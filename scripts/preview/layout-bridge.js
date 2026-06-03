@@ -972,6 +972,68 @@ function isLocalRelayoutReady() {
   return getLocalRelayoutStatus().ready;
 }
 
+function getFrameTreeJson() {
+  return _frameTreeJson ? JSON.parse(JSON.stringify(_frameTreeJson)) : null;
+}
+
+function setFrameTreeJson(json) {
+  _frameTreeJson = json ? JSON.parse(JSON.stringify(json)) : null;
+}
+
+/**
+ * Remove frames (and subtrees) from the cached frame-tree JSON.
+ * @param {string[]} frameIds  Top-level ids to remove (ancestors win over descendants).
+ * @returns {string[]} ids actually removed from the tree
+ */
+function applyFrameTreeRemovals(frameIds) {
+  if (!_frameTreeJson || !frameIds || frameIds.length === 0) return [];
+  const rootId = _frameTreeJson.root && _frameTreeJson.root.id;
+  const requested = [...new Set(frameIds.filter(id => id && id !== rootId))];
+  if (requested.length === 0) return [];
+
+  const removed = new Set();
+  function collectDescendants(node) {
+    if (!node || typeof node !== "object") return;
+    if (node.id) removed.add(node.id);
+    for (const child of node.children || []) collectDescendants(child);
+  }
+  function findNode(node, id) {
+    if (!node) return null;
+    if (node.id === id) return node;
+    for (const child of node.children || []) {
+      const hit = findNode(child, id);
+      if (hit) return hit;
+    }
+    return null;
+  }
+  function pruneChildren(children) {
+    if (!Array.isArray(children)) return [];
+    const next = [];
+    for (const child of children) {
+      if (!child || typeof child !== "object") continue;
+      if (requested.includes(child.id)) {
+        collectDescendants(child);
+        continue;
+      }
+      child.children = pruneChildren(child.children);
+      next.push(child);
+    }
+    return next;
+  }
+
+  for (const id of requested) {
+    const node = findNode(_frameTreeJson.root, id);
+    if (node) collectDescendants(node);
+  }
+  _frameTreeJson.root.children = pruneChildren(_frameTreeJson.root.children);
+  if (Array.isArray(_frameTreeJson.arrows)) {
+    _frameTreeJson.arrows = _frameTreeJson.arrows.filter(
+      a => a && !removed.has(a.source) && !removed.has(a.target),
+    );
+  }
+  return [...removed];
+}
+
 /**
  * Load the frame tree from the server and create the text adapter.
  * Call once during editor initialization.
@@ -1419,3 +1481,6 @@ window.fetchIconSvg = fetchIconSvg;
 window.buildIconElement = buildIconElement;
 window.renderFreshSvg = renderFreshSvg;
 window.getLayoutTextAdapter = () => _textAdapter;
+window.getFrameTreeJson = getFrameTreeJson;
+window.setFrameTreeJson = setFrameTreeJson;
+window.applyFrameTreeRemovals = applyFrameTreeRemovals;

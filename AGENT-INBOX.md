@@ -8,10 +8,6 @@ The agent should triage anything durable from this file into `TODO.md`, `STATUS.
 
 ---
 
-## Preview editor: restore frame delete functionality
-
-The preview editor UI currently does not allow deleting frames/nodes from the tree. The user tried to remove icon-only status rows interactively and could not. Add back a delete action (keyboard shortcut + context menu) for selected frames in the component tree and the canvas.
-
 ## Branch hygiene (manual)
 
 Adversarial review noted `feat/005-autolayout-hardening` spans many specs and may need PR split / branch rename. Not automated here.

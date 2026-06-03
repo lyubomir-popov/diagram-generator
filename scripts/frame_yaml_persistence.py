@@ -236,6 +236,46 @@ def _apply_direct_field(frame_data: dict[str, Any], key: str, value: Any) -> Non
     raise ValueError(f"Unsupported canonical field: {key}")
 
 
+def _remove_frame_from_tree(frame_data: dict[str, Any], frame_id: str) -> bool:
+    children = frame_data.get("children")
+    if not isinstance(children, list):
+        return False
+    for index, child in enumerate(children):
+        if not isinstance(child, dict):
+            continue
+        if child.get("id") == frame_id:
+            children.pop(index)
+            return True
+        if _remove_frame_from_tree(child, frame_id):
+            return True
+    return False
+
+
+def _apply_removed_frame_ids(document: dict[str, Any], removed_ids: list[str]) -> None:
+    if not removed_ids:
+        return
+    root_data = document.get("root")
+    if not isinstance(root_data, dict):
+        raise ValueError("root must be a mapping")
+    root_id = root_data.get("id")
+    removed = {frame_id for frame_id in removed_ids if isinstance(frame_id, str) and frame_id}
+    if root_id in removed:
+        raise ValueError(f"Cannot remove diagram root frame: {root_id}")
+    for frame_id in sorted(removed):
+        if frame_id == root_id:
+            continue
+        _remove_frame_from_tree(root_data, frame_id)
+    arrows = document.get("arrows")
+    if isinstance(arrows, list):
+        document["arrows"] = [
+            arrow
+            for arrow in arrows
+            if isinstance(arrow, dict)
+            and arrow.get("source") not in removed
+            and arrow.get("target") not in removed
+        ]
+
+
 def _find_frame_data(frame_data: dict[str, Any], frame_id: str) -> dict[str, Any] | None:
     if frame_data.get("id") == frame_id:
         return frame_data
@@ -328,9 +368,14 @@ def persist_override_payload_to_yaml(
     overrides = payload.get("overrides", {})
     if not isinstance(overrides, dict):
         raise ValueError("overrides must be an object")
+    removed_ids = payload.get("removed_ids", [])
+    if removed_ids is None:
+        removed_ids = []
+    if not isinstance(removed_ids, list):
+        raise ValueError("removed_ids must be an array")
     grid_overrides = payload.get("grid_overrides")
     has_grid_overrides = "grid_overrides" in payload and isinstance(grid_overrides, dict) and len(grid_overrides) > 0
-    if not overrides and not has_grid_overrides:
+    if not overrides and not has_grid_overrides and not removed_ids:
         return
 
     document = yaml.safe_load(frame_path.read_text(encoding="utf-8"))
@@ -345,6 +390,9 @@ def persist_override_payload_to_yaml(
 
     if "grid_overrides" in payload:
         _apply_grid_overrides(document, payload.get("grid_overrides"))
+
+    if removed_ids:
+        _apply_removed_frame_ids(document, removed_ids)
 
     for frame_id, override in overrides.items():
         if not isinstance(frame_id, str):

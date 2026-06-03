@@ -79,6 +79,8 @@ class ComponentModel {
     this.overrides = {};     // id → { dx?, dy?, dw?, dh?, waypoints?, text? }
     this.gridOverrides = {}; // { col_gap?, row_gap?, outer_margin? }
     this.diagramGrid = null; // { col_gap, row_gap, outer_margin, ... } — diagram-level grid
+    /** Frame ids removed since last save (persisted as removed_ids on save). */
+    this.removedIds = new Set();
   }
 
   /** Store diagram-level grid info so root nodes participate in relayout. */
@@ -508,12 +510,26 @@ class ComponentModel {
     return result;
   }
 
+  /** Top-level frame ids to remove on save (no ancestor also listed). */
+  topLevelRemovalIds() {
+    const ids = [...this.removedIds];
+    return ids.filter(id => {
+      const node = this.get(id);
+      if (!node) return true;
+      return !node.ancestorIds.some(ancestor => this.removedIds.has(ancestor));
+    });
+  }
+
   /** Serialise overrides for saving. */
   toOverridePayload() {
     const payload = {
       overrides: this.overrides,
       format_version: 1,
     };
+    const removed = this.topLevelRemovalIds();
+    if (removed.length > 0) {
+      payload.removed_ids = removed;
+    }
     if (this.gridOverrides && Object.keys(this.gridOverrides).length > 0) {
       const persistableGridOverrides = { ...this.gridOverrides };
       delete persistableGridOverrides.rows;
