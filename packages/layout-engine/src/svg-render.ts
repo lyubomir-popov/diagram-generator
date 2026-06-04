@@ -305,7 +305,10 @@ function routeArrows(
 
     const start = _edgePoint(s.x, s.y, s.w, s.h, srcSide);
     const end = _edgePoint(t.x, t.y, t.w, t.h, tgtSide);
-    const rawWaypoints = _orthogonalWaypoints(start, end, srcSide, tgtSide);
+    const rawWaypoints =
+      arrow.waypoints && arrow.waypoints.length > 0
+        ? arrow.waypoints
+        : _orthogonalWaypoints(start, end, srcSide, tgtSide);
     const points = _simplifyPath([start, ...rawWaypoints, end]);
 
     result.push({

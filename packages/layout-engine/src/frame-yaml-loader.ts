@@ -220,7 +220,9 @@ export function loadFrameYaml(path: string): FrameDiagram {
     const label =
       typeof labelRaw === 'string'
         ? [createLine(labelRaw)]
-        : undefined;
+        : Array.isArray(labelRaw)
+          ? labelRaw.map(parseLine)
+          : undefined;
     const waypointsRaw = a.waypoints as unknown;
     const waypoints = Array.isArray(waypointsRaw)
       ? (waypointsRaw as unknown[]).map(wp => {
@@ -230,6 +232,7 @@ export function loadFrameYaml(path: string): FrameDiagram {
       : undefined;
     return createArrow(String(a.source ?? ''), String(a.target ?? ''), {
       label,
+      labelGap: a.label_gap != null ? Number(a.label_gap) : undefined,
       waypoints,
       color: a.color != null ? String(a.color) : undefined,
       id: a.id != null ? String(a.id) : undefined,
