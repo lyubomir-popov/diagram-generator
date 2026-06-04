@@ -29,7 +29,7 @@ Feature package: `specs/012-ts-svg-renderer-retire-python/`
 - [ ] `[H]` **T030–T040.** Arrow heads, overlays to `svg-render.ts` (export parity with `layout-bridge.js`).
 - [ ] `[M]` **T050.** Golden SVG tests for corpus subset.
 - [ ] `[M]` **T060b.** Retire or archive `diagram_render_svg.py` for batch paths.
-- [ ] `[S]` **T070.** Agent docs + `docs/specs.md` (partially done on T060a).
+- [ ] `[S]` **T070.** Agent docs + `docs/specs.md` (stakeholder guide + STATUS refresh 2026-06-04; finish when 012 closes).
 
 #### Autolayout hardening — semantic mutation removal (spec 005) — IN PROGRESS
 

@@ -2,11 +2,13 @@
 
 A constrained interactive diagram editor that turns rough sketches and brand/layout rules into on-brand SVG and draw.io diagrams.
 
+**Need a diagram for a stakeholder review?** Start with [`docs/stakeholder-guide.md`](docs/stakeholder-guide.md) and [`STATUS.md`](STATUS.md) (updated 2026-06-04).
+
 ## Bigger picture
 
 This repo is part of a multi-repo workspace converging on `design-foundry` — a Houdini-in-spirit kernel for procedural graphic design. The TS autolayout engine in `packages/layout-engine/` is the single autolayout codebase in the workspace and will eventually port into design-foundry as `@design-foundry/operator-autolayout`. See `../design-foundry/PIVOT.md` for the full cross-repo plan.
 
-**TypeScript is the implementation language.** All new features target the TS engine. Python is retained only for YAML parsing, batch SVG export, and transitional parity testing.
+**TypeScript is the implementation language.** Layout, measure, and SVG export run in `packages/layout-engine/`. Python is narrowing to YAML save helpers and legacy batch renderers (spec 012 retires `diagram_render_svg.py`).
 
 ## Start Here
 
@@ -28,7 +30,7 @@ If you are changing the autolayout engine, read these in order before editing co
 3. [`STATUS.md`](STATUS.md) – cold-start orientation, architecture, key files.
 4. [`.github/copilot-instructions.md`](.github/copilot-instructions.md) – workflow discipline and anti-patch protocol.
 
-Key files: `packages/layout-engine/src/layout.ts` (TS measure→place engine — primary), `packages/layout-engine/src/resolve-styles.ts` (TS style resolution), `scripts/preview/layout-bridge.js` (client-side relayout), `scripts/frame_loader.py` (YAML parser + style resolver), `scripts/layout_v3.py` (Python parity engine), `scripts/diagram_render_svg.py` (SVG output), `scripts/diagrams/frames/*.yaml` (native frame definitions).
+Key files: `packages/layout-engine/src/layout.ts` (measure→place), `packages/layout-engine/src/svg-render.ts` + `export-frame-svg.mjs` (batch SVG), `scripts/preview/layout-bridge.js` (interactive relayout), `scripts/preview_server.py` (preview + TS SVG pool), `scripts/diagrams/frames/*.yaml` (authored diagrams). See `docs/stakeholder-guide.md` for the edit→preview→export loop.
 
 ### Recommended exemplar path
 

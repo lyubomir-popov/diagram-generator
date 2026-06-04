@@ -17,7 +17,7 @@ Deviations from Figma behavior require an explicit documented exception in this 
 | **TS** (`text-layout.ts`, `layout.ts`) | Default 66ch, wrap width, HUG measure, HarfBuzz |
 | **Python** (`frame_loader.py`, `frame_yaml_persistence.py`) | Parse/serialize YAML fields only so saved diagrams and CI fixtures keep the value |
 
-Python `layout_v3.py` does **not** implement spec 011 measure semantics. Batch SVG and `/preview/*.svg` use **TS export** (`packages/layout-engine/scripts/export-frame-svg.mjs`). Python SVG render remains a fallback only if Node export fails.
+Python `layout_v3.py` does **not** implement spec 011 measure semantics. Batch SVG and `/preview/*.svg` use **TS export** (`export-frame-svg.mjs` / `preview_ts_export.py`). No Python SVG fallback on preview (spec 012 T060a).
 
 ## Problem
 

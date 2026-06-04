@@ -16,7 +16,7 @@ Use this file to answer two questions quickly:
 | Spec | Path | Status | Summary |
 |------|------|--------|---------|
 | 011 Figma autolayout fidelity | `specs/011-figma-autolayout-fidelity/` | Complete | Default `max_width_chars: 66` on text frames; HUG wraps at HarfBuzz-derived measure and hugs longest line. TS-only measure; Python YAML passthrough. |
-| 012 TS SVG renderer | `specs/012-ts-svg-renderer-retire-python/` | In progress | T060a: preview server TS-only SVG (no Python fallback). T020–T050: `svg-render.ts` parity; T060b: retire `diagram_render_svg.py` for batch. |
+| 012 TS SVG renderer | `specs/012-ts-svg-renderer-retire-python/` | In progress | T060a + T020 done (preview TS-only SVG; batch icons). T030–T050: arrows/overlays/golden SVG; T060b: retire `diagram_render_svg.py`. |
 | 014 Preview TS export hardening | `specs/014-preview-server-ts-export-hardening/` | Complete | Bounded Node pool: cache, concurrency, coalescing, timeout handling. Python SVG fallback removed by spec 012 T060a. |
 | 015 Preview stability + nav | `specs/015-preview-stability-and-nav-triage/` | Complete | Diagram picker change handler in editor-base (force mode); port auto-kill opt-in; bind error message. |
 | 013 TS preview API | `specs/013-ts-preview-api-retire-python-layout/` | Complete | TS frame-tree/grid/component-tree from YAML via `preview_ts_layout.py`. |
@@ -32,6 +32,7 @@ Rows marked ⚠ reference assets excluded by `.gitignore`. Run the build or obta
 
 | Source | Path | Role |
 |--------|------|------|
+| Stakeholder how-to | `docs/stakeholder-guide.md` | Copy YAML → preview → save → export SVG (non-engineering) |
 | Workflow rules | `.github/copilot-instructions.md` | Canonical workflow and diagram-rule source for this repo |
 | Diagram language spec | `DIAGRAM.md` | Canonical diagram tokens, prose rules, and output constraints (Layer 3 — Style) |
 | Current state | `STATUS.md` | Cold-start orientation and resume guidance |

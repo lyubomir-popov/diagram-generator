@@ -2,7 +2,7 @@
 
 **Branch**: `feat/012-ts-svg-renderer-retire-python`  
 **Created**: 2026-06-03  
-**Status**: In progress (T010 gap inventory done)  
+**Status**: In progress — T060a (preview TS-only SVG), T020 (batch icons) done; T030–T060b open  
 **Depends on**: Spec 011 (TS layout + minimal `svg-render.ts`)
 
 ## Mission
@@ -13,7 +13,7 @@ Frame YAML remains the **only authored source of truth**. Layout and render are 
 
 ## Problem
 
-Spec 011 introduced `svg-render.ts` and `export-frame-svg.mjs` for layout + basic boxes/text/icons-placeholder/arrows. Preview and batch still fall back to `diagram_render_svg.py`, which implements:
+`svg-render.ts` and `export-frame-svg.mjs` handle layout + boxes/text/icons (real icons since T020) + simple elbow arrows. **Preview no longer falls back to Python** (T060a). Batch still shares gaps with interactive preview until T030–T040; `diagram_render_svg.py` still implements:
 
 - Real icon SVG embedding (`load_icon`)
 - Arrow heads, labels, waypoint styling

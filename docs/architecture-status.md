@@ -39,6 +39,6 @@ Both editors share snap primitives via `editor-base.js`: `snapRectToTargets`, `c
 
 ## v3 frame layout engine
 
-Figma-like nested frame system with direction, gap, padding, per-axis sizing (HUG/FILL/FIXED), and 9-point alignment. Two-pass engine: measure (bottom-up) → place (top-down). Milestones 1–12 complete. 431 tests passing (190 TS + 241 Python). 24 v3 Frame YAML definitions.
+Figma-like nested frame system with direction, gap, padding, per-axis sizing (HUG/FILL/FIXED), and 9-point alignment. Two-pass engine: measure (bottom-up) → place (top-down). **224** vitest tests in `packages/layout-engine/`; Python tests cover YAML and legacy parity. **32** v3 Frame YAML definitions in `scripts/diagrams/frames/`. Interactive layout is TS-only; preview live SVG is TS export only (spec 012 T060a).
 
 Engine features: per-axis sizing, parent coercion model, coercion visibility, InDesign/Figma-style layout grid, drag-to-reorder, multi-select bulk editing, col_span/row_span, domain-specific undo/redo, deferred text composition, bidirectional text reflow, fonttools metrics, min/max constraints, per-side padding, heading height consistency. TypeScript port complete.

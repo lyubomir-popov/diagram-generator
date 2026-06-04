@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-04 – Stakeholder docs refresh
+
+- Added [`docs/stakeholder-guide.md`](docs/stakeholder-guide.md): YAML → preview → save → batch SVG for non-engineering users.
+- Refreshed `STATUS.md`, `README.md`, `docs/specs.md`, `docs/architecture-status.md`, spec 011/012 status lines for TS-only preview SVG and spec 012 T020 icons.
+- Drained `AGENT-INBOX.md` to template; active handoff lives in `STATUS.md` + `TODO.md`.
+
 ### 2026-06-03 – Main reset audit, dirty nav, spec 012 T060a
 
 - **Git audit:** Verified no work lost when local `main` was reset to `origin/main` and FF-merged `feat/010` + `feat/005` (`31bce6e` ⊆ `6790df0`). Verdict **SAFE**; details archived from `AGENT-INBOX.md`.

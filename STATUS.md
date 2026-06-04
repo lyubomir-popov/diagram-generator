@@ -1,52 +1,65 @@
 # Status
 
+**Last updated:** 2026-06-04  
+**Branch:** `main` @ `2f78098` (pushed to `origin/main`)
+
+## Stakeholder path
+
+Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stakeholder-guide.md)** — copy a frame YAML, run `python scripts/preview_server.py`, open `/view/v3:<slug>`, save and optionally export SVG.
+
 ## What this repo is
 
-`diagram-generator` is a constrained interactive diagram editor that turns frame YAML into on-brand SVG and draw.io outputs. It owns the single autolayout codebase in the workspace (`packages/layout-engine/`, TypeScript) which will eventually port to `design-foundry` as `@design-foundry/operator-autolayout`. See `../design-foundry/PIVOT.md` for the full cross-repo plan.
+`diagram-generator` is a constrained interactive diagram editor that turns frame YAML into on-brand SVG and draw.io outputs. It owns the single autolayout codebase in the workspace (`packages/layout-engine/`, TypeScript), eventually porting to `design-foundry` as `@design-foundry/operator-autolayout`. See `../design-foundry/PIVOT.md`.
 
-**TypeScript is the implementation language.** All new features target the TS engine first. Python is retained only for YAML parsing (`frame_loader.py`), batch SVG export (`diagram_render_svg.py`), and transitional parity testing. See `.github/copilot-instructions.md` for the full TS-first mandate.
+**TypeScript is the implementation language** for layout, measure, and SVG export. Python is narrowing to YAML persistence helpers and legacy batch code being retired under spec 012.
 
 ## Project context
 
-This repo is **Stream E** (constrained editor) of a broader Canonical diagram project tracked under [DE-941](https://warthogs.atlassian.net/browse/DE-941) on Jira. Three layers, intentionally separate:
+**Stream E** (constrained editor) under [DE-941](https://warthogs.atlassian.net/browse/DE-941):
 
-| Layer | Tool | What lives there |
-|-------|------|------------------|
-| Strategic | Jira DE-941 → Stream epics | Milestone issues for stakeholder visibility |
-| Working surface | Coda pages (tracked in `diagram-generator-planning/docs/coda-pages/`) | Taxonomy, corpus, type system, enablement |
-| Execution | spec-kit `specs/` + `TODO.md` | T001-level tasks, refactors, code hardening |
+| Layer | Tool |
+|-------|------|
+| Strategic | Jira DE-941 |
+| Working surface | Coda (`diagram-generator-planning`) |
+| Execution | spec-kit `specs/` + `TODO.md` |
 
-Don't create Jira issues for refactors or spec-level tasks. Jira is for milestones a PM would ask about. The sibling `diagram-generator-planning` repo owns the corpus, taxonomy (11 families), Coda pages, and Streams A–D. This repo is Stream E only.
+## Current state (engineering)
 
-## Current state
+| Area | State |
+|------|--------|
+| **Authoring** | Frame YAML in `scripts/diagrams/frames/` — **only** source of truth (32 diagrams) |
+| **Interactive preview** | TS layout via `layout-bridge.js` + HarfBuzz; save → YAML via `frame_yaml_persistence.py` |
+| **Preview APIs** | TS-only: frame-tree, grid, component tree (`preview_ts_layout.py`) |
+| **Live preview SVG** | TS-only Node export (`preview_ts_export.py`); no Python SVG fallback (spec 012 T060a) |
+| **Batch SVG** | `export-frame-svg.mjs` — boxes, text, **real icons** (T020); simple elbows; arrows/overlays parity in progress |
+| **Tests** | 224 TS layout-engine (vitest); Python suite for YAML/legacy parity |
 
-- **Engine:** v3 autolayout with TypeScript local-only relayout. HarfBuzz-backed browser text measurement. No Python relayout fallback.
-- **Authored state:** Frame YAML only. No JSON sidecar authority.
-- **Tests:** 212 TS layout-engine tests passing (incl. parity fixtures under spec 011 + heading synthesis). Python batch tests unchanged.
-- **Export:** `node packages/layout-engine/scripts/export-frame-svg.mjs --slug <name>` (TS layout + HarfBuzz + SVG).
-- **Diagrams:** 32 v3 Frame YAML definitions.
+### Active focus — spec 012
 
-**Active focus (2026-06-03):** Spec **012** in progress — preview live SVG is TS-only (T060a done); next: `svg-render.ts` parity (icons, arrows, overlays) then retire `diagram_render_svg.py` (T060b). Spec 005 WS2 and spec 008 Phase 5 queued after 012. YAML is already authoring source of truth; remaining split is TS vs Python **runtime**, not YAML adoption.
+Finish **TS-only render runtime** (not “move to YAML” — YAML is already authoritative):
+
+- [x] T060a — preview server: no Python SVG fallback  
+- [x] T020 — batch icon embed (`icon-embed.ts`)  
+- [ ] T030–T040 — arrow heads, overlays in `svg-render.ts`  
+- [ ] T050 — golden SVG subset  
+- [ ] T060b — remove `diagram_render_svg.py` from batch  
+
+Then: spec **005** WS2, spec **008** Phase 5.
 
 ## Key files
 
 | Purpose | File |
 |---------|------|
-| **TS layout engine** | `packages/layout-engine/` |
-| TS style resolution | `packages/layout-engine/src/resolve-styles.ts` |
-| TS relayout bridge | `scripts/preview/layout-bridge.js` |
-| Python YAML parser | `scripts/frame_loader.py` |
-| Python layout (parity) | `scripts/layout_v3.py` |
-| Python SVG export (batch only; preview retired) | `scripts/diagram_render_svg.py` |
-| Frame-class definitions | `scripts/frame_style_classes.py` |
-| Frame YAML sources | `scripts/diagrams/frames/*.yaml` |
-| Interactive editor | `scripts/preview/editor.js` |
+| TS layout engine | `packages/layout-engine/` |
+| TS SVG export | `packages/layout-engine/src/svg-render.ts`, `src/icon-embed.ts` |
+| Browser relayout | `scripts/preview/layout-bridge.js` |
+| Editor UI | `scripts/preview/editor.js` |
 | Preview server | `scripts/preview_server.py` |
-| Visual language contract | `DIAGRAM.md` |
-| Frame-class contract | `docs/frame-classes.md` |
-| Architecture detail | `docs/architecture-status.md` |
+| Frame YAML | `scripts/diagrams/frames/*.yaml` |
+| Visual contract | `DIAGRAM.md` |
+| Stakeholder how-to | `docs/stakeholder-guide.md` |
 
 ## Critical invariants
 
-- `DIAGRAM.md` is the canonical source for diagram tokens and output constraints.
-- Final SVG deliverables must stay Illustrator-safe: no `<symbol>`, no `<use>`, no external `<image href>`, no marker refs.
+- `DIAGRAM.md` governs tokens and output constraints.  
+- Deliverable SVG: Illustrator-safe (no `<symbol>`, `<use>`, external `<image href>`, marker refs).
