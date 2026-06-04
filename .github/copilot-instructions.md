@@ -19,9 +19,9 @@ TypeScript is the standard for all new feature work. The rationale (from the des
 Python is retained for three things:
 
 1. **YAML parsing** — **Frame YAML on disk is authority.** `/api/frame-tree` JSON is a derived DTO from `frame-yaml-loader.ts` + `frame-serialize.ts` (via `emit-frame-diagram-json.mjs`), not a second source of truth. `frame_loader.py` is legacy fallback only.
-2. **Batch SVG export** — `node packages/layout-engine/scripts/export-frame-svg.mjs --slug <name>` (TS layout + HarfBuzz + `svg-render.ts`). `diagram_render_svg.py` remains for batch callers until spec 012 T060b.
-3. **Preview** — Live v3 SVG and layout API are TS-only (`preview_ts_export.py`, `preview_ts_layout.py`, `layout-bridge.js`). TS SVG failure → HTTP 404 + log (no Python SVG fallback; spec 012 T060a). Node CLIs resolve frames via `DG_FRAMES_DIR` in `packages/layout-engine/scripts/_dist-import.mjs`.
-4. **Transitional parity oracle** — TS-only fixtures under spec 011 semantics; Python layout parity is not required for new measure work.
+2. **Batch SVG export** — `node packages/layout-engine/scripts/export-frame-svg.mjs --slug <name>` (TS layout + HarfBuzz + `svg-render.ts`). No Python SVG renderer.
+3. **Preview** — Live v3 SVG and layout API are TS-only (`preview_ts_export.py`, `preview_ts_layout.py`, `layout-bridge.js`). TS SVG failure → HTTP 404 + log (spec 012 T060a). Node CLIs resolve frames via `DG_FRAMES_DIR` in `packages/layout-engine/scripts/_dist-import.mjs`.
+4. **Transitional parity oracle** — TS-only fixtures under spec 011 semantics; Python `layout_v3.py` remains for layout parity tests only (no SVG emit).
 
 Python does NOT do: interactive relayout, text measurement, editor state, or any new feature development. **Do not add new layout or measure logic to Python** — parse/serialize passthrough for YAML fields is acceptable.
 
@@ -112,8 +112,8 @@ Before writing code, ask:
 ├─────────────────────────────────────────────────┤
 │ layout-bridge.js (client-side relayout + patching)│
 ├─────────────────────────────────────────────────┤
-│ diagram_render_svg.py (emit SVG from primitives)  │
-│   ONLY converts engine decisions to markup         │
+│ svg-render.ts + export-frame-svg.mjs (batch SVG)  │
+│   TS-only; converts layout to Illustrator-safe SVG │
 ├─────────────────────────────────────────────────┤
 │ preview_server.py (serve + frame tree API)        │
 │   ONLY relays engine results to browser            │

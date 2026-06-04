@@ -62,6 +62,7 @@ function serializeArrow(arrow: Arrow): Record<string, unknown> {
     target: arrow.target,
     id: arrow.id,
     color: arrow.color ?? '#E95420',
+    waypoints: arrow.waypoints ?? [],
   };
 }
 

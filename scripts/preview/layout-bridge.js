@@ -755,6 +755,32 @@ function updateComponentModelFromLayout(model, frame) {
 // Arrow routing (port of layout_v3.py arrow routing)
 // ---------------------------------------------------------------------------
 
+/** Match packages/layout-engine/src/svg-render.ts arrow group ids. */
+function arrowComponentId(arrow) {
+  if (arrow && arrow.id) return String(arrow.id);
+  return `${arrow.source}->${arrow.target}`;
+}
+
+function syncArrowsInModel(model, arrows, routedArrows) {
+  if (!model || typeof model.loadArrows !== "function") return;
+  const routedById = new Map();
+  for (const r of routedArrows || []) {
+    routedById.set(r.componentId, r);
+  }
+  const payload = (arrows || []).map((a) => {
+    const cid = arrowComponentId(a);
+    const routed = routedById.get(cid);
+    return {
+      id: cid,
+      source: a.source,
+      target: a.target,
+      color: a.color,
+      waypoints: routed ? routed.waypoints : (a.waypoints || []),
+    };
+  });
+  model.loadArrows(payload);
+}
+
 function _inferSides(sx, sy, sw, sh, tx, ty, tw, th) {
   const dx = (tx + tw / 2) - (sx + sw / 2);
   const dy = (ty + th / 2) - (sy + sh / 2);
@@ -862,7 +888,7 @@ function routeArrows(arrows, boundsMap) {
       end: fullPath[fullPath.length - 1],
       waypoints,
       direction: tgtSide,
-      componentId: `${arrow.source}->${arrow.target}`,
+      componentId: arrowComponentId(arrow),
       sourceRef: arrow.source,
       targetRef: arrow.target,
       color: arrow.color || "#E95420",
@@ -887,6 +913,15 @@ function patchArrowsSvg(svgEl, routedArrows) {
     const lines = allLines.filter((line) => line.getAttribute("stroke") !== "transparent");
     const hitLines = allLines.filter((line) => line.getAttribute("stroke") === "transparent");
     const points = [arrow.start, ...arrow.waypoints, arrow.end];
+    const segmentCount = Math.max(0, points.length - 1);
+    if (lines.length !== segmentCount || hitLines.length !== segmentCount) {
+      const replacement = createArrowsSvg([arrow]).firstChild;
+      if (replacement) {
+        g.querySelectorAll("line, polygon").forEach((el) => el.remove());
+        Array.from(replacement.childNodes).forEach((child) => g.appendChild(child));
+      }
+      continue;
+    }
     if (lines.length > 0 && points.length >= 2) {
       let basePoint = null;
       const [tx, ty] = points[points.length - 1];
@@ -1286,14 +1321,16 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
     patchSvgFromLayout(svgEl, oldBounds, newBounds, framesById);
 
     // Route and patch arrows
+    let routedArrows = [];
     if (diagram.arrows && diagram.arrows.length > 0) {
-      const routed = routeArrows(diagram.arrows, newBounds);
-      patchArrowsSvg(svgEl, routed);
+      routedArrows = routeArrows(diagram.arrows, newBounds);
+      patchArrowsSvg(svgEl, routedArrows);
     }
 
     // Update component model (skip during live resize to keep snap stable)
     if (!opts || !opts.skipModelUpdate) {
       updateComponentModelFromLayout(model, diagram.root);
+      syncArrowsInModel(model, diagram.arrows, routedArrows);
     }
 
     return {
@@ -1351,18 +1388,32 @@ function createArrowsSvg(routedArrows) {
     }
 
     const color = arrow.color || "#E95420";
-    // Shaft segments
+    // Shaft segments + transparent hit areas (editor selection / knee insert)
     for (let i = 0; i < shaftPoints.length - 1; i++) {
+      const x1 = shaftPoints[i][0];
+      const y1 = shaftPoints[i][1];
+      const x2 = shaftPoints[i + 1][0];
+      const y2 = shaftPoints[i + 1][1];
       const line = document.createElementNS(SVG_NS, "line");
-      line.setAttribute("x1", shaftPoints[i][0].toFixed(1));
-      line.setAttribute("y1", shaftPoints[i][1].toFixed(1));
-      line.setAttribute("x2", shaftPoints[i + 1][0].toFixed(1));
-      line.setAttribute("y2", shaftPoints[i + 1][1].toFixed(1));
+      line.setAttribute("x1", x1.toFixed(1));
+      line.setAttribute("y1", y1.toFixed(1));
+      line.setAttribute("x2", x2.toFixed(1));
+      line.setAttribute("y2", y2.toFixed(1));
       line.setAttribute("fill", "none");
       line.setAttribute("stroke", color);
       line.setAttribute("stroke-width", "1");
       line.setAttribute("stroke-miterlimit", "10");
       g.appendChild(line);
+
+      const hit = document.createElementNS(SVG_NS, "line");
+      hit.setAttribute("x1", x1.toFixed(1));
+      hit.setAttribute("y1", y1.toFixed(1));
+      hit.setAttribute("x2", x2.toFixed(1));
+      hit.setAttribute("y2", y2.toFixed(1));
+      hit.setAttribute("stroke", "transparent");
+      hit.setAttribute("stroke-width", "12");
+      hit.style.pointerEvents = "stroke";
+      g.appendChild(hit);
     }
 
     // Arrowhead polygon
@@ -1600,6 +1651,11 @@ async function renderFreshSvg(overrides, gridOverrides, model) {
 
   // Update component model from layout
   updateComponentModelFromLayout(model, diagram.root);
+  const boundsMap = collectPlacedBounds(diagram.root, {});
+  const routedArrows = diagram.arrows && diagram.arrows.length > 0
+    ? routeArrows(diagram.arrows, boundsMap)
+    : [];
+  syncArrowsInModel(model, diagram.arrows, routedArrows);
 
   return {
     svg: svgElement,
@@ -1616,6 +1672,8 @@ window.renderFrameTreeToSvg = renderFrameTreeToSvg;
 window.fetchIconSvg = fetchIconSvg;
 window.buildIconElement = buildIconElement;
 window.renderFreshSvg = renderFreshSvg;
+window.arrowComponentId = arrowComponentId;
+window.syncArrowsInModel = syncArrowsInModel;
 window.getLayoutTextAdapter = () => _textAdapter;
 window.getFrameTreeJson = getFrameTreeJson;
 window.setFrameTreeJson = setFrameTreeJson;

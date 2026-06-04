@@ -108,6 +108,46 @@ class ComponentModel {
     }
   }
 
+  /**
+   * Index diagram arrows for selection / waypoint editing (not shown in frame tree).
+   * Each entry needs source, target, and a stable id (see layout-bridge arrowComponentId).
+   */
+  loadArrows(arrowList) {
+    for (const [id, node] of [...this._index.entries()]) {
+      if (node.type === "arrow") this._index.delete(id);
+    }
+    if (!arrowList || !arrowList.length) return;
+    for (const raw of arrowList) {
+      if (!raw || !raw.source || !raw.target) continue;
+      const id = raw.id || `${raw.source}->${raw.target}`;
+      const data = {
+        id,
+        type: "arrow",
+        source: raw.source,
+        target: raw.target,
+        color: raw.color,
+        waypoints: raw.waypoints
+          ? JSON.parse(JSON.stringify(raw.waypoints))
+          : [],
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        children: [],
+      };
+      this._index.set(id, new ComponentNode(data, null));
+    }
+  }
+
+  /** Stable ids for all indexed arrows. */
+  arrowIds() {
+    const ids = [];
+    for (const node of this._index.values()) {
+      if (node.type === "arrow") ids.push(node.id);
+    }
+    return ids;
+  }
+
   _indexNode(node) {
     this._index.set(node.id, node);
     for (const child of node.children) {

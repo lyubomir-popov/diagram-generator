@@ -456,6 +456,10 @@ Panels with a heading (grey-filled, bordered, with a bold title) are the primary
 ```
 
 - `fill: grey` + `border: solid` + `heading` = a visible grouped panel.
+- A headed panel owns exactly one authored `gap` value.
+- The header/body split is internal layout structure, not a second spacing control.
+- Children live in the body group, and the container's single `gap` controls spacing between those child nodes.
+- Through nesting, each container contributes one gap value, which keeps spacing predictable and simpler to author.
 - Internal gap = `compact-gap` for dense leaf stacks, `grid-gutter` for default stacks with sub-containers.
 - Padding = `inset` for dense panels; up to `outer-margin` for structural panels with multiple sub-groups.
 

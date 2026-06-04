@@ -16,14 +16,14 @@ Use this file to answer two questions quickly:
 | Spec | Path | Status | Summary |
 |------|------|--------|---------|
 | 011 Figma autolayout fidelity | `specs/011-figma-autolayout-fidelity/` | Complete | Default `max_width_chars: 66` on text frames; HUG wraps at HarfBuzz-derived measure and hugs longest line. TS-only measure; Python YAML passthrough. |
-| 012 TS SVG renderer | `specs/012-ts-svg-renderer-retire-python/` | In progress | T060a + T020 done (preview TS-only SVG; batch icons). T030–T050: arrows/overlays/golden SVG; T060b: retire `diagram_render_svg.py`. |
+| 012 TS SVG renderer | `specs/012-ts-svg-renderer-retire-python/` | In progress | T060a–T060b + T020–T050 done. TS-only SVG emit. T070 doc close-out remaining. |
 | 014 Preview TS export hardening | `specs/014-preview-server-ts-export-hardening/` | Complete | Bounded Node pool: cache, concurrency, coalescing, timeout handling. Python SVG fallback removed by spec 012 T060a. |
 | 015 Preview stability + nav | `specs/015-preview-stability-and-nav-triage/` | Complete | Diagram picker change handler in editor-base (force mode); port auto-kill opt-in; bind error message. |
 | 013 TS preview API | `specs/013-ts-preview-api-retire-python-layout/` | Complete | TS frame-tree/grid/component-tree from YAML via `preview_ts_layout.py`. |
 | 016 Adversarial review follow-up | `specs/016-adversarial-review-followup/` | Complete | `DG_FRAMES_DIR` in Node CLIs; layout pool coalescing; force.js picker dedup. |
 | 017 Preview frame delete | `specs/017-preview-frame-delete/` | Complete | Delete/Backspace + tree context menu; `removed_ids` YAML persistence; undo restores frame tree. |
 | 018 PNG export | `specs/018-png-export/` | Draft | Preview **Save PNG** + slug batch CLI; rasterize TS SVG via Playwright; `diagrams/2.output/v3/png/`. |
-| 019 Preview inspector cleanup | `specs/019-preview-inspector-cleanup/` | Draft | Remove redundant Selection summary fields (component, position, size, layout) duplicated by Auto-layout panel. |
+| 019 Preview inspector cleanup | `specs/019-preview-inspector-cleanup/` | Complete | Removed redundant Selection summary fields; id in Auto-layout heading. |
 | — | `specs/ADVERSARIAL_REVIEW_PROMPT.md` | Template | Copy-paste prompt for post-session adversarial reviews. |
 | 005 Autolayout hardening | `specs/005-autolayout-hardening/` | In progress | Semantic mutation removal, coercion, preview save/reload. WS1 complete. |
 | 008 Repo coherence rewrite | `specs/008-repo-coherence-rewrite/` | In progress | Doc and workflow consolidation toward design-foundry port. |

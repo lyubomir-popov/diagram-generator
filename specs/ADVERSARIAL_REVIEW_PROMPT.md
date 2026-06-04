@@ -10,51 +10,55 @@ You are doing an **adversarial code review** of the `diagram-generator` repo. Be
 
 ### Context
 
-- **North star:** TypeScript-only for layout/measure (`packages/layout-engine/`). Frame **YAML** is the only authored source of truth. JSON from `/api/frame-tree` is a **derived wire DTO**, not authority.
-- **Preview:** `scripts/preview_server.py` + `layout-bridge.js` (HarfBuzz). TS pools: `preview_ts_export.py` (SVG), `preview_ts_layout.py` (frame-tree/grid/tree). **Live v3 SVG is TS-only** (spec 012 T060a); failure → 404 + log, no Python SVG fallback. Python `layout_v3` / `diagram_render_svg` may still exist for batch/parity until T060b.
-- **Recent specs on branch `feat/005-autolayout-hardening`:**
-  - 011 — 66ch HUG, `text-layout.ts`, TS export
-  - 013 — TS preview API (frame-tree/grid/tree); Python layout off preview paths
-  - 014 — TS SVG export pool (cache, semaphore, coalescing)
-  - 015 — port kill opt-in; force-mode diagram nav
-  - 016 — `DG_FRAMES_DIR` in Node CLIs; layout pool coalescing; force picker dedup
-  - 017 — frame delete (`removed_ids`, Delete/Backspace, tree context menu)
-- **Branch:** `feat/005-autolayout-hardening` — commits: `31bce6e..505fd98` (or `main..HEAD`)
+- **North star:** TypeScript-only for layout/measure/SVG export (`packages/layout-engine/`). Frame **YAML** is the only authored source of truth. JSON from `/api/frame-tree` is a **derived wire DTO**, not authority.
+- **Preview:** `scripts/preview_server.py` + `layout-bridge.js` (HarfBuzz). TS pools: `preview_ts_export.py` (SVG), `preview_ts_layout.py` (frame-tree/grid/tree). **Live v3 SVG is TS-only** (spec 012 T060a); failure → 404 + log. **No Python SVG renderer** — `diagram_render_svg.py` deleted (T060b).
+- **Batch SVG:** `node packages/layout-engine/scripts/export-frame-svg.mjs --slug <name>` → `svg-render.ts`. Golden regression: `packages/layout-engine/tests/svg-golden.test.ts` (6 slugs).
+- **Recent session work (verify on `main` or current branch):**
+  - Spec **012** T050 — golden SVG harness + fixtures
+  - Spec **012** T060b — deleted `diagram_render_svg.py`
+  - Spec **019** — inspector cleanup (no duplicate Selection summary; `Auto-layout · {cid}`)
+   - Prior: T030/T040 arrows+overlays, single-gap headed-container semantics, inspector cleanup
+- **Branch:** `main` (or `git log -5 --oneline` for exact HEAD)
 
 ### Your tasks
 
 1. **Git / branch hygiene**
-   - Branch name vs scope (005 + 011–017)? Commits atomic? Bisectable?
-   - Untracked junk (`image-*.png`, `.specify/`) vs intentional WIP?
-   - Should this split into multiple PRs (e.g. 011+014+015 vs 013+016 vs 017)?
+   - Uncommitted vs intentional? `.env.local` must not be committed.
+   - Commits atomic and bisectable?
+   - Should golden SVG fixtures be split from inspector/editor changes?
 
-2. **Preview server stability** (P1)
-   - `preview_ts_export.py` / `preview_ts_layout.py`: cache, semaphore, coalescing, `TimeoutExpired`, `RLock` deadlocks?
-   - `DG_FRAMES_DIR` honored by all Node entrypoints (`_dist-import.mjs`)?
-   - Port: `DG_PREVIEW_KILL_PORT` still killing healthy servers?
-   - Watcher / `_rebuild` silent failures?
+2. **TS SVG renderer (P1)** — spec 012
+   - `grep -r diagram_render_svg` — must be zero in `scripts/` and runtime paths (docs/history OK).
+   - Golden tests: run `cd packages/layout-engine && npm test -- svg-golden` — all pass?
+   - Arrow routing: waypoints preserved? Orange `#E95420` heads? Labels + `label_gap` from YAML?
+   - Icons embedded (no placeholder rects when asset exists)?
+   - DIAGRAM.md constraints: no `<use>`, external `<image href>`, marker refs?
 
-3. **TS layout correctness** (P1)
-   - `max_width_chars: 66`, opt-out `0`, `applyTextLayoutDefaults`
-   - Heading synthesis vs Python `frame_loader.py`
-   - Parity fixtures vs `parity-fixture-builder.ts`
+3. **Preview inspector (P1)** — spec 019
+   - Single-select: no Component / Computed position / Size / Layout duplicate rows?
+   - Auto-layout panel still has Direction, Gap, and Width/Height sizing without reintroducing duplicate layout summary rows?
+   - Multi-select path (`renderMultiSelectionInspector`) unchanged?
+   - Arrow selection: waypoints + clear override still work without layout bounds check?
 
-4. **Preview client** (P1)
-   - Frame delete: undo restores frame tree (`f` in editor state)? `removed_ids` YAML roundtrip?
-   - `bindInteraction()` called after delete — duplicate listeners?
-   - Force mode diagram picker (single handler in `editor-base.js`)?
-   - Grid mode blank stage if bridge fails?
+4. **TS layout correctness (P1)**
+   - Headed-container spacing: save YAML → reload → inspector still presents one `Gap` control per container, with body children grouped under that container.
+   - `test-deep-nesting` parity: 12 known TS failures (536 vs 552 width) — regressions or still pre-existing?
+   - `max_width_chars: 66` HUG wrap unchanged?
 
-5. **Architecture drift**
+5. **Preview server stability (P2)**
+   - `preview_ts_export.py`: cache, semaphore, coalescing, timeout handling?
+   - `DG_FRAMES_DIR` honored by Node CLIs (`_dist-import.mjs`)?
+
+6. **Architecture drift**
    - New Python layout/measure logic (forbidden)?
-   - Dual YAML parsers drift?
-   - Two SVG render paths (TS `svg-render.ts` vs Python `diagram_render_svg.py`)?
+   - Dual YAML parsers drift (`frame_loader.py` vs `frame-yaml-loader.ts`)?
+   - Any revived Python SVG fallback path?
 
-6. **Tests** — run and report pass/fail:
+7. **Tests** — run and report pass/fail:
    ```bash
    cd packages/layout-engine && npm test
-   cd scripts && python -m pytest test_preview_ts_export.py test_preview_ts_layout.py test_preview_frames_dir.py test_preview_ts_api.py test_frame_yaml_persistence.py -q
-   cd scripts && python -m pytest test_preview_support_engineering_flow.py -q -k "roundtrip or per_side_padding or save"
+   cd scripts && python -m pytest test_preview_ts_export.py test_preview_ts_layout.py test_preview_frames_dir.py test_preview_ts_api.py test_preview_server_reload.py test_frame_yaml_persistence.py -q
+   cd scripts && python -m pytest test_preview_support_engineering_flow.py -q -k "roundtrip or per_side_padding or save or stack_gap"
    ```
 
 ### Output format
@@ -75,4 +79,4 @@ Prefer minimal TS-first fixes. No large rewrites unless P0/P1.
 
 ## Optional one-liner
 
-> Adversarial review `diagram-generator` `feat/005-autolayout-hardening` (`31bce6e..505fd98`): TS preview API, DG_FRAMES_DIR, frame delete, pools, 66ch layout, branch hygiene. P0/P1 table + top 3 risks. Run pytest bundle above.
+> Adversarial review `diagram-generator` `main`: spec 012 T050 golden SVG + T060b delete Python renderer + spec 019 inspector cleanup. Verify no `diagram_render_svg` refs, golden tests pass, inspector no duplicate fields, stack_gap roundtrip. P0/P1 table + top 3 risks. Run pytest/vitest bundle above.

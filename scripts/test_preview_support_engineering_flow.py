@@ -1643,6 +1643,126 @@ def test_android_graphics_stack_click_selection_prefers_leaf_box():
                 browser.close()
 
 
+def test_android_custom_to_cloud_arrow_dblclick_adds_first_waypoint():
+    with _preview_server() as base_url:
+        with sync_playwright() as playwright:
+            browser, page = _open_v3_page(
+                playwright,
+                base_url,
+                "android-custom-to-cloud",
+                "custom_files->host_tools",
+            )
+            try:
+                state = page.evaluate(
+                    """
+                    () => {
+                      const arrowId = 'custom_files->host_tools';
+                      const target =
+                        document.querySelector(`[data-component-id="${arrowId}"] line[stroke="transparent"]`)
+                        || document.querySelector(`[data-component-id="${arrowId}"] line`);
+                      if (!target) return { error: 'missing-target' };
+                      const rect = target.getBoundingClientRect();
+                      const x = rect.left + rect.width / 2;
+                      const y = rect.top + rect.height / 2;
+                      selectedIds.clear();
+                      renderSelectionInspector();
+                      target.dispatchEvent(new MouseEvent('mousedown', {
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: x,
+                        clientY: y,
+                        button: 0,
+                      }));
+                      const afterSelect = {
+                        selected: Array.from(selectedIds),
+                        inspector: (document.getElementById('inspector')?.innerText || '').replace(/\\s+/g, ' ').trim(),
+                        waypoints: JSON.parse(JSON.stringify(model.get(arrowId)?.data?.waypoints || [])),
+                      };
+                      target.dispatchEvent(new MouseEvent('dblclick', {
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: x,
+                        clientY: y,
+                        button: 0,
+                      }));
+                      return {
+                        afterSelect,
+                        afterDblClick: {
+                          selected: Array.from(selectedIds),
+                          inspector: (document.getElementById('inspector')?.innerText || '').replace(/\\s+/g, ' ').trim(),
+                          waypoints: JSON.parse(JSON.stringify(model.get(arrowId)?.data?.waypoints || [])),
+                          overrideWaypoints: JSON.parse(JSON.stringify(overrides[arrowId]?.waypoints || [])),
+                          visibleLines: Array.from(document.querySelectorAll(`[data-component-id="${arrowId}"] line`)).filter((ln) => ln.getAttribute('stroke') !== 'transparent').length,
+                          waypointHandles: document.querySelectorAll('.dg-wp-handle').length,
+                        },
+                      };
+                    }
+                    """
+                )
+
+                assert state.get("error") is None
+                assert state["afterSelect"]["selected"] == ["custom_files->host_tools"]
+                assert state["afterSelect"]["waypoints"] == []
+                assert state["afterDblClick"]["selected"] == ["custom_files->host_tools"]
+                assert len(state["afterDblClick"]["waypoints"]) == 1
+                assert state["afterDblClick"]["overrideWaypoints"] == state["afterDblClick"]["waypoints"]
+                assert state["afterDblClick"]["visibleLines"] == 2
+                assert state["afterDblClick"]["waypointHandles"] == 1
+                assert "WAYPOINTS 1 (overridden)" in state["afterDblClick"]["inspector"]
+            finally:
+                browser.close()
+
+
+def test_complex_routing_clear_override_restores_routed_arrow_segments():
+    with _preview_server() as base_url:
+        with sync_playwright() as playwright:
+            browser, page = _open_v3_page(
+                playwright,
+                base_url,
+                "complex-routing-usecase",
+                "define->implement",
+            )
+            try:
+                state = page.evaluate(
+                    """
+                    async () => {
+                      const arrowId = 'define->implement';
+                      const visibleLines = () => Array.from(
+                        document.querySelectorAll(`[data-component-id="${arrowId}"] line`)
+                      ).filter((ln) => ln.getAttribute('stroke') !== 'transparent').map((ln) => ({
+                        x1: ln.getAttribute('x1'),
+                        y1: ln.getAttribute('y1'),
+                        x2: ln.getAttribute('x2'),
+                        y2: ln.getAttribute('y2'),
+                      }));
+                      const before = {
+                        waypoints: JSON.parse(JSON.stringify(model.get(arrowId)?.data?.waypoints || [])),
+                        visibleLines: visibleLines(),
+                      };
+                      model.setWaypointOverride(arrowId, [[999, 999]]);
+                      model.get(arrowId).data.waypoints = [[999, 999]];
+                      rebuildArrowSVG(arrowId);
+                      clearOverride(arrowId);
+                      await new Promise((resolve) => setTimeout(resolve, 700));
+                      return {
+                        before,
+                        after: {
+                          waypoints: JSON.parse(JSON.stringify(model.get(arrowId)?.data?.waypoints || [])),
+                          visibleLines: visibleLines(),
+                        },
+                      };
+                    }
+                    """
+                )
+
+                assert len(state["before"]["waypoints"]) == 2
+                assert len(state["before"]["visibleLines"]) == 3
+                assert state["after"]["waypoints"] == state["before"]["waypoints"]
+                assert state["after"]["visibleLines"] == state["before"]["visibleLines"]
+            finally:
+                browser.close()
+
+
 def test_grid_gap_typing_replaces_value_and_per_side_margins_remain_stable():
     with _preview_server() as base_url:
         with sync_playwright() as playwright:

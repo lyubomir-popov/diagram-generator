@@ -8,7 +8,7 @@ A constrained interactive diagram editor that turns rough sketches and brand/lay
 
 This repo is part of a multi-repo workspace converging on `design-foundry` — a Houdini-in-spirit kernel for procedural graphic design. The TS autolayout engine in `packages/layout-engine/` is the single autolayout codebase in the workspace and will eventually port into design-foundry as `@design-foundry/operator-autolayout`. See `../design-foundry/PIVOT.md` for the full cross-repo plan.
 
-**TypeScript is the implementation language.** Layout, measure, and SVG export run in `packages/layout-engine/`. Python is narrowing to YAML save helpers and legacy batch renderers (spec 012 retires `diagram_render_svg.py`).
+**TypeScript is the implementation language.** Layout, measure, and SVG export run in `packages/layout-engine/`. Python is narrowing to YAML save helpers and layout parity tests (`layout_v3.py`).
 
 ## Start Here
 

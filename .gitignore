@@ -8,6 +8,7 @@ node_modules/
 packages/*/dist/
 .preview_server_test.err.log
 .preview_server_test.out.log
+.env.local
 
 # Scratch screenshots at repo root (not deliverables)
 /image-*.png

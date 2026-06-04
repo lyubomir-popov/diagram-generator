@@ -11,7 +11,7 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 
 `diagram-generator` is a constrained interactive diagram editor that turns frame YAML into on-brand SVG and draw.io outputs. It owns the single autolayout codebase in the workspace (`packages/layout-engine/`, TypeScript), eventually porting to `design-foundry` as `@design-foundry/operator-autolayout`. See `../design-foundry/PIVOT.md`.
 
-**TypeScript is the implementation language** for layout, measure, and SVG export. Python is narrowing to YAML persistence helpers and legacy batch code being retired under spec 012.
+**TypeScript is the implementation language** for layout, measure, and SVG export. Python is narrowing to YAML persistence helpers and layout parity tests (`layout_v3.py`).
 
 ## Project context
 
@@ -31,16 +31,23 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | **Interactive preview** | TS layout via `layout-bridge.js` + HarfBuzz; save → YAML via `frame_yaml_persistence.py` |
 | **Preview APIs** | TS-only: frame-tree, grid, component tree (`preview_ts_layout.py`) |
 | **Live preview SVG** | TS-only Node export (`preview_ts_export.py`); no Python SVG fallback (spec 012 T060a) |
-| **Batch SVG** | `export-frame-svg.mjs` — boxes, text, icons (T020), arrows + arrowheads + overlays (T030/T040 ✓) |
-| **Tests** | 226 TS layout-engine (vitest); Python suite (46 tests) for YAML/legacy parity |
+| **Batch SVG** | `export-frame-svg.mjs` — TS-only (`svg-render.ts`); golden tests in `tests/svg-golden.test.ts` |
+| **Tests** | 240 TS layout-engine (vitest); Python suite (46 tests) for YAML/legacy parity |
 
-### Recent work — gap semantics + inspector (2026-06-04)
+### Recent work — spec 012 close-out + inspector (2026-06-05)
+
+- **T050:** Golden SVG regression harness — 6 corpus slugs, `UPDATE_SVG_GOLDEN=1` refresh path.
+- **T060b:** Deleted `scripts/diagram_render_svg.py`; no Python code emits diagram SVG.
+- **Spec 019:** Inspector no longer duplicates Component / position / size / layout rows; id shown in Auto-layout heading.
+- **Arrow editing:** Arrows indexed in `ComponentModel`; preview selection uses segment hit areas + `arrowComponentId` parity with `svg-render.ts`.
+
+### Prior — gap semantics + inspector (2026-06-04)
 
 Adversarial review complete. Composer work verified and one bug found + fixed:
 
-- **Gap semantics**: `__body.gap` uses INSET default (8px), independent of parent `gap` (title gap). Confirmed in Python + TS paths.
-- **Bug fixed**: `applyHeadingAsChild` was ignoring `stack_gap` from YAML (always used INSET). Fixed: `stackGap` option added; `frame-yaml-loader.ts` now passes `data.stack_gap`. Save → reload now correctly reflects authored `stack_gap` values.
-- **Inspector**: Title gap / Stack gap shown as independent fields for headed sections. `gap: 0` correctly displays as 0 (not 24). "Parent spacing" replaced with "Stack spacing".
+- **Headed-container spacing contract**: headed containers author one gap per container. The header/body split is internal structure, the body keeps child items grouped, and nesting stays simpler because each container contributes one gap value.
+- **Legacy stack-gap plumbing**: the loader/preview path still carries `stack_gap` support from earlier work, but the active authoring contract is the single-gap headed-container model above.
+- **Inspector**: primary single-select cleanup landed; Auto-layout remains the main editing surface and headed containers intentionally keep a single `Gap` control.
 - **android-custom-to-cloud**: Correct structure — 4 sections, leaf text labels, 3 arrows. No wrapper panels.
 - **15 files** uncommitted (composer work + bug fix). Pre-existing parity failures: 12 TS (`test-deep-nesting` width), 5 Python (`__body` frame ID).
 
@@ -50,11 +57,12 @@ Finish **TS-only render runtime** (not “move to YAML” — YAML is already au
 
 - [x] T060a — preview server: no Python SVG fallback  
 - [x] T020 — batch icon embed (`icon-embed.ts`)  
-- [ ] T030–T040 — arrow heads, overlays in `svg-render.ts`  
-- [ ] T050 — golden SVG subset  
-- [ ] T060b — remove `diagram_render_svg.py` from batch  
+- [x] T030–T040 — arrow heads, overlays in `svg-render.ts`  
+- [x] T050 — golden SVG subset (`tests/svg-golden.test.ts`, 6 corpus slugs)  
+- [x] T060b — removed `diagram_render_svg.py` (TS-only SVG emit)  
+- [ ] T070 — agent docs + `docs/specs.md` (close 012)
 
-Then: spec **005** WS2, spec **008** Phase 5.
+Then: spec **018** PNG export, spec **005** WS2, spec **008** Phase 5.
 
 ## Key files
 

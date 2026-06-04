@@ -4,6 +4,17 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-05 – Preview arrow selection + identity parity
+
+- **Root cause:** `/api/tree` indexes frames only; arrows were not in `ComponentModel`, so clicks fell through to `page` bbox picking. `layout-bridge` used `source->target` ids while `svg-render.ts` prefers authored `arrow.id`.
+- **Fix:** `model.loadArrows` + `syncArrowsInModel` from frame-tree JSON; `arrowComponentId()` shared with TS renderer; transparent stroke hit areas on arrow segments; `findArrowAtPoint` runs before frame depth pick. Waypoints included in `serializeArrow` wire DTO.
+
+### 2026-06-05 – Spec 012 T050/T060b + spec 019 inspector
+
+- **T050:** `tests/svg-golden.test.ts` + 6 golden fixtures under `tests/fixtures/svg/`; HarfBuzz batch export parity lock.
+- **T060b:** Removed `scripts/diagram_render_svg.py` (zero import references; batch/preview SVG is TS-only).
+- **Spec 019:** `updateInspector` drops duplicate read-only rows; `Auto-layout · {cid}` heading.
+
 ### 2026-06-05 – Spec 012 T030/T040 – arrows + overlays in svg-render.ts
 
 - **tokens.ts:** Added `GRID_GUTTER`, `ARROW_HEAD_LENGTH`, `ARROW_HEAD_HALF_WIDTH`, `ARROW_COLOR` as exported constants.

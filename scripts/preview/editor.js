@@ -690,8 +690,29 @@ async function loadTree() {
     if (resp.ok) {
       const data = await resp.json();
       model.loadTree(data);
+      syncArrowsFromFrameTree();
     }
   } catch (e) { /* ignore */ }
+}
+
+/** Index arrows from the authoritative frame-tree JSON (not the frame-only /api/tree). */
+function syncArrowsFromFrameTree() {
+  const json = typeof getFrameTreeJson === "function" ? getFrameTreeJson() : null;
+  const arrows = (json && json.arrows) || [];
+  if (typeof syncArrowsInModel === "function") {
+    syncArrowsInModel(model, arrows, []);
+    return;
+  }
+  const payload = arrows.map((a) => ({
+    id: typeof arrowComponentId === "function"
+      ? arrowComponentId(a)
+      : (a.id || `${a.source}->${a.target}`),
+    source: a.source,
+    target: a.target,
+    color: a.color,
+    waypoints: a.waypoints || [],
+  }));
+  model.loadArrows(payload);
 }
 
 async function loadGridInfo() {
@@ -1310,6 +1331,46 @@ function updateUndoRedoButtons() {
 
 function getOwnDelta(cid) {
   return model.getOwnDelta(cid);
+}
+
+/** Prefer arrow hit targets over frame bounding-box picking. */
+function findArrowAtPoint(clientX, clientY) {
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return null;
+  const el = document.elementFromPoint(clientX, clientY);
+  if (!el || !svg.contains(el)) return null;
+  const host = el.closest("[data-component-id]");
+  if (!host || !svg.contains(host)) return null;
+  const cid = host.getAttribute("data-component-id");
+  const node = model.get(cid);
+  return node && node.type === "arrow" ? cid : null;
+}
+
+/** Add transparent stroke hit areas to server-rendered arrow groups. */
+function ensureArrowHitAreas(svg) {
+  if (!svg || !model.arrowIds) return;
+  const ns = "http://www.w3.org/2000/svg";
+  for (const cid of model.arrowIds()) {
+    const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+    groups.forEach((g) => {
+      const visible = Array.from(g.querySelectorAll("line")).filter(
+        (ln) => ln.getAttribute("stroke") !== "transparent",
+      );
+      const hits = g.querySelectorAll('line[stroke="transparent"]');
+      if (hits.length >= visible.length) return;
+      visible.forEach((ln) => {
+        const hit = document.createElementNS(ns, "line");
+        hit.setAttribute("x1", ln.getAttribute("x1"));
+        hit.setAttribute("y1", ln.getAttribute("y1"));
+        hit.setAttribute("x2", ln.getAttribute("x2"));
+        hit.setAttribute("y2", ln.getAttribute("y2"));
+        hit.setAttribute("stroke", "transparent");
+        hit.setAttribute("stroke-width", "12");
+        hit.style.pointerEvents = "stroke";
+        g.appendChild(hit);
+      });
+    });
+  }
 }
 
 function findComponentAtDepth(x, y, targetDepth) {
@@ -3079,6 +3140,7 @@ function _treeHasFrameId(frameId) {
 
 window.deleteSelectedFrames = deleteSelectedFrames;
 window.__DG_TEST_treeHasFrameId = _treeHasFrameId;
+window.__DG_TEST_findArrowAtPoint = findArrowAtPoint;
 
 // ---- Interaction ----
 
@@ -3205,7 +3267,8 @@ function _onSvgMouseOver(e) {
   pt.x = e.clientX;
   pt.y = e.clientY;
   const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-  const hoverCid = findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
+  const hoverCid = findArrowAtPoint(e.clientX, e.clientY)
+    || findComponentAtDepth(svgPt.x, svgPt.y, selectionDepth);
   svg.querySelectorAll(".dg-hover").forEach(el => el.classList.remove("dg-hover"));
   if (hoverCid) {
     svg.querySelectorAll('[data-component-id="' + hoverCid + '"]')
@@ -3223,6 +3286,7 @@ function bindInteraction() {
   if (!svg) return;
 
   _ensureSvgHitAreas(svg);
+  ensureArrowHitAreas(svg);
   buildTreeUI();
 
   if (_interactionSvg === svg) return;
@@ -3291,6 +3355,14 @@ function onSvgMouseDown(e) {
   const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
   
   if (e.button !== 0) return;
+
+  const arrowCid = findArrowAtPoint(e.clientX, e.clientY);
+  if (arrowCid) {
+    selectionDepth = 0;
+    selectComponent(arrowCid, e.shiftKey);
+    e.preventDefault();
+    return;
+  }
 
   // Ctrl+click: jump straight to the deepest (innermost) component (Figma behavior)
   if (e.ctrlKey || e.metaKey) {
@@ -3869,6 +3941,42 @@ function getArrowNode(cid) {
   return (node && node.type === "arrow") ? node.data : null;
 }
 
+function _refreshSelectedArrowInspector(cid) {
+  if (selectedIds.has(cid)) updateInspector(cid);
+}
+
+function _bindArrowSegmentInsertHandles(cid, eff) {
+  const svg = document.querySelector("#stage svg");
+  if (!svg) return;
+
+  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+  let segIdx = 0;
+  groups.forEach(g => {
+    g.querySelectorAll("line").forEach(ln => {
+      if (ln.style.pointerEvents !== "stroke") return; // only hit-area lines
+      const idx = segIdx++;
+      const bindingKey = cid + ":" + idx;
+      ln.setAttribute("data-wp-seg-cid", cid);
+      ln.setAttribute("data-wp-seg-idx", idx);
+      if (ln.dataset.wpSegBinding === bindingKey) return;
+      ln.dataset.wpSegBinding = bindingKey;
+      ln.addEventListener("dblclick", function wpSegClick(e) {
+        if (!selectedIds.has(cid)) return;
+        e.stopPropagation();
+        const svg = document.querySelector("#stage svg");
+        if (!svg) return;
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        const snapX = Math.round(svgPt.x / 8) * 8;
+        const snapY = Math.round(svgPt.y / 8) * 8;
+        addWaypoint(cid, idx, snapX - eff.dx, snapY - eff.dy);
+      });
+    });
+  });
+}
+
 function showArrowWaypointHandles(cid) {
   const svg = document.querySelector("#stage svg");
   if (!svg) return;
@@ -3879,11 +3987,13 @@ function showArrowWaypointHandles(cid) {
   const node = getArrowNode(cid);
   if (!node) return;
 
+  const eff = getEffectiveDelta(cid);
+  _bindArrowSegmentInsertHandles(cid, eff);
+
   const wps = node.waypoints || [];
   if (wps.length === 0) return;
 
   const ns = "http://www.w3.org/2000/svg";
-  const eff = getEffectiveDelta(cid);
 
   // Show a circle handle at each waypoint
   wps.forEach((wp, idx) => {
@@ -3902,33 +4012,6 @@ function showArrowWaypointHandles(cid) {
       removeWaypoint(cid, idx);
     });
     svg.appendChild(circle);
-  });
-
-  // Make arrow segments clickable to add waypoints at click position.
-  // We attach listeners to the transparent hit-area lines in the arrow group
-  // so clicks anywhere on the segment body (not just a midpoint) work.
-  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
-  let segIdx = 0;
-  groups.forEach(g => {
-    g.querySelectorAll("line").forEach(ln => {
-      if (ln.style.pointerEvents !== "stroke") return; // only hit-area lines
-      const idx = segIdx++;
-      // Tag for cleanup
-      ln.setAttribute("data-wp-seg-cid", cid);
-      ln.setAttribute("data-wp-seg-idx", idx);
-      ln.addEventListener("dblclick", function wpSegClick(e) {
-        e.stopPropagation();
-        const svg = document.querySelector("#stage svg");
-        if (!svg) return;
-        const pt = svg.createSVGPoint();
-        pt.x = e.clientX; pt.y = e.clientY;
-        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-        // Snap to 4px grid
-        const snapX = Math.round(svgPt.x / 8) * 8;
-        const snapY = Math.round(svgPt.y / 8) * 8;
-        addWaypoint(cid, idx, snapX - eff.dx, snapY - eff.dy);
-      });
-    });
   });
 }
 
@@ -4017,6 +4100,7 @@ function onWpDragUp(e) {
     const wpBefore = _captureOverrideEntries(wpIds);
     pruneCollinearWaypoints(s.cid);
     setWaypointOverride(s.cid);
+    _refreshSelectedArrowInspector(s.cid);
     commitOverridePatchAction("Move waypoint", wpBefore, _captureOverrideEntries(wpIds));
   }
   mgr.endInteraction();
@@ -4075,6 +4159,7 @@ function addWaypoint(cid, segIdx, x, y) {
   rebuildArrowSVG(cid);
   showArrowWaypointHandles(cid);
   setWaypointOverride(cid);
+  _refreshSelectedArrowInspector(cid);
   commitOverridePatchAction("Add waypoint", addWpBefore, _captureOverrideEntries(addWpIds));
 }
 
@@ -4087,6 +4172,7 @@ function removeWaypoint(cid, idx) {
   rebuildArrowSVG(cid);
   showArrowWaypointHandles(cid);
   setWaypointOverride(cid);
+  _refreshSelectedArrowInspector(cid);
   commitOverridePatchAction("Remove waypoint", rmWpBefore, _captureOverrideEntries(rmWpIds));
 }
 
@@ -5264,7 +5350,7 @@ function buildAutolayoutPanel(cid, node) {
     const stackGap = ovr.stack_gap !== undefined ? ovr.stack_gap : (node.layoutGap ?? DEFAULT_STACK_GAP);
     const titleGap = ovr.gap !== undefined ? ovr.gap : (node.layoutHeaderGap ?? 0);
 
-    html += '<span class="label" style="margin-bottom:4px;display:block">Auto-layout</span>';
+    html += '<span class="label" style="margin-bottom:4px;display:block">Auto-layout · ' + cid + '</span>';
 
     // Direction
     html += '<div class="field"><span class="label">Direction</span>';
@@ -5680,54 +5766,23 @@ function updateInspector(cid) {
   if (!inspector) {
     return;
   }
-  const svg = document.querySelector("#stage svg");
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  if (svg) {
-    const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
-    groups.forEach(g => {
-      const bbox = g.getBBox();
-      // Account for CSS transforms (overrides + reflow cascade)
-      let tdx = 0, tdy = 0;
-      const tm = (g.style.transform || "").match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
-      if (tm) { tdx = parseFloat(tm[1]); tdy = parseFloat(tm[2]); }
-      minX = Math.min(minX, bbox.x + tdx); minY = Math.min(minY, bbox.y + tdy);
-      maxX = Math.max(maxX, bbox.x + bbox.width + tdx); maxY = Math.max(maxY, bbox.y + bbox.height + tdy);
-    });
-  }
-  // Fallback to component-tree data when no SVG elements found (e.g. borderless containers)
-  if (!isFinite(minX)) {
-    const treeNode = model.get(cid);
-    if (treeNode && treeNode.data) {
-      minX = treeNode.data.x; minY = treeNode.data.y;
-      maxX = treeNode.data.x + treeNode.data.width; maxY = treeNode.data.y + treeNode.data.height;
-    }
-  }
-  if (!isFinite(minX)) {
+  const inspNode = model.get(cid);
+  const arrowNode = getArrowNode(cid);
+  if (!inspNode && !arrowNode) {
     inspector.innerHTML =
       '<p class="dg-empty-message bf-form-help">Component <strong>' + cid +
-      '</strong> has no layout bounds yet. Try reloading the preview.</p>';
+      '</strong> not found. Try reloading the preview.</p>';
     return;
   }
   const own = getOwnDelta(cid);
   const eff = getEffectiveDelta(cid);
   const hasMoveOverride = own.dx !== 0 || own.dy !== 0;
   const hasSizeOverride = own.dw !== 0 || own.dh !== 0;
-  const arrowNode = getArrowNode(cid);
   const hasWpOverride = !!(overrides[cid] && overrides[cid].waypoints);
   const hasOverride = hasMoveOverride || hasSizeOverride || hasWpOverride;
   const hasParentOverride = eff.dx !== own.dx || eff.dy !== own.dy;
 
-  let html = '<div class="field"><span class="label">Component</span><br>' +
-    '<span class="value">' + cid + '</span></div>';
-  html += '<div class="field"><span class="label">Computed position</span><br>' +
-    '<span class="value">' + Math.round(minX) + ', ' + Math.round(minY) + '</span></div>';
-  html += '<div class="field"><span class="label">Size</span><br>' +
-    '<span class="value">' + Math.round(maxX - minX) + ' &#x00d7; ' + Math.round(maxY - minY) + '</span></div>';
-  const inspNode = model.get(cid);
-  if (inspNode && inspNode.layout) {
-    html += '<div class="field"><span class="label">Layout</span><br>' +
-      '<span class="value">' + inspNode.layout + ' (gap ' + (inspNode.layoutGap ?? 0) + 'px)</span></div>';
-  }
+  let html = '';
   const currentAlign = (overrides[cid] && overrides[cid].align) || (inspNode && inspNode.align) || "TOP_LEFT";
   try {
     html += buildAlignWidget(cid, currentAlign);
@@ -5853,13 +5908,26 @@ function clearOverride(cid) {
   const hadWaypoints = overrides[cid] && overrides[cid].waypoints;
   model.clearOverride(cid);
   setDirty(true);
-  if (hadWaypoints) {
-    // Reload tree to restore original arrow waypoints from the layout engine
+  const restoreArrowFromTree = () => {
     loadTree().then(() => {
       rebuildArrowSVG(cid);
       applyAllOverrides();
       if (selectedIds.has(cid)) updateInspector(cid);
     });
+  };
+  if (hadWaypoints) {
+    const relayoutStatus = getV3RelayoutStatus();
+    if (relayoutStatus.localReady) {
+      Promise.resolve(requestV3Relayout(cid)).then((restored) => {
+        if (restored === false) {
+          restoreArrowFromTree();
+          return;
+        }
+        if (selectedIds.has(cid)) updateInspector(cid);
+      });
+    } else {
+      restoreArrowFromTree();
+    }
   } else {
     applyAllOverrides();
     if (selectedIds.has(cid)) updateInspector(cid);
