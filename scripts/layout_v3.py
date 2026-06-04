@@ -1969,6 +1969,40 @@ def layout_frame_diagram(diagram: FrameDiagram) -> LayoutResult:
             _restore_semantic_state(root, semantic_state)
 
 
+def _heading_text_for_frame(frame: Frame) -> str:
+    if frame.heading and frame.heading.content.strip():
+        return frame.heading.content
+    for child in frame.children:
+        if child.role == "heading" or (child.id or "").endswith("__heading"):
+            if child.label:
+                return child.label[0].content
+    return ""
+
+
+def _resolve_authored_layout_frame(frame: Frame) -> tuple[list[Frame], int, Direction, int]:
+    """Heading synthesis uses __heading + __body; expose body on the authored parent."""
+    if frame.is_leaf:
+        return [], 0, frame.direction, 0
+    body = next(
+        (c for c in frame.children if c.id == "__body" or (c.id or "").endswith("__body")),
+        None,
+    )
+    has_heading = any(
+        c.role == "heading" or c.id == "__heading" or (c.id or "").endswith("__heading")
+        for c in frame.children
+    )
+    if body is not None and has_heading:
+        return list(body.children), body.gap, body.direction, frame.gap
+    visible_children = [
+        c
+        for c in frame.children
+        if not (c.id or "").endswith("__body")
+        and not (c.id or "").endswith("__heading")
+        and c.role != "heading"
+    ]
+    return visible_children, frame.gap, frame.direction, frame.gap
+
+
 def _build_component_tree(root: Frame) -> list[ComponentInfo]:
     """Build ComponentInfo tree from placed Frame tree for editor support."""
 
@@ -1976,17 +2010,18 @@ def _build_component_tree(root: Frame) -> list[ComponentInfo]:
         cid = frame.id
         if not cid or cid.startswith("__"):
             return None
+        layout_children, layout_gap, layout_direction, layout_header_gap = (
+            _resolve_authored_layout_frame(frame)
+        )
         children_ci = []
         if not frame.is_leaf:
-            for child in frame.children:
+            for child in layout_children:
                 ci = _frame_to_ci(child)
                 if ci:
                     children_ci.append(ci)
         layout = ""
-        layout_gap = 0
-        if not frame.is_leaf:
-            layout = "vertical" if frame.direction == Direction.VERTICAL else "horizontal"
-            layout_gap = frame.gap
+        if not frame.is_leaf and layout_children:
+            layout = "vertical" if layout_direction == Direction.VERTICAL else "horizontal"
         pad = frame.padding_top if frame.border != Border.NONE else 0
         return ComponentInfo(
             id=cid,
@@ -2000,6 +2035,7 @@ def _build_component_tree(root: Frame) -> list[ComponentInfo]:
             layout_gap=layout_gap,
             layout_col_gap=layout_gap,
             layout_row_gap=layout_gap,
+            layout_header_gap=layout_header_gap,
             pad=pad,
             sizing_w=frame.sizing_w.name,
             sizing_h=frame.sizing_h.name,
@@ -2013,7 +2049,7 @@ def _build_component_tree(root: Frame) -> list[ComponentInfo]:
             level=frame.level,
             fill=frame.fill.name,
             border=frame.border.name,
-            heading_text="",
+            heading_text=_heading_text_for_frame(frame),
             label_text=[line.content for line in frame.label],
         )
 

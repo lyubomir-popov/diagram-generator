@@ -58,6 +58,10 @@ Feature package: `specs/008-repo-coherence-rewrite/` — Phases 1–4 and 6–8 
 
 #### Code quality — adversarial audit items
 
+#### Root direction change should reset children sizing to hug
+
+- [ ] `[M]` **Switching root `direction` vertical→horizontal leaves top-level children as FILL on the old axis.** They should reset to HUG so authors re-opt in. Fix in the preview inspector direction handler (`editor.js`) and optionally in `frame_yaml_persistence.py` when `direction` is saved on `page`. Reported during `android-custom-to-cloud` editor pass 2026-06-04.
+
 Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`.
 
 - [ ] `[M]` **M2. `ARROW_CLEARANCE` 3x defined (8/8/12).** Fix: one canonical value.

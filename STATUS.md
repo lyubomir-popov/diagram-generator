@@ -1,7 +1,7 @@
 # Status
 
 **Last updated:** 2026-06-04  
-**Branch:** `main` @ `2f78098` (pushed to `origin/main`)
+**Branch:** `main` @ `82d0cc8` (uncommitted composer work on top)
 
 ## Stakeholder path
 
@@ -32,7 +32,17 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | **Preview APIs** | TS-only: frame-tree, grid, component tree (`preview_ts_layout.py`) |
 | **Live preview SVG** | TS-only Node export (`preview_ts_export.py`); no Python SVG fallback (spec 012 T060a) |
 | **Batch SVG** | `export-frame-svg.mjs` — boxes, text, **real icons** (T020); simple elbows; arrows/overlays parity in progress |
-| **Tests** | 224 TS layout-engine (vitest); Python suite for YAML/legacy parity |
+| **Tests** | 226 TS layout-engine (vitest); Python suite (46 tests) for YAML/legacy parity |
+
+### Recent work — gap semantics + inspector (2026-06-04)
+
+Adversarial review complete. Composer work verified and one bug found + fixed:
+
+- **Gap semantics**: `__body.gap` uses INSET default (8px), independent of parent `gap` (title gap). Confirmed in Python + TS paths.
+- **Bug fixed**: `applyHeadingAsChild` was ignoring `stack_gap` from YAML (always used INSET). Fixed: `stackGap` option added; `frame-yaml-loader.ts` now passes `data.stack_gap`. Save → reload now correctly reflects authored `stack_gap` values.
+- **Inspector**: Title gap / Stack gap shown as independent fields for headed sections. `gap: 0` correctly displays as 0 (not 24). "Parent spacing" replaced with "Stack spacing".
+- **android-custom-to-cloud**: Correct structure — 4 sections, leaf text labels, 3 arrows. No wrapper panels.
+- **15 files** uncommitted (composer work + bug fix). Pre-existing parity failures: 12 TS (`test-deep-nesting` width), 5 Python (`__body` frame ID).
 
 ### Active focus — spec 012
 

@@ -277,6 +277,7 @@ class ComponentInfo:
     layout_gap: float = 0  # gap between children (col_gap for horizontal, row_gap for vertical)
     layout_col_gap: float = 0  # column gap (for grid layouts)
     layout_row_gap: float = 0  # row gap (for grid layouts)
+    layout_header_gap: float = 0  # gap from section heading to __body (when hoisted in tree)
     layout_cols: int = 0  # declared/effective columns for parent relayout
     layout_rows: int = 0  # declared/effective rows for parent relayout
     pad: float = 0  # internal padding (INSET for bordered panels, 0 for borderless)

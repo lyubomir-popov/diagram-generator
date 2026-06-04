@@ -86,9 +86,45 @@ const GRID_DEFAULTS = {
   slack_absorption: true,
 };
 
+/** Default vertical stack spacing between sibling leaves (headed __body stacks). */
+const DEFAULT_STACK_GAP = 8;
+
+/** Read a layout field from ComponentNode (top-level or raw tree data). */
+function _nodeProp(node, key) {
+  if (!node) return undefined;
+  if (node[key] !== undefined && node[key] !== null && node[key] !== "") return node[key];
+  if (node.data && node.data[key] !== undefined && node.data[key] !== null) return node.data[key];
+  return undefined;
+}
+
+function _nodeHeadingText(node) {
+  const t = _nodeProp(node, "heading_text");
+  return t ? String(t) : "";
+}
+
+function _gridEl(id) {
+  return document.getElementById(id);
+}
+
+/** Read per-side page margins from grid controls (unified viewer) or legacy single field. */
+function _readGridMargins() {
+  const topEl = _gridEl("grid-margin-top");
+  if (topEl) {
+    return {
+      top: Math.max(0, parseInt(topEl.value, 10) || 0),
+      right: Math.max(0, parseInt(_gridEl("grid-margin-right").value, 10) || 0),
+      bottom: Math.max(0, parseInt(_gridEl("grid-margin-bottom").value, 10) || 0),
+      left: Math.max(0, parseInt(_gridEl("grid-margin-left").value, 10) || 0),
+    };
+  }
+  const legacy = _gridEl("grid-margin");
+  const uniform = legacy ? Math.max(0, parseInt(legacy.value, 10) || 0) : GRID_DEFAULTS.margin_top;
+  return { top: uniform, right: uniform, bottom: uniform, left: uniform };
+}
+
 function _nodeHasTextContent(node) {
   if (!node) return false;
-  if (node.heading_text && String(node.heading_text).trim()) return true;
+  if (_nodeHeadingText(node).trim()) return true;
   if (Array.isArray(node.label_text) && node.label_text.some((t) => String(t || "").trim())) return true;
   return false;
 }
@@ -470,7 +506,7 @@ async function _applyUndoCommand(command, direction) {
 function _hasV3FrameOverride(ovr) {
   if (!ovr) return false;
   const keys = [
-    "text", "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
+    "text", "direction", "gap", "stack_gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
     "sizing", "sizing_w", "sizing_h", "fill_weight", "align", "wrap",
     "width", "height", "min_width", "max_width", "max_width_chars", "min_height", "max_height",
     "fill", "border", "level", "position", "x", "y", "children_order",
@@ -867,12 +903,22 @@ function populateGridControls() {
   document.getElementById("grid-col-gap").value = go.col_gap ?? gridInfo.col_gap ?? 0;
   document.getElementById("grid-row-gap").value = go.row_gap ?? gridInfo.row_gap ?? 0;
 
-  // Per-side margins
+  // Per-side margins (unified viewer) or legacy single margin field (viewer.html)
   const fallbackMargin = gridInfo.outer_margin ?? gridInfo.col_gap ?? 24;
-  document.getElementById("grid-margin-top").value = go.margin_top ?? gridInfo.margin_top ?? fallbackMargin;
-  document.getElementById("grid-margin-right").value = go.margin_right ?? gridInfo.margin_right ?? fallbackMargin;
-  document.getElementById("grid-margin-bottom").value = go.margin_bottom ?? gridInfo.margin_bottom ?? fallbackMargin;
-  document.getElementById("grid-margin-left").value = go.margin_left ?? gridInfo.margin_left ?? fallbackMargin;
+  const mTop = go.margin_top ?? gridInfo.margin_top ?? fallbackMargin;
+  const mRight = go.margin_right ?? gridInfo.margin_right ?? fallbackMargin;
+  const mBottom = go.margin_bottom ?? gridInfo.margin_bottom ?? fallbackMargin;
+  const mLeft = go.margin_left ?? gridInfo.margin_left ?? fallbackMargin;
+  const topEl = _gridEl("grid-margin-top");
+  if (topEl) {
+    topEl.value = mTop;
+    _gridEl("grid-margin-right").value = mRight;
+    _gridEl("grid-margin-bottom").value = mBottom;
+    _gridEl("grid-margin-left").value = mLeft;
+  } else {
+    const legacy = _gridEl("grid-margin");
+    if (legacy) legacy.value = mTop;
+  }
 
   // Toggles
   const linkEl = document.getElementById("grid-link-root");
@@ -889,10 +935,7 @@ function onGridControlChange() {
   const rows = Math.max(0, parseInt(document.getElementById("grid-rows").value) || 0);
   const colGap = Math.max(0, parseInt(document.getElementById("grid-col-gap").value) || 0);
   const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
-  const mTop = Math.max(0, parseInt(document.getElementById("grid-margin-top").value) || 0);
-  const mRight = Math.max(0, parseInt(document.getElementById("grid-margin-right").value) || 0);
-  const mBottom = Math.max(0, parseInt(document.getElementById("grid-margin-bottom").value) || 0);
-  const mLeft = Math.max(0, parseInt(document.getElementById("grid-margin-left").value) || 0);
+  const { top: mTop, right: mRight, bottom: mBottom, left: mLeft } = _readGridMargins();
   const linkEl = document.getElementById("grid-link-root");
   const linkToRoot = linkEl ? linkEl.checked : true;
   const slackEl = document.getElementById("grid-slack");
@@ -1104,10 +1147,7 @@ function updateGridOverlayFromInputs() {
   const rows = Math.max(0, parseInt(document.getElementById("grid-rows").value) || 0);
   const colGap = Math.max(0, parseInt(document.getElementById("grid-col-gap").value) || 0);
   const rowGap = Math.max(0, parseInt(document.getElementById("grid-row-gap").value) || 0);
-  const mTop = Math.max(0, parseInt(document.getElementById("grid-margin-top").value) || 0);
-  const mRight = Math.max(0, parseInt(document.getElementById("grid-margin-right").value) || 0);
-  const mBottom = Math.max(0, parseInt(document.getElementById("grid-margin-bottom").value) || 0);
-  const mLeft = Math.max(0, parseInt(document.getElementById("grid-margin-left").value) || 0);
+  const { top: mTop, right: mRight, bottom: mBottom, left: mLeft } = _readGridMargins();
   const slackEl = document.getElementById("grid-slack");
   const slack = slackEl ? slackEl.checked : true;
 
@@ -1186,17 +1226,20 @@ function bindGridNumberInputSelection(input) {
   });
 }
 
-// Bind grid control events
+// Bind grid control events (skip missing elements — viewer.html vs viewer-unified.html)
 ["grid-cols", "grid-rows", "grid-col-gap", "grid-row-gap",
- "grid-margin-top", "grid-margin-right", "grid-margin-bottom", "grid-margin-left"].forEach(id => {
-  document.getElementById(id).addEventListener("input", onGridControlChange);
+ "grid-margin", "grid-margin-top", "grid-margin-right", "grid-margin-bottom", "grid-margin-left"].forEach(id => {
+  const el = _gridEl(id);
+  if (el) el.addEventListener("input", onGridControlChange);
 });
 ["grid-link-root", "grid-slack"].forEach(id => {
-  document.getElementById(id).addEventListener("change", onGridControlChange);
+  const el = _gridEl(id);
+  if (el) el.addEventListener("change", onGridControlChange);
 });
 ["grid-cols", "grid-rows", "grid-col-gap", "grid-row-gap",
- "grid-margin-top", "grid-margin-right", "grid-margin-bottom", "grid-margin-left"].forEach(id => {
-  bindGridNumberInputSelection(document.getElementById(id));
+ "grid-margin", "grid-margin-top", "grid-margin-right", "grid-margin-bottom", "grid-margin-left"].forEach(id => {
+  const el = _gridEl(id);
+  if (el) bindGridNumberInputSelection(el);
 });
 
 function resetOverrideState() {
@@ -1543,10 +1586,10 @@ function inferSelectionGap(info) {
     const parent = model.get(info.parentId);
     if (parent) {
       if (parent.layout === "vertical") {
-        return snapToGrid(parent.layoutRowGap || parent.layoutGap || 24);
+        return snapToGrid(parent.layoutRowGap ?? parent.layoutGap ?? 24);
       }
       if (parent.layout === "horizontal") {
-        return snapToGrid(parent.layoutColGap || parent.layoutGap || 24);
+        return snapToGrid(parent.layoutColGap ?? parent.layoutGap ?? 24);
       }
     }
   }
@@ -1701,17 +1744,16 @@ function renderMultiSelectionInspector() {
     '<span class="value">' + selectedIds.size + ' components</span></div>';
   html += '<div class="hint">Shift+click adds to the selection. Drag still moves the group together.</div>';
 
-  // Parent spacing — shown when all selected items share the same autolayout parent
   if (info.sameParent && info.parentId) {
     const parentNode = model.get(info.parentId);
-    if (parentNode && (parentNode.layout === 'vertical' || parentNode.layout === 'horizontal')) {
+    if (parentNode && parentNode.layout) {
       const pOvr = overrides[info.parentId] || {};
-      const parentGap = pOvr.gap !== undefined ? pOvr.gap : (parentNode.layoutGap || 24);
+      const stackGap = pOvr.stack_gap !== undefined ? pOvr.stack_gap : (parentNode.layoutGap ?? DEFAULT_STACK_GAP);
       html += '<div class="dg-autolayout-section" style="margin-top:8px">';
-      html += '<span class="label" style="margin-bottom:4px;display:block">Parent spacing</span>';
-      html += '<div class="field"><span class="label">Gap</span>';
-      html += '<input class="bf-input" type="number" min="0" step="8" value="' + parentGap + '"';
-      html += ' onchange="setFrameProp(\'' + info.parentId + '\',\'gap\',parseInt(this.value))"';
+      html += '<span class="label" style="margin-bottom:4px;display:block">Stack spacing</span>';
+      html += '<div class="field"><span class="label">Stack gap</span>';
+      html += '<input class="bf-input" type="number" min="0" step="8" value="' + stackGap + '"';
+      html += ' onchange="setFrameProp(\'' + info.parentId + '\',\'stack_gap\',parseInt(this.value))"';
       html += ' style="width:60px">';
       html += '<span class="unit" style="margin-left:4px;color:#888;font-size:11px">px</span></div>';
       html += '</div>';
@@ -1792,11 +1834,11 @@ function renderMultiSelectionInspector() {
         html += '</div>';
       }
 
-      // Gap
-      html += '<div class="field"><span class="label">Gap</span>';
+      const multiHeaded = info.items.some((item) => item.node && _isHeadedStackContainer(item.node));
+      html += '<div class="field"><span class="label">' + (multiHeaded ? 'Stack gap' : 'Gap') + '</span>';
       html += '<input class="bf-input" type="number" min="0" step="8" value="' + (containerInfo.gapMixed ? '' : containerInfo.gap) + '"';
       html += ' placeholder="' + (containerInfo.gapMixed ? 'Mixed' : '') + '"';
-      html += ' onchange="setMultiFrameProp(\'gap\',parseInt(this.value))"';
+      html += ' onchange="setMultiFrameProp(\'' + (multiHeaded ? 'stack_gap' : 'gap') + '\',parseInt(this.value))"';
       html += ' style="width:60px"></div>';
 
       // Padding — per-side with link toggle
@@ -2003,14 +2045,17 @@ function _getMultiContainerValues(items) {
     containerCount++;
     const ovr = overrides[item.id] || {};
     const dir = ovr.direction || (node.layout === 'horizontal' ? 'HORIZONTAL' : 'VERTICAL');
-    const gap = ovr.gap !== undefined ? ovr.gap : (node.layoutGap || 24);
+    const headed = _isHeadedStackContainer(node);
+    const gap = headed
+      ? (ovr.stack_gap !== undefined ? ovr.stack_gap : (node.layoutGap ?? DEFAULT_STACK_GAP))
+      : (ovr.gap !== undefined ? ovr.gap : (node.layoutGap ?? DEFAULT_STACK_GAP));
     const pad = ovr.padding !== undefined ? ovr.padding : (node.padding_top !== undefined ? node.padding_top : 8);
     if (firstDir === null) firstDir = dir; else if (firstDir !== dir) dirMixed = true;
     if (firstGap === null) firstGap = gap; else if (firstGap !== gap) gapMixed = true;
     if (firstPad === null) firstPad = pad; else if (firstPad !== pad) padMixed = true;
 
     // Wrap state
-    const wrapVal = ovr.wrap != null ? ovr.wrap : (node.wrap || false);
+    const wrapVal = ovr.wrap != null ? ovr.wrap : (_nodeProp(node, "wrap") || false);
     if (containerCount === 1) firstWrap = wrapVal;
 
     // Resolve effective per-side values
@@ -2134,11 +2179,11 @@ function setMultiFrameProp(prop, value) {
   if (typeof value === 'number' && !Number.isFinite(value)) return; // ignore NaN from empty input
 
   // For container-only props, only apply to containers
-  const containerProps = new Set(['direction', 'gap', 'padding', 'padding_top', 'padding_right', 'padding_bottom', 'padding_left']);
+  const containerProps = new Set(['direction', 'gap', 'stack_gap', 'padding', 'padding_top', 'padding_right', 'padding_bottom', 'padding_left']);
   const isContainerProp = containerProps.has(prop);
 
   // Clamp numeric frame properties
-  if (prop === 'gap' || prop === 'padding' || prop === 'padding_top' || prop === 'padding_right' || prop === 'padding_bottom' || prop === 'padding_left') {
+  if (prop === 'gap' || prop === 'stack_gap' || prop === 'padding' || prop === 'padding_top' || prop === 'padding_right' || prop === 'padding_bottom' || prop === 'padding_left') {
     value = Math.max(0, Number.isFinite(value) ? value : 0);
   }
   // Constraint props: empty clears, otherwise clamp to non-negative
@@ -3239,6 +3284,7 @@ function onSvgMouseDown(e) {
   }
   
   const svg = document.querySelector("#stage svg");
+  if (!svg) return;
   const pt = svg.createSVGPoint();
   pt.x = e.clientX;
   pt.y = e.clientY;
@@ -3363,7 +3409,7 @@ function _showReorderIndicator(parentCid, insertIndex, isVertical) {
 
   // Calculate indicator position
   let x1, y1, x2, y2;
-  const gap = parent.layout_gap || 24;
+  const gap = parent.layout_gap ?? 24;
   if (isVertical) {
     const leftEdge = parent.x + (parent.padding_left || parent.pad || 0);
     const rightEdge = leftEdge + (siblings[0] ? siblings[0].width : 100);
@@ -5040,16 +5086,17 @@ function selectComponent(cid, additive) {
     selectionDepth = ancestors.length;
   }
   const svg = document.querySelector("#stage svg");
-  if (!svg) return;
-  svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
-  selectedIds.forEach(id => {
-    svg.querySelectorAll('[data-component-id="' + id + '"]')
-      .forEach(g => g.classList.add("dg-selected"));
-  });
+  if (svg) {
+    svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
+    selectedIds.forEach(id => {
+      svg.querySelectorAll('[data-component-id="' + id + '"]')
+        .forEach(g => g.classList.add("dg-selected"));
+    });
+    showResizeHandles(cid);
+  }
   document.querySelectorAll(".tree-item").forEach(el => {
     el.classList.toggle("selected", selectedIds.has(el.textContent));
   });
-  showResizeHandles(cid);
   renderSelectionInspector(cid);
 }
 
@@ -5193,6 +5240,10 @@ window.toggleMultiPaddingLink = toggleMultiPaddingLink;
 
 // ---- Auto-layout controls (v3) ----
 
+function _isHeadedStackContainer(node) {
+  return !!(node && node.layout && _nodeHeadingText(node));
+}
+
 function buildAutolayoutPanel(cid, node) {
   // Show for any node that has layout data from the v3 engine
   if (!node) return '';
@@ -5209,7 +5260,9 @@ function buildAutolayoutPanel(cid, node) {
 
   if (isContainer) {
     const direction = ovr.direction || (node.layout === 'horizontal' ? 'HORIZONTAL' : 'VERTICAL');
-    const gap = ovr.gap !== undefined ? ovr.gap : (node.layoutGap || 24);
+    const headed = _isHeadedStackContainer(node);
+    const stackGap = ovr.stack_gap !== undefined ? ovr.stack_gap : (node.layoutGap ?? DEFAULT_STACK_GAP);
+    const titleGap = ovr.gap !== undefined ? ovr.gap : (node.layoutHeaderGap ?? 0);
 
     html += '<span class="label" style="margin-bottom:4px;display:block">Auto-layout</span>';
 
@@ -5220,11 +5273,24 @@ function buildAutolayoutPanel(cid, node) {
     html += '<option value="HORIZONTAL"' + (direction === 'HORIZONTAL' ? ' selected' : '') + '>Horizontal</option>';
     html += '</select></div>';
 
-    // Gap
-    html += '<div class="field"><span class="label">Gap</span>';
-    html += '<input class="bf-input" type="number" min="0" step="8" value="' + gap + '"';
-    html += ' onchange="setFrameProp(\'' + cid + '\',\'gap\',parseInt(this.value))"';
-    html += ' style="width:60px"></div>';
+    if (headed) {
+      html += '<div class="field"><span class="label">Title gap</span>';
+      html += '<input class="bf-input" type="number" min="0" step="8" value="' + titleGap + '"';
+      html += ' onchange="setFrameProp(\'' + cid + '\',\'gap\',parseInt(this.value))"';
+      html += ' style="width:60px" title="Heading to content stack">';
+      html += '<span class="unit" style="margin-left:4px;color:#888;font-size:11px">px</span></div>';
+      html += '<div class="field"><span class="label">Stack gap</span>';
+      html += '<input class="bf-input" type="number" min="0" step="8" value="' + stackGap + '"';
+      html += ' onchange="setFrameProp(\'' + cid + '\',\'stack_gap\',parseInt(this.value))"';
+      html += ' style="width:60px" title="Between items in the stack">';
+      html += '<span class="unit" style="margin-left:4px;color:#888;font-size:11px">px</span></div>';
+    } else {
+      const gap = ovr.gap !== undefined ? ovr.gap : (node.layoutGap ?? DEFAULT_STACK_GAP);
+      html += '<div class="field"><span class="label">Gap</span>';
+      html += '<input class="bf-input" type="number" min="0" step="8" value="' + gap + '"';
+      html += ' onchange="setFrameProp(\'' + cid + '\',\'gap\',parseInt(this.value))"';
+      html += ' style="width:60px"></div>';
+    }
 
     // Padding — per-side with link toggle
     // Resolve effective per-side values: per-side override > uniform override > tree data > 0
@@ -5290,8 +5356,8 @@ function buildAutolayoutPanel(cid, node) {
   html += '</div>';
   // Min/max width (FILL and FIXED always; typographic measure for text-bearing HUG)
   if (sizingW === 'FILL' || sizingW === 'FIXED') {
-    const curMinW = ovr.min_width !== undefined ? ovr.min_width : (node.min_width !== undefined ? node.min_width : '');
-    const curMaxW = ovr.max_width !== undefined ? ovr.max_width : (node.max_width !== undefined ? node.max_width : '');
+    const curMinW = ovr.min_width !== undefined ? ovr.min_width : (_nodeProp(node, "min_width") ?? '');
+    const curMaxW = ovr.max_width !== undefined ? ovr.max_width : (_nodeProp(node, "max_width") ?? '');
     html += '<div class="field dg-constraint-row"><span class="label">Min W</span>';
     html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value="' + curMinW + '"';
     html += ' placeholder="—"';
@@ -5305,7 +5371,7 @@ function buildAutolayoutPanel(cid, node) {
     html += '</div>';
   }
   if (sizingW === 'HUG' && _nodeHasTextContent(node)) {
-    const curMinW = ovr.min_width !== undefined ? ovr.min_width : (node.min_width !== undefined ? node.min_width : '');
+    const curMinW = ovr.min_width !== undefined ? ovr.min_width : (_nodeProp(node, "min_width") ?? '');
     const curMaxW = _inspectorDisplayMaxWidth(node, ovr);
     const curMaxChars = _inspectorMaxWidthChars(node, ovr);
     const charsDisabled = _inspectorHasExplicitMaxWidthPx(node, ovr);
@@ -5330,7 +5396,7 @@ function buildAutolayoutPanel(cid, node) {
   }
   // Fill weight (shown when width sizing is FILL)
   if (sizingW === 'FILL') {
-    const curFW = ovr.fill_weight !== undefined ? ovr.fill_weight : (node.fill_weight !== undefined ? node.fill_weight : 1);
+    const curFW = ovr.fill_weight !== undefined ? ovr.fill_weight : (_nodeProp(node, "fill_weight") ?? 1);
     html += '<div class="field"><span class="label">Weight</span>';
     html += '<input class="bf-input" type="number" min="0" step="0.5" value="' + curFW + '"';
     html += ' onchange="setFrameProp(\'' + cid + '\',\'fill_weight\',parseFloat(this.value))"';
@@ -5360,8 +5426,8 @@ function buildAutolayoutPanel(cid, node) {
   html += '</div>';
   // Min/max height (FILL and FIXED)
   if (sizingH === 'FILL' || sizingH === 'FIXED') {
-    const curMinH = ovr.min_height !== undefined ? ovr.min_height : (node.min_height !== undefined ? node.min_height : '');
-    const curMaxH = ovr.max_height !== undefined ? ovr.max_height : (node.max_height !== undefined ? node.max_height : '');
+    const curMinH = ovr.min_height !== undefined ? ovr.min_height : (_nodeProp(node, "min_height") ?? '');
+    const curMaxH = ovr.max_height !== undefined ? ovr.max_height : (_nodeProp(node, "max_height") ?? '');
     html += '<div class="field dg-constraint-row"><span class="label">Min H</span>';
     html += '<input class="bf-input" type="number" min="0" step="' + BASELINE_STEP + '" value="' + curMinH + '"';
     html += ' placeholder="—"';
@@ -5411,7 +5477,7 @@ function setFrameProp(cid, prop, value) {
   if (!overrides[cid]) overrides[cid] = {};
 
   // Clamp numeric frame properties to sane ranges
-  if (prop === 'gap' || prop === 'padding' || prop === 'padding_top' || prop === 'padding_right' || prop === 'padding_bottom' || prop === 'padding_left') {
+  if (prop === 'gap' || prop === 'stack_gap' || prop === 'padding' || prop === 'padding_top' || prop === 'padding_right' || prop === 'padding_bottom' || prop === 'padding_left') {
     value = Math.max(0, Number.isFinite(value) ? value : 0);
   }
   // When setting uniform padding, clear per-side overrides
@@ -5628,18 +5694,19 @@ function updateInspector(cid) {
     return;
   }
   const svg = document.querySelector("#stage svg");
-  if (!svg) return;
-  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  groups.forEach(g => {
-    const bbox = g.getBBox();
-    // Account for CSS transforms (overrides + reflow cascade)
-    let tdx = 0, tdy = 0;
-    const tm = (g.style.transform || "").match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
-    if (tm) { tdx = parseFloat(tm[1]); tdy = parseFloat(tm[2]); }
-    minX = Math.min(minX, bbox.x + tdx); minY = Math.min(minY, bbox.y + tdy);
-    maxX = Math.max(maxX, bbox.x + bbox.width + tdx); maxY = Math.max(maxY, bbox.y + bbox.height + tdy);
-  });
+  if (svg) {
+    const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+    groups.forEach(g => {
+      const bbox = g.getBBox();
+      // Account for CSS transforms (overrides + reflow cascade)
+      let tdx = 0, tdy = 0;
+      const tm = (g.style.transform || "").match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/);
+      if (tm) { tdx = parseFloat(tm[1]); tdy = parseFloat(tm[2]); }
+      minX = Math.min(minX, bbox.x + tdx); minY = Math.min(minY, bbox.y + tdy);
+      maxX = Math.max(maxX, bbox.x + bbox.width + tdx); maxY = Math.max(maxY, bbox.y + bbox.height + tdy);
+    });
+  }
   // Fallback to component-tree data when no SVG elements found (e.g. borderless containers)
   if (!isFinite(minX)) {
     const treeNode = model.get(cid);
@@ -5647,6 +5714,12 @@ function updateInspector(cid) {
       minX = treeNode.data.x; minY = treeNode.data.y;
       maxX = treeNode.data.x + treeNode.data.width; maxY = treeNode.data.y + treeNode.data.height;
     }
+  }
+  if (!isFinite(minX)) {
+    inspector.innerHTML =
+      '<p class="dg-empty-message bf-form-help">Component <strong>' + cid +
+      '</strong> has no layout bounds yet. Try reloading the preview.</p>';
+    return;
   }
   const own = getOwnDelta(cid);
   const eff = getEffectiveDelta(cid);
@@ -5667,11 +5740,17 @@ function updateInspector(cid) {
   const inspNode = model.get(cid);
   if (inspNode && inspNode.layout) {
     html += '<div class="field"><span class="label">Layout</span><br>' +
-      '<span class="value">' + inspNode.layout + (inspNode.layoutGap ? ' (gap ' + inspNode.layoutGap + 'px)' : '') + '</span></div>';
+      '<span class="value">' + inspNode.layout + ' (gap ' + (inspNode.layoutGap ?? 0) + 'px)</span></div>';
   }
   const currentAlign = (overrides[cid] && overrides[cid].align) || (inspNode && inspNode.align) || "TOP_LEFT";
-  html += buildAlignWidget(cid, currentAlign);
-  html += buildAutolayoutPanel(cid, inspNode);
+  try {
+    html += buildAlignWidget(cid, currentAlign);
+    html += buildAutolayoutPanel(cid, inspNode);
+  } catch (err) {
+    console.error("Inspector panel render failed:", err);
+    html += '<p class="bf-form-help" style="color:#c66">Inspector controls failed: ' +
+      (typeof escapeHtml === "function" ? escapeHtml(err.message) : err.message) + '</p>';
+  }
   if (hasMoveOverride) {
     html += '<div class="field"><span class="label">Position override</span><br>' +
       '<span class="value override">dx=' + own.dx + '  dy=' + own.dy + '</span></div>';
@@ -5702,18 +5781,17 @@ function updateInspector(cid) {
     html += renderBoxStyleOptions(currentStyle, { originalLabel: '— original —' });
     html += '</select></div>';
   }
-  // Parent gap — shown when this node is a child of an autolayout container
   const isAutoChild = _isAutolayoutChild(cid);
   if (isAutoChild) {
     const parentNode = model.getParent(cid);
-    if (parentNode) {
+    if (parentNode && parentNode.layout) {
       const pOvr = overrides[parentNode.id] || {};
-      const parentGap = pOvr.gap !== undefined ? pOvr.gap : (parentNode.layoutGap || 24);
+      const stackGap = pOvr.stack_gap !== undefined ? pOvr.stack_gap : (parentNode.layoutGap ?? DEFAULT_STACK_GAP);
       html += '<div class="dg-autolayout-section" style="margin-top:8px">';
-      html += '<span class="label" style="margin-bottom:4px;display:block">Parent spacing</span>';
-      html += '<div class="field"><span class="label">Gap</span>';
-      html += '<input class="bf-input" type="number" min="0" step="8" value="' + parentGap + '"';
-      html += ' onchange="setFrameProp(\'' + parentNode.id + '\',\'gap\',parseInt(this.value))"';
+      html += '<span class="label" style="margin-bottom:4px;display:block">Stack spacing</span>';
+      html += '<div class="field"><span class="label">Stack gap</span>';
+      html += '<input class="bf-input" type="number" min="0" step="8" value="' + stackGap + '"';
+      html += ' onchange="setFrameProp(\'' + parentNode.id + '\',\'stack_gap\',parseInt(this.value))"';
       html += ' style="width:60px">';
       html += '<span class="unit" style="margin-left:4px;color:#888;font-size:11px">px</span></div>';
       html += '</div>';

@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from frame_loader import load_frame_yaml
 from frame_model import Align, Direction, Justify, Sizing
+from diagram_shared import INSET
 from diagram_model import Border, Fill
 from diagram_model import Border
 
@@ -698,7 +699,8 @@ root:
     assert "__body" in body.id
 
     assert body.direction == Direction.HORIZONTAL
-    assert body.gap == 32
+    assert panel.gap == 32
+    assert body.gap == INSET
     assert body.align == Align.BOTTOM_RIGHT
     assert body.justify == Justify.SPACE_BETWEEN
     assert body.wrap is True
@@ -707,6 +709,51 @@ root:
     # Icon is moved to the synthetic heading child.
     assert panel.icon is None
     assert heading.icon == "Cloud.svg"
+
+
+def test_heading_body_stack_gap_independent_of_title_gap(tmp_path):
+    """Section gap is heading→body; __body stack defaults to INSET between leaves."""
+    diagram = _load(tmp_path, """
+engine: v3
+root:
+  id: root
+  children:
+    - id: section
+      gap: 0
+      heading: "Title"
+      children:
+        - id: a
+          label: [A]
+        - id: b
+          label: [B]
+""")
+    section = diagram.root.children[0]
+    body = [c for c in section.children if "__body" in (c.id or "")][0]
+    assert section.gap == 0
+    assert body.gap == INSET
+
+
+def test_heading_body_explicit_stack_gap_from_yaml(tmp_path):
+    """Explicit stack_gap in YAML sets __body.gap independently of title gap."""
+    diagram = _load(tmp_path, """
+engine: v3
+root:
+  id: root
+  children:
+    - id: section
+      gap: 0
+      stack_gap: 16
+      heading: "Title"
+      children:
+        - id: a
+          label: [A]
+        - id: b
+          label: [B]
+""")
+    section = diagram.root.children[0]
+    body = [c for c in section.children if "__body" in (c.id or "")][0]
+    assert section.gap == 0      # title gap
+    assert body.gap == 16        # stack gap from YAML, not INSET
 
 
 def test_heading_synthesis_vertical_parent_preserves_layout_props(tmp_path):
@@ -738,7 +785,8 @@ root:
     body = panel.children[1]
     assert heading.role == "heading"
     assert body.direction == Direction.VERTICAL
-    assert body.gap == 16
+    assert panel.gap == 16
+    assert body.gap == INSET
     assert body.align == Align.CENTER_RIGHT
     assert body.justify == Justify.SPACE_AROUND
     assert body.wrap is True

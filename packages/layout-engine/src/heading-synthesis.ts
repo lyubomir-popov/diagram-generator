@@ -11,12 +11,12 @@ import {
   Fill,
   type Line,
 } from './frame-model.js';
-import { ICON_SIZE } from './tokens.js';
+import { ICON_SIZE, INSET } from './tokens.js';
 
 export function applyHeadingAsChild(
   frame: Frame,
   heading: Line,
-  options?: { icon?: string; iconFill?: string },
+  options?: { icon?: string; iconFill?: string; stackGap?: number },
 ): void {
   if (!frame.isContainer) return;
 
@@ -48,7 +48,7 @@ export function applyHeadingAsChild(
   const body = new Frame({
     id: frame.id ? `${frame.id}__body` : '__body',
     direction: bodyDirection,
-    gap: frame.gap,
+    gap: options?.stackGap ?? INSET,
     align: frame.align,
     justify: frame.justify,
     wrap: frame.wrap,

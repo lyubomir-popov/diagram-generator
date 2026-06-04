@@ -252,10 +252,11 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
             # Wrap original children in a body sub-frame that preserves the
             # horizontal direction, gap, align, justify, wrap, and
             # fill_weight of the original.
+            stack_gap = int(data["stack_gap"]) if "stack_gap" in data else INSET
             body = Frame(
                 id=f"{frame.id}__body" if frame.id else "__body",
                 direction=Direction.HORIZONTAL,
-                gap=frame.gap,
+                gap=stack_gap,
                 align=frame.align,
                 justify=frame.justify,
                 wrap=frame.wrap,
@@ -273,10 +274,11 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
             # separate from the content group.  This lets justify modes
             # (e.g. space-between) distribute space between heading and
             # content without spreading individual content children apart.
+            stack_gap = int(data["stack_gap"]) if "stack_gap" in data else INSET
             body = Frame(
                 id=f"{frame.id}__body" if frame.id else "__body",
                 direction=Direction.VERTICAL,
-                gap=frame.gap,
+                gap=stack_gap,
                 align=frame.align,
                 justify=frame.justify,
                 wrap=frame.wrap,

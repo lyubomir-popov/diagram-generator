@@ -57,6 +57,10 @@ function deserializeFrame(json) {
       icon: json.icon || undefined,
       iconFill: json.iconFill || undefined,
     });
+    const body = _findSyntheticBody(frame);
+    if (body && json.stack_gap != null) {
+      body.gap = Math.max(0, parseInt(json.stack_gap, 10));
+    }
   }
   return frame;
 }
@@ -147,6 +151,32 @@ function _findFrame(frame, fid) {
 /**
  * Apply editor overrides to a Frame tree (mirrors Python _relayout_v3).
  */
+function _findSyntheticBody(frame) {
+  if (!frame || !frame.children) return null;
+  return frame.children.find(
+    c => c.id === "__body" || (c.id && c.id.endsWith("__body")),
+  ) || null;
+}
+
+function _hasHeadingBodyLayout(frame) {
+  if (!frame || !frame.children) return false;
+  const body = _findSyntheticBody(frame);
+  const hasHeading = frame.children.some(
+    c => c.role === "heading" || (c.id && c.id.endsWith("__heading")),
+  );
+  return !!(body && hasHeading);
+}
+
+/** Sync cross-axis layout fields from parent to __body (not gap — that is independent). */
+function _syncSyntheticBodyFromParent(frame) {
+  if (!_hasHeadingBodyLayout(frame)) return;
+  const body = _findSyntheticBody(frame);
+  if (!body) return;
+  body.align = frame.align;
+  body.justify = frame.justify;
+  body.wrap = frame.wrap;
+}
+
 function applyOverridesToFrameTree(diagram, allOverrides, gridOverrides) {
   // Grid overrides first, so explicit frame overrides remain authoritative
   // for the root frame when both are present.
@@ -186,9 +216,20 @@ function applyOverridesToFrameTree(diagram, allOverrides, gridOverrides) {
 
     if (ovr.direction && _DIRECTION_MAP[ovr.direction]) {
       target.direction = ovr.direction;
+      _syncSyntheticBodyFromParent(target);
     }
     if (ovr.gap != null) {
-      target.gap = Math.max(0, parseInt(ovr.gap, 10));
+      const gap = Math.max(0, parseInt(ovr.gap, 10));
+      target.gap = gap;
+    }
+    if (ovr.stack_gap != null) {
+      const stackGap = Math.max(0, parseInt(ovr.stack_gap, 10));
+      const body = _findSyntheticBody(target);
+      if (body) {
+        body.gap = stackGap;
+      } else {
+        target.gap = stackGap;
+      }
     }
     if (ovr.padding != null) {
       const p = Math.max(0, parseInt(ovr.padding, 10));
@@ -601,31 +642,74 @@ function patchSvgFromLayout(svgEl, oldBounds, newBounds, framesById) {
  * Update the component model from a placed Frame tree.
  * This mirrors what the server returns as `tree_data`.
  */
+function _headingTextForFrame(f) {
+  if (f.heading && f.heading.content) return f.heading.content;
+  const headingChild = (f.children || []).find(
+    c => c.role === "heading" || (c.id && c.id.endsWith("__heading")),
+  );
+  if (headingChild && headingChild.label && headingChild.label[0]) {
+    return headingChild.label[0].content || "";
+  }
+  return "";
+}
+
+function _resolveAuthoredLayoutFrame(f) {
+  if (!f.children || f.children.length === 0) {
+    return { layoutChildren: [], layoutGap: 0, layoutDirection: f.direction };
+  }
+  const body = f.children.find(
+    c => c.id === "__body" || (c.id && c.id.endsWith("__body")),
+  );
+  const hasHeading = f.children.some(
+    c => c.role === "heading" || (c.id && c.id.endsWith("__heading")),
+  );
+  if (body && hasHeading) {
+    return {
+      layoutChildren: body.children || [],
+      layoutGap: body.gap,
+      layoutDirection: body.direction,
+      layoutHeaderGap: f.gap,
+    };
+  }
+  return {
+    layoutChildren: f.children.filter(
+      c => !(c.id && c.id.endsWith("__body"))
+        && !(c.id && c.id.endsWith("__heading"))
+        && c.role !== "heading",
+    ),
+    layoutGap: f.gap,
+    layoutDirection: f.direction,
+    layoutHeaderGap: f.gap,
+  };
+}
+
 function updateComponentModelFromLayout(model, frame) {
   function frameToTreeData(f) {
     if (!f.id || f.id.startsWith("__")) return null;
     const ls = f._layout;
+    const { layoutChildren, layoutGap, layoutDirection, layoutHeaderGap } =
+      _resolveAuthoredLayoutFrame(f);
     const children = [];
-    if (f.children.length > 0) {
-      for (const child of f.children) {
-        const ci = frameToTreeData(child);
-        if (ci) children.push(ci);
-      }
+    for (const child of layoutChildren) {
+      const ci = frameToTreeData(child);
+      if (ci) children.push(ci);
     }
+    const hasLayout = layoutChildren.length > 0;
     return {
       id: f.id,
-      type: f.children.length > 0 ? "panel" : "box",
+      type: hasLayout || f.children.length > 0 ? "panel" : "box",
       x: ls.placedX,
       y: ls.placedY,
       width: ls.placedW,
       height: ls.placedH,
       children,
-      layout: f.children.length > 0
-        ? (f.direction === "VERTICAL" ? "vertical" : "horizontal")
+      layout: hasLayout
+        ? (layoutDirection === "VERTICAL" ? "vertical" : "horizontal")
         : "",
-      layout_gap: f.children.length > 0 ? f.gap : 0,
-      layout_col_gap: f.children.length > 0 ? f.gap : 0,
-      layout_row_gap: f.children.length > 0 ? f.gap : 0,
+      layout_gap: hasLayout ? layoutGap : 0,
+      layout_col_gap: hasLayout ? layoutGap : 0,
+      layout_row_gap: hasLayout ? layoutGap : 0,
+      layout_header_gap: hasLayout ? layoutHeaderGap : 0,
       pad: f.border !== "NONE" ? f.paddingTop : 0,
       sizing_w: f.sizingW,
       sizing_h: f.sizingH,
@@ -643,7 +727,7 @@ function updateComponentModelFromLayout(model, frame) {
       level: f.level ?? null,
       fill: f.fill,
       border: f.border,
-      heading_text: f.heading ? f.heading.content : "",
+      heading_text: _headingTextForFrame(f),
       label_text: f.label.map(ln => ln.content),
     };
   }
@@ -1145,7 +1229,7 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
 
     // Build override map (same format as requestV3Relayout sends)
     const FRAME_KEYS = [
-      "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
+      "direction", "gap", "stack_gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
       "sizing", "sizing_w", "sizing_h",
       "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "max_width_chars", "min_height",
       "max_height", "children_order", "fill", "border", "level", "text",

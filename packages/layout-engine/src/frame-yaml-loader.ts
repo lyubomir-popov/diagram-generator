@@ -188,6 +188,7 @@ function parseFrame(data: Record<string, unknown>, isRoot = false): Frame {
     applyHeadingAsChild(frame, headingLine, {
       icon: data.icon as string | undefined,
       iconFill: data.icon_fill as string | undefined,
+      stackGap: data.stack_gap != null ? Number(data.stack_gap) : undefined,
     });
   }
 

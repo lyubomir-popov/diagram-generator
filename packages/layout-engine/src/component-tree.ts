@@ -16,6 +16,7 @@ export interface ComponentInfo {
   layout_gap: number;
   layout_col_gap: number;
   layout_row_gap: number;
+  layout_header_gap: number;
   pad: number;
   sizing_w: string;
   sizing_h: string;
@@ -45,23 +46,63 @@ function headingTextForFrame(frame: Frame): string {
   return '';
 }
 
+/** Heading synthesis uses __heading + __body; expose body children/gap on the authored parent. */
+function resolveAuthoredLayoutFrame(frame: Frame): {
+  layoutChildren: Frame[];
+  layoutGap: number;
+  layoutDirection: Frame['direction'];
+  layoutHeaderGap: number;
+} {
+  if (frame.isLeaf) {
+    return {
+      layoutChildren: [],
+      layoutGap: 0,
+      layoutDirection: frame.direction,
+      layoutHeaderGap: 0,
+    };
+  }
+  const body = frame.children.find(
+    c => c.id === '__body' || (c.id?.endsWith('__body') ?? false),
+  );
+  const hasHeading = frame.children.some(
+    c => c.role === 'heading' || c.id === '__heading' || (c.id?.endsWith('__heading') ?? false),
+  );
+  if (body && hasHeading) {
+    return {
+      layoutChildren: body.children,
+      layoutGap: body.gap,
+      layoutDirection: body.direction,
+      layoutHeaderGap: frame.gap,
+    };
+  }
+  return {
+    layoutChildren: frame.children.filter(
+      c => !c.id?.endsWith('__body') && !c.id?.endsWith('__heading') && c.role !== 'heading',
+    ),
+    layoutGap: frame.gap,
+    layoutDirection: frame.direction,
+    layoutHeaderGap: frame.gap,
+  };
+}
+
 function frameToComponentInfo(frame: Frame): ComponentInfo | null {
   const cid = frame.id;
   if (!cid || cid.startsWith('__')) return null;
 
+  const { layoutChildren, layoutGap, layoutDirection, layoutHeaderGap } =
+    resolveAuthoredLayoutFrame(frame);
+
   const children: ComponentInfo[] = [];
   if (!frame.isLeaf) {
-    for (const child of frame.children) {
+    for (const child of layoutChildren) {
       const ci = frameToComponentInfo(child);
       if (ci) children.push(ci);
     }
   }
 
   let layout = '';
-  let layoutGap = 0;
-  if (!frame.isLeaf) {
-    layout = frame.direction === 'VERTICAL' ? 'vertical' : 'horizontal';
-    layoutGap = frame.gap;
+  if (!frame.isLeaf && layoutChildren.length > 0) {
+    layout = layoutDirection === 'VERTICAL' ? 'vertical' : 'horizontal';
   }
 
   return {
@@ -76,6 +117,7 @@ function frameToComponentInfo(frame: Frame): ComponentInfo | null {
     layout_gap: layoutGap,
     layout_col_gap: layoutGap,
     layout_row_gap: layoutGap,
+    layout_header_gap: layoutHeaderGap,
     pad: frame.border !== Border.NONE ? frame.paddingTop : 0,
     sizing_w: frame.sizingW,
     sizing_h: frame.sizingH,

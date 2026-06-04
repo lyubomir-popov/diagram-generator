@@ -20,6 +20,7 @@ STYLE_SEMANTICS: dict[str, dict[str, Any]] = {
 SUPPORTED_FRAME_KEYS = {
     "direction",
     "gap",
+    "stack_gap",
     "padding",
     "padding_top",
     "padding_right",
@@ -57,6 +58,7 @@ UNSUPPORTED_GRID_KEYS = {"rows", "slack_absorption"}
 _LOWER_KEYS = {"direction", "sizing", "sizing_w", "sizing_h", "fill", "border", "position"}
 _INT_KEYS = {
     "gap",
+    "stack_gap",
     "padding",
     "padding_top",
     "padding_right",
@@ -332,6 +334,7 @@ def _apply_frame_override(frame_data: dict[str, Any], override: Any, frame_id: s
         if key in {
             "direction",
             "gap",
+            "stack_gap",
             "padding_top",
             "padding_right",
             "padding_bottom",

@@ -25,6 +25,10 @@ Python is retained for three things:
 
 Python does NOT do: interactive relayout, text measurement, editor state, or any new feature development. **Do not add new layout or measure logic to Python** — parse/serialize passthrough for YAML fields is acceptable.
 
+### Frame YAML editing rule
+
+Before editing any file under `scripts/diagrams/frames/`, **read the current file from disk**. Apply minimal diffs for the requested change. Do not revert `direction`, `gap`, `padding`, or other layout fields the user may have saved via the preview editor. If the user may have unsaved UI edits, say so and ask them to Save first. Do not reconstruct a YAML from memory, git history, or assumptions — always start from the on-disk file.
+
 ### Figma autolayout fidelity (north star)
 
 The TS layout engine targets a **faithful port of Figma autolayout semantics**. Spec: `specs/011-figma-autolayout-fidelity/`. Text-bearing frames default to `max_width_chars: 66` (Bringhurst measure); HUG boxes wrap at that measure and hug the resulting block. Deviations require an documented exception in spec 011 or `DIAGRAM.md`.
