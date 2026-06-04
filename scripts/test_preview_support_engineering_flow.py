@@ -17,6 +17,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
+DIRTY_DIAGRAM_NAV_CONFIRM = "You have unsaved changes. Leave this diagram without saving?"
 
 
 def _reserve_port() -> int:
@@ -106,6 +107,45 @@ def _open_v3_page(
 
 def _open_v3_support_engineering_page(playwright: object, base_url: str):
     return _open_v3_page(playwright, base_url, "support-engineering-flow", "step_fix")
+
+
+def _wait_for_diagram_loaded(page, *, slug: str | None = None, component_id: str | None = None) -> None:
+    page.wait_for_load_state("domcontentloaded")
+    page.wait_for_function("() => typeof whenDiagramLoaded === 'function'")
+    if slug is not None:
+        page.wait_for_function(
+            "(expectedPath) => window.location.pathname === expectedPath",
+            arg=f"/view/v3:{slug}",
+        )
+    page.evaluate("() => whenDiagramLoaded()")
+    if component_id is not None:
+        page.wait_for_function(
+            "(cid) => document.querySelector(`[data-component-id=\"${cid}\"]`) !== null",
+            arg=component_id,
+        )
+
+
+def _preview_nav_state(page) -> dict:
+    return page.evaluate(
+        """
+        () => {
+          const picker = document.getElementById('diagram-picker');
+          const activeBrowse = document.querySelector('.dg-browse-link.is-active');
+          const nextOption = (
+            picker
+            && picker.selectedIndex >= 0
+            && picker.selectedIndex + 1 < picker.options.length
+          ) ? picker.options[picker.selectedIndex + 1] : null;
+          return {
+            path: window.location.pathname,
+            pickerValue: picker ? picker.value : null,
+            activeBrowseHref: activeBrowse ? activeBrowse.getAttribute('href') : null,
+            nextValue: nextOption ? nextOption.value : null,
+            nextLabel: nextOption ? nextOption.textContent : null,
+          };
+        }
+        """
+    )
 
 
 def _select_component(page, component_id: str) -> None:
@@ -800,45 +840,96 @@ def test_v3_clear_panel_heading_keeps_parent_stroke(tmp_path):
                 browser.close()
 
 
+def test_v3_dirty_diagram_next_cancel_keeps_nav_ui_in_sync(tmp_path):
+    frames_dir = tmp_path / "frames"
+    frames_dir.mkdir()
+    for name in ("simple-testcase.yaml", "support-engineering-flow.yaml"):
+        shutil.copyfile(SCRIPTS / "diagrams" / "frames" / name, frames_dir / name)
+
+    with _preview_server(extra_env={"DG_FRAMES_DIR": str(frames_dir)}) as base_url:
+        with sync_playwright() as playwright:
+            browser, page = _open_v3_page(playwright, base_url, "simple-testcase", "define")
+            dialogs: list[str] = []
+            page.on("dialog", lambda dialog: (dialogs.append(dialog.message), dialog.dismiss()))
+            try:
+                page.wait_for_function("() => getV3RelayoutStatus().localReady")
+                nav_before = _preview_nav_state(page)
+                assert nav_before["nextValue"] == "/view/v3:support-engineering-flow"
+
+                page.locator('[data-component-id="define"] rect').click()
+                page.keyboard.press("Delete")
+                page.wait_for_function("() => model.get('define') === null")
+
+                page.locator("#diagram-next").click()
+                page.wait_for_timeout(200)
+
+                nav_after = _preview_nav_state(page)
+                assert dialogs == [DIRTY_DIAGRAM_NAV_CONFIRM]
+                assert nav_after["path"] == nav_before["path"]
+                assert nav_after["pickerValue"] == nav_before["path"]
+                assert nav_after["activeBrowseHref"] == nav_before["path"]
+                assert page.evaluate("() => model.get('define') === null")
+            finally:
+                browser.close()
+
+
+def test_v3_dirty_browse_link_cancel_keeps_nav_ui_in_sync(tmp_path):
+    frames_dir = tmp_path / "frames"
+    frames_dir.mkdir()
+    for name in ("simple-testcase.yaml", "support-engineering-flow.yaml"):
+        shutil.copyfile(SCRIPTS / "diagrams" / "frames" / name, frames_dir / name)
+
+    with _preview_server(extra_env={"DG_FRAMES_DIR": str(frames_dir)}) as base_url:
+        with sync_playwright() as playwright:
+            browser, page = _open_v3_page(playwright, base_url, "simple-testcase", "define")
+            dialogs: list[str] = []
+            page.on("dialog", lambda dialog: (dialogs.append(dialog.message), dialog.dismiss()))
+            try:
+                page.wait_for_function("() => getV3RelayoutStatus().localReady")
+                nav_before = _preview_nav_state(page)
+
+                page.locator('[data-component-id="define"] rect').click()
+                page.keyboard.press("Delete")
+                page.wait_for_function("() => model.get('define') === null")
+
+                page.locator(".dg-browse-link", has_text="support-engineering-flow").click()
+                page.wait_for_timeout(200)
+
+                nav_after = _preview_nav_state(page)
+                assert dialogs == [DIRTY_DIAGRAM_NAV_CONFIRM]
+                assert nav_after["path"] == nav_before["path"]
+                assert nav_after["pickerValue"] == nav_before["path"]
+                assert nav_after["activeBrowseHref"] == nav_before["path"]
+                assert page.evaluate("() => model.get('define') === null")
+            finally:
+                browser.close()
+
+
 def test_v3_unsaved_delete_restored_after_diagram_next_and_back(tmp_path):
     frames_dir = tmp_path / "frames"
     frames_dir.mkdir()
-    for name in ("simple-testcase.yaml", "diagram-intake-workflow.yaml"):
+    for name in ("simple-testcase.yaml", "support-engineering-flow.yaml"):
         shutil.copyfile(SCRIPTS / "diagrams" / "frames" / name, frames_dir / name)
 
     with _preview_server(extra_env={"DG_FRAMES_DIR": str(frames_dir)}) as base_url:
         with sync_playwright() as playwright:
             browser, page = _open_v3_page(playwright, base_url, "simple-testcase", "define")
             try:
-                page.on("dialog", lambda dialog: dialog.accept())
+                dialogs: list[str] = []
+                page.on("dialog", lambda dialog: (dialogs.append(dialog.message), dialog.accept()))
                 page.wait_for_function("() => getV3RelayoutStatus().localReady")
+                nav_before = _preview_nav_state(page)
+                assert nav_before["nextValue"] == "/view/v3:support-engineering-flow"
                 page.locator('[data-component-id="define"] rect').click()
                 page.keyboard.press("Delete")
                 page.wait_for_function("() => model.get('define') === null")
 
-                page.evaluate(
-                    "() => window.location.assign('/view/v3:diagram-intake-workflow')"
-                )
-                page.wait_for_function(
-                    """
-                    () => (
-                      window.location.pathname.includes('diagram-intake-workflow')
-                      && window.__DG_DIAGRAM_LOAD_GENERATION > 0
-                      && document.querySelector('#stage svg')
-                    )
-                    """
-                )
+                page.locator("#diagram-next").click()
+                _wait_for_diagram_loaded(page, slug="support-engineering-flow", component_id="step_fix")
+                assert dialogs == [DIRTY_DIAGRAM_NAV_CONFIRM]
 
-                page.evaluate("() => window.location.assign('/view/v3:simple-testcase')")
-                page.wait_for_function(
-                    """
-                    () => (
-                      window.location.pathname.endsWith('simple-testcase')
-                      && window.__DG_DIAGRAM_LOAD_GENERATION > 0
-                      && document.querySelector('#stage svg')
-                    )
-                    """
-                )
+                page.go_back(wait_until="domcontentloaded")
+                _wait_for_diagram_loaded(page, slug="simple-testcase", component_id="define")
                 page.wait_for_function("() => model.get('define') !== null")
                 page.wait_for_function("() => __DG_TEST_treeHasFrameId('define')")
             finally:

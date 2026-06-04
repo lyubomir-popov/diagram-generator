@@ -39,8 +39,10 @@ Object.defineProperty(window, "selectionDepth", {
 });
 
 let isDirty = false;
+let _allowInternalDirtyNavigation = false;
 // HANDLE_SIZE now shared via SHARED_HANDLE_SIZE in editor-base.js
 let multiActionGap = window.__DG_CONFIG.col_gap || 24;
+const DIRTY_DIAGRAM_NAV_CONFIRM = "You have unsaved changes. Leave this diagram without saving?";
 
 function getThemeToken(name, fallback) {
   const value = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -602,6 +604,49 @@ function whenDiagramLoaded() {
 
 window.whenDiagramLoaded = whenDiagramLoaded;
 window.__DG_TEST_getDiagramLoadGeneration = () => _diagramLoadGeneration;
+
+function _syncBrowseNavToLocation() {
+  const currentPath = window.location.pathname;
+  document.querySelectorAll(".dg-browse-link").forEach((link) => {
+    const active = link.getAttribute("href") === currentPath;
+    link.classList.toggle("is-active", active);
+    if (active) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
+}
+
+function _normaliseDiagramPath(nextUrl) {
+  try {
+    return new URL(String(nextUrl || ""), window.location.origin).pathname;
+  } catch {
+    return "";
+  }
+}
+
+function _attemptDiagramNavigation(nextUrl, syncUi) {
+  const nextPath = _normaliseDiagramPath(nextUrl);
+  if (!nextPath || nextPath === window.location.pathname) {
+    syncUi();
+    return false;
+  }
+  if (isDirty) {
+    const confirmed = window.confirm(DIRTY_DIAGRAM_NAV_CONFIRM);
+    if (!confirmed) {
+      syncUi();
+      return false;
+    }
+  }
+  _allowInternalDirtyNavigation = true;
+  window.location.assign(nextPath);
+  window.setTimeout(() => {
+    _allowInternalDirtyNavigation = false;
+    syncUi();
+  }, 0);
+  return true;
+}
 
 async function loadTree() {
   try {
@@ -5962,11 +6007,13 @@ document.addEventListener("keydown", (e) => {
 document.getElementById("btn-undo").addEventListener("click", performUndo);
 document.getElementById("btn-redo").addEventListener("click", performRedo);
 
-// Warn before leaving with unsaved changes
+// Warn before leaving with unsaved changes.
+// Internal diagram navigation uses its own confirm path and suppresses this.
 window.addEventListener("beforeunload", (e) => {
-  if (isDirty) {
+  if (isDirty && !_allowInternalDirtyNavigation) {
     e.preventDefault();
-    return "You have unsaved changes. Are you sure you want to leave?";
+    e.returnValue = "";
+    return "";
   }
 });
 
@@ -6384,9 +6431,14 @@ function initDiagramPicker() {
     }
   }
 
+  function syncNavToLocation() {
+    syncDiagramPickerToLocation();
+    _syncBrowseNavToLocation();
+  }
+
   async function populateDiagramOptions() {
     if (picker.options.length > 0) {
-      syncDiagramPickerToLocation();
+      syncNavToLocation();
       return;
     }
 
@@ -6414,17 +6466,14 @@ function initDiagramPicker() {
         picker.append(option);
       });
 
-      syncDiagramPickerToLocation();
+      syncNavToLocation();
     } catch {
       // Leave the picker empty if the index cannot be fetched.
     }
   }
 
   picker.addEventListener("change", () => {
-    const nextUrl = picker.value;
-    if (nextUrl && nextUrl !== window.location.pathname) {
-      window.location.assign(nextUrl);
-    }
+    _attemptDiagramNavigation(picker.value, syncNavToLocation);
   });
 
   const prevBtn = document.getElementById("diagram-prev");
@@ -6434,16 +6483,26 @@ function initDiagramPicker() {
     if (picker.options.length === 0) return;
     const idx = picker.selectedIndex + delta;
     if (idx < 0 || idx >= picker.options.length) return;
-    picker.selectedIndex = idx;
-    picker.dispatchEvent(new Event("change"));
+    const nextUrl = picker.options[idx]?.value || "";
+    _attemptDiagramNavigation(nextUrl, syncNavToLocation);
   }
 
   if (prevBtn) prevBtn.addEventListener("click", () => stepPicker(-1));
   if (nextBtn) nextBtn.addEventListener("click", () => stepPicker(1));
 
-  syncDiagramPickerToLocation();
-  requestAnimationFrame(syncDiagramPickerToLocation);
-  window.addEventListener("pageshow", syncDiagramPickerToLocation);
+  document.querySelectorAll(".dg-browse-link").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      event.preventDefault();
+      _attemptDiagramNavigation(link.getAttribute("href"), syncNavToLocation);
+    });
+  });
+
+  syncNavToLocation();
+  requestAnimationFrame(syncNavToLocation);
+  window.addEventListener("pageshow", syncNavToLocation);
   void populateDiagramOptions();
 }
 
