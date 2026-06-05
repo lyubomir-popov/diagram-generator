@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-05 – Runtime dist freshness guard for TS CLIs
+
+- Added a dist freshness guard in `packages/layout-engine/scripts/_dist-import.mjs` so the live Node runtime rebuilds `packages/layout-engine/dist/` when TS source is newer than the requested dist artifact.
+- Added runtime regressions in `scripts/test_preview_frames_dir.py` covering both frame-tree DTO emission and batch SVG export through the actual Node entrypoints, not just source-level imports.
+- Validation: `python -m pytest scripts/test_preview_frames_dir.py scripts/test_preview_ts_api.py -q` green.
+
 ### 2026-06-05 – Spec 020 non-export line-style authority cut
 
 - Removed non-export line-style parsing from the TS and Python YAML loaders. Line dicts now collapse to pure text content in active authoring paths, and string `heading:` no longer injects `weight: 700` into the model.

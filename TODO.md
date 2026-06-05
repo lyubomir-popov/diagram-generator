@@ -30,8 +30,7 @@ Feature package: `specs/021-arrow-labels-use-annotation-variant/` — arrow labe
 
 Feature package: `specs/020-lean-variant-style-authority/` — new north-star simplification slice. Diagrams are disposable test fixtures; compatibility is explicitly subordinate to a lean, rigorous, TS-first model.
 
-- [ ] `[H]` **P1. Remove line-level styling authority from frame-owned text.** Variant/context-derived resolved style becomes the only render and measurement authority.
-- [x] `[H]` **P1. Remove line-level styling authority from frame-owned text.** YAML parsing, preview wire transport, preview relayout, and the Python legacy mirror now keep frame-owned lines semantic and derive typography from resolved snapshots instead.
+- [x] `[H]` **P1. Remove line-level styling authority from frame-owned text.** YAML parsing, preview wire transport, preview relayout, the Python legacy mirror, and the dist-backed Node runtime now keep frame-owned lines semantic and derive typography from resolved snapshots instead.
 - [ ] `[H]` **P1. Prune the diagram corpus to a minimal invariant pack.** Keep only a small canonical fixture set; delete or rewrite the rest.
 - [ ] `[H]` **P1. Rewrite YAML toward semantic inputs only.** No legacy text color/weight/small-caps escape hatches for frame-owned text.
 

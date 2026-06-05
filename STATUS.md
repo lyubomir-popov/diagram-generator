@@ -1,7 +1,7 @@
 # Status
 
 **Last updated:** 2026-06-05  
-**Branch:** `main` @ `a6822da`
+**Branch:** `main` @ `e45bd18` + local runtime dist-fix edits
 
 ## Stakeholder path
 
@@ -32,7 +32,12 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | **Preview APIs** | TS-only: frame-tree, grid, component tree (`preview_ts_layout.py`) |
 | **Live preview SVG** | TS-only Node export (`preview_ts_export.py`); no Python SVG renderer (spec 012) |
 | **Batch SVG** | `export-frame-svg.mjs` — TS-only (`svg-render.ts`); golden harness `tests/svg-golden.test.ts` (3 canonical slugs after the first pruning pass) |
-| **Tests** | 241 TS vitest (229 pass; 12 known `test-deep-nesting` width parity failures). Focused preview browser regressions green and `test_preview_ts_api.py` green. Full `pytest scripts -q` still has legacy parity drift outside the active TS path |
+| **Tests** | 241 TS vitest (229 pass; 12 known `test-deep-nesting` width parity failures). Focused preview browser regressions green; `test_preview_frames_dir.py` and `test_preview_ts_api.py` green. Full `pytest scripts -q` still has legacy parity drift outside the active TS path |
+
+### Current delta — runtime dist freshness fix (2026-06-05)
+
+- `export-frame-svg.mjs`, `emit-frame-diagram-json.mjs`, and sibling Node CLIs now auto-rebuild `packages/layout-engine/dist/` when TS source is newer than the requested dist artifact, so the active runtime no longer drifts behind source edits.
+- Added runtime regressions in `scripts/test_preview_frames_dir.py` proving the live DTO/export scripts strip retired line-level style fields rather than only the source-level unit tests doing so.
 
 ### Recent work — spec 012 complete + arrow editing (2026-06-04)
 
