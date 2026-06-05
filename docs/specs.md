@@ -24,6 +24,7 @@ Use this file to answer two questions quickly:
 | 017 Preview frame delete | `specs/017-preview-frame-delete/` | Complete | Delete/Backspace + tree context menu; `removed_ids` YAML persistence; undo restores frame tree. |
 | 018 PNG export | `specs/018-png-export/` | Draft | Preview **Save PNG** + slug batch CLI; rasterize TS SVG via Playwright; `diagrams/2.output/v3/png/`. |
 | 019 Preview inspector cleanup | `specs/019-preview-inspector-cleanup/` | Complete | Removed redundant Selection summary fields; id in Auto-layout heading. |
+| 023 Force-layout restoration | `specs/023-force-layout-restoration/` | In progress | TS-owned force runtime restored for the three canonical demos, including drag/pin/unpin/export behavior; local save persistence and fuller automated coverage remain. |
 | — | `specs/ADVERSARIAL_REVIEW_PROMPT.md` | Template | Copy-paste prompt for post-session adversarial reviews. |
 | 005 Autolayout hardening | `specs/005-autolayout-hardening/` | Complete | Semantic mutation, style ownership, heading/body synthesis, and padding-contract hardening all validated; WS5 closeout completed on the retained 11-slug corpus. |
 | 008 Repo coherence rewrite | `specs/008-repo-coherence-rewrite/` | In progress | Doc and workflow consolidation toward design-foundry port. |

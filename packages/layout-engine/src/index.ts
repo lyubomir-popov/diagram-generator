@@ -127,3 +127,21 @@ export {
   type FrameClassDefinition,
   type FrameTextStyle,
 } from './frame-classes.js';
+
+export {
+  applyForceNodePatch,
+  createInitialForceSnapshot,
+  exportForceSnapshot,
+  tickForceSimulation,
+  updateForceSimulationParams,
+  type ForceAuthoredSpec,
+  type ForceLinkSpec,
+  type ForceNodePatch,
+  type ForceNodeSpec,
+  type ForceRenderSpec,
+  type ForceSimulationConfig,
+  type ForceRuntimeLink,
+  type ForceRuntimeNode,
+  type ForceRuntimeSnapshot,
+  type ForceSimulationSpec,
+} from './force-runtime.js';

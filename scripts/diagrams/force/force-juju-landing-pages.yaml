@@ -1,0 +1,180 @@
+title: Juju landing pages
+reference_image: force/IMG_3231.jpg
+canvas:
+  width: 1728
+  height: 1024
+render:
+  curve_handle_ratio: 0.35
+  curve_handle_min: 24
+  curve_handle_max: 72
+simulation:
+  ticks_per_frame: 1
+  max_iterations: 300
+  charge_strength: -700
+  link_distance: 220
+  link_strength: 0.09
+  collision_padding: 24
+  collision_iterations: 4
+  velocity_decay: 0.36
+  alpha_min: 0.006
+  center: [864, 512]
+nodes:
+  - id: juju-for-sres
+    label: ['"Juju for SREs"', landing page, with links to core, and charm bits]
+    width: 256
+    height: 112
+    x: 620
+    y: 180
+  - id: juju-for-developers
+    label: ['"Juju for developers"', landing page, with links to core, and charm bits]
+    width: 256
+    height: 112
+    x: 1096
+    y: 180
+  - id: left-core-ellipsis
+    label: ['...']
+    width: 96
+    height: 64
+    x: 360
+    y: 308
+  - id: juju
+    label: [Juju]
+    width: 144
+    height: 64
+    x: 360
+    y: 492
+  - id: right-core-ellipsis
+    label: ['...']
+    width: 96
+    height: 64
+    x: 1460
+    y: 276
+  - id: ops
+    label: [Ops]
+    width: 128
+    height: 64
+    x: 1468
+    y: 428
+  - id: charmcraft
+    label: [Charmcraft]
+    width: 160
+    height: 64
+    x: 1330
+    y: 548
+  - id: data
+    label: [Data]
+    width: 192
+    height: 80
+    x: 600
+    y: 744
+  - id: identity
+    label: [Identity]
+    width: 192
+    height: 80
+    x: 900
+    y: 724
+  - id: platform-ellipsis
+    label: ['...']
+    width: 192
+    height: 80
+    x: 1188
+    y: 738
+  - id: data-ellipsis
+    label: ['...']
+    width: 96
+    height: 64
+    x: 460
+    y: 914
+  - id: postgresql-charm
+    label: [PostgreSQL, charm]
+    width: 160
+    height: 80
+    x: 794
+    y: 930
+  - id: identity-ellipsis
+    label: ['...']
+    width: 96
+    height: 64
+    x: 1046
+    y: 914
+  - id: platform-ellipsis-a
+    label: ['...']
+    width: 96
+    height: 64
+    x: 1120
+    y: 924
+  - id: platform-ellipsis-b
+    label: ['...']
+    width: 96
+    height: 64
+    x: 1290
+    y: 924
+links:
+  - source: juju-for-sres
+    target: left-core-ellipsis
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-sres
+    target: juju
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-sres
+    target: data
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-sres
+    target: identity
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-sres
+    target: platform-ellipsis
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-developers
+    target: juju
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-developers
+    target: data
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-developers
+    target: identity
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-developers
+    target: platform-ellipsis
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-developers
+    target: right-core-ellipsis
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-developers
+    target: ops
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: juju-for-developers
+    target: charmcraft
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: data
+    target: data-ellipsis
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: identity
+    target: postgresql-charm
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: identity
+    target: identity-ellipsis
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: platform-ellipsis
+    target: platform-ellipsis-a
+    stroke: '#E95420'
+    stroke_width: 1
+  - source: platform-ellipsis
+    target: platform-ellipsis-b
+    stroke: '#E95420'
+    stroke_width: 1

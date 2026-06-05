@@ -19,6 +19,8 @@
     "vitest": "^3.2.0"
   },
   "dependencies": {
+    "@diagram-generator/graph-layout-core": "file:../graph-layout-core",
+    "@diagram-generator/graph-layout-elk": "file:../graph-layout-elk",
     "harfbuzzjs": "^1.2.0",
     "yaml": "^2.8.0"
   }

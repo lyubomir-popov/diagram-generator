@@ -27,14 +27,48 @@ const boxStyleOptionsHtml = window.__DG_boxStyleOptionsHtml || function boxStyle
 };
 
 let currentSnapshot = null;
+let committedSnapshot = null;
 let running = false;
 let inFlight = false;
+let localRuntimeOnly = false;
 let selectedIds = new Set();
 let dragCandidate = null;
 let dragState = null;
 let resizeState = null;
 let suppressStageClick = false;
 const EMPTY_SELECTION_HTML = '<p class="dg-empty-message bf-form-help">Select or drag a node from the stage or the left rail. Dragging drops it into a pinned manual-polish position.</p>';
+
+function canUseLocalForceRuntime() {
+  return Boolean(window.LayoutEngine && typeof window.LayoutEngine.createInitialForceSnapshot === "function");
+}
+
+function isForceBackendUnavailable(error) {
+  const message = String(error?.message || error || "");
+  return message.includes("Force layout backend is not available");
+}
+
+async function loadLocalForceSnapshot() {
+  if (!canUseLocalForceRuntime()) {
+    throw new Error("Local TS force runtime is unavailable");
+  }
+  const spec = await fetchJson(`/api/force-spec/${encodeURIComponent(FORCE_SLUG)}`);
+  localRuntimeOnly = true;
+  return window.LayoutEngine.createInitialForceSnapshot(spec);
+}
+
+function updateLocalRuntimeControls() {
+  byId("btn-play").disabled = false;
+  byId("btn-step").disabled = false;
+  byId("btn-force-save").disabled = localRuntimeOnly || !forceUndoManager.isDirty();
+  const container = document.getElementById("force-params");
+  if (!container) return;
+  const canEditLocalParams = !localRuntimeOnly || Boolean(
+    window.LayoutEngine && typeof window.LayoutEngine.updateForceSimulationParams === "function"
+  );
+  for (const input of container.querySelectorAll("input")) {
+    input.disabled = !canEditLocalParams;
+  }
+}
 
 // ---- Undo/Redo via shared UndoRedoManager ----
 
@@ -85,15 +119,18 @@ const forceUndoManager = new UndoRedoManager({
 function pushForceUndo(label, before, after) {
   if (!before || !after) return;
   forceUndoManager.push(label, before, after);
+  updateLocalRuntimeControls();
 }
 
 async function performForceUndo() {
   const label = await forceUndoManager.undo();
+  updateLocalRuntimeControls();
   if (label) setStatus(`Undo: ${label}`, "ok");
 }
 
 async function performForceRedo() {
   const label = await forceUndoManager.redo();
+  updateLocalRuntimeControls();
   if (label) setStatus(`Redo: ${label}`, "ok");
 }
 
@@ -110,7 +147,7 @@ function currentTicksPerFrame() {
   if (Number.isFinite(raw) && raw >= 1) {
     return Math.min(32, Math.floor(raw));
   }
-  return currentSnapshot?.simulation?.ticks_per_frame || 4;
+  return committedSnapshot?.simulation?.ticks_per_frame || currentSnapshot?.simulation?.ticks_per_frame || 4;
 }
 
 // setViewMode, getStageSvg come from editor-base.js
@@ -259,7 +296,7 @@ function updateForceResize(event) {
     newY = resizeState.origY - dh / 2;
   }
 
-  render(previewResizedSnapshot(currentSnapshot, resizeState.nodeId, newX, newY, newW, newH));
+  render(previewResizedSnapshot(currentSnapshot, resizeState.nodeId, newX, newY, newW, newH), { previewOnly: true });
   showForceResizeHandles(resizeState.nodeId);
   setStatus(`Resizing ${newW}×${newH}`, "ok");
 }
@@ -521,16 +558,44 @@ function renderSelection(snapshot) {
 
 function updateSummary(snapshot) {
   const settled = snapshot.simulation.settled ? "settled" : "live";
+  if (localRuntimeOnly) {
+    byId("force-summary").textContent = `TS local runtime. alpha ${snapshot.simulation.alpha.toFixed(3)} • ${snapshot.simulation.tick_count} ticks • ${settled}. Export snaps positions to the 8px grid; local save is still pending.`;
+    return;
+  }
   byId("force-summary").textContent = `alpha ${snapshot.simulation.alpha.toFixed(3)} • ${snapshot.simulation.tick_count} ticks • ${settled}. Export snaps positions to the 8px grid.`;
 }
 
 async function updateForceNode(nodeId, patch) {
-  const snapshot = await fetchJson(`/api/force-node/${encodeURIComponent(FORCE_SLUG)}`, {
+  const shouldResumeSimulation = patch.x != null || patch.y != null || patch.width != null || patch.height != null || patch.pinned != null;
+  const shouldImmediateTick = patch.pinned === false;
+  if (localRuntimeOnly) {
+    if (!committedSnapshot) {
+      throw new Error("Force snapshot is not loaded");
+    }
+    let snapshot = window.LayoutEngine.applyForceNodePatch(committedSnapshot, nodeId, patch);
+    render(snapshot);
+    if (shouldImmediateTick && !inFlight && !snapshot.simulation.settled) {
+      snapshot = window.LayoutEngine.tickForceSimulation(committedSnapshot, 1);
+      render(snapshot);
+    }
+    if (shouldResumeSimulation && !running) {
+      startRunning();
+    }
+    updateLocalRuntimeControls();
+    return snapshot;
+  }
+  let snapshot = await fetchJson(`/api/force-node/${encodeURIComponent(FORCE_SLUG)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ node_id: nodeId, ...patch }),
   });
   render(snapshot);
+  if (shouldImmediateTick && !inFlight && !snapshot.simulation.settled) {
+    snapshot = await tickSimulation(1);
+  }
+  if (shouldResumeSimulation && !running) {
+    startRunning();
+  }
   return snapshot;
 }
 
@@ -590,7 +655,7 @@ function startDragPreview(candidate) {
   };
   dragCandidate = null;
   selectedIds = new Set([candidate.nodeId]);
-  render(previewDraggedSnapshot(currentSnapshot, candidate.nodeId, node.x, node.y));
+  render(previewDraggedSnapshot(currentSnapshot, candidate.nodeId, node.x, node.y), { previewOnly: true });
   setStatus("Dragging…", "ok");
 }
 
@@ -614,7 +679,7 @@ function updateDragPreview(event) {
     node.width, node.height, dragState.snapTargets
   );
 
-  render(previewDraggedSnapshot(currentSnapshot, dragState.nodeId, snap.x, snap.y));
+  render(previewDraggedSnapshot(currentSnapshot, dragState.nodeId, snap.x, snap.y), { previewOnly: true });
 
   // Render guide lines after render() rebuilds the SVG
   if (snap.lines.length > 0) {
@@ -680,8 +745,12 @@ function ensureReferenceImage() {
   image.src = `/reference/${encodeURIComponent(FORCE_SLUG)}`;
 }
 
-function render(snapshot) {
+function render(snapshot, options = {}) {
+  const { previewOnly = false } = options;
   currentSnapshot = snapshot;
+  if (!previewOnly) {
+    committedSnapshot = snapshot;
+  }
   document.title = `${snapshot.title} – force preview`;
   if (snapshot.simulation.tick_count === 0) {
     byId("ticks-per-frame").value = String(snapshot.simulation.ticks_per_frame);
@@ -708,6 +777,8 @@ function render(snapshot) {
     setStatus("Settled", "ok");
   } else if (running) {
     setStatus("Running…", "ok");
+  } else if (localRuntimeOnly) {
+    setStatus("TS local snapshot", "ok");
   } else {
     setStatus("Paused", "ok");
   }
@@ -717,20 +788,42 @@ function render(snapshot) {
   if (staleEl) {
     staleEl.style.display = snapshot.definition_stale ? "block" : "none";
   }
+
+  updateLocalRuntimeControls();
 }
 
 async function loadSnapshot(reset = true) {
-  const url = reset
-    ? `/api/force-reset/${encodeURIComponent(FORCE_SLUG)}`
-    : `/api/force/${encodeURIComponent(FORCE_SLUG)}`;
-  const options = reset
-    ? { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }
-    : undefined;
-  const snapshot = await fetchJson(url, options);
+  let snapshot;
+  if (localRuntimeOnly || canUseLocalForceRuntime()) {
+    snapshot = await loadLocalForceSnapshot();
+  } else {
+    const url = reset
+      ? `/api/force-reset/${encodeURIComponent(FORCE_SLUG)}`
+      : `/api/force/${encodeURIComponent(FORCE_SLUG)}`;
+    const options = reset
+      ? { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }
+      : undefined;
+    try {
+      snapshot = await fetchJson(url, options);
+    } catch (error) {
+      if (!isForceBackendUnavailable(error)) {
+        throw error;
+      }
+      snapshot = await loadLocalForceSnapshot();
+    }
+  }
   render(snapshot);
 }
 
 async function tickSimulation(iterations) {
+  if (localRuntimeOnly) {
+    if (!committedSnapshot) {
+      throw new Error("Force snapshot is not loaded");
+    }
+    const snapshot = window.LayoutEngine.tickForceSimulation(committedSnapshot, iterations);
+    render(snapshot);
+    return snapshot;
+  }
   const snapshot = await fetchJson(`/api/force-tick/${encodeURIComponent(FORCE_SLUG)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -753,20 +846,33 @@ function downloadBlob(filename, content, contentType) {
 }
 
 async function exportJson() {
-  const snapshot = await fetchJson(`/api/force-export/${encodeURIComponent(FORCE_SLUG)}`);
+  const snapshot = localRuntimeOnly
+    ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
+    : await fetchJson(`/api/force-export/${encodeURIComponent(FORCE_SLUG)}`);
+  if (!snapshot) {
+    throw new Error("Force snapshot is not loaded");
+  }
   render(snapshot);
   downloadBlob(`${FORCE_SLUG}-snapshot.json`, `${JSON.stringify(snapshot, null, 2)}\n`, "application/json");
   setStatus("Exported JSON", "ok");
 }
 
 async function exportSvg() {
-  const snapshot = await fetchJson(`/api/force-export/${encodeURIComponent(FORCE_SLUG)}`);
+  const snapshot = localRuntimeOnly
+    ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
+    : await fetchJson(`/api/force-export/${encodeURIComponent(FORCE_SLUG)}`);
+  if (!snapshot) {
+    throw new Error("Force snapshot is not loaded");
+  }
   render(snapshot);
   downloadBlob(`${FORCE_SLUG}.svg`, `${buildSvg(snapshot)}\n`, "image/svg+xml;charset=utf-8");
   setStatus("Exported SVG", "ok");
 }
 
 async function saveForceOverrides() {
+  if (localRuntimeOnly) {
+    throw new Error("Save is not implemented yet for the TS force runtime");
+  }
   await fetchJson(`/api/force-save/${encodeURIComponent(FORCE_SLUG)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1181,6 +1287,20 @@ document.getElementById("force-params").addEventListener("change", async (event)
   const key = input.getAttribute("data-force-param");
   const value = parseFloat(input.value);
   if (isNaN(value)) return;
+  if (localRuntimeOnly) {
+    try {
+      if (!committedSnapshot) {
+        throw new Error("Force snapshot is not loaded");
+      }
+      const snapshot = window.LayoutEngine.updateForceSimulationParams(committedSnapshot, { [key]: value });
+      render(snapshot);
+      if (!running) startRunning();
+      setStatus(`${key} → ${value}`, "ok");
+    } catch (error) {
+      setStatus(error.message || "Param update failed", "error");
+    }
+    return;
+  }
   try {
     const resp = await fetch(`/api/force-params/${encodeURIComponent(FORCE_SLUG)}`, {
       method: "POST",

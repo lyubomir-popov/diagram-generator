@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-05 – Spec 023 TS force lane restoration landed on branch
+
+- Restored the force demo lane as a TypeScript-owned runtime instead of reviving the deleted Python solver/backend: YAML-authored force specs under `scripts/diagrams/force/`, historical solver port in `force-solver.ts` / `force-quadtree.ts`, and a stateful preview runtime wrapper in `force-runtime.ts`.
+- Rewired the live preview shell so force interactions, parameter edits, and snapped JSON/SVG export run against the TS runtime through `browser-entry.ts` and `scripts/preview/force.js`.
+- Fixed the preview-state identity bug by keeping a committed runtime-backed snapshot separate from temporary drag/resize preview clones.
+- Fixed the unpin/release path so a manually moved node immediately rejoins the simulation and the rest of the graph reheats instead of staying frozen.
+- Validation: `npm --prefix packages/layout-engine run build`, `npm --prefix packages/layout-engine run build:browser`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`; browser-checked `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle` on the TS runtime.
+
 ### 2026-06-05 – Spec 005 WS5 validation and closeout
 
 - Closed spec 005 after the final validation pass: `npm --prefix packages/layout-engine test` green (`246/246`), retained 11-slug batch SVG export sweep green.

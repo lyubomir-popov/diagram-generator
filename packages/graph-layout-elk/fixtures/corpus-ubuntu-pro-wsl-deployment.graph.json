@@ -1,0 +1,51 @@
+{
+  "id": "ubuntu-pro-wsl-deployment",
+  "meta": {
+    "corpusRef": "diagram-generator-planning vision_results_batch_020 idx:12",
+    "diagramType": "deployment_and_runtime_topology",
+    "description": "Ubuntu Pro on WSL — nested Windows / WSL / Ubuntu runtime boundaries with external service links (corpus audit reconstruction)."
+  },
+  "direction": "TB",
+  "spacingProfile": "normal",
+  "nodes": [
+    {
+      "id": "windows_host",
+      "width": 560,
+      "height": 340,
+      "label": "Windows host",
+      "children": [
+        {
+          "id": "wsl_vm",
+          "width": 520,
+          "height": 300,
+          "label": "WSL (VM)",
+          "children": [
+            {
+              "id": "ubuntu_instance",
+              "width": 480,
+              "height": 240,
+              "label": "Ubuntu WSL instance",
+              "children": [
+                { "id": "landscape_client", "width": 192, "height": 56, "label": "Landscape Client" },
+                { "id": "wsl_pro_service", "width": 192, "height": 56, "label": "WSL Pro Service" },
+                { "id": "ubuntu_pro_client", "width": 192, "height": 56, "label": "Ubuntu Pro Client" },
+                { "id": "ubuntu_pro_agent", "width": 192, "height": 56, "label": "Ubuntu Pro for WSL Agent" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    { "id": "landscape_server", "width": 208, "height": 56, "label": "On-prem Landscape Server" },
+    { "id": "microsoft_store", "width": 192, "height": 56, "label": "Microsoft Store" },
+    { "id": "canonical_contract", "width": 208, "height": 56, "label": "Canonical Contract Server" }
+  ],
+  "edges": [
+    { "id": "agent_to_landscape", "source": "ubuntu_pro_agent", "target": "landscape_server", "label": "tcp/grpc" },
+    { "id": "client_to_landscape", "source": "landscape_client", "target": "landscape_server", "label": "tcp/https" },
+    { "id": "pro_to_store", "source": "wsl_pro_service", "target": "microsoft_store", "label": "packages" },
+    { "id": "upc_to_contract", "source": "ubuntu_pro_client", "target": "canonical_contract", "label": "auth" },
+    { "id": "host_to_store", "source": "windows_host", "target": "microsoft_store", "label": "store API" },
+    { "id": "agent_to_contract", "source": "ubuntu_pro_agent", "target": "canonical_contract", "label": "contract" }
+  ]
+}

@@ -1,0 +1,15 @@
+export {
+  type LayoutDirection,
+  type SpacingProfile,
+  type LayeredCorpusFamily,
+  type GraphNodeInput,
+  type GraphEdgeInput,
+  type GraphLayoutInput,
+  type Point2,
+  type PlacedNode,
+  type RoutedEdgeSection,
+  type PlacedEdge,
+  type GraphLayoutResult,
+  GRID_BASELINE_PX,
+  roundToGrid,
+} from './graph-ir.js';

@@ -1,0 +1,36 @@
+{
+  "id": "juju-bootstrap-machines-process",
+  "meta": {
+    "corpusRef": "sha256:983e195f9303c86c — output-juju-docs juju-architecture-bootstrap-machines-process.png",
+    "diagramType": "process_and_workflow",
+    "description": "Juju bootstrap on machines — Client and Controller agent request SimpleStreams metadata, provision Cloud, then download juju-db snap and controller charm (corpus audit reconstruction)."
+  },
+  "direction": "TB",
+  "spacingProfile": "normal",
+  "nodes": [
+    {
+      "id": "juju_system",
+      "width": 240,
+      "height": 176,
+      "label": "Juju [Software System]",
+      "children": [
+        { "id": "client", "width": 192, "height": 64, "label": "Client" },
+        { "id": "controller_agent", "width": 192, "height": 64, "label": "Controller agent" }
+      ]
+    },
+    { "id": "simplestreams_binaries", "width": 224, "height": 64, "label": "SimpleStreams — agent binaries" },
+    { "id": "simplestreams_images", "width": 224, "height": 64, "label": "SimpleStreams — images" },
+    { "id": "cloud", "width": 192, "height": 64, "label": "Cloud" },
+    { "id": "snap_store", "width": 192, "height": 64, "label": "Snap store" },
+    { "id": "charmhub", "width": 192, "height": 64, "label": "Charmhub" }
+  ],
+  "edges": [
+    { "id": "step1", "source": "client", "target": "simplestreams_binaries", "label": "1: agent binary location" },
+    { "id": "step2", "source": "client", "target": "simplestreams_images", "label": "2: image location" },
+    { "id": "step3", "source": "client", "target": "cloud", "label": "3: initial machine" },
+    { "id": "step4", "source": "cloud", "target": "client", "label": "4: provision + contact info" },
+    { "id": "step5", "source": "client", "target": "controller_agent", "label": "5: SSH + setup" },
+    { "id": "step6", "source": "controller_agent", "target": "snap_store", "label": "6: juju-db snap" },
+    { "id": "step7", "source": "controller_agent", "target": "charmhub", "label": "7: controller charm" }
+  ]
+}

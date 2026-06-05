@@ -1,0 +1,133 @@
+engine: v3
+title: "Juju bootstrap on machines (process)"
+# Corpus source: verified_manifest sha256:983e195f9303c86c
+# Reference: docs/corpus-references/juju-bootstrap-machines-process-source.png
+# Topic: https://documentation.ubuntu.com/juju/latest/explanation/juju-architecture
+# Family: process_and_workflow | preferred_layout_engine: ELK layered
+meta:
+  diagram_type: process_and_workflow
+  layout_engine: elk-layered
+  abstraction_level: context
+  corpus_content_hash: sha256:983e195f9303c86c
+  corpus_estate: output-juju-docs
+  source_image: juju-architecture-bootstrap-machines-process.png
+grid:
+  cols: 3
+  col_gap: 32
+  row_gap: 32
+arrows:
+  - id: step1
+    source: client
+    target: simplestreams_binaries
+    label: "1: agent binary location"
+    label_gap: 8
+  - id: step2
+    source: client
+    target: simplestreams_images
+    label: "2: image location"
+    label_gap: 8
+  - id: step3
+    source: client
+    target: cloud
+    label: "3: initial machine"
+    label_gap: 8
+  - id: step4
+    source: cloud
+    target: client
+    label: "4: provision + contact info"
+    label_gap: 8
+  - id: step5
+    source: client
+    target: controller_agent
+    label: "5: SSH + setup"
+    label_gap: 8
+  - id: step6
+    source: controller_agent
+    target: snap_store
+    label: "6: juju-db snap"
+    label_gap: 8
+  - id: step7
+    source: controller_agent
+    target: charmhub
+    label: "7: controller charm"
+    label_gap: 8
+root:
+  id: page
+  direction: vertical
+  padding: 24
+  width: 1200
+  sizing_w: fixed
+  sizing_h: hug
+  children:
+    - id: row_main
+      direction: horizontal
+      gap: 32
+      sizing_w: fill
+      children:
+        - id: juju_system
+          level: 3
+          heading: "Juju"
+          direction: vertical
+          gap: 24
+          padding: 16
+          sizing_w: fill
+          children:
+            - id: client
+              variant: highlight
+              width: 192
+              sizing_w: fixed
+              label: [Client]
+              icon: Laptop.svg
+            - id: controller_agent
+              variant: highlight
+              width: 192
+              sizing_w: fixed
+              label: [Controller, agent]
+              icon: Operations.svg
+
+        - id: row_external_top
+          direction: vertical
+          gap: 24
+          sizing_w: fill
+          children:
+            - id: charmhub
+              level: 2
+              heading: "Charmhub"
+              width: 192
+              sizing_w: fixed
+              label: [Charm, registry]
+              icon: Globe.svg
+            - id: snap_store
+              level: 2
+              heading: "Snap store"
+              width: 192
+              sizing_w: fixed
+              label: [juju-db snap]
+              icon: Snap.svg
+
+    - id: row_external_bottom
+      direction: horizontal
+      gap: 24
+      sizing_w: fill
+      children:
+        - id: simplestreams_binaries
+          level: 2
+          heading: "SimpleStreams"
+          width: 192
+          sizing_w: fixed
+          label: [Agent, binaries]
+          icon: Package.svg
+        - id: simplestreams_images
+          level: 2
+          heading: "SimpleStreams"
+          width: 192
+          sizing_w: fixed
+          label: [Machine, images]
+          icon: Storage image.svg
+        - id: cloud
+          level: 2
+          heading: "Cloud"
+          width: 192
+          sizing_w: fixed
+          label: [Initial, machine]
+          icon: Cloud.svg

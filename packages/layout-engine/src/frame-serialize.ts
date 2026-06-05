@@ -56,6 +56,10 @@ function serializeArrow(arrow: Arrow): Record<string, unknown> {
     id: arrow.id,
     color: arrow.color ?? '#E95420',
     waypoints: arrow.waypoints ?? [],
+    ...(arrow.label && arrow.label.length > 0
+      ? { label: arrow.label.map(serializeLine) }
+      : {}),
+    ...(arrow.labelGap != null ? { labelGap: arrow.labelGap } : {}),
   };
 }
 
@@ -68,6 +72,12 @@ export function serializeFrameDiagram(diagram: FrameDiagram): Record<string, unk
     gridColGap: diagram.gridColGap,
     gridRowGap: diagram.gridRowGap,
     gridOuterMargin: diagram.gridOuterMargin,
+    layoutEngine: diagram.layoutEngine,
+    diagramType: diagram.diagramType,
+    sourceImage: diagram.sourceImage,
+    ...(diagram.elkLayout && Object.keys(diagram.elkLayout).length > 0
+      ? { elkLayout: diagram.elkLayout }
+      : {}),
     overlays: [],
   };
 }

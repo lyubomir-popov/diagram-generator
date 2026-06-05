@@ -87,6 +87,7 @@ class ComponentModel {
     this._index = new Map(); // id → ComponentNode
     this.overrides = {};     // id → { dx?, dy?, dw?, dh?, waypoints?, text? }
     this.gridOverrides = {}; // { col_gap?, row_gap?, outer_margin? }
+    this.elkLayoutOverrides = {}; // { "elk.spacing.nodeNode": "48", ... }
     this.diagramGrid = null; // { col_gap, row_gap, outer_margin, ... } — diagram-level grid
     /** Frame ids removed since last save (persisted as removed_ids on save). */
     this.removedIds = new Set();
@@ -586,6 +587,9 @@ class ComponentModel {
       if (Object.keys(persistableGridOverrides).length > 0) {
         payload.grid_overrides = persistableGridOverrides;
       }
+    }
+    if (this.elkLayoutOverrides && Object.keys(this.elkLayoutOverrides).length > 0) {
+      payload.elk_layout_overrides = { ...this.elkLayoutOverrides };
     }
     return payload;
   }

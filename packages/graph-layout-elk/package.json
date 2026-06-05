@@ -1,0 +1,22 @@
+{
+  "name": "@diagram-generator/graph-layout-elk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "layout:smoke": "node scripts/layout-smoke.mjs",
+    "test": "npm --prefix ../graph-layout-core run build && vitest run"
+  },
+  "dependencies": {
+    "@diagram-generator/graph-layout-core": "file:../graph-layout-core",
+    "elkjs": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

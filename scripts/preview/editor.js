@@ -15,6 +15,16 @@ const mgr = new InteractionManager();
 const constraints = createDefaultRegistry();
 let lastViolations = [];
 
+if (window.ElkLayoutControls) {
+  ElkLayoutControls.init({
+    getOverrides: () => model.elkLayoutOverrides || {},
+    setOverrides: (v) => {
+      model.elkLayoutOverrides = { ...v };
+    },
+  });
+  window.__DG_elkControlsInited = true;
+}
+
 // Legacy accessors – thin wrappers that delegate to model/mgr so the rest of
 // the file can be migrated incrementally.
 function _getOverrides() { return model.overrides; }
@@ -269,6 +279,9 @@ function _captureEditorState() {
     o: _cloneState(overrides),
     g: _cloneState(model.gridOverrides || {}),
   };
+  if (model.elkLayoutOverrides && Object.keys(model.elkLayoutOverrides).length > 0) {
+    state.e = _cloneState(model.elkLayoutOverrides);
+  }
   if (model.removedIds && model.removedIds.size > 0) {
     state.r = [...model.removedIds];
   }
@@ -413,6 +426,7 @@ async function _restoreEditorState(serializedState) {
 
   overrides = nextOverrides;
   model.gridOverrides = _cloneState(nextGridOverrides);
+  model.elkLayoutOverrides = _cloneState(parsed.e || {});
   const prevRemovedIds = model.removedIds || new Set();
   const nextRemovedIds = new Set(Array.isArray(parsed.r) ? parsed.r : []);
   const removalsChanged = (
@@ -608,6 +622,54 @@ async function loadSVG(options = {}) {
   lastSavedState = _serializeDirtyState();
   setDirty(false);
   _signalDiagramLoaded();
+  _initElkLayoutPanel();
+}
+
+function _isElkLayeredDiagram() {
+  const tree = typeof getFrameTreeJson === "function" ? getFrameTreeJson() : null;
+  return !!(tree && tree.layoutEngine === "elk-layered");
+}
+
+function _initElkLayoutPanel() {
+  if (!window.ElkLayoutControls) return;
+  if (!window.__DG_elkControlsInited) {
+    ElkLayoutControls.init({
+      getOverrides: () => model.elkLayoutOverrides || {},
+      setOverrides: (v) => {
+        model.elkLayoutOverrides = { ...v };
+      },
+    });
+    window.__DG_elkControlsInited = true;
+  } else {
+    ElkLayoutControls.refresh();
+  }
+}
+
+async function _finishV3Relayout(triggerCid, localResult, executionLabel) {
+  if (!localResult) {
+    return _failV3Relayout(executionLabel || "local-failure", triggerCid);
+  }
+  const relayoutStatus = getV3RelayoutStatus();
+  _setV3RelayoutExecution(executionLabel || "local", relayoutStatus.local.reason);
+  for (const [cid, ovr] of Object.entries(overrides)) {
+    delete ovr.dx; delete ovr.dy; delete ovr.dw; delete ovr.dh;
+    if (Object.keys(ovr).length === 0) delete overrides[cid];
+  }
+  buildTreeUI();
+  applyWaypointOverrides();
+  bindInteraction();
+  applyAllOverrides();
+  reapplySelection();
+  refreshV3GridInfoFromLayout();
+  renderGridOverlay();
+  renderSelectionInspector(triggerCid);
+  updateOverrideSummary();
+  refreshTreeColors();
+  runConstraints();
+  if (typeof setStatus === "function") {
+    setStatus("Ready", "ok");
+  }
+  return true;
 }
 
 /** Monotonic counter + promise hook for tests / navigation (not localReady). */
@@ -1263,6 +1325,7 @@ function bindGridNumberInputSelection(input) {
 function resetOverrideState() {
   overrides = {};
   model.gridOverrides = {};
+  model.elkLayoutOverrides = {};
   model.removedIds = new Set();
   updateOverrideSummary();
   // Initialize undo stack and saved state
@@ -5473,25 +5536,27 @@ async function requestV3Relayout(triggerCid) {
 
   // --- Client-side layout (no server round-trip) ---
   const gridOvr = _normaliseGridOverrides(model.gridOverrides || {});
-  let localResult = performLocalRelayout(model, overrides, gridOvr);
+
+  if (_isElkLayeredDiagram() && typeof performElkRelayout === "function") {
+    const elkResult = await performElkRelayout(model, overrides, gridOvr);
+    if (!elkResult) {
+      console.error("v3 relayout: ELK layout failed");
+      return _failV3Relayout("elk-failure", triggerCid);
+    }
+    return _finishV3Relayout(triggerCid, elkResult, "elk");
+  }
+
+  const localResult = performLocalRelayout(model, overrides, gridOvr);
   if (!localResult) {
     console.error("v3 relayout: local layout failed");
     return _failV3Relayout("local-failure", triggerCid);
   }
-  _setV3RelayoutExecution("local", relayoutStatus.local.reason);
-  // Clear stale position/size deltas
-  for (const [cid, ovr] of Object.entries(overrides)) {
-    delete ovr.dx; delete ovr.dy; delete ovr.dw; delete ovr.dh;
-    if (Object.keys(ovr).length === 0) delete overrides[cid];
-  }
   // Track runtime-only coercion for inspector display without persisting it.
   {
-    // SYNC: keys must match CoercedOverride in frame-model.ts
     const _COERCED_KEY_MAP = { sizingW: 'sizing_w', sizingH: 'sizing_h' };
     if (localResult.coerced) {
       for (const [fid, coerced] of localResult.coerced.entries()) {
         for (const [rawKey, val] of Object.entries(coerced)) {
-          // Engine returns camelCase (sizingW, sizingH); overrides use snake_case (sizing_w, sizing_h)
           const key = _COERCED_KEY_MAP[rawKey] || rawKey;
           if (key === 'sizing_w' || key === 'sizing_h') {
             _coercedKeys.add(fid + ':' + key);
@@ -5500,21 +5565,13 @@ async function requestV3Relayout(triggerCid) {
       }
     }
   }
-  buildTreeUI();
-  bindInteraction();
-  applyAllOverrides();
-  reapplySelection();
-  refreshV3GridInfoFromLayout();
-  renderGridOverlay();
-  renderSelectionInspector(triggerCid);
-  updateOverrideSummary();
-  refreshTreeColors();
-  runConstraints();
-  if (typeof setStatus === "function") {
-    setStatus("Ready", "ok");
-  }
-  return true;
+  return _finishV3Relayout(triggerCid, localResult, "local");
 }
+
+window.requestElkRelayout = async function () {
+  const rootId = (model.roots[0] || {}).id || "root";
+  return requestV3Relayout(rootId);
+};
 
 window.getV3RelayoutStatus = getV3RelayoutStatus;
 

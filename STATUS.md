@@ -1,7 +1,7 @@
 # Status
 
 **Last updated:** 2026-06-05  
-**Branch:** `feat/spec005-ws5-validation` @ `48893a9` + local spec 005 WS5 closeout
+**Branch:** `feat/force-layout-restoration` @ `42fff38` + local spec 023 drafting
 
 ## Stakeholder path
 
@@ -46,6 +46,19 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 - Browser warning context is now explicit rather than implicit: `support-engineering-flow` has no violations; `test-deep-nesting` shows 10 warnings; `request-to-hardware-stack` shows 34 `grid-align` warnings, consistent with its intentional `col_gap: 16` invariant exception.
 - Active tracking no longer treats spec 005 as an open implementation slice; the next high-value TS feature should land on a fresh branch after this closeout commit.
 
+### Current delta — spec 023 TS force lane restored, persistence still pending (2026-06-05)
+
+- Created `specs/023-force-layout-restoration/` to restore the broken force lane under spec-kit discipline instead of mixing force work into TODO-only prose.
+- The recovered force examples are now YAML-authored source files under `scripts/diagrams/force/`; archived JSON remains migration archaeology only.
+- Force preview pages now use the local TypeScript runtime path directly via `/preview/layout-engine.js` and `/api/force-spec/<slug>` instead of depending on the deleted Python solver/backend.
+- Added direct TypeScript ports of the historical force engine primitives in `packages/layout-engine/src/force-quadtree.ts` and `packages/layout-engine/src/force-solver.ts`, including Barnes-Hut many-body force, rectangle collision, link force, center force, and the original `ForceSimulation` alpha/velocity model.
+- Replaced the ad hoc `force-runtime.ts` tick helper with a stateful preview-state wrapper mirroring the old `ForcePreviewState` contract: persistent simulation instance, node index, base-style tracking, style overrides, clamp-to-canvas, restart/reheat semantics, and snapped export.
+- `browser-entry.ts` and the package root now export the full local force runtime surface, including local param updates and snapped export helpers used by the live preview.
+- `scripts/preview/force.js` now keeps a committed runtime-backed snapshot separate from temporary drag/resize preview clones, so runtime-backed actions no longer lose their simulation state.
+- Real geometry edits now resume the simulation correctly, including the unpin path: releasing a moved node forces an immediate local tick and then continues the run loop so the rest of the graph can react instead of staying frozen.
+- Focused validation is green: `npm --prefix packages/layout-engine run build`, `npm --prefix packages/layout-engine run build:browser`, and `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts` all pass after the parity-port slice.
+- Browser validation confirms all three restored demos load on the TS runtime: `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle`. Local save persistence is still pending.
+
 ### Recent work — spec 012 complete + arrow editing (2026-06-04)
 
 Commit **`a6822da`** (`scripts: land ts svg renderer cleanup`):
@@ -60,12 +73,12 @@ Commit **`a6822da`** (`scripts: land ts svg renderer cleanup`):
 
 | Priority | Work |
 |----------|------|
-| Now | Checkpoint the completed spec **005** WS5 closeout, then move to the next non-overlapping TS feature branch |
-| Next | TS force-layout restoration, avoiding overlap with the separate ELK worktree |
+| Now | Spec **023** follow-up work: restore local save persistence for the TS-owned force lane |
+| Next | Rewrite orphaned force benchmark usage and add stronger automated save/export/browser coverage for the restored force demos |
 | Parallel | Spec **021** arrow labels use annotation variant — landed |
 | Parallel | Spec **018** PNG export |
 | Parallel | Re-scope Spec **008** Phase 5 docs so it does not deepen Python authority |
-| Next major slice | New TS force-layout restoration spec |
+| Next major slice | Finish the remaining spec 023 persistence/coverage gaps on top of the restored TS force runtime |
 
 ## Key files
 

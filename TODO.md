@@ -35,9 +35,11 @@ Feature package: `specs/020-lean-variant-style-authority/` — new north-star si
 - [x] `[H]` **P1. Rewrite YAML toward semantic inputs only.** Kept corpus has no line-level style escape hatches; redundant root `padding: 24` / `border: none` stripped.
 - [x] `[H]` **P1. Derive spacing from composition and shrink the authored gap surface.** `stack_gap` absent; explicit grid exceptions kept only where they prove an invariant (`support-engineering-flow` `row_gap: 48`, `request-to-hardware-stack` `col_gap: 16`).
 
-#### Force layout restoration (new spec after 020)
+#### Force layout restoration (spec 023) — DRAFTED
 
-- [ ] `[H]` **Rebuild the force-layout lane in TypeScript.** `force.js` and the preview shell remain, but `force_preview.py`, `force_layout.py`, and the tracked JSON example specs are gone. Use `docs/architecture/repo-health-audit-2026-06-05.md` as the brief, keep the rebuild TS-only, and restore `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle` against the existing `diagrams/1.input/force/*.jpg` references.
+Feature package: `specs/023-force-layout-restoration/` — restore the broken force demo lane as a TS-owned surface, rebuild the three tracked examples, and keep the BF-shell interaction model without reviving Python solver/backend authority. Recovered JSON from history is migration input only; do not treat it as final authority.
+
+- [ ] `[H]` **P1. Close the remaining force-lane follow-up after the TS restoration.** All three canonical force demos now load on the TS runtime, drag/pin/unpin/export behavior is back, and the unpin path reheats correctly; next land local save persistence, finish the benchmark cleanup, and add stronger automated coverage for save/export/browser checks.
 
 #### Repo coherence — resolved-style snapshot (spec 008 Phase 5)
 

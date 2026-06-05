@@ -127,6 +127,8 @@ export interface Arrow {
   id?: string;
   color?: string;                       // default "#E95420"
   waypoints?: [number, number][];
+  /** Full orthogonal polyline from ELK (or other layout engine); bypasses box-edge inference. */
+  layoutPath?: [number, number][];
   label?: Line[];
   labelGap?: number;
 }
@@ -423,6 +425,11 @@ export interface FrameDiagramInit {
   gridColGap?: number;
   gridRowGap?: number;
   gridOuterMargin?: number;
+  layoutEngine?: string;
+  diagramType?: string;
+  sourceImage?: string;
+  /** ELK option overrides from YAML meta.elk */
+  elkLayout?: Record<string, string>;
 }
 
 export class FrameDiagram {
@@ -434,6 +441,10 @@ export class FrameDiagram {
   gridColGap: number | undefined;
   gridRowGap: number | undefined;
   gridOuterMargin: number | undefined;
+  layoutEngine?: string;
+  diagramType?: string;
+  sourceImage?: string;
+  elkLayout?: Record<string, string>;
 
   constructor(init?: FrameDiagramInit) {
     this.title = init?.title ?? '';
@@ -444,6 +455,10 @@ export class FrameDiagram {
     this.gridColGap = init?.gridColGap;
     this.gridRowGap = init?.gridRowGap;
     this.gridOuterMargin = init?.gridOuterMargin;
+    this.layoutEngine = init?.layoutEngine;
+    this.diagramType = init?.diagramType;
+    this.sourceImage = init?.sourceImage;
+    this.elkLayout = init?.elkLayout;
   }
 }
 

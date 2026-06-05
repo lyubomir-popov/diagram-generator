@@ -524,6 +524,26 @@ def _get_unified_template() -> str:
     return _unified_template
 
 
+def _frame_yaml_layout_engine(slug: str) -> str | None:
+    """Read meta.layout_engine from frame YAML without running TS emit."""
+    path = FRAMES_DIR / f"{_normalize_slug(slug)}.yaml"
+    if not path.is_file():
+        return None
+    try:
+        import yaml
+
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return None
+        meta = data.get("meta")
+        if not isinstance(meta, dict):
+            return None
+        value = meta.get("layout_engine")
+        return str(value) if value is not None else None
+    except Exception:
+        return None
+
+
 def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     view_path = f"/view/{slug}"
     nav_options = _build_preview_nav_options(view_path)
@@ -532,11 +552,14 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     is_v3 = True
     real_slug = slug[3:] if slug.startswith("v3:") else slug
     engine = "v3"
+    layout_engine = _frame_yaml_layout_engine(real_slug) or ""
+    is_elk = layout_engine == "elk-layered"
     has_ref = _find_reference_image(real_slug) is not None
     config_script = (
         f"window.__DG_CONFIG = {{"
         f'"slug":"{real_slug}",'
         f'"engine":"{engine}",'
+        f'"layout_engine":"{layout_engine}",'
         f'"grid":{str(grid).lower()},'
         f'"inset":{INSET},'
         f'"head_len":{ARROW_HEAD_LENGTH},'
@@ -553,10 +576,12 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     html = html.replace("%NAV_OPTIONS%", nav_options)
     html = html.replace("%BROWSE_NAV%", browse_nav)
     html = html.replace("%INSPECTOR_EMPTY%", "Click a component to inspect it.")
+    html = html.replace("%ELK_SECTION_HIDDEN%", "" if is_elk else "hidden")
     html = html.replace(
         "%MODE_SCRIPTS%",
         f'<script src="{_preview_asset_url("layout-engine.js")}"></script>\n'
         f'<script src="{_preview_asset_url("layout-bridge.js")}"></script>\n'
+        f'<script src="{_preview_asset_url("elk-layout-controls.js")}"></script>\n'
         f'<script src="{_preview_asset_url("component-model.js")}"></script>\n'
         f'<script src="{_preview_asset_url("constraints.js")}"></script>\n'
         f'<script src="{_preview_asset_url("editor.js")}"></script>',

@@ -231,6 +231,13 @@ export function loadFrameYaml(path: string): FrameDiagram {
   }));
 
   const grid = (data.grid as Record<string, unknown>) ?? {};
+  const meta = (data.meta as Record<string, unknown>) ?? {};
+  const elkRaw = meta.elk as Record<string, unknown> | undefined;
+  const elkLayout: Record<string, string> | undefined = elkRaw
+    ? Object.fromEntries(
+        Object.entries(elkRaw).map(([k, v]) => [k, String(v)]),
+      )
+    : undefined;
   return new FrameDiagram({
     title: String(data.title ?? ''),
     root,
@@ -240,5 +247,9 @@ export function loadFrameYaml(path: string): FrameDiagram {
     gridColGap: grid.col_gap != null ? Number(grid.col_gap) : GRID_GUTTER,
     gridRowGap: grid.row_gap != null ? Number(grid.row_gap) : GRID_GUTTER,
     gridOuterMargin: grid.outer_margin != null ? Number(grid.outer_margin) : GRID_GUTTER,
+    layoutEngine: meta.layout_engine != null ? String(meta.layout_engine) : undefined,
+    diagramType: meta.diagram_type != null ? String(meta.diagram_type) : undefined,
+    sourceImage: meta.source_image != null ? String(meta.source_image) : undefined,
+    elkLayout,
   });
 }

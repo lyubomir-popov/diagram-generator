@@ -300,6 +300,18 @@ function routeArrows(
     const t = bounds[tgtId];
     if (!s || !t) continue;
 
+    if (arrow.layoutPath && arrow.layoutPath.length >= 2) {
+      const points = _simplifyPath(arrow.layoutPath.map((p) => [p[0], p[1]] as [number, number]));
+      result.push({
+        points,
+        color: arrow.color ?? ARROW_COLOR,
+        label: arrow.label && arrow.label.length > 0 ? arrow.label : undefined,
+        labelGap: arrow.labelGap ?? GRID_GUTTER,
+        componentId: arrow.id ?? `${arrow.source}->${arrow.target}`,
+      });
+      continue;
+    }
+
     let srcSide = srcSideExplicit;
     let tgtSide = tgtSideExplicit;
     if (!srcSide || !tgtSide) {

@@ -113,7 +113,7 @@
             <button class="btn bf-button is-base" id="btn-export-json" type="button">Export JSON</button>
             <button class="btn bf-button is-base" id="btn-export-svg" type="button">Export SVG</button>
           </div>
-          <p class="bf-form-help dg-override-summary" id="force-summary">The preview resets to tick 0 on load, advances the Python solver in batched ticks, and exports snapped coordinates.</p>
+          <p class="bf-form-help dg-override-summary" id="force-summary">The force preview shell is wired and the authored YAML sources are restored. Live simulation resumes when the TypeScript runtime lands.</p>
         </section>
 
         <!-- ── Shared: Inspector / Selection ── -->
@@ -176,6 +176,13 @@
               <span class="bf-switch-label">Absorb slack to bottom margin</span>
             </label>
           </div>
+        </section>
+
+        <!-- ── Grid mode: ELK layout (elk-layered diagrams only) ── -->
+        <section class="dg-sidebar-section dg-grid-only" id="elk-layout-section" %ELK_SECTION_HIDDEN%>
+          <h2 class="dg-section-heading bf-h5">ELK layout</h2>
+          <div class="grid-controls" id="elk-layout-controls"></div>
+          <p class="bf-form-help dg-override-summary">Layer spacing, edge routing, and compound options. Changes relayout live.</p>
         </section>
 
         <!-- ── Grid mode: Overrides ── -->

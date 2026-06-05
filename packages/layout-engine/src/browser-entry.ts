@@ -83,6 +83,18 @@ export {
   resolveLeafTextWrapWidth,
 } from './text-layout.js';
 
+export {
+  layoutElkFrameDiagram,
+  type ElkLayoutOptions,
+} from './elk-layout.js';
+
+export {
+  ELK_LAYERED_PARAM_SPECS,
+  elkParamGroups,
+  resolvedElkOptionsForFamily,
+  layeredConfigForFamily,
+} from '@diagram-generator/graph-layout-elk';
+
 export { applyHeadingAsChild } from './heading-synthesis.js';
 
 export {
@@ -102,3 +114,21 @@ export {
   usesHeadingStyleSnapshot,
   type ResolvedSpecTypography,
 } from './resolved-spec-typography.js';
+
+export {
+  applyForceNodePatch,
+  createInitialForceSnapshot,
+  exportForceSnapshot,
+  tickForceSimulation,
+  updateForceSimulationParams,
+  type ForceAuthoredSpec,
+  type ForceLinkSpec,
+  type ForceNodePatch,
+  type ForceNodeSpec,
+  type ForceRenderSpec,
+  type ForceSimulationConfig,
+  type ForceRuntimeLink,
+  type ForceRuntimeNode,
+  type ForceRuntimeSnapshot,
+  type ForceSimulationSpec,
+} from './force-runtime.js';
