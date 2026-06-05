@@ -1,5 +1,5 @@
 import { parseYamlDocument } from './parse-yaml.js';
-import type { CompileOptions, CompileResult, DiagramDocument } from './types.js';
+import type { CompileOptions, CompileResult, DiagramDocument, Diagnostic } from './types.js';
 
 function asRecordMap(value: unknown): Record<string, Record<string, unknown>> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -40,7 +40,7 @@ function createScaffoldAst(source: Record<string, unknown>): DiagramDocument {
 export function compileDiagramYaml(raw: string, options: CompileOptions = {}): CompileResult {
   const parsed = parseYamlDocument(raw, options);
   const ast = createScaffoldAst(parsed);
-  const diagnostics = [];
+  const diagnostics: Diagnostic[] = [];
 
   return {
     ast,

@@ -156,3 +156,24 @@ export type {
   Edge,
   LayoutTreeNode,
 } from './diagram-author/types.js';
+
+export {
+  ELK_LAYERED_PREVIEW_ENGINE,
+  FORCE_PREVIEW_ENGINE,
+  FORCE_PREVIEW_PARAM_SPECS,
+  PREVIEW_ENGINE_REGISTRY,
+  elkLayeredPreviewControlSpecs,
+  getPreviewEngine,
+  listPreviewEngines,
+  resolvePreviewEngine,
+  serializePreviewEngineManifest,
+} from './preview-engine/index.js';
+export type {
+  PreviewControlKind,
+  PreviewControlSpec,
+  PreviewEngineApiRoutes,
+  PreviewEngineCapabilities,
+  PreviewEngineContext,
+  PreviewEngineManifest,
+  PreviewShellMode,
+} from './preview-engine/index.js';

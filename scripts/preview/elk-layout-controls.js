@@ -12,7 +12,29 @@
   let _getOverrides = () => ({});
   let _setOverrides = () => {};
 
+  function _resolvePreviewEngine(context) {
+    if (typeof LayoutEngine !== "undefined" && typeof LayoutEngine.resolvePreviewEngine === "function") {
+      return LayoutEngine.resolvePreviewEngine(context);
+    }
+    return null;
+  }
+
+  function _elkPreviewEngine() {
+    if (typeof LayoutEngine !== "undefined" && typeof LayoutEngine.getPreviewEngine === "function") {
+      return LayoutEngine.getPreviewEngine("elk-layered");
+    }
+    return null;
+  }
+
   function _isElkDiagram(frameTreeJson) {
+    if (window.ElkPreviewController && typeof ElkPreviewController.isElkLayeredDiagram === "function") {
+      return ElkPreviewController.isElkLayeredDiagram(frameTreeJson);
+    }
+    const layoutEngine = frameTreeJson?.layoutEngine
+      ?? (window.__DG_CONFIG && window.__DG_CONFIG.layout_engine)
+      ?? null;
+    const resolved = _resolvePreviewEngine({ layoutEngine, shellMode: "grid" });
+    if (resolved && resolved.id === "elk-layered") return true;
     if (frameTreeJson && frameTreeJson.layoutEngine === "elk-layered") return true;
     const cfg = window.__DG_CONFIG || {};
     if (cfg.layout_engine === "elk-layered") return true;
@@ -26,6 +48,10 @@
   }
 
   function _paramSpecs() {
+    const engine = _elkPreviewEngine();
+    if (engine && Array.isArray(engine.controlSpecs) && engine.controlSpecs.length) {
+      return engine.controlSpecs;
+    }
     if (typeof LayoutEngine !== "undefined" && Array.isArray(LayoutEngine.ELK_LAYERED_PARAM_SPECS)) {
       return LayoutEngine.ELK_LAYERED_PARAM_SPECS;
     }
@@ -112,18 +138,24 @@
   }
 
   function _onControlInput() {
-    if (typeof window.__DG_wireElkLayoutPanel === "function") {
+    if (window.ElkPreviewController && typeof ElkPreviewController.wirePanel === "function") {
+      ElkPreviewController.wirePanel();
+    } else if (typeof window.__DG_wireElkLayoutPanel === "function") {
       window.__DG_wireElkLayoutPanel();
     }
     const next = _collectOverridesFromDom();
     _setOverrides(next);
-    if (typeof window.__DG_applyElkLayoutOverrides === "function") {
+    if (window.ElkPreviewController && typeof ElkPreviewController.applyElkLayoutOverrides === "function") {
+      ElkPreviewController.applyElkLayoutOverrides(next);
+    } else if (typeof window.__DG_applyElkLayoutOverrides === "function") {
       window.__DG_applyElkLayoutOverrides(next);
     }
     if (typeof window.setDirty === "function") window.setDirty(true);
     if (_relayoutTimer) clearTimeout(_relayoutTimer);
     _relayoutTimer = setTimeout(() => {
-      if (typeof window.requestElkRelayout === "function") {
+      if (window.ElkPreviewController && typeof ElkPreviewController.requestRelayout === "function") {
+        void ElkPreviewController.requestRelayout();
+      } else if (typeof window.requestElkRelayout === "function") {
         window.requestElkRelayout();
       } else if (typeof window.requestV3Relayout === "function") {
         const rootId = (window.componentTree && window.componentTree[0] && window.componentTree[0].id) || "root";

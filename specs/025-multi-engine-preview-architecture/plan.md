@@ -35,6 +35,25 @@ Introduce a typed engine-integration contract so the preview shell can host mult
 1. Add a documented example path for onboarding a future engine package.
 2. Confirm that no new engine-specific shell logic lands outside the registry/bootstrap boundary.
 
+## Future engine onboarding path
+
+When adding a new preview engine package, use this sequence:
+
+1. Add a `PreviewEngineManifest` entry under `packages/layout-engine/src/preview-engine/registry.ts`.
+   - Declare `id`, `shellMode`, optional `layoutEngineKey`, capability flags, `controlSpecs`, `scripts`, and any `apiRoutes`.
+2. Export any engine-owned control schema from TypeScript.
+   - Browser shell code should read those control specs through `LayoutEngine.getPreviewEngine()` or the generated manifest, not from duplicated JS/Python tables.
+3. Ensure `npm --prefix packages/layout-engine run build:browser` emits the new engine in `dist/preview-engine-manifest.json`.
+4. If the engine has preview scripts, load them through the manifest-owned `scripts` list.
+   - Do not hardcode new engine script tags in `viewer-unified.html`.
+   - Do not hardcode new engine script branches in `preview_server.py` beyond shared bootstrap wiring.
+5. If the engine participates in save, route the client through manifest-owned `apiRoutes` and keep `/api/overrides` or the engine save route authoritative for canonical persisted state.
+6. Add focused coverage.
+   - TS: registry/control-schema tests.
+   - Python: manifest export / preview HTML injection / route contract tests.
+7. Verify `editor.js` stays thin.
+   - New engine behavior belongs in manifest metadata, engine-owned browser modules, or typed runtime surfaces — not in new engine-specific business logic branches inside `editor.js`.
+
 ## Architecture constraints
 
 - YAML remains the authored source of truth.

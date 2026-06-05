@@ -118,6 +118,7 @@ def test_force_demo_routes_are_discoverable(preview_base: str):
         status, viewer_html = _fetch_text(f"{preview_base}/force/view/{slug}")
         assert status == 200
         assert f'"slug":"{slug}"' in viewer_html
+        assert "/preview/force.js" in viewer_html
 
         status, spec = _fetch_json(f"{preview_base}/api/force-spec/{slug}")
         assert status == 200

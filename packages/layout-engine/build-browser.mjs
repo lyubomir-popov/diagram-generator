@@ -40,3 +40,8 @@ await copyFile(
   path.join(__dirname, 'node_modules', 'harfbuzzjs', 'dist', 'harfbuzz.wasm'),
   path.join(distDir, 'harfbuzz.wasm'),
 );
+
+execSync('node scripts/export-preview-engine-manifest.mjs', {
+  cwd: __dirname,
+  stdio: 'inherit',
+});

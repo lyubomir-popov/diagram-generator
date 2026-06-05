@@ -6,7 +6,7 @@
 
 **Created**: 2026-06-05
 
-**Status**: Draft
+**Status**: In progress
 
 **Input**: Improve the frame YAML authoring format (concise edges, node/group grammar, defaults/templates) while preserving it as canonical source of truth; compile to a strict internal AST; render via existing TS engine; add Mermaid/D2 as export adapters only.
 

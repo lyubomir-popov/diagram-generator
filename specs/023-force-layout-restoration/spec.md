@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-05
 
-**Status**: Draft
+**Status**: Complete
 
 **Input**: Restore the broken force-layout demo lane using a TypeScript-first architecture, based on `docs/architecture/repo-health-audit-2026-06-05.md` and the archived force-lane behavior captured in `docs/archive/history-2026-05.md`.
 
@@ -14,7 +14,7 @@ The repo still ships the force-layout UI shell (`scripts/preview/force.js`, `scr
 
 The restoration must follow the repo's TS-first rule. Do not recreate `force_preview.py` or `force_layout.py`. The restored lane should use TypeScript for simulation and rendering ownership, restore the three tracked examples, and keep the BF-shell preview/editor behavior that previously worked.
 
-Historical JSON recovered from git history may be used as migration input, but it is not the intended final authored source of truth. Before this spec is complete, the restored force examples must move to a YAML-authored canonical format or another explicitly approved source format that does not reintroduce JSON authority beside frame YAML.
+Historical JSON recovered from git history may be used as migration input, but it is not the intended final authored source of truth. Before this spec is complete, the restored force examples must move to a YAML-authored canonical format. JSON is transport/export only and must not become a second authored authority beside the canonical YAML.
 
 ## User Scenarios & Testing
 

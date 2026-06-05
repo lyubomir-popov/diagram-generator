@@ -1,5 +1,25 @@
 const FORCE_CONFIG = window.__DG_FORCE_CONFIG || {};
 const FORCE_SLUG = FORCE_CONFIG.slug;
+
+/** Control metadata from the TS preview-engine registry (spec 025). */
+function forcePreviewEngine() {
+  return window.LayoutEngine?.getPreviewEngine?.("force") ?? null;
+}
+
+function forceParamSpec(key) {
+  const specs = forcePreviewEngine()?.controlSpecs;
+  if (!Array.isArray(specs)) return null;
+  return specs.find((spec) => spec.key === key) ?? null;
+}
+
+function forceApiPath(routeKey, fallbackPath) {
+  const template = forcePreviewEngine()?.apiRoutes?.[routeKey];
+  if (typeof template !== "string" || !template) {
+    return fallbackPath;
+  }
+  return template.replace("{slug}", encodeURIComponent(FORCE_SLUG));
+}
+
 const INSET = Number(FORCE_CONFIG.inset || 8);
 const BODY_LINE_STEP = Number(FORCE_CONFIG.body_line_step || 24);
 const HEAD_LEN = Number(FORCE_CONFIG.head_len || 10.8408);
@@ -52,9 +72,29 @@ async function loadLocalForceSnapshot() {
   if (!canUseLocalForceRuntime()) {
     throw new Error("Local TS force runtime is unavailable");
   }
-  const spec = await fetchJson(`/api/force-spec/${encodeURIComponent(FORCE_SLUG)}`);
+  const spec = await fetchJson(forceApiPath("spec", `/api/force-spec/${encodeURIComponent(FORCE_SLUG)}`));
   localRuntimeOnly = true;
   return window.LayoutEngine.createInitialForceSnapshot(spec);
+}
+
+function applyForceParamMetadata() {
+  const container = document.getElementById("force-params");
+  if (!container) return;
+  for (const input of container.querySelectorAll("[data-force-param]")) {
+    const key = input.getAttribute("data-force-param");
+    const spec = key ? forceParamSpec(key) : null;
+    if (!spec) continue;
+    if (spec.min != null) input.setAttribute("min", String(spec.min));
+    if (spec.max != null) input.setAttribute("max", String(spec.max));
+    if (spec.step != null) input.setAttribute("step", String(spec.step));
+    if (spec.defaultValue != null && !input.hasAttribute("value")) {
+      input.setAttribute("value", String(spec.defaultValue));
+    }
+    const label = container.querySelector(`label[for="${input.id}"]`);
+    if (label && spec.label) {
+      label.textContent = spec.label;
+    }
+  }
 }
 
 function updateLocalRuntimeControls() {
@@ -799,7 +839,7 @@ async function loadSnapshot(reset = true) {
     snapshot = await loadLocalForceSnapshot();
   } else {
     const url = reset
-      ? `/api/force-reset/${encodeURIComponent(FORCE_SLUG)}`
+      ? forceApiPath("reset", `/api/force-reset/${encodeURIComponent(FORCE_SLUG)}`)
       : `/api/force/${encodeURIComponent(FORCE_SLUG)}`;
     const options = reset
       ? { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }
@@ -827,7 +867,7 @@ async function tickSimulation(iterations) {
     render(snapshot);
     return snapshot;
   }
-  const snapshot = await fetchJson(`/api/force-tick/${encodeURIComponent(FORCE_SLUG)}`, {
+  const snapshot = await fetchJson(forceApiPath("tick", `/api/force-tick/${encodeURIComponent(FORCE_SLUG)}`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ iterations }),
@@ -851,7 +891,7 @@ function downloadBlob(filename, content, contentType) {
 async function exportJson() {
   const snapshot = localRuntimeOnly
     ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
-    : await fetchJson(`/api/force-export/${encodeURIComponent(FORCE_SLUG)}`);
+    : await fetchJson(forceApiPath("export", `/api/force-export/${encodeURIComponent(FORCE_SLUG)}`));
   if (!snapshot) {
     throw new Error("Force snapshot is not loaded");
   }
@@ -863,7 +903,7 @@ async function exportJson() {
 async function exportSvg() {
   const snapshot = localRuntimeOnly
     ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
-    : await fetchJson(`/api/force-export/${encodeURIComponent(FORCE_SLUG)}`);
+    : await fetchJson(forceApiPath("export", `/api/force-export/${encodeURIComponent(FORCE_SLUG)}`));
   if (!snapshot) {
     throw new Error("Force snapshot is not loaded");
   }
@@ -878,7 +918,7 @@ async function saveForceOverrides() {
       throw new Error("Force snapshot is not loaded");
     }
     const snapshot = window.LayoutEngine.exportForceSnapshot(committedSnapshot);
-    await fetchJson(`/api/force-save/${encodeURIComponent(FORCE_SLUG)}`, {
+    await fetchJson(forceApiPath("save", `/api/force-save/${encodeURIComponent(FORCE_SLUG)}`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(snapshot),
@@ -890,7 +930,7 @@ async function saveForceOverrides() {
     setStatus("Saved to YAML", "ok");
     return;
   }
-  await fetchJson(`/api/force-save/${encodeURIComponent(FORCE_SLUG)}`, {
+  await fetchJson(forceApiPath("save", `/api/force-save/${encodeURIComponent(FORCE_SLUG)}`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: "{}",
@@ -1343,7 +1383,7 @@ document.getElementById("force-params").addEventListener("change", async (event)
     return;
   }
   try {
-    const resp = await fetch(`/api/force-params/${encodeURIComponent(FORCE_SLUG)}`, {
+    const resp = await fetch(forceApiPath("params", `/api/force-params/${encodeURIComponent(FORCE_SLUG)}`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ [key]: value }),
@@ -1360,6 +1400,7 @@ document.getElementById("force-params").addEventListener("change", async (event)
   }
 });
 
+applyForceParamMetadata();
 loadSnapshot(true)
   .then(() => {
     startRunning();

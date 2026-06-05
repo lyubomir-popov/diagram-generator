@@ -4,6 +4,34 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-06 – Spec 025 closeout: canonical save response + onboarding docs
+
+- `/api/overrides/<slug>` now returns canonical persisted state (`frameTree`, `componentTree`, `gridInfo`) after YAML save instead of a bare `{"ok": true}` response.
+- `PreviewSaveClient` now reads that canonical payload and threads it back into the post-save reload path so engine-backed save rehydration is rooted in authoritative server state rather than only a blind follow-up fetch.
+- `editor.js` accepts canonical save state in `loadSVG()` and uses it to seed `loadTree()` / `loadGridInfo()` before the normal preview render path proceeds.
+- Documented the future engine onboarding path in `specs/025-multi-engine-preview-architecture/plan.md` and marked spec 025 complete in repo tracking.
+- Validation: `python -m pytest scripts/test_preview_engine_manifest.py scripts/test_preview_save_client.py scripts/test_preview_elk_layout_save.py scripts/test_frame_yaml_persistence.py -q`, `npm --prefix packages/layout-engine test -- tests/preview-engine-registry.test.ts`.
+
+### 2026-06-05 – Spec 026 T011 ELK controller extraction
+
+- Moved ELK shell wiring out of `editor.js` into `scripts/preview/elk-controller.js` (`ElkPreviewController`: registry-based engine detection, sidebar init, override state, relayout requests).
+- `elk-layout-controls.js` delegates to the controller; preview server loads `elk-controller.js` after `elk-layout-controls.js`.
+- Validation: `python -m pytest scripts/test_preview_elk_controller.py scripts/test_preview_elk_layout_save.py -q`.
+
+### 2026-06-05 – Spec 026 T010 save-client extraction
+
+- Moved save/reload orchestration out of `editor.js` into `scripts/preview/save-client.js` (`PreviewSaveClient`: dirty tracking, override POST, post-save rehydration via `loadSVG`, Save SVG export).
+- `viewer-unified.html` loads the new module; `editor.js` wires runtime hooks through `PreviewSaveClient.init()`.
+- Validation: `python -m pytest scripts/test_preview_save_client.py scripts/test_preview_elk_layout_save.py -q`.
+
+### 2026-06-05 – Spec 025 phase 1 preview-engine contract
+
+- Added typed preview-engine manifest/capability contract under `packages/layout-engine/src/preview-engine/` with ELK layered and force as the first registered consumers.
+- Browser bundle exports `PREVIEW_ENGINE_REGISTRY`, `getPreviewEngine`, and `resolvePreviewEngine`; build emits `dist/preview-engine-manifest.json` for Python glue.
+- Preview server exposes `/api/preview-engines` (reads generated JSON only — no Python metadata mirror).
+- Shell consumers updated: `elk-layout-controls.js`, `editor.js`, and `force.js` resolve engine metadata through the registry.
+- Validation: `npm --prefix packages/layout-engine run build:browser`, `npm --prefix packages/layout-engine test -- tests/preview-engine-registry.test.ts`, `python -m pytest scripts/test_preview_engine_manifest.py scripts/test_preview_elk_layout_save.py scripts/test_frame_yaml_persistence.py scripts/test_elk_preview_qa.py scripts/test_preview_shell_bf_contract.py scripts/test_preview_force_api.py -q`.
+
 ### 2026-06-05 – ELK mainline integration and QA hardening
 
 - Mainline ELK save/persistence is now authoritative: the preview rehydrates from canonical persisted server state, `frame_yaml_persistence.py` preserves unrelated `meta.elk` keys, and ELK control metadata no longer lives in duplicate Python/browser tables.

@@ -20,6 +20,10 @@ The current arrow routing pipeline has known structural issues:
 
 This feature defines a phased redesign so routing quality improves without layering violations.
 
+## Implementation boundary
+
+This redesign is **TypeScript-first**. The canonical routing implementation must move toward the TS runtime and renderer contract used by the active preview and export paths. Python fixtures and legacy routing code may be used as reference material or temporary parity oracles, but they are not the forward implementation surface.
+
 ## User Scenarios & Testing
 
 ### User Story 1 - Authors can target explicit ports (Priority: P1)
@@ -105,10 +109,10 @@ As an architecture reviewer, I need final arrow path points decided in layout pa
 ## Out of Scope
 
 - global optimal crossing minimization as mandatory default (kept as stretch phase)
-- TS parity implementation unless promoted by separate parity feature
+- resurrecting Python as the primary routing implementation surface
 
 ## Dependencies
 
 - `docs/architecture/arrow-routing-redesign.md`
 - `TODO.md` arrow routing redesign section
-- existing routing tests and layout fixtures in Python engine
+- existing routing tests and layout fixtures in Python engine (reference and parity material only)

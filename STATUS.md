@@ -1,6 +1,6 @@
 # Status
 
-**Last updated:** 2026-06-05  
+**Last updated:** 2026-06-06  
 **Branch:** `main`
 
 ## Stakeholder path
@@ -34,6 +34,27 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | **Batch SVG** | `export-frame-svg.mjs` — TS-only (`svg-render.ts`); golden harness `tests/svg-golden.test.ts` (3 canonical slugs after the first pruning pass) |
 | **Tests** | Latest full TS suite green in the current slice (`246/246`); retained 11-slug export sweep green; focused preview browser regressions green; spec 005 high-risk browser spot-checks render with zero errors; `test_preview_frames_dir.py` and `test_preview_ts_api.py` green. Full `pytest scripts -q` still has legacy parity drift outside the active TS path |
 
+### Current delta — spec 026 T011 ELK controller extraction (2026-06-05)
+
+- Extracted ELK shell wiring from `editor.js` into `scripts/preview/elk-controller.js` (`ElkPreviewController`: engine detection via preview-engine registry, sidebar init, override state, relayout requests).
+- `elk-layout-controls.js` delegates detection and input handling to the controller; preview server loads `elk-controller.js` after `elk-layout-controls.js`.
+- Focused coverage: `scripts/test_preview_elk_controller.py`; ELK save round-trip still green.
+
+### Current delta — spec 026 T010 save-client extraction (2026-06-05)
+
+- Extracted save/reload orchestration from `editor.js` into `scripts/preview/save-client.js`: dirty tracking, override POST, post-save `loadSVG()` rehydration, Save SVG export, and save-button wiring.
+- `viewer-unified.html` loads `save-client.js` before mode scripts; `editor.js` delegates via `PreviewSaveClient.init()`.
+- Focused coverage: `scripts/test_preview_save_client.py`; ELK save round-trip still green.
+
+### Current delta — spec 025 multi-engine preview architecture closed (2026-06-06)
+
+- Added `packages/layout-engine/src/preview-engine/` with typed manifest/capability interfaces, ELK and force registrations, and `resolvePreviewEngine()` for shell discovery.
+- TS build now emits `dist/preview-engine-manifest.json`; Python serves it at `/api/preview-engines` with no Python-side engine metadata mirror.
+- ELK and force preview lanes consume the registry: manifest-owned scripts bootstrap the preview lanes, `force.js` reads manifest routes/param metadata, and `editor.js` stays on shared bootstrap wiring instead of growing new engine branches.
+- `/api/overrides/<slug>` now returns canonical persisted state (`frameTree`, `componentTree`, `gridInfo`) and `PreviewSaveClient` threads that canonical payload into the post-save reload path before the usual local render pipeline runs.
+- Future engine onboarding is documented in `specs/025-multi-engine-preview-architecture/plan.md` so new engines register through TypeScript manifests instead of adding hardcoded preview shell branches.
+- Focused coverage: `packages/layout-engine/tests/preview-engine-registry.test.ts`, `scripts/test_preview_engine_manifest.py`, `scripts/test_preview_save_client.py`, `scripts/test_preview_elk_layout_save.py`, and `scripts/test_frame_yaml_persistence.py`.
+
 ### Current delta — ELK save cleanup + preview architecture specs (2026-06-05)
 
 - ELK save no longer mutates in-memory frame-tree ELK state speculatively after a successful POST; the preview now rehydrates from canonical persisted server state on reload instead of pretending the save already landed locally.
@@ -42,7 +63,7 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 - Added `/api/runtime-identity`, which reports repo root, branch, frames dir, PID, and port so multi-worktree/server confusion is diagnosable without guessing.
 - The composer ELK worktree was reconciled selectively: current `main` already superseded the older preview/runtime overlap, so the retained value moved over as QA/contract coverage (`test_elk_preview_qa.py`, `test_preview_shell_bf_contract.py`, `preview_html_allowlist.txt`) instead of merging stale preview code backwards.
 - Current focused checks are green on `main`: ELK save/persistence, ELK preview QA, Baseline Foundry shell contract, force preview API, TS force runtime tests, and the TS-backed force benchmark.
-- The immediate ELK duplicate-source cleanup is done; remaining spec 025 work is the generic engine manifest/capability contract and engine registration path for ELK, force, and future engines.
+- The immediate ELK duplicate-source cleanup is done; spec 025 is complete.
 - Added two new spec-kit packages to stage the larger preview refactor without overloading one session:
 	- `specs/025-multi-engine-preview-architecture/` for typed engine manifests/capabilities and TS-owned engine metadata
 	- `specs/026-preview-shell-decomposition-ts-migration/` for shrinking `scripts/preview/editor.js` through incremental TS-first extraction
@@ -96,9 +117,9 @@ Commit **`a6822da`** (`scripts: land ts svg renderer cleanup`):
 
 | Priority | Work |
 |----------|------|
-| Now | Start **spec 025** preview-engine manifest/capability contract with ELK and force as first consumers |
-| Next | Begin **spec 026** shell decomposition by extracting save/reload orchestration out of `editor.js` |
-| Later | Resume **spec 022** diagram authoring AST after the preview architecture slices |
+| Now | Continue **spec 026** — extract shared editor state helpers (T012) |
+| Next | Resume **spec 022** diagram authoring AST after the preview architecture slices |
+| Later | Start **spec 024** ELK interactive node alignment once spec 026 state boundaries are in place |
 
 ## Key files
 

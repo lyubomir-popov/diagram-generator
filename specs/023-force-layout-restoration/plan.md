@@ -47,10 +47,11 @@ Chosen boundary: browser-owned TypeScript runtime, documented in `research.md`.
 
 ## Current landing state
 
-- The TS runtime boundary is now implemented in `packages/layout-engine/src/force-runtime.ts` with the historical solver port in `force-solver.ts` and `force-quadtree.ts`.
-- The live preview uses the TS local runtime path, keeps runtime-backed snapshots separate from temporary preview clones, and now reheats correctly after unpinning a manually moved node.
+- The TS runtime boundary is implemented in `packages/layout-engine/src/force-runtime.ts` with the historical solver port in `force-solver.ts` and `force-quadtree.ts`.
+- The live preview uses the TS local runtime path, keeps runtime-backed snapshots separate from temporary preview clones, and reheats correctly after unpinning a manually moved node.
 - The three canonical demos load in the live preview shell on the TS runtime.
-- Remaining gap: local save persistence plus stronger automated save/export/browser coverage.
+- Save/reset/export coverage and the TS-backed benchmark path are landed.
+- This restoration spec is complete; future force preview architecture changes should route through spec 025 and spec 026 rather than reopening the restoration scope.
 
 ## Architecture constraints
 

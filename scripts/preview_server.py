@@ -277,6 +277,15 @@ def _save_overrides(slug: str, data: dict) -> None:
     _ts_svg_pool.invalidate_slug(key)
 
 
+def _canonical_saved_state(slug: str) -> dict[str, object]:
+    return {
+        "slug": slug,
+        "frameTree": _ts_layout_pool.frame_tree_json(slug),
+        "componentTree": _get_component_tree(slug),
+        "gridInfo": _get_grid_info(slug),
+    }
+
+
 def _watch_loop(grid: bool = False, interval: float = 0.5):
     global _rebuild_generation, _viewer_template, _force_template, _unified_template
     _DEBOUNCE = 1.0  # seconds quiet after last change before rebuilding
@@ -723,6 +732,46 @@ def _preview_runtime_identity(server_port: int | None = None) -> dict[str, objec
     }
 
 
+def _load_preview_engine_manifest() -> list[dict[str, object]]:
+    """Load TS-generated preview-engine manifest (spec 025). No Python mirror."""
+    manifest_path = _LAYOUT_ENGINE_DIST / "preview-engine-manifest.json"
+    if not manifest_path.exists():
+        return []
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(payload, list):
+        return []
+    return [entry for entry in payload if isinstance(entry, dict)]
+
+
+def _resolve_preview_engine_manifest(
+    *, layout_engine: str | None = None, shell_mode: str | None = None
+) -> dict[str, object] | None:
+    for entry in _load_preview_engine_manifest():
+        if layout_engine and entry.get("layoutEngineKey") == layout_engine:
+            return entry
+        if shell_mode and entry.get("shellMode") == shell_mode and not entry.get("layoutEngineKey"):
+            return entry
+    return None
+
+
+def _preview_engine_script_tags(
+    entry: dict[str, object] | None,
+    fallback_scripts: list[str] | None = None,
+) -> str:
+    scripts = entry.get("scripts") if isinstance(entry, dict) else None
+    if not isinstance(scripts, list):
+        scripts = fallback_scripts or []
+    tags: list[str] = []
+    for script_name in scripts:
+        if not isinstance(script_name, str) or not script_name:
+            continue
+        tags.append(f'<script src="{_preview_asset_url(script_name)}"></script>')
+    return "\n".join(tags) + ("\n" if tags else "")
+
+
 def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     view_path = f"/view/{slug}"
     nav_options = _build_preview_nav_options(view_path)
@@ -732,6 +781,7 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     real_slug = slug[3:] if slug.startswith("v3:") else slug
     engine = "v3"
     layout_engine = _frame_yaml_layout_engine(real_slug) or ""
+    engine_manifest = _resolve_preview_engine_manifest(layout_engine=layout_engine, shell_mode="grid")
     is_elk = layout_engine == "elk-layered"
     has_ref = _find_reference_image(real_slug) is not None
     config_script = (
@@ -758,12 +808,17 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     html = _apply_unified_elk_placeholders(html, is_elk)
     html = html.replace(
         "%MODE_SCRIPTS%",
-        f'<script src="{_preview_asset_url("layout-engine.js")}"></script>\n'
-        f'<script src="{_preview_asset_url("layout-bridge.js")}"></script>\n'
-        f'<script src="{_preview_asset_url("elk-layout-controls.js")}"></script>\n'
-        f'<script src="{_preview_asset_url("component-model.js")}"></script>\n'
-        f'<script src="{_preview_asset_url("constraints.js")}"></script>\n'
-        f'<script src="{_preview_asset_url("editor.js")}"></script>',
+        (
+            f'<script src="{_preview_asset_url("layout-engine.js")}"></script>\n'
+            + _preview_engine_script_tags(
+            engine_manifest,
+            fallback_scripts=["elk-layout-controls.js", "elk-controller.js"] if is_elk else [],
+            )
+            + f'<script src="{_preview_asset_url("layout-bridge.js")}"></script>\n'
+            + f'<script src="{_preview_asset_url("component-model.js")}"></script>\n'
+            + f'<script src="{_preview_asset_url("constraints.js")}"></script>\n'
+            + f'<script src="{_preview_asset_url("editor.js")}"></script>'
+        ),
     )
     html = html.replace("%CONFIG_SCRIPT%", config_script)
     return _strip_unresolved_placeholders(html)
@@ -774,6 +829,7 @@ def _build_force_viewer_html(slug: str, all_slugs: list[str]) -> str:
     nav_options = _build_preview_nav_options(view_path)
     browse_nav = _build_browse_nav(view_path)
     from diagram_shared import ARROW_HEAD_HALF_WIDTH, ARROW_HEAD_LENGTH, BODY_LINE_STEP, INSET
+    engine_manifest = _resolve_preview_engine_manifest(shell_mode="force")
 
     config_script = (
         f'window.__DG_FORCE_CONFIG = {{'
@@ -794,8 +850,10 @@ def _build_force_viewer_html(slug: str, all_slugs: list[str]) -> str:
     html = _apply_unified_elk_placeholders(html, False)
     html = html.replace(
         "%MODE_SCRIPTS%",
-        f'<script src="{_preview_asset_url("layout-engine.js")}"></script>\n'
-        f'<script src="{_preview_asset_url("force.js")}"></script>',
+        (
+            f'<script src="{_preview_asset_url("layout-engine.js")}"></script>\n'
+            + _preview_engine_script_tags(engine_manifest, fallback_scripts=["force.js"])
+        ),
     )
     html = html.replace("%CONFIG_SCRIPT%", config_script)
     return _strip_unresolved_placeholders(html)
@@ -957,6 +1015,8 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self._serve_force_index()
         elif path == "/api/runtime-identity":
             self._serve_runtime_identity()
+        elif path == "/api/preview-engines":
+            self._serve_preview_engines()
         elif path == "/events":
             self._serve_sse()
         elif path == "/preview/bf-os.css":
@@ -1332,6 +1392,10 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         payload = _preview_runtime_identity(server_port)
         self._respond(200, "application/json", json.dumps(payload).encode())
 
+    def _serve_preview_engines(self):
+        payload = _load_preview_engine_manifest()
+        self._respond(200, "application/json", json.dumps(payload).encode())
+
     def _serve_grid(self, slug: str):
         if not _is_safe_slug(slug):
             self.send_error(400, "Invalid slug")
@@ -1367,7 +1431,11 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         except OSError as exc:
             self._respond(500, "text/plain; charset=utf-8", f"Failed to save YAML: {exc}".encode("utf-8"))
             return
-        self._respond(200, "application/json", b'{"ok":true}')
+        payload = {
+            "ok": True,
+            "canonicalState": _canonical_saved_state(slug),
+        }
+        self._respond(200, "application/json", json.dumps(payload).encode())
 
     def _serve_force_get(self, slug: str):
         if not self._ensure_force_backend():

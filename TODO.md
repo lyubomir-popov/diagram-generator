@@ -14,19 +14,19 @@ Active execution queue for `diagram-generator`. All new work targets TypeScript 
 
 Feature package: `specs/025-multi-engine-preview-architecture/`.
 
-- [ ] `[H]` **Define the preview engine contract before more engines land.** ELK control metadata now comes only from the TS registry and `/api/runtime-identity` exists for worktree/server diagnosis, but ELK, force, Mermaid, Penrose, and future packages still need a typed capability path instead of adding more engine-specific branches to `editor.js`.
+- [x] `[H]` **Define the preview engine contract before more engines land.** Spec 025 is now closed: the preview-engine manifest owns engine bootstrap metadata, `/api/overrides` returns canonical persisted state for save rehydration, and the onboarding path for future engines is documented in `specs/025-multi-engine-preview-architecture/plan.md`.
 
 #### Preview shell decomposition + TS migration (spec 026)
 
 Feature package: `specs/026-preview-shell-decomposition-ts-migration/`.
 
-- [ ] `[H]` **Decompose `editor.js` into bounded shell modules.** Treat `editor.js` as a thin coordinator target, move new logic to TS-owned modules, and stop using the monolith as the default home for preview features.
+- [ ] `[H]` **Decompose `editor.js` into bounded shell modules.** Save/reload lives in `save-client.js` (T010); ELK controller wiring lives in `elk-controller.js` (T011). Next slice: shared editor state container (T012).
 
 #### ELK interactive node alignment (spec 024)
 
 Feature package: `specs/024-elk-interactive-node-alignment/`.
 
-- [ ] `[H]` **Spec drafted; implementation blocked on elkjs interactive-constraint spike.** Native ELK only: nudge → `layerChoiceConstraint` / `positionChoiceConstraint` → re-run layered with INTERACTIVE strategies. No SVG translate hacks.
+- [ ] `[H]` **Spec drafted; implementation blocked on elkjs interactive-constraint spike and spec 025 / 026 prerequisite slices.** Native ELK only: nudge → `layerChoiceConstraint` / `positionChoiceConstraint` → persist under `meta.elk_nodes` → re-run layered with INTERACTIVE strategies. No SVG translate hacks or new `editor.js` branches.
 
 #### PNG export (spec 018)
 

@@ -6,7 +6,7 @@
 
 **Created**: 2026-06-05
 
-**Status**: Draft
+**Status**: Complete
 
 **Input**: The preview editor currently concentrates engine-specific behavior in `scripts/preview/editor.js` and related legacy JS/Python glue. Near-term roadmap includes additional engine-backed packages and preview surfaces (ELK, Penrose, Mermaid, and others). The preview shell must stop treating each engine as another hardcoded branch inside `editor.js`.
 

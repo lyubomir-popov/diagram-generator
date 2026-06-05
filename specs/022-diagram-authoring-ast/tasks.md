@@ -68,7 +68,7 @@
 - [ ] T081 Add `migrate-diagram-yaml.mjs` — rewrite `arrows`→`edges`, `root`→`layout` (optional utility)
 - [ ] T082 Add reference fixture `tiered-network-architecture.author-v1.yaml`
 - [ ] T083 Cross-link from `README.md` or `docs/stakeholder-guide.md` (one paragraph)
-- [ ] T084 Register spec in `docs/specs.md` when implementation starts
+- [x] T084 Register spec in `docs/specs.md` when implementation starts
 
 ## Phase 10: Close-out
 

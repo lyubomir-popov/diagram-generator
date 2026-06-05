@@ -38,7 +38,6 @@ Object.defineProperty(window, "selectionDepth", {
   set(v) { mgr.selectionDepth = v; },
 });
 
-let isDirty = false;
 let _allowInternalDirtyNavigation = false;
 // HANDLE_SIZE now shared via SHARED_HANDLE_SIZE in editor-base.js
 let multiActionGap = window.__DG_CONFIG.col_gap || 24;
@@ -256,9 +255,18 @@ function _snapEdgeToGrid(edge, targets) {
 // ---- Undo/Redo stack ----
 let undoStack = [];
 let redoStack = [];
-let lastSavedState = null;
 let pendingGridAction = null;
 const MAX_UNDO_STACK_SIZE = 50;
+
+function setDirty(dirty) {
+  PreviewSaveClient.setDirty(dirty);
+}
+
+window.setDirty = setDirty;
+
+function isEditorDirty() {
+  return PreviewSaveClient.isDirty();
+}
 
 function _cloneState(value) {
   return JSON.parse(JSON.stringify(value || {}));
@@ -460,7 +468,7 @@ async function _restoreEditorState(serializedState) {
   }
 
   const currentStateStr = _serializeDirtyState();
-  setDirty(currentStateStr !== lastSavedState);
+  PreviewSaveClient.syncDirtyFromSerialized(currentStateStr);
 }
 
 async function _restoreOverridePatch(entries) {
@@ -493,7 +501,7 @@ async function _restoreOverridePatch(entries) {
   }
 
   const currentStateStr = _serializeDirtyState();
-  setDirty(currentStateStr !== lastSavedState);
+  PreviewSaveClient.syncDirtyFromSerialized(currentStateStr);
 }
 
 async function _applyUndoCommand(command, direction) {
@@ -519,6 +527,9 @@ async function loadSVG(options = {}) {
   const preservedSelection = Array.isArray(options.preserveSelectionIds)
     ? options.preserveSelectionIds.slice()
     : null;
+  const canonicalState = options.canonicalState && typeof options.canonicalState === "object"
+    ? options.canonicalState
+    : null;
   // Clear any stale selection UI before replacing the stage. Some browser
   // surfaces restore previous form/DOM state aggressively across reloads,
   // which can leave the inspector showing an old multi-selection until the
@@ -533,11 +544,14 @@ async function loadSVG(options = {}) {
     throw new Error("preview layout bridge is required for the v3 editor");
   }
   await initLayoutBridge(SLUG);
+  if (canonicalState && canonicalState.frameTree && typeof setFrameTreeJson === "function") {
+    setFrameTreeJson(canonicalState.frameTree);
+  }
 
   // Seed ELK overrides from saved YAML before any sidebar sync or layout read.
-  if (_isElkLayeredDiagram()) {
+  if (ElkPreviewController.isElkLayeredDiagram()) {
     resetOverrideState();
-    _initElkLayoutPanel();
+    ElkPreviewController.initPanel();
   }
 
   // Check readiness — fall back to Python SVG if bridge fails
@@ -560,8 +574,8 @@ async function loadSVG(options = {}) {
       return;
     }
     stage.innerHTML = await resp.text();
-    await loadTree();
-    await loadGridInfo();
+    await loadTree(canonicalState);
+    await loadGridInfo(canonicalState);
     if (gridInfo) model.setDiagramGrid(gridInfo);
     populateGridControls();
     resetOverrideState();
@@ -575,18 +589,17 @@ async function loadSVG(options = {}) {
     }
     reapplySelection();
     runConstraints();
-    lastSavedState = _serializeDirtyState();
-    setDirty(false);
+    PreviewSaveClient.markSaved(_serializeDirtyState());
     _signalDiagramLoaded();
     return;
   }
 
   // Load tree + grid info
-  await loadTree();
-  await loadGridInfo();
+  await loadTree(canonicalState);
+  await loadGridInfo(canonicalState);
   if (gridInfo) model.setDiagramGrid(gridInfo);
   populateGridControls();
-  if (!_isElkLayeredDiagram()) {
+  if (!ElkPreviewController.isElkLayeredDiagram()) {
     resetOverrideState();
   }
 
@@ -617,49 +630,12 @@ async function loadSVG(options = {}) {
   }
   reapplySelection();
   runConstraints();
-  lastSavedState = _serializeDirtyState();
-  setDirty(false);
-  if (_isElkLayeredDiagram()) {
-    _initElkLayoutPanel();
+  PreviewSaveClient.markSaved(_serializeDirtyState());
+  if (ElkPreviewController.isElkLayeredDiagram()) {
+    ElkPreviewController.initPanel();
   }
   _signalDiagramLoaded();
 }
-
-function _isElkLayeredDiagram() {
-  const tree = typeof getFrameTreeJson === "function" ? getFrameTreeJson() : null;
-  if (tree && tree.layoutEngine === "elk-layered") return true;
-  const cfg = window.__DG_CONFIG || {};
-  return cfg.layout_engine === "elk-layered";
-}
-
-function _wireElkLayoutPanel() {
-  if (!window.ElkLayoutControls) return;
-  if (window.__DG_elkControlsInited) return;
-  ElkLayoutControls.init({
-    getOverrides: () => model.elkLayoutOverrides || {},
-    setOverrides: (v) => {
-      model.elkLayoutOverrides = { ...v };
-    },
-  });
-  window.__DG_elkControlsInited = true;
-}
-
-function _syncElkLayoutPanel() {
-  _wireElkLayoutPanel();
-  if (window.ElkLayoutControls && typeof ElkLayoutControls.refresh === "function") {
-    ElkLayoutControls.refresh();
-  }
-}
-
-function _initElkLayoutPanel() {
-  _syncElkLayoutPanel();
-}
-
-window.__DG_wireElkLayoutPanel = _wireElkLayoutPanel;
-
-window.__DG_applyElkLayoutOverrides = function (overrides) {
-  model.elkLayoutOverrides = { ...(overrides || {}) };
-};
 
 async function _finishV3Relayout(triggerCid, localResult, executionLabel) {
   if (!localResult) {
@@ -743,7 +719,7 @@ function _attemptDiagramNavigation(nextUrl, syncUi) {
     syncUi();
     return false;
   }
-  if (isDirty) {
+  if (isEditorDirty()) {
     const confirmed = window.confirm(DIRTY_DIAGRAM_NAV_CONFIRM);
     if (!confirmed) {
       syncUi();
@@ -759,7 +735,15 @@ function _attemptDiagramNavigation(nextUrl, syncUi) {
   return true;
 }
 
-async function loadTree() {
+async function loadTree(canonicalState = null) {
+  const canonicalComponentTree = canonicalState && Array.isArray(canonicalState.componentTree)
+    ? canonicalState.componentTree
+    : null;
+  if (canonicalComponentTree) {
+    model.loadTree(canonicalComponentTree);
+    syncArrowsFromFrameTree();
+    return;
+  }
   try {
     const resp = await fetch("/api/tree/" + SLUG + "?t=" + Date.now(), { cache: "no-store" });
     if (resp.ok) {
@@ -790,7 +774,18 @@ function syncArrowsFromFrameTree() {
   model.loadArrows(payload);
 }
 
-async function loadGridInfo() {
+async function loadGridInfo(canonicalState = null) {
+  const canonicalGridInfo = canonicalState && canonicalState.gridInfo && typeof canonicalState.gridInfo === "object"
+    ? canonicalState.gridInfo
+    : null;
+  gridInfo = null;
+  baseGridInfo = null;
+  if (canonicalGridInfo) {
+    gridInfo = canonicalGridInfo;
+    baseGridInfo = _cloneState(gridInfo);
+    model.setDiagramGrid(gridInfo);
+    return;
+  }
   try {
     const resp = await fetch("/api/grid/" + SLUG + "?t=" + Date.now(), { cache: "no-store" });
     if (resp.ok) {
@@ -1349,7 +1344,7 @@ function resetOverrideState() {
   undoStack = [];
   redoStack = [];
   pendingGridAction = null;
-  lastSavedState = _serializeDirtyState();
+  PreviewSaveClient.markSaved(_serializeDirtyState());
   updateUndoRedoButtons();
 }
 
@@ -4695,7 +4690,7 @@ function _scheduleV3ResizeRelayout(cid, newW, newH, resizedW, resizedH) {
   // ELK diagrams must not run box autolayout during live resize — it corrupts
   // ELK positions/routes. Visual feedback comes from applyAllOverrides(); full
   // ELK relayout runs on mouseup via requestV3Relayout().
-  if (typeof _isElkLayeredDiagram === "function" && _isElkLayeredDiagram()) {
+  if (ElkPreviewController.isElkLayeredDiagram()) {
     return;
   }
   _resizeLatest = { cid, newW, newH, resizedW, resizedH };
@@ -5560,7 +5555,7 @@ async function requestV3Relayout(triggerCid) {
   // --- Client-side layout (no server round-trip) ---
   const gridOvr = _normaliseGridOverrides(model.gridOverrides || {});
 
-  if (_isElkLayeredDiagram() && typeof performElkRelayout === "function") {
+  if (ElkPreviewController.isElkLayeredDiagram() && typeof performElkRelayout === "function") {
     const elkResult = await performElkRelayout(model, overrides, gridOvr);
     if (!elkResult) {
       console.error("v3 relayout: ELK layout failed");
@@ -5590,18 +5585,6 @@ async function requestV3Relayout(triggerCid) {
   }
   return _finishV3Relayout(triggerCid, localResult, "local");
 }
-
-window.requestElkRelayout = async function () {
-  _wireElkLayoutPanel();
-  if (window.ElkLayoutControls && typeof ElkLayoutControls.collectOverrides === "function") {
-    window.__DG_applyElkLayoutOverrides({
-      ...(model.elkLayoutOverrides || {}),
-      ...ElkLayoutControls.collectOverrides(),
-    });
-  }
-  const rootId = (model.roots[0] || {}).id || "root";
-  return requestV3Relayout(rootId);
-};
 
 window.getV3RelayoutStatus = getV3RelayoutStatus;
 
@@ -5749,63 +5732,7 @@ function updateInspector(cid) {
   inspector.innerHTML = html;
 }
 
-// ---- Override persistence ----
-
-async function saveOverrides() {
-  // Block save when error-severity constraint violations exist
-  const summary = constraints.summarise(lastViolations);
-  if (summary.errors > 0) {
-    console.warn("Save blocked: " + summary.errors + " error-severity constraint violation(s)");
-    alert("Cannot save: " + summary.errors + " constraint error(s) must be resolved first.");
-    return;
-  }
-  let payload = model.toOverridePayload();
-  let elkOverrides = null;
-  if (_isElkLayeredDiagram() && window.ElkLayoutControls && typeof ElkLayoutControls.collectOverrides === "function") {
-    _wireElkLayoutPanel();
-    const active = document.activeElement;
-    if (active && typeof active.blur === "function") {
-      active.blur();
-    }
-    const domElk = ElkLayoutControls.collectOverrides();
-    elkOverrides = { ...(model.elkLayoutOverrides || {}), ...domElk };
-    window.__DG_applyElkLayoutOverrides(elkOverrides);
-    payload = { ...payload, elk_layout_overrides: { ...elkOverrides } };
-  }
-  const relayout = getV3RelayoutStatus();
-  if (_v3RelayoutRuntime.lastMode === "local-error") {
-    alert("Cannot save while local relayout is in an error state. Resolve the local relayout error first.");
-    return;
-  }
-  if (!relayout.localReady && (Object.keys(model.overrides).length > 0 || Object.keys(model.gridOverrides || {}).length > 0)) {
-    alert("Cannot save while local relayout is unavailable.");
-    return;
-  }
-  const preservedSelectionIds = [...selectedIds];
-  try {
-    const resp = await fetch("/api/overrides/" + SLUG, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!resp.ok) {
-      const message = await resp.text();
-      console.error("Save failed:", resp.status, resp.statusText, message);
-      alert("Save failed: " + (message || resp.statusText || "Unknown error"));
-      return;
-    }
-  } catch (e) {
-    console.error("Save failed:", e);
-    alert("Save failed: " + e);
-    return;
-  }
-  _coercedKeys.clear();
-  model.removedIds = new Set();
-  await loadSVG({ preserveSelectionIds: preservedSelectionIds });
-  if (typeof setStatus === "function") {
-    setStatus("Ready", "ok");
-  }
-}
+// ---- Override persistence (save orchestration in save-client.js) ----
 
 function clearOverride(cid) {
   const clearIds = [cid];
@@ -5856,42 +5783,6 @@ function refreshTreeColors() {
   });
 }
 
-function _downloadTextFile(filename, content, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function _currentSvgFilename() {
-  const baseSlug = SLUG.replace(/^v3:/, "");
-  return baseSlug + "-onbrand-v3.svg";
-}
-
-function saveCurrentSvg() {
-  const svg = document.querySelector("#stage svg");
-  if (!svg) {
-    alert("No SVG is loaded.");
-    return;
-  }
-  const clone = svg.cloneNode(true);
-  sanitizeSvgCloneForExport(clone);
-  if (!clone.getAttribute("xmlns")) {
-    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  }
-  if (!clone.getAttribute("xmlns:xlink")) {
-    clone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-  }
-  const serialized = new XMLSerializer().serializeToString(clone);
-  const prolog = serialized.startsWith("<?xml") ? "" : '<?xml version="1.0" encoding="UTF-8"?>\n';
-  _downloadTextFile(_currentSvgFilename(), prolog + serialized + "\n", "image/svg+xml;charset=utf-8");
-}
-
 document.getElementById("btn-export").addEventListener("click", () => {
   const entries = Object.entries(overrides).filter(([,d]) =>
     (d.dx||0) !== 0 || (d.dy||0) !== 0 || (d.dw||0) !== 0 || (d.dh||0) !== 0 || d.waypoints);
@@ -5905,26 +5796,6 @@ document.getElementById("btn-export").addEventListener("click", () => {
     lines.push("# " + cid + ": " + parts.join(", "));
   }
   navigator.clipboard.writeText(lines.join("\n")).then(() => alert("Copied to clipboard."));
-});
-
-document.getElementById("btn-save-svg").addEventListener("click", saveCurrentSvg);
-
-function setDirty(dirty) {
-  isDirty = dirty;
-  const saveBtn = document.getElementById("btn-save");
-  const hasErrors = constraints.summarise(lastViolations).errors > 0;
-  saveBtn.disabled = !dirty || hasErrors;
-  if (dirty) {
-    saveBtn.classList.add("dirty");
-    runConstraints();
-  } else {
-    saveBtn.classList.remove("dirty");
-  }
-}
-
-document.getElementById("btn-save").addEventListener("click", () => {
-  if (!isDirty) return;
-  saveOverrides();
 });
 
 document.getElementById("btn-clear-all").addEventListener("click", () => {
@@ -5951,9 +5822,7 @@ document.addEventListener("keydown", (e) => {
   }
   if (e.ctrlKey && e.key === "s") {
     e.preventDefault();
-    if (isDirty) {
-      saveOverrides();
-    }
+    PreviewSaveClient.trySaveIfDirty();
   } else if (e.ctrlKey && e.key === "z" && !e.shiftKey) {
     e.preventDefault();
     performUndo();
@@ -6048,13 +5917,7 @@ document.getElementById("btn-redo").addEventListener("click", performRedo);
 
 // Warn before leaving with unsaved changes.
 // Internal diagram navigation uses its own confirm path and suppresses this.
-window.addEventListener("beforeunload", (e) => {
-  if (isDirty && !_allowInternalDirtyNavigation) {
-    e.preventDefault();
-    e.returnValue = "";
-    return "";
-  }
-});
+// beforeunload wiring lives in PreviewSaveClient.init().
 
 // ---- Constraint validation ----
 
@@ -6067,9 +5930,7 @@ function runConstraints() {
 function updateConstraintUI() {
   const summary = constraints.summarise(lastViolations);
   const el = document.getElementById("constraint-status");
-  // Keep save button in sync with error state
-  const saveBtn = document.getElementById("btn-save");
-  if (saveBtn) saveBtn.disabled = !isDirty || summary.errors > 0;
+  PreviewSaveClient.syncSaveButton(summary.errors);
   if (!el) return;
   if (summary.total === 0) {
     el.textContent = "No violations";
@@ -6545,9 +6406,61 @@ function initDiagramPicker() {
   void populateDiagramOptions();
 }
 
+function _initElkPreviewController() {
+  if (typeof ElkPreviewController === "undefined") {
+    window.ElkPreviewController = {
+      init() {},
+      isElkLayeredDiagram() { return false; },
+      wirePanel() {},
+      syncPanel() {},
+      initPanel() {},
+      applyElkLayoutOverrides() {},
+      requestRelayout() { return Promise.resolve(); },
+    };
+  }
+  ElkPreviewController.init({
+    getElkLayoutOverrides: () => model.elkLayoutOverrides || {},
+    setElkLayoutOverrides: (value) => {
+      model.elkLayoutOverrides = { ...value };
+    },
+    getRootId: () => (model.roots[0] || {}).id || "root",
+    requestV3Relayout: (cid) => requestV3Relayout(cid),
+  });
+}
+
+function _initPreviewSaveClient() {
+  PreviewSaveClient.init({
+    slug: SLUG,
+    getModel: () => model,
+    getSelectedIds: () => [...selectedIds],
+    serializeDirtyState: () => _serializeDirtyState(),
+    reloadDiagram: (options) => loadSVG(options),
+    isElkLayeredDiagram: () => ElkPreviewController.isElkLayeredDiagram(),
+    wireElkLayoutPanel: () => ElkPreviewController.wirePanel(),
+    applyElkLayoutOverrides: (overrides) => ElkPreviewController.applyElkLayoutOverrides(overrides),
+    getV3RelayoutStatus: () => getV3RelayoutStatus(),
+    getV3RelayoutRuntime: () => _v3RelayoutRuntime,
+    getConstraintSummary: () => constraints.summarise(lastViolations),
+    getConstraintErrorCount: () => constraints.summarise(lastViolations).errors,
+    runConstraints: () => runConstraints(),
+    clearCoercedKeys: () => _coercedKeys.clear(),
+    setStatus: (message, kind) => setStatus(message, kind),
+    sanitizeSvgCloneForExport: (clone) => sanitizeSvgCloneForExport(clone),
+    onBeforeUnload: (event) => {
+      if (PreviewSaveClient.isDirty() && !_allowInternalDirtyNavigation) {
+        event.preventDefault();
+        event.returnValue = "";
+        return "";
+      }
+    },
+  });
+}
+
 initPreviewShell();
 initDiagramPicker();
 initNavTabs();
+_initElkPreviewController();
+_initPreviewSaveClient();
 window.addEventListener("pageshow", (event) => {
   // Back-forward cache can restore the full JS heap (mutated frame tree, undo stack).
   // Always reload from the server so unsaved deletes do not survive navigation.
