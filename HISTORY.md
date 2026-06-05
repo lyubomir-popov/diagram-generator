@@ -4,6 +4,12 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-06 – Spec 026 closeout: preview shell decomposition + TS migration
+
+- Completed preview shell decomposition: `save-client.js`, `elk-controller.js`, `editor-state.js`, TS `preview-shell/` (snapshot + undo store), and `editor.js` shell shrink (direct module calls, no obsolete wrappers).
+- Documented shell vs runtime-bridge ownership in `specs/026-preview-shell-decomposition-ts-migration/boundaries.md`; `layout-bridge.js` stays the JSON ↔ LayoutEngine ↔ SVG bridge without shell-module coupling.
+- Validation: `python -m pytest scripts/test_preview_elk_controller.py scripts/test_preview_save_client.py scripts/test_preview_engine_manifest.py scripts/test_preview_elk_layout_save.py scripts/test_frame_yaml_persistence.py scripts/test_elk_preview_qa.py scripts/test_preview_shell_bf_contract.py scripts/test_preview_force_api.py scripts/test_preview_editor_state.py scripts/test_preview_editor_shell_shrink.py scripts/test_preview_layout_bridge_boundaries.py -q`, `npm --prefix packages/layout-engine test -- tests/preview-engine-registry.test.ts tests/force-runtime.test.ts tests/editor-snapshot.test.ts tests/editor-undo-stack.test.ts tests/editor-state-store.test.ts`.
+
 ### 2026-06-06 – Spec 025 closeout: canonical save response + onboarding docs
 
 - `/api/overrides/<slug>` now returns canonical persisted state (`frameTree`, `componentTree`, `gridInfo`) after YAML save instead of a bare `{"ok": true}` response.

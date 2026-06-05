@@ -6,7 +6,7 @@
 
 **Created**: 2026-06-05
 
-**Status**: Draft
+**Status**: Complete (2026-06-06)
 
 **Input**: `scripts/preview/editor.js` has grown to ~6k lines and now mixes bootstrap, selection state, inspector rendering, interaction controllers, undo/redo, save orchestration, grid UI, ELK wiring, and force-mode behavior. This file is now too large to remain the home of preview architecture.
 

@@ -6,9 +6,9 @@
 
 ## Phase 1 - Boundary audit
 
-- [ ] T001 Audit `scripts/preview/editor.js` by responsibility and document extraction boundaries
-- [ ] T002 Audit `scripts/preview/layout-bridge.js` ownership overlap and document what belongs in shell vs runtime bridge
-- [ ] T003 Define the target module map for shell, state, inspector, save, and engine controllers
+- [x] T001 Audit `scripts/preview/editor.js` by responsibility and document extraction boundaries
+- [x] T002 Audit `scripts/preview/layout-bridge.js` ownership overlap and document what belongs in shell vs runtime bridge
+- [x] T003 Define the target module map for shell, state, inspector, save, and engine controllers
 
 ## Phase 2 - Initial extraction slices
 
@@ -25,5 +25,5 @@
 ## Phase 4 - Shell shrink and follow-up
 
 - [x] T030 Remove obsolete inline helpers from `editor.js`
-- [ ] T031 Reassess `layout-bridge.js` for additional decomposition after the first shell slices land
-- [ ] T032 Update `TODO.md`, `STATUS.md`, and `docs/specs.md` after the feature lands
+- [x] T031 Reassess `layout-bridge.js` for additional decomposition after the first shell slices land
+- [x] T032 Update `TODO.md`, `STATUS.md`, and `docs/specs.md` after the feature lands

@@ -20,13 +20,13 @@ Feature package: `specs/025-multi-engine-preview-architecture/`.
 
 Feature package: `specs/026-preview-shell-decomposition-ts-migration/`.
 
-- [ ] `[H]` **Decompose `editor.js` into bounded shell modules.** Save/reload (`save-client.js`), ELK controller (`elk-controller.js`), and editor state (`editor-state.js` + TS store) are extracted; obsolete wrappers removed from `editor.js` (T030). Remaining: reassess `layout-bridge.js` (T031) and spec closeout docs (T032).
+- [x] `[H]` **Decompose `editor.js` into bounded shell modules.** Closed in spec 026: `save-client.js`, `elk-controller.js`, `editor-state.js` + TS `preview-shell/`, shell shrink, and boundary docs in `specs/026-preview-shell-decomposition-ts-migration/boundaries.md`. `layout-bridge.js` ownership unchanged; future runtime-bridge slices are documented there, not scheduled here.
 
 #### ELK interactive node alignment (spec 024)
 
 Feature package: `specs/024-elk-interactive-node-alignment/`.
 
-- [ ] `[H]` **Spec drafted; implementation blocked on elkjs interactive-constraint spike and spec 025 / 026 prerequisite slices.** Native ELK only: nudge → `layerChoiceConstraint` / `positionChoiceConstraint` → persist under `meta.elk_nodes` → re-run layered with INTERACTIVE strategies. No SVG translate hacks or new `editor.js` branches.
+- [ ] `[H]` **Spec drafted; implementation blocked on elkjs interactive-constraint spike.** Native ELK only: nudge → `layerChoiceConstraint` / `positionChoiceConstraint` → persist under `meta.elk_nodes` → re-run layered with INTERACTIVE strategies. Integrate through the spec 025 engine contract and spec 026 ELK controller slice — no SVG translate hacks or new `editor.js` branches.
 
 #### PNG export (spec 018)
 
