@@ -1,185 +1,121 @@
 /**
- * Shared preview editor state container (spec 026 T012).
+ * Thin preview editor state adapter (spec 026 T021).
  *
- * Owns undo/redo stacks, pending grid actions, and dirty snapshot serialization.
- * Snapshot shaping delegates to TS helpers on LayoutEngine when available.
+ * DOM wiring and undo apply callbacks stay here; snapshot + undo logic live in
+ * LayoutEngine.createEditorStateStore (TS preview-shell modules).
  */
 (function () {
   "use strict";
 
-  const MAX_UNDO_STACK_SIZE = 50;
+  /** @type {import("@diagram-generator/layout-engine").EditorStateStore | null} */
+  let _store = null;
 
-  /** @type {object | null} */
-  let _deps = null;
-  let _undoStack = [];
-  let _redoStack = [];
-  /** @type {object | null} */
-  let _pendingGridAction = null;
-
-  function _requireDeps() {
-    if (!_deps) {
+  function _requireStore() {
+    if (!_store) {
       throw new Error("EditorState.init() must run before editor state operations");
     }
-    return _deps;
+    if (typeof LayoutEngine === "undefined" || !LayoutEngine.createEditorStateStore) {
+      throw new Error("LayoutEngine.createEditorStateStore is required for EditorState");
+    }
+    return _store;
   }
 
-  function _snapshotApi() {
-    if (typeof LayoutEngine !== "undefined" && LayoutEngine.captureEditorSnapshot) {
-      return LayoutEngine;
+  function init(deps) {
+    if (typeof LayoutEngine === "undefined" || !LayoutEngine.createEditorStateStore) {
+      throw new Error("LayoutEngine.createEditorStateStore is required for EditorState");
     }
-    return null;
+    _store = LayoutEngine.createEditorStateStore({
+      getOverrides: () => deps.getOverrides(),
+      getGridOverrides: () => deps.getGridOverrides(),
+      getElkLayoutOverrides: () => deps.getElkLayoutOverrides(),
+      getRemovedIds: () => deps.getRemovedIds(),
+      getFrameTree: () => deps.getFrameTree(),
+    });
   }
 
   function cloneValue(value) {
-    const api = _snapshotApi();
-    if (api && typeof api.cloneEditorSnapshotValue === "function") {
-      return api.cloneEditorSnapshotValue(value);
-    }
-    return JSON.parse(JSON.stringify(value || {}));
+    return LayoutEngine.cloneEditorSnapshotValue(value);
   }
 
   function captureSnapshot() {
-    const deps = _requireDeps();
-    const api = _snapshotApi();
-    if (api && typeof api.captureEditorSnapshot === "function") {
-      return api.captureEditorSnapshot({
-        overrides: deps.getOverrides(),
-        gridOverrides: deps.getGridOverrides(),
-        elkLayoutOverrides: deps.getElkLayoutOverrides(),
-        removedIds: deps.getRemovedIds(),
-        frameTree: deps.getFrameTree(),
-      });
-    }
-    const snapshot = {
-      o: cloneValue(deps.getOverrides()),
-      g: cloneValue(deps.getGridOverrides() || {}),
-    };
-    const elk = deps.getElkLayoutOverrides();
-    if (elk && Object.keys(elk).length > 0) snapshot.e = cloneValue(elk);
-    const removed = deps.getRemovedIds();
-    if (removed && removed.length) snapshot.r = [...removed];
-    const frameTree = deps.getFrameTree();
-    if (frameTree) snapshot.f = frameTree;
-    return snapshot;
+    return _requireStore().captureSnapshot();
   }
 
   function serializeDirtyState() {
-    const api = _snapshotApi();
-    const snapshot = captureSnapshot();
-    if (api && typeof api.serializeEditorSnapshot === "function") {
-      return api.serializeEditorSnapshot(snapshot);
-    }
-    return JSON.stringify(snapshot);
+    return _requireStore().serializeDirtyState();
   }
 
   function normalizeGridOverrides(gridOverrides) {
-    const api = _snapshotApi();
-    if (api && typeof api.normalizeGridOverrides === "function") {
-      return api.normalizeGridOverrides(gridOverrides);
-    }
-    return gridOverrides || {};
-  }
-
-  function createUndoCommand(label, beforeState, afterState) {
-    return { label, before: beforeState, after: afterState };
-  }
-
-  function createOverridePatchCommand(label, beforeEntries, afterEntries) {
-    return { label, kind: "override-patch", beforeEntries, afterEntries };
-  }
-
-  function pushUndoCommand(command) {
-    _undoStack.push(command);
-    if (_undoStack.length > MAX_UNDO_STACK_SIZE) _undoStack.shift();
-    _redoStack = [];
-    updateUndoRedoButtons();
-    return true;
+    return _requireStore().normalizeGridOverrides(gridOverrides);
   }
 
   function beginUndoableAction(label) {
-    return { label, before: serializeDirtyState() };
+    return _requireStore().beginUndoableAction(label);
   }
 
   function commitUndoableAction(action) {
-    if (!action) return false;
-    const after = serializeDirtyState();
-    if (action.before === after) return false;
-    return pushUndoCommand(createUndoCommand(action.label, action.before, after));
+    return _requireStore().commitUndoableAction(action);
   }
 
   function commitOverridePatchAction(label, beforeEntries, afterEntries) {
-    if (JSON.stringify(beforeEntries) === JSON.stringify(afterEntries)) return false;
-    return pushUndoCommand(createOverridePatchCommand(label, beforeEntries, afterEntries));
+    return _requireStore().commitOverridePatchAction(label, beforeEntries, afterEntries);
   }
 
   function runUndoableAction(label, mutate) {
-    const action = beginUndoableAction(label);
-    const result = mutate();
-    commitUndoableAction(action);
-    return result;
+    return _requireStore().runUndoableAction(label, mutate);
+  }
+
+  function pushUndoCommand(command) {
+    return _requireStore().pushUndoCommand(command);
+  }
+
+  function captureOverrideEntries(ids) {
+    return _requireStore().captureOverrideEntries(ids);
   }
 
   function canUndo() {
-    return _undoStack.length > 0;
+    return _requireStore().canUndo();
   }
 
   function canRedo() {
-    return _redoStack.length > 0;
+    return _requireStore().canRedo();
   }
 
   async function undo(applyCommand) {
-    if (!canUndo()) return null;
-    const command = _undoStack.pop();
-    _redoStack.push(command);
+    const command = _requireStore().popUndoCommand();
+    if (!command) return null;
     await applyCommand(command, "undo");
     updateUndoRedoButtons();
     return command.label;
   }
 
   async function redo(applyCommand) {
-    if (!canRedo()) return null;
-    const command = _redoStack.pop();
-    _undoStack.push(command);
+    const command = _requireStore().popRedoCommand();
+    if (!command) return null;
     await applyCommand(command, "redo");
     updateUndoRedoButtons();
     return command.label;
   }
 
   function clearUndoHistory() {
-    _undoStack = [];
-    _redoStack = [];
-    _pendingGridAction = null;
+    _requireStore().clearUndoHistory();
     updateUndoRedoButtons();
   }
 
   function getPendingGridAction() {
-    return _pendingGridAction;
+    return _requireStore().getPendingGridAction();
   }
 
   function setPendingGridAction(action) {
-    _pendingGridAction = action;
-  }
-
-  function captureOverrideEntries(ids) {
-    const deps = _requireDeps();
-    const snapshot = {};
-    const orderedIds = [...new Set(ids || [])].sort();
-    for (const cid of orderedIds) {
-      const entry = deps.getOverrides()[cid];
-      snapshot[cid] = entry ? cloneValue(entry) : null;
-    }
-    return snapshot;
+    _requireStore().setPendingGridAction(action);
   }
 
   function updateUndoRedoButtons() {
     const undoBtn = document.getElementById("btn-undo");
     const redoBtn = document.getElementById("btn-redo");
-    if (undoBtn) undoBtn.disabled = !canUndo();
-    if (redoBtn) redoBtn.disabled = !canRedo();
-  }
-
-  function init(deps) {
-    _deps = deps;
+    if (!_store) return;
+    if (undoBtn) undoBtn.disabled = !_store.canUndo();
+    if (redoBtn) redoBtn.disabled = !_store.canRedo();
   }
 
   window.EditorState = {

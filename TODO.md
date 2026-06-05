@@ -20,7 +20,7 @@ Feature package: `specs/025-multi-engine-preview-architecture/`.
 
 Feature package: `specs/026-preview-shell-decomposition-ts-migration/`.
 
-- [ ] `[H]` **Decompose `editor.js` into bounded shell modules.** Save/reload lives in `save-client.js` (T010); ELK controller wiring lives in `elk-controller.js` (T011); shared editor state lives in `editor-state.js` with TS snapshot helpers (T012). Next slice: TS-first migration of extracted non-DOM logic (T020–T022).
+- [ ] `[H]` **Decompose `editor.js` into bounded shell modules.** Save/reload (`save-client.js`, T010), ELK controller (`elk-controller.js`, T011), and editor state (`editor-state.js` + TS store, T012/T020–T022) are extracted. Next slice: remove obsolete inline helpers from `editor.js` (T030).
 
 #### ELK interactive node alignment (spec 024)
 

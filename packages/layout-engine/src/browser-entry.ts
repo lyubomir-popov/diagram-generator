@@ -139,10 +139,24 @@ export {
   normalizeGridOverrides,
   parseEditorSnapshot,
   serializeEditorSnapshot,
+  EditorUndoStack,
+  createOverridePatchCommand,
+  createStatePatchCommand,
+  overridePatchChanged,
+  EditorStateStore,
+  captureOverrideEntries,
+  createEditorStateStore,
 } from './preview-shell/index.js';
 export type {
   EditorSnapshot,
   EditorSnapshotInput,
+  EditorOverridePatchCommand,
+  EditorStatePatchCommand,
+  EditorUndoCommand,
+  EditorUndoStackOptions,
+  PendingUndoableAction,
+  EditorStateStoreDeps,
+  EditorStateStoreOptions,
 } from './preview-shell/index.js';
 
 export {

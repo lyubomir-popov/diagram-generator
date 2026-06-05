@@ -18,9 +18,9 @@
 
 ## Phase 3 - TypeScript-first migration
 
-- [ ] T020 Introduce TS-owned modules for extracted non-DOM logic
-- [ ] T021 Keep only thin bootstrap/event hookup code in legacy JS where necessary
-- [ ] T022 Add focused regression coverage for the extracted shell slices
+- [x] T020 Introduce TS-owned modules for extracted non-DOM logic
+- [x] T021 Keep only thin bootstrap/event hookup code in legacy JS where necessary
+- [x] T022 Add focused regression coverage for the extracted shell slices
 
 ## Phase 4 - Shell shrink and follow-up
 
