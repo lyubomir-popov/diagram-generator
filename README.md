@@ -37,8 +37,8 @@ Key files: `packages/layout-engine/src/layout.ts` (measure→place), `packages/l
 Start the preview server and open:
 
 1. `http://127.0.0.1:8100/view/v3:support-engineering-flow` – the primary demo with nested autolayout
-2. `http://127.0.0.1:8100/view/v3:android-custom-to-cloud` – three-tier hierarchy (section/panel/leaf)
-3. `http://127.0.0.1:8100/view/v3:android-container-vs-vm` – container/VM comparison with vertical nesting
+2. `http://127.0.0.1:8100/view/v3:example-platform-architecture` – nested panels and multi-column layout
+3. `http://127.0.0.1:8100/view/v3:complex-routing-usecase` – arrow routing, overlays, and selection edge cases
 
 ### Agent prompt: demo the project
 
@@ -53,8 +53,8 @@ Open this repo and demo the current v3 workflow end-to-end.
     - python scripts/preview_server.py
 4. Open these demo surfaces (prefer VS Code webview or Simple Browser; otherwise default browser):
     - http://127.0.0.1:8100/view/v3:support-engineering-flow
-    - http://127.0.0.1:8100/view/v3:android-custom-to-cloud
-    - http://127.0.0.1:8100/view/v3:android-container-vs-vm
+    - http://127.0.0.1:8100/view/v3:example-platform-architecture
+    - http://127.0.0.1:8100/view/v3:complex-routing-usecase
 5. Tell me when the interactive preview is visible.
 ```
 

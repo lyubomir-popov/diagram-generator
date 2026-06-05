@@ -16,7 +16,6 @@ arrows:
 root:
   id: page
   direction: vertical
-  padding: 24
   children:
     # Row 0: User-facing services panel
     - id: frontend

@@ -3,8 +3,6 @@ title: "Deep nesting — page → panel → columns → boxes"
 root:
   id: page
   direction: vertical
-  padding: 24
-  border: none
   children:
     - id: header
       label: [Platform Architecture]

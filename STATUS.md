@@ -27,7 +27,7 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 
 | Area | State |
 |------|--------|
-| **Authoring** | Frame YAML in `scripts/diagrams/frames/` — **only** source of truth (18 diagrams after the first pruning pass) |
+| **Authoring** | Frame YAML in `scripts/diagrams/frames/` — **only** source of truth (11 canonical invariant-pack diagrams) |
 | **Interactive preview** | TS layout via `layout-bridge.js` + HarfBuzz; save → YAML via `frame_yaml_persistence.py` |
 | **Preview APIs** | TS-only: frame-tree, grid, component tree (`preview_ts_layout.py`) |
 | **Live preview SVG** | TS-only Node export (`preview_ts_export.py`); no Python SVG renderer (spec 012) |

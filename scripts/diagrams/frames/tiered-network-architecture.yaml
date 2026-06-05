@@ -30,7 +30,6 @@ arrows:
 root:
   id: page
   direction: vertical
-  padding: 24
   align: top-center
   children:
   - id: public_repo

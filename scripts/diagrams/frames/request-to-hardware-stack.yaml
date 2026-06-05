@@ -17,7 +17,6 @@ arrows:
 root:
   id: page
   direction: vertical
-  padding: 24
   variant: annotation
   children:
     - id: user

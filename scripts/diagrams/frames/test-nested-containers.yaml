@@ -3,8 +3,6 @@ title: "Nested containers — V → H"
 root:
   id: page
   direction: vertical
-  padding: 24
-  border: none
   children:
     - id: top_box
       label: [Top-level box]

@@ -46,7 +46,7 @@ Full contract: [`DIAGRAM.md`](../DIAGRAM.md). Short version:
 |------|-------------------|
 | `support-engineering-flow` | Nested panels, mixed sizing, primary product demo |
 | `example-deployment-pipeline` | Workflow / process steps |
-| `android-custom-to-cloud` | Three-tier hierarchy |
+| `example-platform-architecture` | Nested panels and multi-column layout |
 | `request-to-hardware-stack` | Headed panels + arrow chain |
 | `test-box-styles` | Compact “hello world” for style variants |
 

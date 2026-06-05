@@ -18,7 +18,6 @@ arrows:
 root:
   id: page
   direction: horizontal
-  padding: 24
   width: 1440
   sizing_w: fixed
   sizing_h: hug

@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-05 – Spec 020 invariant-pack corpus prune + semantic YAML trim
+
+- Pruned `scripts/diagrams/frames/` from 19 to **11** canonical slugs; deleted 8 redundant domain fixtures (`android-*`, `lt-*`, `rise-of-inference-economy`).
+- Retained invariant pack: `preview-smoke`, `test-nested-containers`, `test-box-styles`, `test-alignment-grid`, `test-deep-nesting`, `tiered-network-architecture`, `support-engineering-flow`, `complex-routing-usecase`, `example-deployment-pipeline`, `example-platform-architecture`, `request-to-hardware-stack`.
+- Updated live references (preview regressions, golden harness → `example-platform-architecture`, README, stakeholder guide, compare index, preview thumb map).
+- Stripped redundant root `padding: 24` / `border: none` from kept YAML; explicit grid exceptions kept only where they prove an invariant (`row_gap: 48`, `col_gap: 16`).
+- Validation: all 11 slugs export via `export-frame-svg.mjs`; `svg-golden` + focused TS tests green.
+
 ### 2026-06-05 – Runtime dist freshness guard for TS CLIs
 
 - Added a dist freshness guard in `packages/layout-engine/scripts/_dist-import.mjs` so the live Node runtime rebuilds `packages/layout-engine/dist/` when TS source is newer than the requested dist artifact.

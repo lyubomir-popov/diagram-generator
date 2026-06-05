@@ -31,7 +31,7 @@ export interface SvgGoldenCase {
 export const SVG_GOLDEN_CASES: SvgGoldenCase[] = [
   { slug: 'test-nested-containers', markers: { hasHeading: true, hasIcon: true } },
   { slug: 'test-box-styles', markers: { hasHighlight: true, hasIcon: true } },
-  { slug: 'android-custom-to-cloud', markers: { hasArrow: true, hasHeading: true, hasIcon: true } },
+  { slug: 'example-platform-architecture', markers: { hasArrow: true, hasHeading: true, hasIcon: true } },
 ];
 
 let adapterPromise: Promise<HarfBuzzTextAdapter> | null = null;

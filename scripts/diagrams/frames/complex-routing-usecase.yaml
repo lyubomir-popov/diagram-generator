@@ -15,7 +15,6 @@ arrows:
 root:
   id: page
   direction: horizontal
-  padding: 24
   children:
     - id: planning
       level: 3

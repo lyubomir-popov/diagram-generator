@@ -3,11 +3,9 @@ title: "Alignment grid — centered child"
 root:
   id: page
   direction: vertical
-  padding: 24
   sizing: fixed
   width: 480
   height: 400
-  border: none
   children:
     - id: container
       direction: vertical

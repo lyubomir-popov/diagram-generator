@@ -31,9 +31,9 @@ Feature package: `specs/021-arrow-labels-use-annotation-variant/` — arrow labe
 Feature package: `specs/020-lean-variant-style-authority/` — new north-star simplification slice. Diagrams are disposable test fixtures; compatibility is explicitly subordinate to a lean, rigorous, TS-first model.
 
 - [x] `[H]` **P1. Remove line-level styling authority from frame-owned text.** YAML parsing, preview wire transport, preview relayout, the Python legacy mirror, and the dist-backed Node runtime now keep frame-owned lines semantic and derive typography from resolved snapshots instead.
-- [ ] `[H]` **P1. Prune the diagram corpus to a minimal invariant pack.** Keep only a small canonical fixture set; delete or rewrite the rest.
-- [ ] `[H]` **P1. Rewrite YAML toward semantic inputs only.** No legacy text color/weight/small-caps escape hatches for frame-owned text.
-- [ ] `[H]` **P1. Derive spacing from composition and shrink the authored gap surface.** Under spec 020, make root/container/leaf/title spacing default from structure (`24 / 24 / 8 / 0`), remove `stack_gap` from the canonical corpus, keep explicit `gap: 0` only for structural exceptions, and collapse redundant grid gaps toward the `24px` default where the invariant pack allows it.
+- [x] `[H]` **P1. Prune the diagram corpus to a minimal invariant pack.** 11 canonical slugs remain; 8 redundant domain fixtures deleted (android-*, lt-*, rise-of-inference-economy).
+- [x] `[H]` **P1. Rewrite YAML toward semantic inputs only.** Kept corpus has no line-level style escape hatches; redundant root `padding: 24` / `border: none` stripped.
+- [x] `[H]` **P1. Derive spacing from composition and shrink the authored gap surface.** `stack_gap` absent; explicit grid exceptions kept only where they prove an invariant (`support-engineering-flow` `row_gap: 48`, `request-to-hardware-stack` `col_gap: 16`).
 
 #### Force layout restoration (new spec after 020)
 

@@ -284,17 +284,12 @@ _INPUT_DIRS = [
 # Slug → input sketch mapping (mirrors build_compare_pages.py PAIRS)
 _REFERENCE_MAP: dict[str, str] = {
     "memory-wall": "redo-this-image-onbrand.png",
-    "rise-of-inference-economy": "image.png",
     "attention-qkv": "image 3.png",
     "logic-data-vram": "image 4.png",
     "request-to-hardware-stack": "image 6.png",
     "inference-snaps": "image 7.png",
     "example-arrow-label-separator": "example-arrow-label-separator-rough.svg",
     "force-stakeholders": "force/IMG_3229.jpg",
-    "android-graphics-stack": "android/android-graphics-stack.png",
-    "android-custom-to-cloud": "android/image.png",
-    "android-security-comparison": "android/image1.png",
-    "android-container-vs-vm": "android/image2.png",
     "tiered-network-architecture": "maas/tiered-network-architecture.png",
 }
 
