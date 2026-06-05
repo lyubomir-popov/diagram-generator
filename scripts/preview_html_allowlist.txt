@@ -1,0 +1,4 @@
+# HTML paths exempt from the Baseline Foundry stylesheet contract.
+# Do NOT add packages/ or scripts/preview/ entries here — use BF + editor.css only.
+# Migrate exempt pages to the preview shell, then remove their prefix from this file.
+diagrams/3.compare/

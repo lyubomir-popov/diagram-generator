@@ -145,3 +145,14 @@ export {
   type ForceRuntimeSnapshot,
   type ForceSimulationSpec,
 } from './force-runtime.js';
+
+export { compileDiagramYaml } from './diagram-author/compile.js';
+export type {
+  CompileOptions,
+  CompileResult,
+  DiagramDocument,
+  Diagnostic,
+  DiagnosticLevel,
+  Edge,
+  LayoutTreeNode,
+} from './diagram-author/types.js';

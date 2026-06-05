@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyForceNodePatch,
   createInitialForceSnapshot,
+  exportForceSnapshot,
   tickForceSimulation,
   type ForceAuthoredSpec,
 } from '../src/force-runtime.js';
@@ -329,3 +330,74 @@ describe('tickForceSimulation', () => {
     });
   });
 });
+
+describe('exportForceSnapshot', () => {
+  it('snaps exported positions to the grid and reset reloads the authored state', () => {
+    const spec: ForceAuthoredSpec = {
+      title: 'Stakeholders',
+      reference_image: 'force/IMG_3229.jpg',
+      canvas: { width: 960, height: 640 },
+      render: {
+        curve_handle_ratio: 0.35,
+        curve_handle_min: 24,
+        curve_handle_max: 64,
+      },
+      simulation: {
+        ticks_per_frame: 1,
+        max_iterations: 220,
+        charge_strength: -900,
+        link_distance: 256,
+        link_strength: 0.08,
+        collision_padding: 24,
+        collision_iterations: 4,
+        velocity_decay: 0.34,
+        alpha_min: 0.006,
+        center: [480, 320],
+      },
+      nodes: [
+        {
+          id: 'users',
+          label: ['Users'],
+          width: 192,
+          height: 64,
+          x: 241,
+          y: 389,
+        },
+      ],
+      links: [],
+    };
+
+    const snapshot = createInitialForceSnapshot(spec);
+    const moved = applyForceNodePatch(snapshot, 'users', {
+      x: 313,
+      y: 418,
+      style: 'annotation',
+    });
+
+    const exported = windowStructuredCloneSafe(exportForceSnapshot(moved));
+    const reset = createInitialForceSnapshot(spec);
+
+    expect(exported.nodes[0]).toMatchObject({
+      id: 'users',
+      x: 312,
+      y: 416,
+      style: 'annotation',
+      style_override: 'annotation',
+      text_fill: '#666666',
+      stroke: 'none',
+      stroke_width: 0,
+    });
+    expect(spec.nodes[0]).toMatchObject({ x: 241, y: 389 });
+    expect(reset.nodes[0]).toMatchObject({
+      id: 'users',
+      x: 241,
+      y: 389,
+      style: 'default',
+      style_override: null,
+    });
+  });
+});
+
+function windowStructuredCloneSafe<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}

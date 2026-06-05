@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { build } from 'esbuild';
 import { copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
@@ -6,6 +7,10 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distDir = path.join(__dirname, 'dist');
+const graphLayoutElkDir = path.join(__dirname, '..', 'graph-layout-elk');
+
+// Browser bundle imports @diagram-generator/graph-layout-elk via package "main" (dist/).
+execSync('npm run build', { cwd: graphLayoutElkDir, stdio: 'inherit' });
 
 await mkdir(distDir, { recursive: true });
 

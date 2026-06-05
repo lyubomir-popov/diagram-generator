@@ -366,7 +366,7 @@ def _apply_elk_layout_overrides(document: dict[str, Any], elk_overrides: dict[st
     if isinstance(meta.get("elk"), dict):
         elk = {str(k): str(v) for k, v in meta["elk"].items()}
     for key, value in elk_overrides.items():
-        if value is None or value == "":
+        if value is None or str(value) == "":
             elk.pop(str(key), None)
         else:
             elk[str(key)] = str(value)
@@ -374,6 +374,30 @@ def _apply_elk_layout_overrides(document: dict[str, Any], elk_overrides: dict[st
         meta["elk"] = elk
     elif "elk" in meta:
         del meta["elk"]
+
+
+def verify_elk_layout_persisted(frame_path: pathlib.Path, expected: dict[str, Any]) -> None:
+    """Raise if meta.elk on disk does not match the payload we intended to write."""
+    if not expected:
+        return
+    document = yaml.safe_load(frame_path.read_text(encoding="utf-8"))
+    if not isinstance(document, dict):
+        raise ValueError(f"{frame_path}: expected top-level mapping after save")
+    meta = document.get("meta")
+    if not isinstance(meta, dict):
+        raise ValueError(f"{frame_path}: meta missing after ELK save")
+    elk = meta.get("elk")
+    if not isinstance(elk, dict):
+        raise ValueError(f"{frame_path}: meta.elk missing after ELK save")
+    for key, raw in expected.items():
+        want = str(raw)
+        got = elk.get(str(key))
+        if got is None:
+            raise ValueError(f"{frame_path}: meta.elk missing key {key!r} after save")
+        if str(got) != want:
+            raise ValueError(
+                f"{frame_path}: meta.elk[{key!r}] is {got!r}, expected {want!r} after save",
+            )
 
 
 def persist_override_payload_to_yaml(

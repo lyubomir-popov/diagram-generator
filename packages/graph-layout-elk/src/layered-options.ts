@@ -67,12 +67,9 @@ export function layeredConfigForFamily(family: LayeredCorpusFamily): LayeredLayo
       return {
         direction: 'TB',
         spacingProfile: 'normal',
-        betweenLayersPx: 144,
-        sameLayerPx: 48,
         optionOverrides: {
-          'elk.spacing.edgeNode': '56',
-          'elk.spacing.edgeEdge': '48',
-          'elk.layered.spacing.edgeEdgeBetweenLayers': '40',
+          'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',
+          'elk.padding': '[top=0,left=0,bottom=0,right=0]',
         },
       };
   }
@@ -83,13 +80,21 @@ export function layeredConfigForFamily(family: LayeredCorpusFamily): LayeredLayo
  */
 export function buildLayeredLayoutOptions(config: LayeredLayoutConfig): ElkLayoutOptions {
   const { direction, spacingProfile } = config;
-  const betweenLayers = String(config.betweenLayersPx ?? BETWEEN_LAYERS[spacingProfile]);
-  const sameLayer = String(config.sameLayerPx ?? SAME_LAYER[spacingProfile]);
+  const overrides = config.optionOverrides ?? {};
 
   const base = elkParamDefaults();
   base['elk.direction'] = DIRECTION[direction];
-  base['elk.layered.spacing.nodeNodeBetweenLayers'] = betweenLayers;
-  base['elk.spacing.nodeNode'] = sameLayer;
+  // YAML/session overrides must win — never let family betweenLayersPx clobber saved meta.elk.
+  base['elk.layered.spacing.nodeNodeBetweenLayers'] = String(
+    overrides['elk.layered.spacing.nodeNodeBetweenLayers']
+      ?? config.betweenLayersPx
+      ?? BETWEEN_LAYERS[spacingProfile],
+  );
+  base['elk.spacing.nodeNode'] = String(
+    overrides['elk.spacing.nodeNode']
+      ?? config.sameLayerPx
+      ?? SAME_LAYER[spacingProfile],
+  );
   base['elk.edgeLabels.inline'] = 'true';
 
   return resolveElkLayoutOptions(base, config.optionOverrides);
@@ -101,7 +106,10 @@ export function resolvedElkOptionsForFamily(
   optionOverrides?: Record<string, string>,
 ): ElkLayoutOptions {
   const config = layeredConfigForFamily(family);
-  config.optionOverrides = optionOverrides;
+  config.optionOverrides = {
+    ...(config.optionOverrides ?? {}),
+    ...(optionOverrides ?? {}),
+  };
   return buildLayeredLayoutOptions(config);
 }
 

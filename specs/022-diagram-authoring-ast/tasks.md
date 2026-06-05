@@ -10,10 +10,10 @@
 
 ## Phase 1: Compiler scaffolding
 
-- [ ] T001 Create `packages/layout-engine/src/diagram-author/types.ts` — `DiagramDocument`, `Edge`, `CompileResult`, diagnostics
-- [ ] T002 Create `packages/layout-engine/src/diagram-author/compile.ts` — staged pipeline orchestrator
-- [ ] T003 [P] Create `packages/layout-engine/src/diagram-author/parse-yaml.ts` — parse string to untyped document
-- [ ] T004 Export `compileDiagramYaml` from `packages/layout-engine/src/index.ts` (or `browser-entry.ts` if preview-only)
+- [x] T001 Create `packages/layout-engine/src/diagram-author/types.ts` — `DiagramDocument`, `Edge`, `CompileResult`, diagnostics
+- [x] T002 Create `packages/layout-engine/src/diagram-author/compile.ts` — staged pipeline orchestrator
+- [x] T003 [P] Create `packages/layout-engine/src/diagram-author/parse-yaml.ts` — parse string to untyped document
+- [x] T004 Export `compileDiagramYaml` from `packages/layout-engine/src/index.ts` (or `browser-entry.ts` if preview-only)
 
 ## Phase 2: Edges (US1)
 

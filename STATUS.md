@@ -34,6 +34,20 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | **Batch SVG** | `export-frame-svg.mjs` — TS-only (`svg-render.ts`); golden harness `tests/svg-golden.test.ts` (3 canonical slugs after the first pruning pass) |
 | **Tests** | Latest full TS suite green in the current slice (`246/246`); retained 11-slug export sweep green; focused preview browser regressions green; spec 005 high-risk browser spot-checks render with zero errors; `test_preview_frames_dir.py` and `test_preview_ts_api.py` green. Full `pytest scripts -q` still has legacy parity drift outside the active TS path |
 
+### Current delta — ELK save cleanup + preview architecture specs (2026-06-05)
+
+- ELK save no longer mutates in-memory frame-tree ELK state speculatively after a successful POST; the preview now rehydrates from canonical persisted server state on reload instead of pretending the save already landed locally.
+- `frame_yaml_persistence.py` preserves unrelated authored `meta.elk` keys during ELK save merges instead of replacing the entire ELK map.
+- ELK control metadata no longer has Python or browser-JS mirrors: `scripts/preview/elk_sidebar_html.py` is gone, and `scripts/preview/elk-layout-controls.js` now renders only from the TS registry exported through `LayoutEngine`.
+- Added `/api/runtime-identity`, which reports repo root, branch, frames dir, PID, and port so multi-worktree/server confusion is diagnosable without guessing.
+- The composer ELK worktree was reconciled selectively: current `main` already superseded the older preview/runtime overlap, so the retained value moved over as QA/contract coverage (`test_elk_preview_qa.py`, `test_preview_shell_bf_contract.py`, `preview_html_allowlist.txt`) instead of merging stale preview code backwards.
+- Current focused checks are green on `main`: ELK save/persistence, ELK preview QA, Baseline Foundry shell contract, force preview API, TS force runtime tests, and the TS-backed force benchmark.
+- The immediate ELK duplicate-source cleanup is done; remaining spec 025 work is the generic engine manifest/capability contract and engine registration path for ELK, force, and future engines.
+- Added two new spec-kit packages to stage the larger preview refactor without overloading one session:
+	- `specs/025-multi-engine-preview-architecture/` for typed engine manifests/capabilities and TS-owned engine metadata
+	- `specs/026-preview-shell-decomposition-ts-migration/` for shrinking `scripts/preview/editor.js` through incremental TS-first extraction
+- Architectural direction is now explicit: more engine packages (ELK, Mermaid, Penrose, others) must integrate through a preview-engine contract, not by adding more engine-specific branches to `editor.js`.
+
 ### Current delta — runtime dist freshness fix (2026-06-05)
 
 - `export-frame-svg.mjs`, `emit-frame-diagram-json.mjs`, and sibling Node CLIs now auto-rebuild `packages/layout-engine/dist/` when TS source is newer than the requested dist artifact, so the active runtime no longer drifts behind source edits.
@@ -46,7 +60,7 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 - Browser warning context is now explicit rather than implicit: `support-engineering-flow` has no violations; `test-deep-nesting` shows 10 warnings; `request-to-hardware-stack` shows 34 `grid-align` warnings, consistent with its intentional `col_gap: 16` invariant exception.
 - Active tracking no longer treats spec 005 as an open implementation slice; the next high-value TS feature should land on a fresh branch after this closeout commit.
 
-### Current delta — spec 023 TS force lane restored, save + interaction follow-up landed (2026-06-05)
+### Current delta — spec 023 force closeout completed (2026-06-05)
 
 - Created `specs/023-force-layout-restoration/` to restore the broken force lane under spec-kit discipline instead of mixing force work into TODO-only prose.
 - The recovered force examples are now YAML-authored source files under `scripts/diagrams/force/`; archived JSON remains migration archaeology only.
@@ -56,9 +70,17 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 - `browser-entry.ts` and the package root now export the full local force runtime surface, including local param updates and snapped export helpers used by the live preview.
 - `scripts/preview/force.js` now keeps a committed runtime-backed snapshot separate from temporary drag/resize preview clones, so runtime-backed actions no longer lose their simulation state.
 - Real geometry edits now resume the simulation correctly, including the unpin path: releasing a moved node forces an immediate local tick and then continues the run loop so the rest of the graph can react instead of staying frozen.
-- Focused validation is green: `npm --prefix packages/layout-engine run build`, `npm --prefix packages/layout-engine run build:browser`, and `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts` all pass after the parity-port slice.
+- Focused regression coverage now locks the closeout: `scripts/test_preview_force_api.py` covers force demo discovery, `/force/view/<slug>` route availability, `/api/force-spec/<slug>`, and TS-local save persistence through an isolated `DG_FORCE_DEFINITIONS_DIR`; `packages/layout-engine/tests/force-runtime.test.ts` now covers snapped export plus reset-to-authored-state semantics.
+- `scripts/benchmark_force.py` now delegates to a real TypeScript runtime benchmark in `packages/layout-engine/scripts/benchmark-force.mjs` instead of pointing at the deleted Python solver path.
+- Focused validation is green: `python -m pytest scripts/test_preview_force_api.py -q`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`, and `python scripts/benchmark_force.py --ticks 5 --sizes 10` all pass after the closeout.
 - Browser validation confirms all three restored demos load on the TS runtime: `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle`.
 - Local force save now writes the current defaults and node state back to YAML, force style variants accept the shared `parent` / `section` / `annotation` vocabulary, and live stage/inspector interactions pause the running solver early enough to keep the Selection controls usable on the Juju demo.
+
+### Current delta — spec 022 compiler scaffold started (2026-06-05)
+
+- Added the initial TypeScript compiler scaffold under `packages/layout-engine/src/diagram-author/` with `types.ts`, `parse-yaml.ts`, and `compile.ts`.
+- `compileDiagramYaml` is now exported from `packages/layout-engine/src/index.ts`, giving later spec 022 slices a stable public entrypoint before any loader integration lands.
+- Added focused coverage in `packages/layout-engine/tests/diagram-author-compile.test.ts` proving authoring YAML parses into the scaffold AST shape with empty diagnostics.
 
 ### Recent work — spec 012 complete + arrow editing (2026-06-04)
 
@@ -74,10 +96,9 @@ Commit **`a6822da`** (`scripts: land ts svg renderer cleanup`):
 
 | Priority | Work |
 |----------|------|
-| Now | Close the remaining **spec 023** cleanup: benchmark migration + focused route/save/reset/export/browser coverage |
-| Next | Spec **018** PNG export |
-| Next | Spec **022** diagram authoring AST |
-| Later | Spec **006** arrow routing redesign |
+| Now | Start **spec 025** preview-engine manifest/capability contract with ELK and force as first consumers |
+| Next | Begin **spec 026** shell decomposition by extracting save/reload orchestration out of `editor.js` |
+| Later | Resume **spec 022** diagram authoring AST after the preview architecture slices |
 
 ## Key files
 

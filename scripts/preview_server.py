@@ -665,52 +665,14 @@ def _get_unified_template() -> str:
     return (PREVIEW_DIR / "viewer-unified.html").read_text(encoding="utf-8")
 
 
-def _render_elk_controls_html(slug: str) -> str:
-    preview_scripts = str(PREVIEW_DIR)
-    if preview_scripts not in sys.path:
-        sys.path.insert(0, preview_scripts)
-    from elk_sidebar_html import render_elk_layout_controls_html
-
-    return render_elk_layout_controls_html(_frame_yaml_elk_overrides(slug))
-
-
-def _apply_unified_elk_placeholders(html: str, slug: str, is_elk: bool) -> str:
+def _apply_unified_elk_placeholders(html: str, is_elk: bool) -> str:
     html = html.replace("%ELK_SECTION_HIDDEN%", "" if is_elk else "hidden")
     html = html.replace("%ELK_LAYOUT_CONTROLS_HTML%", "")
-    empty_elk = '<div class="grid-controls" id="elk-layout-controls"></div>'
-    if is_elk and empty_elk in html:
-        elk_html = _render_elk_controls_html(slug)
-        html = html.replace(
-            empty_elk,
-            f'<div class="grid-controls" id="elk-layout-controls">\n{elk_html}\n</div>',
-            1,
-        )
     return html
 
 
 def _strip_unresolved_placeholders(html: str) -> str:
     return _re.sub(r"%[A-Z0-9_]+%", "", html)
-
-
-def _frame_yaml_elk_overrides(slug: str) -> dict[str, str]:
-    path = FRAMES_DIR / f"{_normalize_slug(slug)}.yaml"
-    if not path.is_file():
-        return {}
-    try:
-        import yaml
-
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-        if not isinstance(data, dict):
-            return {}
-        meta = data.get("meta")
-        if not isinstance(meta, dict):
-            return {}
-        elk = meta.get("elk")
-        if not isinstance(elk, dict):
-            return {}
-        return {str(k): str(v) for k, v in elk.items()}
-    except Exception:
-        return {}
 
 
 def _frame_yaml_layout_engine(slug: str) -> str | None:
@@ -731,6 +693,34 @@ def _frame_yaml_layout_engine(slug: str) -> str | None:
         return str(value) if value is not None else None
     except Exception:
         return None
+
+
+def _current_git_branch() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        )
+    except Exception:
+        return None
+    branch = result.stdout.strip()
+    if result.returncode != 0 or not branch:
+        return None
+    return branch
+
+
+def _preview_runtime_identity(server_port: int | None = None) -> dict[str, object]:
+    return {
+        "repoRoot": str(ROOT),
+        "branch": _current_git_branch(),
+        "framesDir": str(FRAMES_DIR),
+        "pid": os.getpid(),
+        "port": server_port,
+    }
 
 
 def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
@@ -765,7 +755,7 @@ def _build_viewer_html(slug: str, all_slugs: list[str], grid: bool) -> str:
     html = html.replace("%NAV_OPTIONS%", nav_options)
     html = html.replace("%BROWSE_NAV%", browse_nav)
     html = html.replace("%INSPECTOR_EMPTY%", "Click a component to inspect it.")
-    html = _apply_unified_elk_placeholders(html, real_slug, is_elk)
+    html = _apply_unified_elk_placeholders(html, is_elk)
     html = html.replace(
         "%MODE_SCRIPTS%",
         f'<script src="{_preview_asset_url("layout-engine.js")}"></script>\n'
@@ -801,7 +791,7 @@ def _build_force_viewer_html(slug: str, all_slugs: list[str]) -> str:
     html = html.replace("%NAV_OPTIONS%", nav_options)
     html = html.replace("%BROWSE_NAV%", browse_nav)
     html = html.replace("%INSPECTOR_EMPTY%", "Click a node to select it.")
-    html = _apply_unified_elk_placeholders(html, slug, False)
+    html = _apply_unified_elk_placeholders(html, False)
     html = html.replace(
         "%MODE_SCRIPTS%",
         f'<script src="{_preview_asset_url("layout-engine.js")}"></script>\n'
@@ -965,6 +955,8 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self._serve_index()
         elif path == "/force":
             self._serve_force_index()
+        elif path == "/api/runtime-identity":
+            self._serve_runtime_identity()
         elif path == "/events":
             self._serve_sse()
         elif path == "/preview/bf-os.css":
@@ -1334,6 +1326,11 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404, "Layout font not found")
             return
         self._respond(200, "font/ttf", font_path.read_bytes())
+
+    def _serve_runtime_identity(self):
+        server_port = getattr(self.server, "server_port", None)
+        payload = _preview_runtime_identity(server_port)
+        self._respond(200, "application/json", json.dumps(payload).encode())
 
     def _serve_grid(self, slug: str):
         if not _is_safe_slug(slug):

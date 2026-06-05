@@ -26,13 +26,19 @@ export interface ElkGraphRoot {
   edges: ElkGraphEdge[];
 }
 
-function mapNode(node: GraphNodeInput): ElkGraphNode {
+function mapNode(node: GraphNodeInput, compoundPadding?: string): ElkGraphNode {
+  const hasChildren = Boolean(node.children?.length);
   return {
     id: node.id,
     width: node.width,
     height: node.height,
-    ...(node.children?.length
-      ? { children: node.children.map(mapNode) }
+    ...(hasChildren
+      ? {
+          children: node.children!.map((child) => mapNode(child, compoundPadding)),
+          ...(compoundPadding
+            ? { layoutOptions: { 'elk.padding': compoundPadding } }
+            : {}),
+        }
       : {}),
   };
 }
@@ -41,6 +47,10 @@ export function buildElkGraph(
   input: GraphLayoutInput,
   layoutOptions: ElkLayoutOptions,
 ): ElkGraphRoot {
+  const rootOptions = { ...layoutOptions };
+  const compoundPadding = rootOptions['elk.padding'];
+  delete rootOptions['elk.padding'];
+
   const edges: ElkGraphEdge[] = input.edges.map((edge: GraphEdgeInput) => ({
     id: edge.id,
     sources: [edge.source],
@@ -58,8 +68,8 @@ export function buildElkGraph(
 
   return {
     id: input.id,
-    layoutOptions,
-    children: input.nodes.map(mapNode),
+    layoutOptions: rootOptions,
+    children: input.nodes.map((node) => mapNode(node, compoundPadding)),
     edges,
   };
 }

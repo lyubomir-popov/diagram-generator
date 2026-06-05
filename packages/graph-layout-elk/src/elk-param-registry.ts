@@ -40,7 +40,7 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     label: 'Layer gap',
     group: 'Spacing',
     kind: 'number',
-    defaultValue: '144',
+    defaultValue: '24',
     min: 8,
     max: 512,
     step: 8,
@@ -51,7 +51,7 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     label: 'Same-layer gap',
     group: 'Spacing',
     kind: 'number',
-    defaultValue: '48',
+    defaultValue: '24',
     min: 8,
     max: 256,
     step: 8,
@@ -62,7 +62,7 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     label: 'Edge ↔ node',
     group: 'Spacing',
     kind: 'number',
-    defaultValue: '56',
+    defaultValue: '24',
     min: 0,
     max: 128,
     step: 4,
@@ -73,7 +73,7 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     label: 'Edge ↔ edge',
     group: 'Spacing',
     kind: 'number',
-    defaultValue: '48',
+    defaultValue: '24',
     min: 0,
     max: 128,
     step: 4,
@@ -84,7 +84,7 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     label: 'Edge gap (layers)',
     group: 'Spacing',
     kind: 'number',
-    defaultValue: '40',
+    defaultValue: '24',
     min: 0,
     max: 128,
     step: 4,
@@ -126,8 +126,10 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     enumValues: [
       { value: 'NETWORK_SIMPLEX', label: 'Network simplex' },
       { value: 'LONGEST_PATH', label: 'Longest path' },
-      { value: 'INTERACTIVE', label: 'Interactive' },
+      { value: 'INTERACTIVE', label: 'Interactive (needs layer hints)' },
     ],
+    description:
+      'Batch layout only. INTERACTIVE reuses prior layer positions / layerChoiceConstraint — not drag-to-move nodes in this preview.',
   },
   {
     key: 'elk.layered.crossingMinimization.strategy',
@@ -137,15 +139,16 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     defaultValue: 'LAYER_SWEEP',
     enumValues: [
       { value: 'LAYER_SWEEP', label: 'Layer sweep' },
-      { value: 'INTERACTIVE', label: 'Interactive' },
+      { value: 'INTERACTIVE', label: 'Interactive (needs order hints)' },
     ],
+    description: 'INTERACTIVE preserves prior in-layer order; requires constraints from an interactive editor run.',
   },
   {
     key: 'elk.layered.nodePlacement.strategy',
     label: 'Node placement',
     group: 'Layering',
     kind: 'enum',
-    defaultValue: 'NETWORK_SIMPLEX',
+    defaultValue: 'BRANDES_KOEPF',
     enumValues: [
       { value: 'NETWORK_SIMPLEX', label: 'Network simplex' },
       { value: 'BRANDES_KOEPF', label: 'Brandes-Köpf' },
@@ -164,6 +167,8 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
       { value: 'SEPARATE_CHILDREN', label: 'Separate children' },
       { value: 'CHILDREN_ON', label: 'Children on' },
     ],
+    description:
+      'Affects ELK compound nodes only. This corpus has few compounds — changes may be subtle unless sections are nested.',
   },
   {
     key: 'elk.portConstraints',
@@ -183,8 +188,8 @@ export const ELK_LAYERED_PARAM_SPECS: ElkParamSpec[] = [
     label: 'Compound padding',
     group: 'Compound',
     kind: 'text',
-    defaultValue: '[top=32,left=8,bottom=8,right=8]',
-    description: 'ELK padding string for compound nodes.',
+    defaultValue: '[top=0,left=0,bottom=0,right=0]',
+    description: 'ELK padding inside compound (section) nodes — applied per compound, not the page root.',
   },
 ];
 

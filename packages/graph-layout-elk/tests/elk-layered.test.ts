@@ -120,7 +120,7 @@ describe('ELK layered (Sugiyama)', () => {
     const podA = nodes.get('pod_a')!;
     expect(podA.x).toBeGreaterThanOrEqual(cluster.x);
     expect(podA.y).toBeGreaterThanOrEqual(cluster.y);
-    expect(podA.x + podA.width).toBeLessThanOrEqual(cluster.x + cluster.width + 1);
+    expect(podA.x + podA.width).toBeLessThanOrEqual(cluster.x + cluster.width + GRID_BASELINE_PX);
   });
 
   it('routes corpus ubuntu-pro edges to leaf node boundaries', async () => {

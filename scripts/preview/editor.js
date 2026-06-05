@@ -534,6 +534,12 @@ async function loadSVG(options = {}) {
   }
   await initLayoutBridge(SLUG);
 
+  // Seed ELK overrides from saved YAML before any sidebar sync or layout read.
+  if (_isElkLayeredDiagram()) {
+    resetOverrideState();
+    _initElkLayoutPanel();
+  }
+
   // Check readiness — fall back to Python SVG if bridge fails
   const readiness = getLocalRelayoutStatus();
   if (!readiness.ready) {
@@ -580,7 +586,9 @@ async function loadSVG(options = {}) {
   await loadGridInfo();
   if (gridInfo) model.setDiagramGrid(gridInfo);
   populateGridControls();
-  resetOverrideState();
+  if (!_isElkLayeredDiagram()) {
+    resetOverrideState();
+  }
 
   // Build overrides
   const hasGridOverrides = model.gridOverrides && Object.keys(model.gridOverrides).length > 0;
@@ -611,7 +619,9 @@ async function loadSVG(options = {}) {
   runConstraints();
   lastSavedState = _serializeDirtyState();
   setDirty(false);
-  _initElkLayoutPanel();
+  if (_isElkLayeredDiagram()) {
+    _initElkLayoutPanel();
+  }
   _signalDiagramLoaded();
 }
 
@@ -622,7 +632,7 @@ function _isElkLayeredDiagram() {
   return cfg.layout_engine === "elk-layered";
 }
 
-function _initElkLayoutPanel() {
+function _wireElkLayoutPanel() {
   if (!window.ElkLayoutControls) return;
   if (window.__DG_elkControlsInited) return;
   ElkLayoutControls.init({
@@ -632,12 +642,20 @@ function _initElkLayoutPanel() {
     },
   });
   window.__DG_elkControlsInited = true;
-  ElkLayoutControls.refresh();
 }
 
-window.__DG_ensureElkControlsInit = function () {
-  _initElkLayoutPanel();
-};
+function _syncElkLayoutPanel() {
+  _wireElkLayoutPanel();
+  if (window.ElkLayoutControls && typeof ElkLayoutControls.refresh === "function") {
+    ElkLayoutControls.refresh();
+  }
+}
+
+function _initElkLayoutPanel() {
+  _syncElkLayoutPanel();
+}
+
+window.__DG_wireElkLayoutPanel = _wireElkLayoutPanel;
 
 window.__DG_applyElkLayoutOverrides = function (overrides) {
   model.elkLayoutOverrides = { ...(overrides || {}) };
@@ -683,9 +701,6 @@ function _signalDiagramLoaded() {
   window.dispatchEvent(new CustomEvent("dg-diagram-loaded", {
     detail: { generation: _diagramLoadGeneration, slug: SLUG },
   }));
-  if (window.ElkLayoutControls && typeof ElkLayoutControls.refresh === "function") {
-    ElkLayoutControls.refresh();
-  }
 }
 
 function whenDiagramLoaded() {
@@ -1326,7 +1341,8 @@ function bindGridNumberInputSelection(input) {
 function resetOverrideState() {
   overrides = {};
   model.gridOverrides = {};
-  model.elkLayoutOverrides = {};
+  const tree = typeof getFrameTreeJson === "function" ? getFrameTreeJson() : null;
+  model.elkLayoutOverrides = (tree && tree.elkLayout) ? { ...tree.elkLayout } : {};
   model.removedIds = new Set();
   updateOverrideSummary();
   // Initialize undo stack and saved state
@@ -5576,8 +5592,12 @@ async function requestV3Relayout(triggerCid) {
 }
 
 window.requestElkRelayout = async function () {
+  _wireElkLayoutPanel();
   if (window.ElkLayoutControls && typeof ElkLayoutControls.collectOverrides === "function") {
-    window.__DG_applyElkLayoutOverrides(ElkLayoutControls.collectOverrides());
+    window.__DG_applyElkLayoutOverrides({
+      ...(model.elkLayoutOverrides || {}),
+      ...ElkLayoutControls.collectOverrides(),
+    });
   }
   const rootId = (model.roots[0] || {}).id || "root";
   return requestV3Relayout(rootId);
@@ -5739,6 +5759,19 @@ async function saveOverrides() {
     alert("Cannot save: " + summary.errors + " constraint error(s) must be resolved first.");
     return;
   }
+  let payload = model.toOverridePayload();
+  let elkOverrides = null;
+  if (_isElkLayeredDiagram() && window.ElkLayoutControls && typeof ElkLayoutControls.collectOverrides === "function") {
+    _wireElkLayoutPanel();
+    const active = document.activeElement;
+    if (active && typeof active.blur === "function") {
+      active.blur();
+    }
+    const domElk = ElkLayoutControls.collectOverrides();
+    elkOverrides = { ...(model.elkLayoutOverrides || {}), ...domElk };
+    window.__DG_applyElkLayoutOverrides(elkOverrides);
+    payload = { ...payload, elk_layout_overrides: { ...elkOverrides } };
+  }
   const relayout = getV3RelayoutStatus();
   if (_v3RelayoutRuntime.lastMode === "local-error") {
     alert("Cannot save while local relayout is in an error state. Resolve the local relayout error first.");
@@ -5753,7 +5786,7 @@ async function saveOverrides() {
     const resp = await fetch("/api/overrides/" + SLUG, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(model.toOverridePayload()),
+      body: JSON.stringify(payload),
     });
     if (!resp.ok) {
       const message = await resp.text();

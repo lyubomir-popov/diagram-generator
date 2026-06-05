@@ -71,3 +71,34 @@ def test_serve_svg_v3_frame_yaml_ts_failure_returns_404(monkeypatch, tmp_path):
     handler.send_error.assert_called_once()
     assert handler.send_error.call_args[0][0] == HTTPStatus.NOT_FOUND
     handler._respond.assert_not_called()
+
+
+def test_preview_runtime_identity_reports_repo_branch_frames_and_port(monkeypatch):
+    monkeypatch.setattr(preview_server, "_current_git_branch", lambda: "feat/runtime-identity")
+
+    identity = preview_server._preview_runtime_identity(server_port=8123)
+
+    assert identity == {
+        "repoRoot": str(preview_server.ROOT),
+        "branch": "feat/runtime-identity",
+        "framesDir": str(preview_server.FRAMES_DIR),
+        "pid": preview_server.os.getpid(),
+        "port": 8123,
+    }
+
+
+def test_serve_runtime_identity_returns_json(monkeypatch):
+    monkeypatch.setattr(preview_server, "_current_git_branch", lambda: "main")
+
+    handler = object.__new__(preview_server.PreviewHandler)
+    handler.server = type("Server", (), {"server_port": 8100})()
+    handler._respond = MagicMock()
+
+    handler._serve_runtime_identity()
+
+    handler._respond.assert_called_once()
+    status, content_type, body = handler._respond.call_args[0]
+    assert status == HTTPStatus.OK
+    assert content_type == "application/json"
+    assert b'"branch": "main"' in body
+    assert b'"port": 8100' in body

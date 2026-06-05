@@ -588,8 +588,11 @@ class ComponentModel {
         payload.grid_overrides = persistableGridOverrides;
       }
     }
-    if (this.elkLayoutOverrides && Object.keys(this.elkLayoutOverrides).length > 0) {
-      payload.elk_layout_overrides = { ...this.elkLayoutOverrides };
+    const elkOverrides = this.elkLayoutOverrides && Object.keys(this.elkLayoutOverrides).length > 0
+      ? { ...this.elkLayoutOverrides }
+      : null;
+    if (elkOverrides) {
+      payload.elk_layout_overrides = elkOverrides;
     }
     return payload;
   }

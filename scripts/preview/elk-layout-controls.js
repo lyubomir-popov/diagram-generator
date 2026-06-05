@@ -1,70 +1,12 @@
 /**
  * ELK layered layout controls — Baseline Foundry sidebar panel.
- * Uses LayoutEngine.ELK_LAYERED_PARAM_SPECS when available; embedded fallback otherwise.
+ * Control metadata comes from the TypeScript ELK registry exposed on LayoutEngine.
  */
 (function () {
   "use strict";
 
   const SECTION_ID = "elk-layout-section";
   const CONTAINER_ID = "elk-layout-controls";
-
-  /** Mirror of packages/graph-layout-elk/src/elk-param-registry.ts (fallback when bundle is stale). */
-  const FALLBACK_PARAM_SPECS = [
-    { key: "elk.direction", label: "Direction", group: "Graph", kind: "enum", defaultValue: "DOWN",
-      enumValues: [
-        { value: "DOWN", label: "Top → bottom (TB)" },
-        { value: "RIGHT", label: "Left → right (LR)" },
-        { value: "UP", label: "Bottom → top" },
-        { value: "LEFT", label: "Right → left" },
-      ] },
-    { key: "elk.layered.spacing.nodeNodeBetweenLayers", label: "Layer gap", group: "Spacing", kind: "number", defaultValue: "144", min: 8, max: 512, step: 8,
-      description: "Vertical gap between layers — main control for arrow length (TB)." },
-    { key: "elk.spacing.nodeNode", label: "Same-layer gap", group: "Spacing", kind: "number", defaultValue: "48", min: 8, max: 256, step: 8 },
-    { key: "elk.spacing.edgeNode", label: "Edge ↔ node", group: "Spacing", kind: "number", defaultValue: "56", min: 0, max: 128, step: 4,
-      description: "Clearance between edges and boxes — helps keep labels off nodes." },
-    { key: "elk.spacing.edgeEdge", label: "Edge ↔ edge", group: "Spacing", kind: "number", defaultValue: "48", min: 0, max: 128, step: 4 },
-    { key: "elk.layered.spacing.edgeEdgeBetweenLayers", label: "Edge gap (layers)", group: "Spacing", kind: "number", defaultValue: "40", min: 0, max: 128, step: 4 },
-    { key: "elk.edgeRouting", label: "Edge routing", group: "Edges", kind: "enum", defaultValue: "ORTHOGONAL",
-      enumValues: [
-        { value: "ORTHOGONAL", label: "Orthogonal" },
-        { value: "POLYLINE", label: "Polyline" },
-        { value: "SPLINES", label: "Splines" },
-      ] },
-    { key: "elk.layered.unnecessaryBendpoints", label: "Remove extra bends", group: "Edges", kind: "boolean", defaultValue: "true" },
-    { key: "elk.layered.nodePlacement.favorStraightEdges", label: "Favor straight edges", group: "Edges", kind: "boolean", defaultValue: "true" },
-    { key: "elk.layered.layering.strategy", label: "Layering strategy", group: "Layering", kind: "enum", defaultValue: "NETWORK_SIMPLEX",
-      enumValues: [
-        { value: "NETWORK_SIMPLEX", label: "Network simplex" },
-        { value: "LONGEST_PATH", label: "Longest path" },
-        { value: "INTERACTIVE", label: "Interactive" },
-      ] },
-    { key: "elk.layered.crossingMinimization.strategy", label: "Crossing minimization", group: "Layering", kind: "enum", defaultValue: "LAYER_SWEEP",
-      enumValues: [
-        { value: "LAYER_SWEEP", label: "Layer sweep" },
-        { value: "INTERACTIVE", label: "Interactive" },
-      ] },
-    { key: "elk.layered.nodePlacement.strategy", label: "Node placement", group: "Layering", kind: "enum", defaultValue: "NETWORK_SIMPLEX",
-      enumValues: [
-        { value: "NETWORK_SIMPLEX", label: "Network simplex" },
-        { value: "BRANDES_KOEPF", label: "Brandes-Köpf" },
-        { value: "LINEAR_SEGMENTS", label: "Linear segments" },
-        { value: "SIMPLE", label: "Simple" },
-      ] },
-    { key: "elk.hierarchyHandling", label: "Hierarchy handling", group: "Compound", kind: "enum", defaultValue: "INCLUDE_CHILDREN",
-      enumValues: [
-        { value: "INCLUDE_CHILDREN", label: "Include children" },
-        { value: "SEPARATE_CHILDREN", label: "Separate children" },
-        { value: "CHILDREN_ON", label: "Children on" },
-      ] },
-    { key: "elk.portConstraints", label: "Port constraints", group: "Compound", kind: "enum", defaultValue: "FREE",
-      enumValues: [
-        { value: "FREE", label: "Free" },
-        { value: "FIXED_SIDE", label: "Fixed side" },
-        { value: "FIXED_ORDER", label: "Fixed order" },
-        { value: "FIXED_RATIO", label: "Fixed ratio" },
-      ] },
-    { key: "elk.padding", label: "Compound padding", group: "Compound", kind: "text", defaultValue: "[top=32,left=8,bottom=8,right=8]" },
-  ];
 
   let _relayoutTimer = null;
   let _getOverrides = () => ({});
@@ -87,26 +29,7 @@
     if (typeof LayoutEngine !== "undefined" && Array.isArray(LayoutEngine.ELK_LAYERED_PARAM_SPECS)) {
       return LayoutEngine.ELK_LAYERED_PARAM_SPECS;
     }
-    return FALLBACK_PARAM_SPECS;
-  }
-
-  function _slugToFamily(diagramType) {
-    const t = String(diagramType || "process_and_workflow");
-    if (t === "data_flow_and_integration" || t === "deployment_and_runtime_topology" || t === "process_and_workflow") {
-      return t;
-    }
-    return "process_and_workflow";
-  }
-
-  function _resolvedValues(family, overrides) {
-    if (typeof LayoutEngine !== "undefined" && typeof LayoutEngine.resolvedElkOptionsForFamily === "function") {
-      return LayoutEngine.resolvedElkOptionsForFamily(family, overrides);
-    }
-    const resolved = {};
-    for (const spec of _paramSpecs()) {
-      resolved[spec.key] = spec.defaultValue;
-    }
-    return { ...resolved, ...overrides };
+    return [];
   }
 
   function _groups() {
@@ -183,19 +106,15 @@
     return next;
   }
 
-  function _ensureInit() {
-    if (typeof window.__DG_ensureElkControlsInit === "function") {
-      window.__DG_ensureElkControlsInit();
-    }
-  }
-
+  /** Read sidebar values only — never sync DOM from YAML/model first. */
   function collectOverrides() {
-    _ensureInit();
     return _collectOverridesFromDom();
   }
 
   function _onControlInput() {
-    if (!window.__DG_elkControlsInited) _ensureInit();
+    if (typeof window.__DG_wireElkLayoutPanel === "function") {
+      window.__DG_wireElkLayoutPanel();
+    }
     const next = _collectOverridesFromDom();
     _setOverrides(next);
     if (typeof window.__DG_applyElkLayoutOverrides === "function") {
@@ -240,6 +159,17 @@
     _bindControls(container);
   }
 
+  function _sidebarDisplayValues(family, merged) {
+    const out = {};
+    for (const spec of _paramSpecs()) {
+      const raw = merged[spec.key];
+      out[spec.key] = raw != null && String(raw) !== ""
+        ? String(raw)
+        : spec.defaultValue;
+    }
+    return out;
+  }
+
   function buildPanel(frameTreeJson) {
     const section = document.getElementById(SECTION_ID);
     const container = document.getElementById(CONTAINER_ID);
@@ -251,36 +181,48 @@
       return;
     }
 
+    const hasServerControls = Boolean(container.querySelector("[data-elk-key]"));
+
+    // Before initLayoutBridge loads the frame tree, keep server-rendered values.
+    // Syncing from an empty YAML merge would reset inputs to registry defaults.
+    if (!frameTreeJson && hasServerControls) {
+      _bindControls(container);
+      _bindElkViewToggles(section);
+      return;
+    }
+
+    if (!frameTreeJson) {
+      return;
+    }
+
     if (_containerHasPlaceholder(container)) {
       container.textContent = "";
     }
 
-    const family = _slugToFamily(frameTreeJson && frameTreeJson.diagramType);
-    const session = _getOverrides() || {};
+    const specs = _paramSpecs();
+    if (!specs.length) {
+      container.innerHTML = '<p class="bf-form-help">ELK parameter registry unavailable. Rebuild the browser bundle from packages/layout-engine.</p>';
+      _bindElkViewToggles(section);
+      return;
+    }
+
     const yamlElk = (frameTreeJson && frameTreeJson.elkLayout) || {};
+    const session = _getOverrides() || {};
     const merged = { ...yamlElk, ...session };
-    const resolved = _resolvedValues(family, merged);
+    const display = _sidebarDisplayValues(null, merged);
 
     if (container.querySelector("[data-elk-key]")) {
-      _syncExistingControls(container, resolved);
+      _syncExistingControls(container, display);
       _bindElkViewToggles(section);
       return;
     }
 
     const parts = [];
-    if (typeof LayoutEngine === "undefined") {
-      parts.push('<p class="bf-form-help">Layout engine bundle not loaded.</p>');
-    } else if (!LayoutEngine.ELK_LAYERED_PARAM_SPECS && !LayoutEngine.resolvedElkOptionsForFamily) {
-      parts.push(
-        '<p class="bf-form-help">Using embedded ELK defaults. Run ' +
-        '<code>npm run build:browser</code> in packages/layout-engine for live resolved values.</p>',
-      );
-    }
     for (const { group, specs } of _groups()) {
       parts.push(`<h3 class="dg-section-subheading bf-h6">${group}</h3>`);
       parts.push('<div class="grid-controls">');
       for (const spec of specs) {
-        parts.push(_fieldHtml(spec, resolved[spec.key] ?? spec.defaultValue));
+        parts.push(_fieldHtml(spec, display[spec.key] ?? spec.defaultValue));
       }
       parts.push("</div>");
     }
@@ -329,11 +271,4 @@
     refresh,
     collectOverrides,
   };
-
-  window.addEventListener("dg-diagram-loaded", refresh);
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", refresh);
-  } else {
-    refresh();
-  }
 })();

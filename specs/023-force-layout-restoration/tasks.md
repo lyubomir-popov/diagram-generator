@@ -20,7 +20,7 @@
 - [x] T010 Decide and document the TS runtime boundary (browser-owned vs thin TS-backed routes)
 - [x] T011 Implement the TS force solver/runtime entrypoint
 - [x] T012 Replace deleted-Python dependencies in the force preview path without reintroducing Python force authority
-- [ ] T013 Remove or rewrite orphaned `benchmark_force.py` usage against the TS runtime
+- [x] T013 Remove or rewrite orphaned `benchmark_force.py` usage against the TS runtime
 
 ## Phase 3: Interactive editor parity
 
@@ -34,8 +34,8 @@
 
 - [x] T030 Restore JSON export from canonical force state
 - [x] T031 Restore SVG export for the live graph state
-- [ ] T032 Add focused automated tests for force example discovery and route availability
-- [ ] T033 Add focused automated tests for save/reset/export behavior
+- [x] T032 Add focused automated tests for force example discovery and route availability
+- [x] T033 Add focused automated tests for save/reset/export behavior
 - [x] T034 Browser-check `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle`
 - [x] T035 Update `TODO.md`, `STATUS.md`, and `docs/specs.md` after the feature lands
 

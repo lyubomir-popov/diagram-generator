@@ -10,11 +10,23 @@ Active execution queue for `diagram-generator`. All new work targets TypeScript 
 
 ### Priority 1 — Spec-kit tracked work
 
-#### Force layout restoration (spec 023)
+#### Multi-engine preview architecture (spec 025)
 
-Feature package: `specs/023-force-layout-restoration/`.
+Feature package: `specs/025-multi-engine-preview-architecture/`.
 
-- [ ] `[H]` **Finish the remaining spec 023 cleanup.** Save persistence, shared frame-style variants, and stable live inspector interactions are now back on the TS force lane. Remaining work: rewrite or retire `scripts/benchmark_force.py`, add focused automated coverage for force demo discovery/routes, and add focused save/reset/export/browser tests.
+- [ ] `[H]` **Define the preview engine contract before more engines land.** ELK control metadata now comes only from the TS registry and `/api/runtime-identity` exists for worktree/server diagnosis, but ELK, force, Mermaid, Penrose, and future packages still need a typed capability path instead of adding more engine-specific branches to `editor.js`.
+
+#### Preview shell decomposition + TS migration (spec 026)
+
+Feature package: `specs/026-preview-shell-decomposition-ts-migration/`.
+
+- [ ] `[H]` **Decompose `editor.js` into bounded shell modules.** Treat `editor.js` as a thin coordinator target, move new logic to TS-owned modules, and stop using the monolith as the default home for preview features.
+
+#### ELK interactive node alignment (spec 024)
+
+Feature package: `specs/024-elk-interactive-node-alignment/`.
+
+- [ ] `[H]` **Spec drafted; implementation blocked on elkjs interactive-constraint spike.** Native ELK only: nudge → `layerChoiceConstraint` / `positionChoiceConstraint` → re-run layered with INTERACTIVE strategies. No SVG translate hacks.
 
 #### PNG export (spec 018)
 
@@ -26,7 +38,7 @@ Feature package: `specs/018-png-export/`.
 
 Feature package: `specs/022-diagram-authoring-ast/`.
 
-- [ ] `[H]` **Start the authoring compiler slice.** AST types, YAML compile pipeline, legacy normalization, lower-to-frame, and Mermaid/D2 exporters are all still untouched.
+- [ ] `[H]` **Continue the authoring compiler after the preview-architecture slices.** The scaffolding is landed; next work is edges, layout grammar, defaults, validation, lowering, and exporters.
 
 #### Arrow routing redesign (spec 006)
 
@@ -59,6 +71,8 @@ Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`.
 - [ ] `[M]` **M4. Silent enum fallbacks.** Bad `sizing`/`direction`/`align`/`variant` silently default. Fix: warn on unknown values.
 - [ ] `[M]` **M5. Preview JSON contract stale.** Missing `justify`, `col_span`.
 - [ ] `[S]` **M6. `estimate_line_width` duplicated.** `diagram_shared.py` vs `text_metrics.py`.
+- [ ] `[M]` **Preview shell grows by engine branch instead of contract.** Spec 025 must land before additional engine packages are integrated into the live preview.
+- [ ] `[M]` **`editor.js` monolith blocks multi-engine growth.** Spec 026 should extract save/orchestration and engine controller slices before more preview engines arrive.
 - [ ] `[L]` **Legacy Python parity harness drift.** `scripts/test_parity.py` still reconstructs the pre-WS3 heading/body model, so full `pytest scripts -q` has 5 stale failures. Either realign it with the current loader contract or retire it as a non-gating legacy oracle; do not block TS work on it.
 
 ### Lower priority

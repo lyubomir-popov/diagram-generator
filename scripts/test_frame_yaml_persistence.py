@@ -4,7 +4,7 @@ import pathlib
 
 import yaml
 
-from frame_yaml_persistence import persist_override_payload_to_yaml
+from frame_yaml_persistence import persist_override_payload_to_yaml, verify_elk_layout_persisted
 
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -89,6 +89,73 @@ root:
     saved_yaml = yaml.safe_load(frame_path.read_text(encoding="utf-8"))
     assert saved_yaml["meta"]["elk"]["elk.layered.spacing.nodeNodeBetweenLayers"] == "144"
     assert saved_yaml["meta"]["elk"]["elk.spacing.edgeNode"] == "56"
+
+
+def test_persist_elk_layout_overrides_replaces_meta_elk(tmp_path):
+    frame_path = tmp_path / "demo.yaml"
+    frame_path.write_text(
+        """
+engine: v3
+title: Demo
+meta:
+  layout_engine: elk-layered
+  elk:
+    elk.spacing.nodeNode: "48"
+    elk.layered.nodePlacement.strategy: NETWORK_SIMPLEX
+root:
+  id: page
+  direction: vertical
+  children:
+    - id: leaf_a
+      label: [A]
+""".strip(),
+        encoding="utf-8",
+    )
+
+    persist_override_payload_to_yaml(
+        frame_path,
+        {
+            "overrides": {},
+            "elk_layout_overrides": {
+                "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
+                "elk.padding": "[top=0,left=0,bottom=0,right=0]",
+            },
+        },
+    )
+
+    saved_yaml = yaml.safe_load(frame_path.read_text(encoding="utf-8"))
+    elk = saved_yaml["meta"]["elk"]
+    assert elk["elk.layered.nodePlacement.strategy"] == "BRANDES_KOEPF"
+    assert elk["elk.padding"] == "[top=0,left=0,bottom=0,right=0]"
+    assert elk["elk.spacing.nodeNode"] == "48"
+
+
+def test_verify_elk_layout_persisted_after_write(tmp_path):
+    frame_path = tmp_path / "demo.yaml"
+    frame_path.write_text(
+        """
+engine: v3
+title: Demo
+meta:
+  layout_engine: elk-layered
+root:
+  id: page
+  direction: vertical
+  children:
+    - id: leaf_a
+      label: [A]
+""".strip(),
+        encoding="utf-8",
+    )
+    elk_payload = {
+        "elk.spacing.nodeNode": "48",
+        "elk.layered.spacing.nodeNodeBetweenLayers": "24",
+    }
+    persist_override_payload_to_yaml(
+        frame_path,
+        {"overrides": {}, "elk_layout_overrides": elk_payload},
+    )
+    verify_elk_layout_persisted(frame_path, elk_payload)
 
 
 def test_persist_removed_ids_prunes_frames_and_arrows(tmp_path):

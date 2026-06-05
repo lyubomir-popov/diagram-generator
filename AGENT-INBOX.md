@@ -6,77 +6,44 @@ Do not use this file for user notes. User-authored async notes belong in `INBOX.
 
 The agent should triage anything durable from this file into `TODO.md`, `STATUS.md`, `HISTORY.md`, or `docs/specs.md`, then empty this file back to this header template.
 
-## 2026-06-05 handoff — close spec 023, then start spec 022
+---
 
-Use a fresh chat for token efficiency.
+## Next session prompt — spec 025 engine contract on clean main
 
-Current repo state:
+`main` is now the canonical integrated branch for the force runtime port and ELK preview/save work. Do **not** merge or cherry-pick the old `diagram-generator-elk` worktree branch wholesale; `main` already supersedes the stale preview/runtime overlap.
 
-- Focused force/spec-bookkeeping commit already landed on `main`: `984b5ef` (`force: land TS force follow-up and spec cleanup`).
-- Preview server is running on `http://127.0.0.1:8210` because another worktree is occupying port `8200`.
-- Live preview terminal id for the 8210 server: `4e657df6-3147-4d9d-9fe0-18b65855d87e`.
-- Do not use `8200` for this worktree.
+Current state:
 
-What is already done for spec 023:
+- Force runtime restoration is complete and validated on `main`.
+- ELK save/persistence is fixed and validated on `main`.
+- ELK control metadata now comes only from the TS registry.
+- `/api/runtime-identity` exists for worktree/server diagnosis.
+- Composer ELK worktree value that still mattered has already been pulled over as QA/contract coverage.
 
-- TS force runtime restored.
-- Three canonical force demos restored.
-- Shared force style vocabulary fixed (`parent`, `section`, `annotation`, `highlight`; `accent` kept only as legacy alias to `parent`).
-- Local save persistence landed: force Save writes current `simulation` / `render` defaults and node state back to the canonical force YAML.
-- Juju force live interaction bug fixed by pausing the running solver at the start of stage/tree/inspector interaction so Selection controls stop rebuilding under the click.
-- `TODO.md`, `STATUS.md`, `HISTORY.md`, and `docs/specs.md` were trimmed/reconciled so only active specs remain open.
+Working demo surfaces:
 
-Spec status snapshot from task counts:
+- ELK preview: `python scripts/preview_server.py --port 8210` then open `/view/v3:juju-bootstrap-machines-process`
+- Force preview: same server, open `/force/view/force-juju-landing-pages`
 
-- Complete task bundles: `001`, `002`, `003`, `004`, `005`, `007`, `008`, `009`, `010`, `011`, `012`, `013`, `014`, `015`, `016`, `017`, `019`.
-- Delivered but spec-only (no tasks file): `020`, `021`.
-- Remaining open bundles: `023` (`18` checked / `3` unchecked), `018` (`0` / `19`), `022` (`0` / `37`), `006` (`0` / `25`).
+Validated checks already green on `main`:
 
-Next required work order:
+```bash
+npm --prefix packages/layout-engine run build:browser
+python -m pytest scripts/test_preview_elk_layout_save.py scripts/test_frame_yaml_persistence.py scripts/test_elk_preview_qa.py scripts/test_preview_shell_bf_contract.py -q
+python -m pytest scripts/test_preview_force_api.py -q
+npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts
+python scripts/benchmark_force.py --ticks 5 --sizes 10
+```
 
-1. Finish spec `023-force-layout-restoration`.
-2. Then begin spec `022-diagram-authoring-ast`.
+Next required work:
 
-Remaining unchecked tasks in spec 023:
+1. Implement **spec 025 phase 1**: define the preview-engine manifest/capability contract in the TS runtime surface.
+2. Use **ELK** and **force** as the first two consumers of that contract.
+3. Keep Python as preview glue only; do not reintroduce Python-side engine metadata catalogs.
+4. After the engine contract lands cleanly, start **spec 026 T010**: extract save/reload orchestration out of `scripts/preview/editor.js`.
 
-- `T013` Remove or rewrite orphaned `scripts/benchmark_force.py` usage against the TS runtime.
-- `T032` Add focused automated tests for force example discovery and route availability.
-- `T033` Add focused automated tests for save/reset/export behavior.
+Non-goals for the next session:
 
-Relevant files for spec 023 closeout:
-
-- `specs/023-force-layout-restoration/tasks.md`
-- `packages/layout-engine/src/force-runtime.ts`
-- `packages/layout-engine/tests/force-runtime.test.ts`
-- `scripts/preview/force.js`
-- `scripts/preview_server.py`
-- `scripts/benchmark_force.py`
-
-Known unrelated dirty files still in the worktree — do not mix them into the spec 023 closeout commit unless the user explicitly asks:
-
-- `packages/graph-layout-core/src/graph-ir.ts`
-- `packages/graph-layout-core/src/index.ts`
-- `packages/graph-layout-elk/src/elk-graph-builder.ts`
-- `packages/graph-layout-elk/src/elk-layered.ts`
-- `packages/graph-layout-elk/src/elk-param-registry.ts`
-- `packages/graph-layout-elk/src/layered-options.ts`
-- `packages/graph-layout-elk/src/result-normalizer.ts`
-- `packages/graph-layout-elk/tests/elk-layered.test.ts`
-- `packages/layout-engine/src/elk-layout.ts`
-- `packages/layout-engine/src/frame-model.ts`
-- `packages/layout-engine/src/svg-render.ts`
-- `scripts/diagrams/frames/juju-bootstrap-machines-process.yaml`
-- `scripts/frame_yaml_persistence.py`
-- `scripts/preview/editor.js`
-- `scripts/preview/elk-layout-controls.js`
-- `scripts/preview/layout-bridge.js`
-- `scripts/preview/viewer-unified.html`
-- `scripts/test_frame_yaml_persistence.py`
-- `scripts/preview/elk_sidebar_html.py`
-
-After spec 023 is fully closed, start spec 022 from scratch using the existing spec package:
-
-- `specs/022-diagram-authoring-ast/spec.md`
-- `specs/022-diagram-authoring-ast/tasks.md`
-
-Spec 022 is still untouched (`0` checked / `37` unchecked). Treat it as a fresh TypeScript-first compiler/export pipeline slice, not a continuation of the force work.
+- Do not resurrect package-local demo HTML under `packages/`.
+- Do not merge the old ELK worktree branch directly.
+- Do not start spec 022 again until spec 025 / the first spec 026 slice are underway.

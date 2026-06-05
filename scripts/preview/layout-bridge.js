@@ -1554,19 +1554,19 @@ function _isElkLayeredDiagramJson(json) {
 }
 
 function _resolveElkOptionOverrides(diagram, model) {
+  const fromYaml = (diagram && diagram.elkLayout) || {};
   let session = (model && model.elkLayoutOverrides) || {};
-  if (window.ElkLayoutControls && typeof ElkLayoutControls.collectOverrides === "function") {
+  // Model is updated on every sidebar input — prefer it over DOM reads so load/reload
+  // cannot clobber saved YAML with stale server-rendered sidebar HTML.
+  if (Object.keys(session).length === 0
+    && window.ElkLayoutControls
+    && typeof ElkLayoutControls.collectOverrides === "function") {
     session = ElkLayoutControls.collectOverrides();
-    if (model && typeof window.__DG_applyElkLayoutOverrides === "function") {
-      window.__DG_applyElkLayoutOverrides(session);
-    } else if (model) {
+    if (model) {
       model.elkLayoutOverrides = { ...session };
     }
   }
-  return {
-    ...(diagram.elkLayout || {}),
-    ...session,
-  };
+  return { ...fromYaml, ...session };
 }
 
 function setFrameTreeJson(json) {
@@ -1696,10 +1696,6 @@ async function initLayoutBridge(slug) {
     _textAdapter = null;
     _textAdapterError = e && e.message ? String(e.message) : String(e);
     console.error("layout-bridge: failed to initialize HarfBuzz text adapter", e);
-  }
-
-  if (window.ElkLayoutControls && typeof ElkLayoutControls.buildPanel === "function") {
-    ElkLayoutControls.buildPanel(_frameTreeJson);
   }
 }
 
