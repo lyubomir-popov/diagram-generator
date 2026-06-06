@@ -151,6 +151,70 @@ describe('applyForceNodePatch', () => {
     expect(snapshot.nodes[0]).not.toHaveProperty('fy');
   });
 
+  it('clears authored fx/fy when a pinned node is unpinned and export omits pin constraints', () => {
+    const spec: ForceAuthoredSpec = {
+      title: 'Stakeholders',
+      reference_image: 'force/IMG_3229.jpg',
+      canvas: { width: 960, height: 640 },
+      render: {
+        curve_handle_ratio: 0.35,
+        curve_handle_min: 24,
+        curve_handle_max: 64,
+      },
+      simulation: {
+        ticks_per_frame: 1,
+        max_iterations: 220,
+        charge_strength: -900,
+        link_distance: 256,
+        link_strength: 0.08,
+        collision_padding: 24,
+        collision_iterations: 4,
+        velocity_decay: 0.34,
+        alpha_min: 0.006,
+        center: [480, 320],
+      },
+      nodes: [
+        {
+          id: 'users',
+          label: ['Users'],
+          width: 192,
+          height: 64,
+          x: 240,
+          y: 392,
+          fx: 240,
+          fy: 392,
+        },
+      ],
+      links: [],
+    };
+
+    const snapshot = createInitialForceSnapshot(spec);
+    const unpinned = applyForceNodePatch(snapshot, 'users', { pinned: false });
+    const exported = exportForceSnapshot(unpinned);
+
+    expect(unpinned.nodes[0]).not.toHaveProperty('fx');
+    expect(unpinned.nodes[0]).not.toHaveProperty('fy');
+    expect(exported.nodes[0]).not.toHaveProperty('fx');
+    expect(exported.nodes[0]).not.toHaveProperty('fy');
+
+    const reloaded = createInitialForceSnapshot({
+      ...spec,
+      nodes: [
+        {
+          id: 'users',
+          label: ['Users'],
+          width: 192,
+          height: 64,
+          x: exported.nodes[0].x,
+          y: exported.nodes[0].y,
+        },
+      ],
+    });
+
+    expect(reloaded.nodes[0]).not.toHaveProperty('fx');
+    expect(reloaded.nodes[0]).not.toHaveProperty('fy');
+  });
+
   it('applies a style override and can reset back to the base style', () => {
     const spec: ForceAuthoredSpec = {
       title: 'Stakeholders',

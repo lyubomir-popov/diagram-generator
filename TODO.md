@@ -94,8 +94,8 @@ Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`.
 - [ ] `[L]` Security hardening before Stage 17
 - [ ] `[S]` Swappable engine interface — Phase 3+
 - [ ] `[S]` Constraint enforcement on force nodes
-- [ ] `[S]` **Force preview: multi-select unpin should apply to every selected node.** Simple interaction fix; suitable for composer.
-- [ ] `[S]` **Force preview: unpinned nodes revert to pinned after Save/Reload.** Fix persistence or save-path drift so unpin survives a saved round-trip; suitable for composer.
+- [x] `[S]` **Force preview: multi-select unpin should apply to every selected node.** Inspector shows Pin all / Unpin all for multi-select; `applyPinToNodes()` updates every selected node.
+- [x] `[S]` **Force preview: unpinned nodes revert to pinned after Save/Reload.** Runtime clears authored `fx`/`fy` on unpin; Save always posts exported snapshot to YAML.
 - [ ] `[S]` Arrow waypoint editing / endpoint attachment
 - [ ] `[S]` Consistent stroke/outline weight
 - [ ] `[S]` Force → frame YAML round-trip

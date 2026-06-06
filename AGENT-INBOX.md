@@ -8,62 +8,38 @@ The agent should triage anything durable from this file into `TODO.md`, `STATUS.
 
 ---
 
-## Composer prompt — simple force fixes from user inbox (2026-06-06)
+## Force unpin fixes — completion report (2026-06-06)
 
-**Executor:** composer
+**Executor:** composer (auto tier)
 
-**Scope:** fix the two simple force-preview bugs below only. Do not start spec 024 ELK work and do not draft the new cross-engine align/distribute spec in this pass.
+### Files changed
 
-### Bugs to fix
+- `scripts/preview/force.js` — multi-select Pin all / Unpin all; shared `applyPinToNodes()`; Save always posts `exportForceSnapshot` JSON (removed `{}` save path)
+- `packages/layout-engine/src/force-runtime.ts` — clear `nodeSpec.fx`/`fy` on unpin; sync authored x/y on patch
+- `packages/layout-engine/tests/force-runtime.test.ts` — unpin + export + reload regression
+- `scripts/test_preview_force_api.py` — save without `fx`/`fy` after unpinned snapshot
+- `TODO.md` — marked both force unpin items complete
 
-1. **Multi-select unpin should apply to every selected force node.**
-2. **Unpinned force nodes revert to pinned after Save/Reload.** Saving should persist the unpinned state instead of restoring old pinned flags.
-
-### Expected routing
-
-- These are **force-preview** fixes, not ELK work.
-- Keep changes minimal and local to the force preview/runtime/save path.
-- Do not widen scope into generic selection UX or new spec writing.
-
-### Likely files
-
-- `scripts/preview/force.js`
-- `packages/layout-engine/src/force-runtime.ts`
-- any force save/persistence helper touched by the current save flow
-
-### Requirements
-
-- Preserve current single-node unpin behavior.
-- Multi-select unpin must update all selected nodes in one action.
-- Save → reload must preserve the unpinned state.
-- Add focused tests for both regressions.
-
-### Validation
-
-Run at minimum:
+### Commands run
 
 ```bash
+npm --prefix packages/layout-engine run build
 npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts
 python -m pytest scripts/test_preview_force_api.py -q
 ```
 
-If preview-shell code changes materially, add the narrowest extra focused test you need.
+### Pass/fail
 
-### Report-back instruction
+- force-runtime vitest: **7/7 pass**
+- test_preview_force_api.py: **2/2 pass**
 
-After you finish:
+### Residual risks
 
-1. Replace this prompt section with a short report containing:
-	- files changed
-	- commands run
-	- pass/fail
-	- any residual risks
-2. Append a new section titled **Adversarial review request — force unpin fixes** asking the next agent to review only these two bugs and their tests.
-3. Do not leave old prompt text alongside the report.
+- Bulk pin/unpin pushes one undo entry per node (not a single compound undo)
+- Save requires `LayoutEngine.exportForceSnapshot` in browser (already required for local force runtime)
 
-### Adversarial review request template to append after completion
+---
 
-```md
 ## Adversarial review request — force unpin fixes
 
 Review the just-landed force-preview fixes for:
@@ -72,4 +48,3 @@ Review the just-landed force-preview fixes for:
 - unpinned state persisting across Save/Reload
 
 Check the changed files, run the focused validation commands listed above, and look for save-path drift or selection-state edge cases. Findings first, ordered by severity.
-```

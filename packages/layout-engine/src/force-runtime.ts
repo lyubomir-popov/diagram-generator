@@ -501,6 +501,7 @@ function applyForceNodeUpdate(
   if (patch.x != null) {
     node.x = Number(patch.x);
     node.vx = 0;
+    nodeSpec.x = node.x;
     if (node.fx != null && patch.pinned == null) {
       node.fx = node.x;
     }
@@ -510,6 +511,7 @@ function applyForceNodeUpdate(
   if (patch.y != null) {
     node.y = Number(patch.y);
     node.vy = 0;
+    nodeSpec.y = node.y;
     if (node.fy != null && patch.pinned == null) {
       node.fy = node.y;
     }
@@ -536,9 +538,13 @@ function applyForceNodeUpdate(
     if (patch.pinned) {
       node.fx = Number(node.x);
       node.fy = Number(node.y);
+      nodeSpec.fx = node.fx;
+      nodeSpec.fy = node.fy;
     } else {
       node.fx = null;
       node.fy = null;
+      delete nodeSpec.fx;
+      delete nodeSpec.fy;
     }
     nodeChanged = true;
   }

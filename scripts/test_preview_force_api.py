@@ -246,8 +246,36 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
         assert saved_yaml["nodes"][0]["fy"] == 416
         assert saved_yaml["nodes"][0]["style"] == "highlight"
 
+        unpinned_snapshot = {
+            **snapshot,
+            "nodes": [
+                {
+                    "id": "users",
+                    "label": ["Users"],
+                    "width": 208,
+                    "height": 72,
+                    "x": 312,
+                    "y": 416,
+                    "style_override": "highlight",
+                }
+            ],
+        }
+
+        status, payload = _fetch_json(
+            f"{base}/api/force-save/{slug}",
+            data=json.dumps(unpinned_snapshot).encode("utf-8"),
+        )
+        assert status == 200
+        assert payload == {"ok": True}
+
+        saved_yaml = yaml.safe_load(force_path.read_text(encoding="utf-8"))
+        assert "fx" not in saved_yaml["nodes"][0]
+        assert "fy" not in saved_yaml["nodes"][0]
+
         status, spec = _fetch_json(f"{base}/api/force-spec/{slug}")
         assert status == 200
+        assert "fx" not in spec["nodes"][0]
+        assert "fy" not in spec["nodes"][0]
         assert spec["nodes"][0]["x"] == 312
         assert spec["nodes"][0]["y"] == 416
         assert spec["nodes"][0]["style"] == "highlight"

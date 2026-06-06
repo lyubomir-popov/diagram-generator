@@ -564,7 +564,31 @@ function renderSelection(snapshot) {
   }
 
   if (selectedIds.size > 1) {
-    panel.innerHTML = `<div class="field"><div class="label">${selectedIds.size} nodes selected</div></div>`;
+    const selectedNodes = snapshot.nodes.filter((candidate) => selectedIds.has(candidate.id));
+    const pinnedCount = selectedNodes.filter(isNodePinned).length;
+    const actionButtons = [];
+    if (pinnedCount > 0) {
+      actionButtons.push(
+        '<button class="btn bf-button is-base" type="button" data-force-pin-selected="false">Unpin all</button>',
+      );
+    }
+    if (pinnedCount < selectedNodes.length) {
+      actionButtons.push(
+        '<button class="btn bf-button is-base" type="button" data-force-pin-selected="true">Pin all here</button>',
+      );
+    }
+    panel.innerHTML = `
+      <div class="field">
+        <div class="label">${selectedIds.size} nodes selected</div>
+      </div>
+      ${
+        actionButtons.length
+          ? `<div class="field">
+        <span class="label">Actions</span>
+        <div class="bf-cluster dg-button-row">${actionButtons.join("")}</div>
+      </div>`
+          : ""
+      }`;
     return;
   }
 
@@ -912,33 +936,46 @@ async function exportSvg() {
   setStatus("Exported SVG", "ok");
 }
 
-async function saveForceOverrides() {
-  if (localRuntimeOnly) {
-    if (!committedSnapshot) {
-      throw new Error("Force snapshot is not loaded");
-    }
-    const snapshot = window.LayoutEngine.exportForceSnapshot(committedSnapshot);
-    await fetchJson(forceApiPath("save", `/api/force-save/${encodeURIComponent(FORCE_SLUG)}`), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(snapshot),
-    });
-    render(snapshot);
-    forceSaveDirty = false;
-    forceUndoManager.markSaved();
-    updateLocalRuntimeControls();
-    setStatus("Saved to YAML", "ok");
+async function applyPinToNodes(nodeIds, pinned) {
+  if (!currentSnapshot) {
     return;
   }
+  const targets = nodeIds.filter((nodeId) => {
+    const node = currentSnapshot.nodes.find((candidate) => candidate.id === nodeId);
+    if (!node) {
+      return false;
+    }
+    return pinned ? !isNodePinned(node) : isNodePinned(node);
+  });
+  if (targets.length === 0) {
+    return;
+  }
+
+  const beforeStates = targets.map((nodeId) => captureNodeState(nodeId));
+  await Promise.all(targets.map((nodeId) => updateForceNode(nodeId, { pinned })));
+  targets.forEach((nodeId, index) => {
+    pushForceUndo(pinned ? "Pin" : "Unpin", beforeStates[index], captureNodeState(nodeId));
+  });
+  setStatus(pinned ? `Pinned ${targets.length} node(s)` : `Unpinned ${targets.length} node(s)`, "ok");
+}
+
+async function saveForceOverrides() {
+  if (!committedSnapshot) {
+    throw new Error("Force snapshot is not loaded");
+  }
+  const snapshot = window.LayoutEngine?.exportForceSnapshot
+    ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
+    : committedSnapshot;
   await fetchJson(forceApiPath("save", `/api/force-save/${encodeURIComponent(FORCE_SLUG)}`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: "{}",
+    body: JSON.stringify(snapshot),
   });
+  render(snapshot);
   forceSaveDirty = false;
   forceUndoManager.markSaved();
   updateLocalRuntimeControls();
-  setStatus("Saved", "ok");
+  setStatus("Saved to YAML", "ok");
 }
 
 async function runLoop() {
@@ -1234,6 +1271,17 @@ byId("inspector").addEventListener("change", async (event) => {
 });
 
 byId("inspector").addEventListener("click", async (event) => {
+  const bulkButton = event.target.closest("[data-force-pin-selected]");
+  if (bulkButton && currentSnapshot) {
+    const pinned = bulkButton.getAttribute("data-force-pin-selected") === "true";
+    try {
+      await applyPinToNodes([...selectedIds], pinned);
+    } catch (error) {
+      setStatus(error.message || "Pin update failed", "error");
+    }
+    return;
+  }
+
   const button = event.target.closest("[data-force-pin-toggle]");
   if (!button || !currentSnapshot) {
     return;
@@ -1244,11 +1292,8 @@ byId("inspector").addEventListener("click", async (event) => {
     return;
   }
   const nextPinned = !isNodePinned(node);
-  const beforePin = captureNodeState(nodeId);
   try {
-    await updateForceNode(nodeId, { pinned: nextPinned });
-    pushForceUndo(nextPinned ? "Pin" : "Unpin", beforePin, captureNodeState(nodeId));
-    setStatus(nextPinned ? "Pinned" : "Unpinned", "ok");
+    await applyPinToNodes([nodeId], nextPinned);
   } catch (error) {
     setStatus(error.message || "Pin update failed", "error");
   }
