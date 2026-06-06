@@ -132,4 +132,54 @@ describe('exportMermaid', () => {
     expect(edgeCount).toBe(compiled.ast.arrows.length);
     expect(exported.warnings.some(w => w.code.startsWith('MERMAID_UNSUPPORTED_'))).toBe(true);
   });
+
+  it('skips arrows that target the root canvas frame and warns defensively', () => {
+    const ast = {
+      metadata: {},
+      defaults: {},
+      root: {
+        id: 'page',
+        children: [{ id: 'client', children: [] }],
+      },
+      arrows: [{ source: 'client', target: 'page', kind: 'directed' as const }],
+      frameIndex: {
+        page: { id: 'page', isContainer: true, path: 'root' },
+        client: { id: 'client', isContainer: false, path: 'root.children[0]', parentId: 'page' },
+      },
+      source: {},
+    };
+
+    const exported = exportMermaid(ast);
+
+    expect(exported.mermaid).not.toContain('client --> page');
+    expect(exported.warnings).toContainEqual(
+      expect.objectContaining({
+        code: 'MERMAID_ROOT_ENDPOINT_UNSUPPORTED',
+        path: 'arrows[0]',
+      }),
+    );
+  });
+
+  it('warns on missing frame refs and skips invalid arrows', () => {
+    const ast = {
+      metadata: {},
+      defaults: {},
+      root: { id: 'page', children: [{ id: 'only_node', children: [] }] },
+      arrows: [{ source: 'missing', target: 'only_node', kind: 'directed' as const }],
+      frameIndex: {
+        only_node: { id: 'only_node', isContainer: false, path: 'root.children[0]', parentId: 'page' },
+      },
+      source: {},
+    };
+
+    const exported = exportMermaid(ast);
+
+    expect(exported.mermaid).not.toContain('missing -->');
+    expect(exported.warnings).toContainEqual(
+      expect.objectContaining({
+        code: 'MERMAID_MISSING_FRAME_REF',
+        path: 'arrows[0]',
+      }),
+    );
+  });
 });

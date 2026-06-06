@@ -331,6 +331,32 @@ describe('compileDiagramYaml', () => {
     expect(result.ast.frameIndex.tier2_row.isContainer).toBe(true);
   });
 
+  it('rejects arrows that target the root canvas frame', () => {
+    const result = compileDiagramYaml(
+      [
+        'schema: author-v1',
+        'title: Root endpoint',
+        'engine: v3',
+        'arrows:',
+        '  - client -> page',
+        'root:',
+        '  id: page',
+        '  children:',
+        '    - id: client',
+        '      children: []',
+        '',
+      ].join('\n'),
+    );
+
+    expect(result.errors).toContainEqual(
+      expect.objectContaining({
+        code: 'ARROW_ROOT_ENDPOINT',
+        level: 'error',
+        path: 'arrows[0]',
+      }),
+    );
+  });
+
   it('preserves line-object heading style fields during frame normalization', () => {
     const result = compileDiagramYaml(
       [

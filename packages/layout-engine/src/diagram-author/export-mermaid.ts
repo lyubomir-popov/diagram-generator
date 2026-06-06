@@ -106,9 +106,30 @@ function renderArrow(
   index: number,
   lines: string[],
   warnings: Diagnostic[],
+  ast: DiagramDocument,
 ): void {
   const sourceBase = extractBaseFrameId(arrow.source);
   const targetBase = extractBaseFrameId(arrow.target);
+
+  if (ast.root && (sourceBase === ast.root.id || targetBase === ast.root.id)) {
+    warnings.push({
+      code: 'MERMAID_ROOT_ENDPOINT_UNSUPPORTED',
+      level: 'warning',
+      message: `Mermaid export skips arrows that target the root canvas frame: ${arrow.source} -> ${arrow.target}`,
+      path: `arrows[${index}]`,
+    });
+    return;
+  }
+
+  if (!ast.frameIndex[sourceBase] || !ast.frameIndex[targetBase]) {
+    warnings.push({
+      code: 'MERMAID_MISSING_FRAME_REF',
+      level: 'warning',
+      message: `Mermaid export skips arrow with missing frame refs: ${arrow.source} -> ${arrow.target}`,
+      path: `arrows[${index}]`,
+    });
+    return;
+  }
 
   if (arrow.source !== sourceBase) {
     warnings.push({
@@ -164,7 +185,7 @@ export function exportMermaid(ast: DiagramDocument): MermaidExportResult {
 
   lines.push('');
   ast.arrows.forEach((arrow, index) => {
-    renderArrow(arrow, index, lines, warnings);
+    renderArrow(arrow, index, lines, warnings, ast);
   });
 
   return {

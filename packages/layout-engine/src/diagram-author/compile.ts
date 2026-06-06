@@ -42,7 +42,7 @@ function createScaffoldAst(
       ...frameAst.diagnostics,
       ...expanded.diagnostics,
       ...normalizedArrows.diagnostics,
-      ...validateArrowRefs(normalizedArrows.arrows, frameAst.frameIndex),
+      ...validateArrowRefs(normalizedArrows.arrows, frameAst.frameIndex, frameAst.root?.id),
       ...collectCompileWarnings({
         root: ast.root,
         arrows: ast.arrows,
