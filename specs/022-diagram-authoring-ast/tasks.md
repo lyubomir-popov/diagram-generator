@@ -49,11 +49,11 @@
 
 ## Phase 7: Mermaid exporter (US5)
 
-- [ ] T060 Create `export-mermaid.ts` — AST in, Mermaid flowchart string out
-- [ ] T061 Subgraph mapping for containers; array labels → `<br/>`
-- [ ] T062 Mermaid unsupported-property warnings, including anchor-qualified ref degradation
-- [ ] T063 Tests: tiered-network AST golden Mermaid string
-- [ ] T064 [P] CLI `packages/layout-engine/scripts/export-mermaid.mjs`
+- [x] T060 Create `export-mermaid.ts` — AST in, Mermaid flowchart string out
+- [x] T061 Subgraph mapping for containers; array labels → `<br/>`
+- [x] T062 Mermaid unsupported-property warnings, including anchor-qualified ref degradation
+- [x] T063 Tests: tiered-network AST golden Mermaid string
+- [x] T064 [P] CLI `packages/layout-engine/scripts/export-mermaid.mjs`
 
 ## Phase 8: D2 exporter (US6) // defer for now
 

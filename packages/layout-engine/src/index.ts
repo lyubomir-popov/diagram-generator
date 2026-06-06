@@ -147,6 +147,8 @@ export {
 } from './force-runtime.js';
 
 export { compileDiagramYaml } from './diagram-author/compile.js';
+export { exportMermaid } from './diagram-author/export-mermaid.js';
+export type { MermaidExportResult } from './diagram-author/export-mermaid.js';
 export type {
   AuthorArrow,
   AuthorFrameNode,
