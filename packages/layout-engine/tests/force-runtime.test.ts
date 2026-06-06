@@ -215,6 +215,61 @@ describe('applyForceNodePatch', () => {
     expect(reloaded.nodes[0]).not.toHaveProperty('fy');
   });
 
+  it('applies sequential unpin patches on one snapshot so every node stays unpinned', () => {
+    const spec: ForceAuthoredSpec = {
+      title: 'Stakeholders',
+      reference_image: 'force/IMG_3229.jpg',
+      canvas: { width: 960, height: 640 },
+      render: {
+        curve_handle_ratio: 0.35,
+        curve_handle_min: 24,
+        curve_handle_max: 64,
+      },
+      simulation: {
+        ticks_per_frame: 1,
+        max_iterations: 220,
+        charge_strength: -900,
+        link_distance: 256,
+        link_strength: 0.08,
+        collision_padding: 24,
+        collision_iterations: 4,
+        velocity_decay: 0.34,
+        alpha_min: 0.006,
+        center: [480, 320],
+      },
+      nodes: [
+        {
+          id: 'users',
+          label: ['Users'],
+          width: 192,
+          height: 64,
+          x: 120,
+          y: 320,
+          fx: 120,
+          fy: 320,
+        },
+        {
+          id: 'software',
+          label: ['Software'],
+          width: 192,
+          height: 64,
+          x: 720,
+          y: 320,
+          fx: 720,
+          fy: 320,
+        },
+      ],
+      links: [],
+    };
+
+    const base = createInitialForceSnapshot(spec);
+    let snapshot = applyForceNodePatch(base, 'users', { pinned: false });
+    snapshot = applyForceNodePatch(snapshot, 'software', { pinned: false });
+
+    expect(snapshot.nodes[0]).not.toHaveProperty('fx');
+    expect(snapshot.nodes[1]).not.toHaveProperty('fx');
+  });
+
   it('applies a style override and can reset back to the base style', () => {
     const spec: ForceAuthoredSpec = {
       title: 'Stakeholders',

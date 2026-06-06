@@ -22,6 +22,12 @@ Feature package: `specs/027-preview-browser-test-api/`.
 
 - [ ] `[S]` **Retire spec 026 browser globals.** Migrate Playwright off `saveOverrides` / `performUndo` / `performRedo` / `canUndo` / `canRedo` to documented `__DG_TEST_preview` hooks, then remove shims from `editor.js`. Can start now; ~1 session; run before new Playwright tests copy the global pattern.
 
+#### Force preview shell convergence (spec 029)
+
+Feature package: `specs/029-force-preview-shell-convergence/`.
+
+- [ ] `[S]` **Converge force save / dirty semantics with the preview-shell architecture.** Keep the scope narrow: shell-side save-button state, focused regression coverage, and force-lane boundary docs only. Do not delegate a broad `force.js` rewrite or a full TS controller migration.
+
 #### Preview shell decomposition + TS migration (spec 026)
 
 Feature package: `specs/026-preview-shell-decomposition-ts-migration/`.
@@ -33,6 +39,10 @@ Feature package: `specs/026-preview-shell-decomposition-ts-migration/`.
 Feature package: `specs/024-elk-interactive-node-alignment/`.
 
 - [ ] `[H]` **Start the elkjs feasibility spike for spec 024.** Native ELK only: moved-node / pin-style relayout via `layerChoiceConstraint` / `positionChoiceConstraint` → persist under `meta.elk_nodes` → re-run layered with INTERACTIVE strategies. Integrate through the spec 025 engine contract and spec 026 ELK controller slice — no SVG translate hacks or new `editor.js` branches.
+
+#### Folder-backed editor app + nav unification (new spec needed)
+
+- [ ] `[H]` **Draft a spec-kit package for a folder-backed editor app shell.** The preview should open a user-chosen diagram folder, populate the left nav from that folder instead of the fixed test list, and remove the duplicate diagram picker UI in favor of one coherent sidenav-driven navigation model.
 
 #### Cross-engine multi-select align/distribute + bulk pin actions (new spec needed)
 

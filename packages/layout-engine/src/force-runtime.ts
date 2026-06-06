@@ -431,9 +431,10 @@ function getSnapshot(state: ForcePreviewState, snap = false): ForceRuntimeSnapsh
     const preset = style ? FORCE_BOX_STYLES[style] : null;
     const x = snap ? clampCoordinate(snapToGrid(node.x, BASELINE_UNIT), node.width / 2, currentCanvas.width) : node.x;
     const y = snap ? clampCoordinate(snapToGrid(node.y, BASELINE_UNIT), node.height / 2, currentCanvas.height) : node.y;
+    const { fx: _authoredFx, fy: _authoredFy, ...nodeSpecWithoutPin } = nodeSpec;
 
     return {
-      ...nodeSpec,
+      ...nodeSpecWithoutPin,
       x,
       y,
       width: node.width,

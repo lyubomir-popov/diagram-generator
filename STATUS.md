@@ -40,6 +40,12 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 - Docs and tooling: [`docs/diagram-authoring.md`](docs/diagram-authoring.md), `migrate-diagram-yaml.mjs`, `export-mermaid.mjs`, `export-d2.mjs`, reference fixture `tiered-network-architecture.author-v1.yaml`, and the spec 028 interchange package.
 - Root canvas endpoints are now rejected at compile time; Mermaid and D2 exporters skip invalid arrows defensively with warnings. Preview save format remains canonical `root` + `arrows`.
 
+### Current delta — spec 029 force preview shell convergence drafted (2026-06-06)
+
+- Added `specs/029-force-preview-shell-convergence/` as a bounded follow-up to the recent force preview save-button regression.
+- Delegation boundary is explicit: composer-safe work is limited to shell-side save / dirty convergence, focused tests, and boundary docs.
+- The broader idea of moving the full force controller toward TypeScript is intentionally not delegated here; that remains a future local-orchestrated architectural slice if still wanted.
+
 ### Current delta — spec 026 preview shell decomposition closed (2026-06-06)
 
 - Spec 026 is complete: save client, ELK controller, TS editor state store, `editor.js` shell shrink, and boundary documentation in `specs/026-preview-shell-decomposition-ts-migration/boundaries.md`.
@@ -150,7 +156,7 @@ Commit **`a6822da`** (`scripts: land ts svg renderer cleanup`):
 | Priority | Work |
 |----------|------|
 | Now | Start **spec 024** phase 0 elkjs interactive-constraint spike and scope the ELK “move then relayout / pin” flow |
-| Next | Draft a new cross-engine spec for multi-select align/distribute and bulk pin/unpin behavior (force first, ELK applicability investigated) |
+| Next | Start **spec 029** only if the force preview shell needs more convergence work beyond the local save-button fix; keep delegation bounded to shell-side cleanup, not a force controller rewrite |
 
 ## Key files
 

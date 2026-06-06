@@ -667,6 +667,13 @@ body.dg-preview {
        width: 100%;
 }
 
+[data-dg-mode="force"] .stage {
+       align-items: center;
+       justify-content: center;
+       overflow: hidden;
+       padding: 16px;
+}
+
 .dg-reference-img-wrap {
        align-items: flex-start;
        display: flex;
@@ -677,6 +684,14 @@ body.dg-preview {
        padding: 32px;
        width: 100%;
 }
+
+[data-dg-mode="force"] .dg-reference-img-wrap {
+       align-items: center;
+       justify-content: center;
+       overflow: hidden;
+       padding: 16px;
+}
+
 .dg-reference-img {
        border: 1px solid #333;
        border-radius: 4px;
@@ -687,10 +702,23 @@ body.dg-preview {
        box-shadow: 0 24px 72px rgba(0, 0, 0, 0.32);
 }
 
+[data-dg-mode="force"] .dg-reference-img {
+       max-block-size: 100%;
+       width: auto;
+}
+
 .stage svg {
        background: #fff;
        box-shadow: 0 24px 72px rgba(0, 0, 0, 0.32);
        cursor: crosshair;
+}
+
+[data-dg-mode="force"] .stage svg {
+       flex: 0 1 auto;
+       height: auto;
+       max-height: 100%;
+       max-width: 100%;
+       width: auto;
 }
 
 .stage svg [data-component-id] { cursor: pointer; }

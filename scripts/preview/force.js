@@ -56,8 +56,38 @@ let dragCandidate = null;
 let dragState = null;
 let resizeState = null;
 let suppressStageClick = false;
-let forceSaveDirty = false;
+let lastSavedForceParamState = null;
 const EMPTY_SELECTION_HTML = '<p class="dg-empty-message bf-form-help">Select or drag a node from the stage or the left rail. Dragging drops it into a pinned manual-polish position.</p>';
+
+function stageElement() {
+  return byId("stage");
+}
+
+function captureStagePointer(pointerId) {
+  const stage = stageElement();
+  if (!stage?.setPointerCapture || pointerId == null) {
+    return;
+  }
+  try {
+    stage.setPointerCapture(pointerId);
+  } catch {
+    // Ignore capture failures from synthetic or already-released pointers.
+  }
+}
+
+function releaseStagePointer(pointerId) {
+  const stage = stageElement();
+  if (!stage?.releasePointerCapture || pointerId == null) {
+    return;
+  }
+  try {
+    if (stage.hasPointerCapture?.(pointerId)) {
+      stage.releasePointerCapture(pointerId);
+    }
+  } catch {
+    // Ignore release failures from synthetic or already-released pointers.
+  }
+}
 
 function canUseLocalForceRuntime() {
   return Boolean(window.LayoutEngine && typeof window.LayoutEngine.createInitialForceSnapshot === "function");
@@ -100,7 +130,7 @@ function applyForceParamMetadata() {
 function updateLocalRuntimeControls() {
   byId("btn-play").disabled = false;
   byId("btn-step").disabled = false;
-  byId("btn-force-save").disabled = !(forceUndoManager.isDirty() || forceSaveDirty);
+  byId("btn-force-save").disabled = !(forceUndoManager.isDirty() || hasUnsavedForceParamInputs());
   const container = document.getElementById("force-params");
   if (!container) return;
   const canEditLocalParams = !localRuntimeOnly || Boolean(
@@ -109,6 +139,29 @@ function updateLocalRuntimeControls() {
   for (const input of container.querySelectorAll("input")) {
     input.disabled = !canEditLocalParams;
   }
+}
+
+function serializeForceParamInputs() {
+  const container = document.getElementById("force-params");
+  if (!container) return "[]";
+  const entries = [];
+  for (const input of container.querySelectorAll("[data-force-param]")) {
+    const key = input.getAttribute("data-force-param");
+    if (!key) continue;
+    entries.push([key, String(input.value ?? "")]);
+  }
+  return JSON.stringify(entries);
+}
+
+function hasUnsavedForceParamInputs() {
+  if (lastSavedForceParamState == null) {
+    return false;
+  }
+  return serializeForceParamInputs() !== lastSavedForceParamState;
+}
+
+function markForceParamInputsSaved() {
+  lastSavedForceParamState = serializeForceParamInputs();
 }
 
 // ---- Undo/Redo via shared UndoRedoManager ----
@@ -126,7 +179,7 @@ function captureNodeState(nodeId) {
     width: node.width,
     height: node.height,
     style: node.style_override != null ? node.style_override : null,
-    pinned: node.fx != null,
+    pinned: isNodePinned(node),
   };
 }
 
@@ -146,7 +199,6 @@ const forceUndoManager = new UndoRedoManager({
   maxSize: 50,
   undoBtnId: "btn-force-undo",
   redoBtnId: "btn-force-redo",
-  saveBtnId: "btn-force-save",
   onRestore: async (state, direction) => {
     try {
       await applyNodeState(state);
@@ -273,6 +325,7 @@ function startForceResize(event, handleEl) {
   resizeState = {
     nodeId,
     dir,
+    pointerId: event.pointerId,
     startSvgX: point.x,
     startSvgY: point.y,
     origX: node.x,
@@ -281,6 +334,7 @@ function startForceResize(event, handleEl) {
     origH: node.height,
     undoBefore: captureNodeState(nodeId),
   };
+  captureStagePointer(event.pointerId);
   selectedIds = new Set([nodeId]);
   event.preventDefault();
   event.stopPropagation();
@@ -347,6 +401,7 @@ async function finishForceResize(event) {
 
   const activeResize = resizeState;
   resizeState = null;
+  releaseStagePointer(activeResize.pointerId);
   suppressStageClick = true;
 
   const point = pointerToStagePoint(event);
@@ -713,12 +768,14 @@ function startDragPreview(candidate) {
 
   dragState = {
     nodeId: candidate.nodeId,
+    pointerId: candidate.pointerId,
     offsetX: candidate.nodeX - candidate.startSvgX,
     offsetY: candidate.nodeY - candidate.startSvgY,
     snapTargets: collectForceSnapTargets(candidate.nodeId),
     undoBefore: captureNodeState(candidate.nodeId),
   };
   dragCandidate = null;
+  captureStagePointer(candidate.pointerId);
   selectedIds = new Set([candidate.nodeId]);
   render(previewDraggedSnapshot(currentSnapshot, candidate.nodeId, node.x, node.y), { previewOnly: true });
   setStatus("Dragging…", "ok");
@@ -763,6 +820,7 @@ async function finishDrag(event) {
 
   const activeDrag = dragState;
   dragState = null;
+  releaseStagePointer(activeDrag.pointerId);
   suppressStageClick = true;
   clearGuideLines();
 
@@ -792,6 +850,26 @@ async function finishDrag(event) {
     startRunning();
   } catch (error) {
     setStatus(error.message || "Drag update failed", "error");
+  }
+}
+
+function cancelActivePointerInteraction(event) {
+  const pointerId = event?.pointerId;
+  if (resizeState && (pointerId == null || resizeState.pointerId === pointerId)) {
+    releaseStagePointer(resizeState.pointerId);
+    resizeState = null;
+  }
+  if (dragState && (pointerId == null || dragState.pointerId === pointerId)) {
+    releaseStagePointer(dragState.pointerId);
+    dragState = null;
+    clearGuideLines();
+    if (committedSnapshot) {
+      render(committedSnapshot);
+    }
+  }
+  if (dragCandidate && (pointerId == null || dragCandidate.pointerId === pointerId)) {
+    releaseStagePointer(dragCandidate.pointerId);
+    dragCandidate = null;
   }
 }
 
@@ -878,7 +956,7 @@ async function loadSnapshot(reset = true) {
     }
   }
   render(snapshot);
-  forceSaveDirty = false;
+  markForceParamInputsSaved();
   updateLocalRuntimeControls();
 }
 
@@ -952,7 +1030,9 @@ async function applyPinToNodes(nodeIds, pinned) {
   }
 
   const beforeStates = targets.map((nodeId) => captureNodeState(nodeId));
-  await Promise.all(targets.map((nodeId) => updateForceNode(nodeId, { pinned })));
+  for (const nodeId of targets) {
+    await updateForceNode(nodeId, { pinned });
+  }
   targets.forEach((nodeId, index) => {
     pushForceUndo(pinned ? "Pin" : "Unpin", beforeStates[index], captureNodeState(nodeId));
   });
@@ -972,7 +1052,7 @@ async function saveForceOverrides() {
     body: JSON.stringify(snapshot),
   });
   render(snapshot);
-  forceSaveDirty = false;
+  markForceParamInputsSaved();
   forceUndoManager.markSaved();
   updateLocalRuntimeControls();
   setStatus("Saved to YAML", "ok");
@@ -1200,6 +1280,7 @@ byId("stage").addEventListener("pointerdown", (event) => {
   }
   dragCandidate = {
     nodeId,
+    pointerId: event.pointerId,
     startClientX: event.clientX,
     startClientY: event.clientY,
     startSvgX: point.x,
@@ -1208,6 +1289,7 @@ byId("stage").addEventListener("pointerdown", (event) => {
     nodeY: node.y,
     wasRunning: running,
   };
+  captureStagePointer(event.pointerId);
 });
 
 byId("inspector").addEventListener("pointerdown", (event) => {
@@ -1217,15 +1299,21 @@ byId("inspector").addEventListener("pointerdown", (event) => {
   pauseForceInteraction();
 });
 
-document.addEventListener("mousemove", (event) => {
+byId("stage").addEventListener("pointermove", (event) => {
   // Resize takes priority
   if (resizeState) {
+    if (event.pointerId !== resizeState.pointerId) {
+      return;
+    }
     event.preventDefault();
     updateForceResize(event);
     return;
   }
 
   if (dragCandidate && !dragState) {
+    if (event.pointerId !== dragCandidate.pointerId) {
+      return;
+    }
     const moved = Math.hypot(event.clientX - dragCandidate.startClientX, event.clientY - dragCandidate.startClientY);
     if (moved >= DRAG_THRESHOLD) {
       startDragPreview(dragCandidate);
@@ -1236,22 +1324,39 @@ document.addEventListener("mousemove", (event) => {
     return;
   }
 
+  if (event.pointerId !== dragState.pointerId) {
+    return;
+  }
+
   event.preventDefault();
   updateDragPreview(event);
 });
 
-document.addEventListener("mouseup", async (event) => {
+byId("stage").addEventListener("pointerup", async (event) => {
   if (resizeState) {
+    if (event.pointerId !== resizeState.pointerId) {
+      return;
+    }
     event.preventDefault();
     await finishForceResize(event);
     return;
   }
   if (dragState) {
+    if (event.pointerId !== dragState.pointerId) {
+      return;
+    }
     event.preventDefault();
     await finishDrag(event);
     return;
   }
-  dragCandidate = null;
+  if (dragCandidate && event.pointerId === dragCandidate.pointerId) {
+    releaseStagePointer(dragCandidate.pointerId);
+    dragCandidate = null;
+  }
+});
+
+byId("stage").addEventListener("pointercancel", (event) => {
+  cancelActivePointerInteraction(event);
 });
 
 byId("inspector").addEventListener("change", async (event) => {
@@ -1360,8 +1465,13 @@ document.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") dx = step;
     const firstId = pinnedNodes[0].id;
     const beforeNudge = captureNodeState(firstId);
-    Promise.all(pinnedNodes.map(n => updateForceNode(n.id, { x: n.x + dx, y: n.y + dy, pinned: true }))).then(() => {
+    (async () => {
+      for (const node of pinnedNodes) {
+        await updateForceNode(node.id, { x: node.x + dx, y: node.y + dy, pinned: true });
+      }
       pushForceUndo("Nudge", beforeNudge, captureNodeState(firstId));
+    })().catch((error) => {
+      setStatus(error.message || "Nudge failed", "error");
     });
   }
 });
@@ -1418,7 +1528,6 @@ document.getElementById("force-params").addEventListener("change", async (event)
       }
       const snapshot = window.LayoutEngine.updateForceSimulationParams(committedSnapshot, { [key]: value });
       render(snapshot);
-      forceSaveDirty = true;
       updateLocalRuntimeControls();
       if (!running) startRunning();
       setStatus(`${key} → ${value}`, "ok");
@@ -1436,7 +1545,6 @@ document.getElementById("force-params").addEventListener("change", async (event)
     if (!resp.ok) throw new Error(await resp.text());
     const snapshot = await resp.json();
     render(snapshot);
-    forceSaveDirty = true;
     updateLocalRuntimeControls();
     if (!running) startRunning();
     setStatus(`${key} → ${value}`, "ok");
