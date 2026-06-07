@@ -629,3 +629,107 @@ export function tickForceSimulation(
 export function exportForceSnapshot(snapshot: ForceRuntimeSnapshot): ForceRuntimeSnapshot {
   return getSnapshot(getState(snapshot), true);
 }
+
+function persistedForceStyle(node: ForceRuntimeNode): ForceNodeSpec['style'] | null {
+  const style = node.style_override ?? node.style ?? null;
+  if (style === 'parent' || style === 'section' || style === 'annotation' || style === 'highlight') {
+    return style;
+  }
+  return null;
+}
+
+export function exportForceAuthoredSpec(
+  snapshot: ForceRuntimeSnapshot,
+  options: { snap?: boolean } = {},
+): ForceAuthoredSpec {
+  const exportedSnapshot = options.snap ? exportForceSnapshot(snapshot) : snapshot;
+  const simulationParams = exportedSnapshot.simulation?.params ?? {};
+  const renderSpec = exportedSnapshot.render ?? {};
+  const persistedRenderKeys: Array<keyof ForceRenderSpec> = [
+    'curve_handle_ratio',
+    'curve_handle_min',
+    'curve_handle_max',
+  ];
+  const persistedSimulationKeys: Array<keyof ForceSimulationConfig> = [
+    'alpha',
+    'alpha_min',
+    'alpha_decay',
+    'alpha_target',
+    'ticks_per_frame',
+    'max_iterations',
+    'charge_strength',
+    'link_distance',
+    'link_strength',
+    'link_iterations',
+    'collision_padding',
+    'collision_iterations',
+    'velocity_decay',
+    'center',
+  ];
+
+  return {
+    title: exportedSnapshot.title,
+    reference_image: exportedSnapshot.reference_image,
+    canvas: {
+      width: exportedSnapshot.canvas?.width,
+      height: exportedSnapshot.canvas?.height,
+    },
+    render: Object.fromEntries(
+      persistedRenderKeys
+        .filter((key) => renderSpec[key] != null)
+        .map((key) => [key, renderSpec[key]]),
+    ) as ForceRenderSpec,
+    simulation: Object.fromEntries(
+      persistedSimulationKeys
+        .filter((key) => simulationParams[key] != null)
+        .map((key) => [key, simulationParams[key]]),
+    ) as ForceSimulationSpec,
+    nodes: exportedSnapshot.nodes.map((node) => {
+      const entry: ForceNodeSpec = {
+        id: node.id,
+        label: Array.isArray(node.label) && node.label.length > 0 ? node.label : [node.id],
+        width: node.width,
+        height: node.height,
+        x: node.x,
+        y: node.y,
+      };
+      if (node.fx != null) entry.fx = node.fx;
+      if (node.fy != null) entry.fy = node.fy;
+      const style = persistedForceStyle(node);
+      if (style != null) {
+        entry.style = style;
+      } else if (node.fill != null && node.fill !== DEFAULT_FILL) {
+        entry.fill = node.fill;
+        if (node.text_fill != null) {
+          entry.text_fill = node.text_fill;
+        }
+      }
+      if (node.stroke != null && node.stroke !== DEFAULT_STROKE && node.stroke !== 'none') {
+        entry.stroke = node.stroke;
+      }
+      if (node.stroke_width != null && node.stroke_width !== 0 && node.stroke_width !== 1) {
+        entry.stroke_width = node.stroke_width;
+      }
+      if (node.shape != null) {
+        entry.shape = node.shape;
+      }
+      return entry;
+    }),
+    links: exportedSnapshot.links.map((link) => {
+      const entry: ForceLinkSpec = {
+        source: link.source,
+        target: link.target,
+      };
+      if (link.stroke != null) {
+        entry.stroke = link.stroke;
+      }
+      if (link.stroke_width != null) {
+        entry.stroke_width = link.stroke_width;
+      }
+      if (link.render && Object.keys(link.render).length > 0) {
+        entry.render = { ...link.render };
+      }
+      return entry;
+    }),
+  };
+}

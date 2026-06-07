@@ -1,6 +1,7 @@
 const FORCE_CONFIG = window.__DG_FORCE_CONFIG || {};
 const FORCE_SLUG = FORCE_CONFIG.slug;
 const DIRTY_DIAGRAM_NAV_CONFIRM = "You have unsaved changes. Leave this diagram without saving?";
+const FORCE_RUNTIME_BUILD_HINT = "Layout engine bundle is required for force preview. Run `npm --prefix packages/layout-engine run build:browser`.";
 
 /** Control metadata from the TS preview-engine registry (spec 025). */
 function forcePreviewEngine() {
@@ -51,7 +52,6 @@ let currentSnapshot = null;
 let committedSnapshot = null;
 let running = false;
 let inFlight = false;
-let localRuntimeOnly = false;
 let selectedIds = new Set();
 let dragCandidate = null;
 let dragState = null;
@@ -91,22 +91,18 @@ function releaseStagePointer(pointerId) {
   }
 }
 
-function canUseLocalForceRuntime() {
-  return Boolean(window.LayoutEngine && typeof window.LayoutEngine.createInitialForceSnapshot === "function");
-}
-
-function isForceBackendUnavailable(error) {
-  const message = String(error?.message || error || "");
-  return message.includes("Force layout backend is not available");
+function requireForceRuntimeMethod(methodName) {
+  const fn = window.LayoutEngine?.[methodName];
+  if (typeof fn !== "function") {
+    throw new Error(`${FORCE_RUNTIME_BUILD_HINT} Missing LayoutEngine.${methodName}().`);
+  }
+  return fn;
 }
 
 async function loadLocalForceSnapshot() {
-  if (!canUseLocalForceRuntime()) {
-    throw new Error("Local TS force runtime is unavailable");
-  }
+  const createInitialForceSnapshot = requireForceRuntimeMethod("createInitialForceSnapshot");
   const spec = await fetchJson(forceApiPath("spec", `/api/force-spec/${encodeURIComponent(FORCE_SLUG)}`));
-  localRuntimeOnly = true;
-  return window.LayoutEngine.createInitialForceSnapshot(spec);
+  return createInitialForceSnapshot(spec);
 }
 
 function applyForceParamMetadata() {
@@ -135,7 +131,7 @@ function updateLocalRuntimeControls() {
   byId("btn-force-save").disabled = !isForcePersistedStateDirty();
   const container = document.getElementById("force-params");
   if (!container) return;
-  const canEditLocalParams = !localRuntimeOnly || Boolean(
+  const canEditLocalParams = Boolean(
     window.LayoutEngine && typeof window.LayoutEngine.updateForceSimulationParams === "function"
   );
   for (const input of container.querySelectorAll("input")) {
@@ -143,107 +139,12 @@ function updateLocalRuntimeControls() {
   }
 }
 
-function persistedForceStyle(node) {
-  const style = node?.style_override ?? node?.style ?? null;
-  if (style === "accent") {
-    return "parent";
-  }
-  if (style === "parent" || style === "section" || style === "annotation" || style === "highlight") {
-    return style;
-  }
-  return null;
-}
-
-function exportPersistedForceSnapshot(snapshot) {
+function exportPersistedForceSnapshot(snapshot, options = {}) {
   if (!snapshot || typeof snapshot !== "object") {
     return null;
   }
-  const simulationParams = snapshot.simulation?.params && typeof snapshot.simulation.params === "object"
-    ? snapshot.simulation.params
-    : {};
-  const render = snapshot.render && typeof snapshot.render === "object" ? snapshot.render : {};
-  const exportedNodes = Array.isArray(snapshot.nodes) ? snapshot.nodes : [];
-  const exportedLinks = Array.isArray(snapshot.links) ? snapshot.links : [];
-  return {
-    title: snapshot.title,
-    reference_image: snapshot.reference_image,
-    canvas: {
-      width: snapshot.canvas?.width,
-      height: snapshot.canvas?.height,
-    },
-    render: Object.fromEntries(
-      ["curve_handle_ratio", "curve_handle_min", "curve_handle_max"]
-        .filter((key) => render[key] != null)
-        .map((key) => [key, render[key]])
-    ),
-    simulation: Object.fromEntries(
-      [
-        "alpha",
-        "alpha_min",
-        "alpha_decay",
-        "alpha_target",
-        "ticks_per_frame",
-        "max_iterations",
-        "charge_strength",
-        "link_distance",
-        "link_strength",
-        "link_iterations",
-        "collision_padding",
-        "collision_iterations",
-        "velocity_decay",
-        "center",
-      ]
-        .filter((key) => simulationParams[key] != null)
-        .map((key) => [key, simulationParams[key]])
-    ),
-    nodes: exportedNodes.map((node) => {
-      const entry = {
-        id: node.id,
-        label: Array.isArray(node.label) && node.label.length > 0 ? node.label : [node.id],
-        width: node.width,
-        height: node.height,
-        x: node.x,
-        y: node.y,
-      };
-      if (node.fx != null) entry.fx = node.fx;
-      if (node.fy != null) entry.fy = node.fy;
-      const style = persistedForceStyle(node);
-      if (style != null) {
-        entry.style = style;
-      } else if (node.fill != null && node.fill !== "#FFFFFF") {
-        entry.fill = node.fill;
-        if (node.text_fill != null) {
-          entry.text_fill = node.text_fill;
-        }
-      }
-      if (node.stroke != null && node.stroke !== "#000000" && node.stroke !== "none") {
-        entry.stroke = node.stroke;
-      }
-      if (node.stroke_width != null && node.stroke_width !== 0 && node.stroke_width !== 1) {
-        entry.stroke_width = node.stroke_width;
-      }
-      if (node.shape != null) {
-        entry.shape = node.shape;
-      }
-      return entry;
-    }),
-    links: exportedLinks.map((link) => {
-      const entry = {
-        source: link.source,
-        target: link.target,
-      };
-      if (link.stroke != null) {
-        entry.stroke = link.stroke;
-      }
-      if (link.stroke_width != null) {
-        entry.stroke_width = link.stroke_width;
-      }
-      if (link.render && typeof link.render === "object" && Object.keys(link.render).length > 0) {
-        entry.render = link.render;
-      }
-      return entry;
-    }),
-  };
+  const exportForceAuthoredSpec = requireForceRuntimeMethod("exportForceAuthoredSpec");
+  return exportForceAuthoredSpec(snapshot, options);
 }
 
 function serializeForcePersistedState(snapshot) {
@@ -862,44 +763,27 @@ function renderSelection(snapshot) {
 
 function updateSummary(snapshot) {
   const settled = snapshot.simulation.settled ? "settled" : "live";
-  if (localRuntimeOnly) {
-    byId("force-summary").textContent = `TS local runtime. alpha ${snapshot.simulation.alpha.toFixed(3)} • ${snapshot.simulation.tick_count} ticks • ${settled}. Export snaps positions to the 8px grid; Save writes the current defaults and node state to YAML.`;
-    return;
-  }
-  byId("force-summary").textContent = `alpha ${snapshot.simulation.alpha.toFixed(3)} • ${snapshot.simulation.tick_count} ticks • ${settled}. Export snaps positions to the 8px grid.`;
+  byId("force-summary").textContent = `TS local runtime. alpha ${snapshot.simulation.alpha.toFixed(3)} • ${snapshot.simulation.tick_count} ticks • ${settled}. Export snaps positions to the 8px grid; Save writes the current defaults and node state to YAML.`;
 }
 
 async function updateForceNode(nodeId, patch) {
   const shouldResumeSimulation = patch.x != null || patch.y != null || patch.width != null || patch.height != null || patch.pinned != null;
   const shouldImmediateTick = patch.pinned === false;
-  if (localRuntimeOnly) {
-    if (!committedSnapshot) {
-      throw new Error("Force snapshot is not loaded");
-    }
-    let snapshot = window.LayoutEngine.applyForceNodePatch(committedSnapshot, nodeId, patch);
-    render(snapshot);
-    if (shouldImmediateTick && !inFlight && !snapshot.simulation.settled) {
-      snapshot = window.LayoutEngine.tickForceSimulation(committedSnapshot, 1);
-      render(snapshot);
-    }
-    if (shouldResumeSimulation && !running) {
-      startRunning();
-    }
-    updateLocalRuntimeControls();
-    return snapshot;
+  if (!committedSnapshot) {
+    throw new Error("Force snapshot is not loaded");
   }
-  let snapshot = await fetchJson(`/api/force-node/${encodeURIComponent(FORCE_SLUG)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ node_id: nodeId, ...patch }),
-  });
+  const applyForceNodePatch = requireForceRuntimeMethod("applyForceNodePatch");
+  const tickForceSimulation = requireForceRuntimeMethod("tickForceSimulation");
+  let snapshot = applyForceNodePatch(committedSnapshot, nodeId, patch);
   render(snapshot);
   if (shouldImmediateTick && !inFlight && !snapshot.simulation.settled) {
-    snapshot = await tickSimulation(1);
+    snapshot = tickForceSimulation(committedSnapshot, 1);
+    render(snapshot);
   }
   if (shouldResumeSimulation && !running) {
     startRunning();
   }
+  updateLocalRuntimeControls();
   return snapshot;
 }
 
@@ -1106,10 +990,8 @@ function render(snapshot, options = {}) {
     setStatus("Settled", "ok");
   } else if (running) {
     setStatus("Running…", "ok");
-  } else if (localRuntimeOnly) {
-    setStatus("TS local snapshot", "ok");
   } else {
-    setStatus("Paused", "ok");
+    setStatus("TS local snapshot", "ok");
   }
 
   // Stale-definition warning
@@ -1122,44 +1004,18 @@ function render(snapshot, options = {}) {
 }
 
 async function loadSnapshot(reset = true) {
-  let snapshot;
-  if (localRuntimeOnly || canUseLocalForceRuntime()) {
-    snapshot = await loadLocalForceSnapshot();
-  } else {
-    const url = reset
-      ? forceApiPath("reset", `/api/force-reset/${encodeURIComponent(FORCE_SLUG)}`)
-      : `/api/force/${encodeURIComponent(FORCE_SLUG)}`;
-    const options = reset
-      ? { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }
-      : undefined;
-    try {
-      snapshot = await fetchJson(url, options);
-    } catch (error) {
-      if (!isForceBackendUnavailable(error)) {
-        throw error;
-      }
-      snapshot = await loadLocalForceSnapshot();
-    }
-  }
+  const snapshot = await loadLocalForceSnapshot();
   render(snapshot);
   markForceStateSaved(snapshot);
   updateLocalRuntimeControls();
 }
 
 async function tickSimulation(iterations) {
-  if (localRuntimeOnly) {
-    if (!committedSnapshot) {
-      throw new Error("Force snapshot is not loaded");
-    }
-    const snapshot = window.LayoutEngine.tickForceSimulation(committedSnapshot, iterations);
-    render(snapshot);
-    return snapshot;
+  if (!committedSnapshot) {
+    throw new Error("Force snapshot is not loaded");
   }
-  const snapshot = await fetchJson(forceApiPath("tick", `/api/force-tick/${encodeURIComponent(FORCE_SLUG)}`), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ iterations }),
-  });
+  const tickForceSimulation = requireForceRuntimeMethod("tickForceSimulation");
+  const snapshot = tickForceSimulation(committedSnapshot, iterations);
   render(snapshot);
   return snapshot;
 }
@@ -1177,9 +1033,8 @@ function downloadBlob(filename, content, contentType) {
 }
 
 async function exportJson() {
-  const snapshot = localRuntimeOnly
-    ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
-    : await fetchJson(forceApiPath("export", `/api/force-export/${encodeURIComponent(FORCE_SLUG)}`));
+  const exportForceSnapshot = requireForceRuntimeMethod("exportForceSnapshot");
+  const snapshot = exportForceSnapshot(committedSnapshot);
   if (!snapshot) {
     throw new Error("Force snapshot is not loaded");
   }
@@ -1189,9 +1044,8 @@ async function exportJson() {
 }
 
 async function exportSvg() {
-  const snapshot = localRuntimeOnly
-    ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
-    : await fetchJson(forceApiPath("export", `/api/force-export/${encodeURIComponent(FORCE_SLUG)}`));
+  const exportForceSnapshot = requireForceRuntimeMethod("exportForceSnapshot");
+  const snapshot = exportForceSnapshot(committedSnapshot);
   if (!snapshot) {
     throw new Error("Force snapshot is not loaded");
   }
@@ -1229,15 +1083,13 @@ async function saveForceOverrides() {
   if (!committedSnapshot) {
     throw new Error("Force snapshot is not loaded");
   }
-  const snapshot = window.LayoutEngine?.exportForceSnapshot
-    ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
-    : committedSnapshot;
+  const authoredSpec = exportPersistedForceSnapshot(committedSnapshot, { snap: true });
   const responsePayload = await fetchJson(forceApiPath("save", `/api/force-save/${encodeURIComponent(FORCE_SLUG)}`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(snapshot),
+    body: JSON.stringify(authoredSpec),
   });
-  const canonicalSnapshot = snapshotFromCanonicalState(responsePayload?.canonicalState) || snapshot;
+  const canonicalSnapshot = snapshotFromCanonicalState(responsePayload?.canonicalState) || await loadLocalForceSnapshot();
   render(canonicalSnapshot);
   markForceStateSaved(canonicalSnapshot);
   forceUndoManager.markSaved();
@@ -1710,29 +1562,12 @@ document.getElementById("force-params").addEventListener("change", async (event)
   const key = input.getAttribute("data-force-param");
   const value = parseFloat(input.value);
   if (isNaN(value)) return;
-  if (localRuntimeOnly) {
-    try {
-      if (!committedSnapshot) {
-        throw new Error("Force snapshot is not loaded");
-      }
-      const snapshot = window.LayoutEngine.updateForceSimulationParams(committedSnapshot, { [key]: value });
-      render(snapshot);
-      updateLocalRuntimeControls();
-      if (!running) startRunning();
-      setStatus(`${key} → ${value}`, "ok");
-    } catch (error) {
-      setStatus(error.message || "Param update failed", "error");
-    }
-    return;
-  }
   try {
-    const resp = await fetch(forceApiPath("params", `/api/force-params/${encodeURIComponent(FORCE_SLUG)}`), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [key]: value }),
-    });
-    if (!resp.ok) throw new Error(await resp.text());
-    const snapshot = await resp.json();
+    if (!committedSnapshot) {
+      throw new Error("Force snapshot is not loaded");
+    }
+    const updateForceSimulationParams = requireForceRuntimeMethod("updateForceSimulationParams");
+    const snapshot = updateForceSimulationParams(committedSnapshot, { [key]: value });
     render(snapshot);
     updateLocalRuntimeControls();
     if (!running) startRunning();

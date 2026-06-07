@@ -149,7 +149,7 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 
 - `export-frame-svg.mjs`, `emit-frame-diagram-json.mjs`, and sibling Node CLIs now auto-rebuild `packages/layout-engine/dist/` when TS source is newer than the requested dist artifact, so the active runtime no longer drifts behind source edits.
 - Added runtime regressions in `scripts/test_preview_frames_dir.py` proving the live DTO/export scripts strip retired line-level style fields rather than only the source-level unit tests doing so.
-- Force routes and the orphaned benchmark now fail explicitly: `preview_server.py` returns a clear backend-unavailable response for `/force` surfaces when `force_preview.py` is absent, and `benchmark_force.py` exits with migration guidance instead of a raw `ModuleNotFoundError` traceback.
+- Force preview is now TS-only end to end: the preview server no longer carries the deleted Python force backend path, and the force benchmark lives directly under `packages/layout-engine/scripts/benchmark-force.mjs`.
 
 ### Current delta — spec 005 WS5 closeout (2026-06-05)
 
@@ -168,8 +168,8 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 - `scripts/preview/force.js` now keeps a committed runtime-backed snapshot separate from temporary drag/resize preview clones, so runtime-backed actions no longer lose their simulation state.
 - Real geometry edits now resume the simulation correctly, including the unpin path: releasing a moved node forces an immediate local tick and then continues the run loop so the rest of the graph can react instead of staying frozen.
 - Focused regression coverage now locks the closeout: `scripts/test_preview_force_api.py` covers force demo discovery, `/force/view/<slug>` route availability, `/api/force-spec/<slug>`, and TS-local save persistence through an isolated `DG_FORCE_DEFINITIONS_DIR`; `packages/layout-engine/tests/force-runtime.test.ts` now covers snapped export plus reset-to-authored-state semantics.
-- `scripts/benchmark_force.py` now delegates to a real TypeScript runtime benchmark in `packages/layout-engine/scripts/benchmark-force.mjs` instead of pointing at the deleted Python solver path.
-- Focused validation is green: `python -m pytest scripts/test_preview_force_api.py -q`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`, and `python scripts/benchmark_force.py --ticks 5 --sizes 10` all pass after the closeout.
+- Force save now posts authored spec JSON only; the preview server no longer accepts the old runtime-snapshot compatibility payload with `simulation.params`.
+- Focused validation is green: `python -m pytest scripts/test_preview_force_api.py -q`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`, and `node packages/layout-engine/scripts/benchmark-force.mjs --ticks 5 --sizes 10` all pass after the closeout.
 - Browser validation confirms all three restored demos load on the TS runtime: `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle`.
 - Local force save now writes the current defaults and node state back to YAML, force style variants accept the shared `parent` / `section` / `annotation` vocabulary, and live stage/inspector interactions pause the running solver early enough to keep the Selection controls usable on the Juju demo.
 

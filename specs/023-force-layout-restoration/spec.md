@@ -12,7 +12,7 @@
 
 The repo still ships the force-layout UI shell (`scripts/preview/force.js`, `scripts/preview/force-viewer.html`) and preview-server route surface, but the force backend and tracked example specs were deleted. The result is a dead demo lane: `/force` is unavailable, force examples do not appear reliably in served picker/index surfaces, and the existing shell cannot be exercised or validated.
 
-The restoration must follow the repo's TS-first rule. Do not recreate `force_preview.py` or `force_layout.py`. The restored lane should use TypeScript for simulation and rendering ownership, restore the three tracked examples, and keep the BF-shell preview/editor behavior that previously worked.
+The restoration must follow the repo's TS-first rule. Do not recreate a Python force backend. The restored lane should use TypeScript for simulation and rendering ownership, restore the three tracked examples, and keep the BF-shell preview/editor behavior that previously worked.
 
 Historical JSON recovered from git history may be used as migration input, but it is not the intended final authored source of truth. Before this spec is complete, the restored force examples must move to a YAML-authored canonical format. JSON is transport/export only and must not become a second authored authority beside the canonical YAML.
 

@@ -15,7 +15,7 @@ Use a browser-owned TypeScript runtime for force simulation and state authority.
 
 - The next implementation step should move force-spec loading, simulation ticking, pin/unpin, parameter updates, and save/export state into a TS/browser module consumed by the force preview.
 - `preview_server.py` should shrink to static serving for YAML-backed force DTOs, reference images, and any thin save endpoint that remains necessary during migration.
-- `benchmark_force.py` becomes legacy and should be removed or replaced once the TS runtime exists.
+- The old force benchmark wrapper becomes legacy and should be removed or replaced once the TS runtime exists.
 
 ## Rejected alternative
 

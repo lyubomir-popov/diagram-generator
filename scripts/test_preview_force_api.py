@@ -1,4 +1,4 @@
-"""HTTP smoke tests for force preview discovery and TS-local save persistence."""
+"""HTTP smoke tests for force preview discovery and TS-owned save persistence."""
 
 from __future__ import annotations
 
@@ -173,7 +173,7 @@ def test_force_demo_routes_are_discoverable(preview_base: str):
         assert isinstance(spec.get("links"), list)
 
 
-def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
+def test_force_save_persists_authored_spec_to_yaml(tmp_path: pathlib.Path):
     force_dir = tmp_path / "force"
     force_dir.mkdir()
     slug = "force-save-probe"
@@ -236,7 +236,7 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
     base = f"http://127.0.0.1:{port}"
     try:
         _wait_for_server(base, process)
-        snapshot = {
+        authored_spec = {
             "title": "Save probe",
             "reference_image": "force/IMG_3229.jpg",
             "canvas": {"width": 960, "height": 640},
@@ -246,18 +246,16 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
                 "curve_handle_max": 64,
             },
             "simulation": {
-                "params": {
-                    "ticks_per_frame": 2,
-                    "max_iterations": 180,
-                    "charge_strength": -840,
-                    "link_distance": 200,
-                    "link_strength": 0.12,
-                    "collision_padding": 16,
-                    "collision_iterations": 2,
-                    "velocity_decay": 0.31,
-                    "alpha_min": 0.004,
-                    "center": [480, 320],
-                }
+                "ticks_per_frame": 2,
+                "max_iterations": 180,
+                "charge_strength": -840,
+                "link_distance": 200,
+                "link_strength": 0.12,
+                "collision_padding": 16,
+                "collision_iterations": 2,
+                "velocity_decay": 0.31,
+                "alpha_min": 0.004,
+                "center": [480, 320],
             },
             "nodes": [
                 {
@@ -269,7 +267,7 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
                     "y": 416,
                     "fx": 312,
                     "fy": 416,
-                    "style_override": "highlight",
+                    "style": "highlight",
                 }
             ],
             "links": [],
@@ -277,7 +275,7 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
 
         status, payload = _fetch_json(
             f"{base}/api/force-save/{slug}",
-            data=json.dumps(snapshot).encode("utf-8"),
+            data=json.dumps(authored_spec).encode("utf-8"),
         )
         assert status == 200
         assert payload["ok"] is True
@@ -293,8 +291,8 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
         assert saved_yaml["nodes"][0]["fy"] == 416
         assert saved_yaml["nodes"][0]["style"] == "highlight"
 
-        unpinned_snapshot = {
-            **snapshot,
+        unpinned_authored_spec = {
+            **authored_spec,
             "nodes": [
                 {
                     "id": "users",
@@ -303,14 +301,14 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
                     "height": 72,
                     "x": 312,
                     "y": 416,
-                    "style_override": "highlight",
+                    "style": "highlight",
                 }
             ],
         }
 
         status, payload = _fetch_json(
             f"{base}/api/force-save/{slug}",
-            data=json.dumps(unpinned_snapshot).encode("utf-8"),
+            data=json.dumps(unpinned_authored_spec).encode("utf-8"),
         )
         assert status == 200
         assert payload["ok"] is True
@@ -327,6 +325,27 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
         assert spec["nodes"][0]["x"] == 312
         assert spec["nodes"][0]["y"] == 416
         assert spec["nodes"][0]["style"] == "highlight"
+
+        runtime_snapshot = {
+            **authored_spec,
+            "simulation": {
+                "params": dict(authored_spec["simulation"]),
+            },
+        }
+        with pytest.raises(urllib.error.HTTPError) as exc_info:
+            urllib.request.urlopen(
+                urllib.request.Request(
+                    f"{base}/api/force-save/{slug}",
+                    data=json.dumps(runtime_snapshot).encode("utf-8"),
+                    headers={"Content-Type": "application/json"},
+                )
+            )
+        assert exc_info.value.code == 400
+
+        for route in ("force", "force-reset", "force-node", "force-tick", "force-params", "force-export"):
+            with pytest.raises(urllib.error.HTTPError) as exc_info:
+                urllib.request.urlopen(f"{base}/api/{route}/{slug}")
+            assert exc_info.value.code == 404
     finally:
         process.terminate()
         try:

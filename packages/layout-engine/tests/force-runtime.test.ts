@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyForceNodePatch,
   createInitialForceSnapshot,
+  exportForceAuthoredSpec,
   exportForceSnapshot,
   tickForceSimulation,
   type ForceAuthoredSpec,
@@ -513,6 +514,93 @@ describe('exportForceSnapshot', () => {
       y: 389,
       style: 'default',
       style_override: null,
+    });
+  });
+});
+
+describe('exportForceAuthoredSpec', () => {
+  it('exports the authored save shape from the TS runtime authority', () => {
+    const spec: ForceAuthoredSpec = {
+      title: 'Stakeholders',
+      reference_image: 'force/IMG_3229.jpg',
+      canvas: { width: 960, height: 640 },
+      render: {
+        curve_handle_ratio: 0.35,
+        curve_handle_min: 24,
+        curve_handle_max: 64,
+      },
+      simulation: {
+        ticks_per_frame: 1,
+        max_iterations: 220,
+        charge_strength: -900,
+        link_distance: 256,
+        link_strength: 0.08,
+        collision_padding: 24,
+        collision_iterations: 4,
+        velocity_decay: 0.34,
+        alpha_min: 0.006,
+        center: [480, 320],
+      },
+      nodes: [
+        {
+          id: 'users',
+          label: ['Users'],
+          width: 192,
+          height: 64,
+          x: 241,
+          y: 389,
+        },
+      ],
+      links: [],
+    };
+
+    const snapshot = createInitialForceSnapshot(spec);
+    const moved = applyForceNodePatch(snapshot, 'users', {
+      x: 313,
+      y: 418,
+      style: 'annotation',
+    });
+
+    expect(windowStructuredCloneSafe(exportForceAuthoredSpec(moved))).toMatchObject({
+      title: 'Stakeholders',
+      reference_image: 'force/IMG_3229.jpg',
+      render: {
+        curve_handle_ratio: 0.35,
+        curve_handle_min: 24,
+        curve_handle_max: 64,
+      },
+      simulation: {
+        ticks_per_frame: 1,
+        max_iterations: 220,
+        charge_strength: -900,
+        link_distance: 256,
+        link_strength: 0.08,
+        collision_padding: 24,
+        collision_iterations: 4,
+        velocity_decay: 0.34,
+        alpha_min: 0.006,
+        center: [480, 320],
+      },
+      nodes: [
+        {
+          id: 'users',
+          x: 313,
+          y: 418,
+          style: 'annotation',
+        },
+      ],
+      links: [],
+    });
+
+    expect(windowStructuredCloneSafe(exportForceAuthoredSpec(moved, { snap: true }))).toMatchObject({
+      nodes: [
+        {
+          id: 'users',
+          x: 312,
+          y: 416,
+          style: 'annotation',
+        },
+      ],
     });
   });
 });

@@ -120,6 +120,7 @@ export {
 export {
   applyForceNodePatch,
   createInitialForceSnapshot,
+  exportForceAuthoredSpec,
   exportForceSnapshot,
   tickForceSimulation,
   updateForceSimulationParams,

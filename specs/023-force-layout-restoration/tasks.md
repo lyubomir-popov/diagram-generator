@@ -4,7 +4,7 @@
 
 **Prerequisites**: spec.md, plan.md
 
-**Engine rule**: All new simulation and runtime work is TypeScript-first. Do not recreate `force_preview.py` or `force_layout.py`.
+**Engine rule**: All new simulation and runtime work is TypeScript-first. Do not recreate a Python force backend.
 
 ## Phase 1: Contract and example restoration
 
@@ -20,7 +20,7 @@
 - [x] T010 Decide and document the TS runtime boundary (browser-owned vs thin TS-backed routes)
 - [x] T011 Implement the TS force solver/runtime entrypoint
 - [x] T012 Replace deleted-Python dependencies in the force preview path without reintroducing Python force authority
-- [x] T013 Remove or rewrite orphaned `benchmark_force.py` usage against the TS runtime
+- [x] T013 Remove or rewrite the orphaned force benchmark path against the TS runtime
 
 ## Phase 3: Interactive editor parity
 

@@ -32,7 +32,8 @@ describe('preview-engine registry', () => {
     expect(FORCE_PREVIEW_PARAM_SPECS.some((spec) => spec.key === 'link_distance')).toBe(true);
     expect(FORCE_PREVIEW_ENGINE.controlSpecs).toEqual(FORCE_PREVIEW_PARAM_SPECS);
     expect(FORCE_PREVIEW_ENGINE.apiRoutes?.save).toBe('/api/force-save/{slug}');
-    expect(FORCE_PREVIEW_ENGINE.apiRoutes?.params).toBe('/api/force-params/{slug}');
+    expect(FORCE_PREVIEW_ENGINE.apiRoutes?.spec).toBe('/api/force-spec/{slug}');
+    expect(FORCE_PREVIEW_ENGINE.apiRoutes?.params).toBeUndefined();
   });
 
   it('resolves engines by layoutEngine key or shell mode', () => {

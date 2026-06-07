@@ -10,30 +10,29 @@
 
 The **v3 autolayout path matches the intended architecture**: frame YAML is canonical, preview/layout/SVG run through TypeScript (`packages/layout-engine/`), interactive relayout is client-side, and saves flatten back into YAML. JSON sidecars and `localStorage` are not diagram authorities.
 
-The repo is mid-migration: ~4,500 lines of Python layout oracle remain for parity, dual YAML parsers exist, and docs/skills still reference stale pipelines. Architecture is **directionally solid** (spec-kit, TS-first mandate) but carries **three eras** — current v3, Python oracle + draw.io, and a **broken force-layout lane**.
+The repo is mid-migration: ~4,500 lines of Python layout oracle remain for parity, dual YAML parsers exist, and docs/skills still reference stale pipelines. Architecture is **directionally solid** (spec-kit, TS-first mandate) but carries **three eras** — current v3, Python oracle + draw.io, and an older force-layout migration that has since been resolved under the TS runtime.
 
-**Single biggest gap:** the force-layout editor is non-functional. Backend modules (`force_preview.py`, `force_layout.py`) and the tracked example specs are gone; the client shell (`force.js`, `force-viewer.html`) remains, and the preview server still carries the old force routes without a working backend. **This must be rebuilt in TypeScript**, not Python.
+**Single biggest gap at audit time:** the force-layout editor was non-functional. The deleted Python backend and tracked example specs were gone while the client shell remained. That gap has since been closed with a TypeScript-owned force lane.
 
 ---
 
 ## Priority: restore force layout (TypeScript)
 
-> **Action required.** The force-layout lane was a working demo surface with pinned nodes, simulation controls, Save/Reset persistence, and JSON + SVG export. It is now entirely broken and must be reimplemented following the repo's TS-first rule.
+> **Historical note.** At audit time the force-layout lane was broken. It has since been reimplemented following the repo's TS-first rule.
 
-### Current state (broken)
+### Current state at audit time (superseded)
 
 | Component | Status |
 |-----------|--------|
 | `scripts/preview/force.js` (~1,207 lines) | **Present** — client UI, simulation controls, pin/drag, export hooks |
 | `scripts/preview/force-viewer.html` | **Present** — BF-shell viewer template |
-| `scripts/preview_server.py` force routes | **Present but unavailable** — legacy routes remain, but no working `force_preview` backend exists |
-| `scripts/force_preview.py` | **Deleted** — was server-side state wrapper |
-| `scripts/force_layout.py` | **Deleted** — was Python force solver |
-| `scripts/benchmark_force.py` | **Orphaned** — still imports `force_layout` |
+| `scripts/preview_server.py` force routes | **Present but unavailable** — legacy routes remained, but no working backend existed |
+| Deleted Python force backend | **Gone** — server-side state wrapper and solver had been removed |
+| TS force benchmark | **Needed** — package-level benchmark was not yet the sole entrypoint |
 | `scripts/diagrams/force/*.json` | **Deleted** — example specs no longer in repo |
 | `diagrams/1.input/force/` reference images | **Present** — `IMG_3229.jpg`, `IMG_3231.jpg`, `IMG_3232.jpg` still exist |
 
-`preview_server.py` still imports cleanly because the `force_preview` dependency is loaded lazily. In practice the force lane is unavailable on demand: force example discovery returns `[]`, the root index omits the force section, and direct force endpoints need either explicit unavailability handling or a restored backend.
+At audit time the force lane was unavailable on demand: force example discovery returned `[]`, the root index omitted the force section, and direct force endpoints needed either explicit unavailability handling or a restored backend.
 
 ### Examples we had (must surface again)
 
@@ -50,14 +49,14 @@ Each had a JSON spec under `scripts/diagrams/force/<slug>.json` (nodes, links, s
 **Previously working behaviour** (to restore):
 
 - `/force/view/<slug>` in the BF preview shell with shared prev/next nav
-- Drag-to-pin manual placement; server-backed pin/style updates
-- Simulation tick API; Reset reloads solver around pinned state
+- Drag-to-pin manual placement; TS-backed pin/style updates
+- Simulation tick API; Reset reloads the TS runtime around pinned state
 - Save persists across server restarts; JSON + SVG export
 - 8-handle resize on selected nodes (48px minimum), snapped to 8px grid
 
 ### Required direction: TypeScript, not Python
 
-Per `.github/copilot-instructions.md`, **all new layout and simulation work is TypeScript**. Do not resurrect `force_preview.py` or `force_layout.py`.
+Per `.github/copilot-instructions.md`, **all new layout and simulation work is TypeScript**. Do not reintroduce a Python force backend.
 
 Recommended restoration shape:
 
@@ -65,7 +64,7 @@ Recommended restoration shape:
 2. **TS force solver** — port the simulation to `packages/layout-engine/` or a sibling `packages/force-engine/` module (d3-force-style forces: center, collide-rect, link, many-body). Run in browser for interactive tick; optional Node batch for export.
 3. **Wire `force.js`** — replace `/api/force/*` Python round-trips with either client-side-only simulation or thin TS subprocess endpoints (same pattern as `preview_ts_layout.py`).
 4. **Restore the three examples** — reconstruct `force-stakeholders`, `force-juju-landing-pages`, and `force-support-case-lifecycle` from archive history and any remaining git history; wire them back to the existing reference images in `diagrams/1.input/force/`.
-5. **Preview server cleanup** — remove dead `import force_preview` paths or replace with TS-backed handlers; delete `benchmark_force.py` or rewrite against TS solver.
+5. **Preview server cleanup** — remove dead force-backend paths and keep the benchmark directly on the TS solver.
 6. **Index surfacing** — force demos should appear on `/` and in the diagram picker alongside v3 autolayout slugs.
 
 **Tier:** `[H]` — architectural decision (spec format, package boundary) plus example reconstruction.
@@ -94,10 +93,10 @@ flowchart LR
     PyLoad["frame_loader.py"]
     PyLayout["layout_v3.py + diagram_layout.py"]
   end
-  subgraph broken_force
+  subgraph force_ts_migration
     ForceJS["force.js"]
-    ForceAPI["preview_server.py /api/force/*"]
-    Missing["force_preview.py — GONE"]
+    ForceAPI["preview_server.py /api/force-spec + /api/force-save"]
+    ForceTS["packages/layout-engine force runtime"]
   end
 
   YAML --> Loader
@@ -107,7 +106,8 @@ flowchart LR
   Bridge -->|save POST| Persist --> YAML
   PyLoad --> PyLayout
   PyLayout -.->|parity tests only| Layout
-  ForceJS --> ForceAPI --> Missing
+  ForceJS --> ForceTS
+  ForceJS -->|save/load| ForceAPI
 ```
 
 ### What works as designed (v3)

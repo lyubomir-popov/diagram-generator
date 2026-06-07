@@ -25,7 +25,7 @@ Chosen boundary: browser-owned TypeScript runtime, documented in `research.md`.
    - TS owns simulation state, ticking, and exportable graph state.
 2. Port the force solver behavior into TypeScript.
    - center, collide, link, many-body, pinned nodes, boundary clamping
-3. Remove reliance on `force_preview.py` / `force_layout.py` while preserving the existing preview routes or replacing them with TS-backed equivalents.
+3. Remove reliance on the deleted Python force backend while preserving the existing preview routes or replacing them with TS-backed equivalents.
 
 ### Phase 3 - Restore interactive editing parity (P1)
 

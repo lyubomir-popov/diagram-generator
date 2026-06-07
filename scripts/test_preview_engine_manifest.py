@@ -45,7 +45,8 @@ def test_preview_engine_manifest_json_exists_and_lists_hostable_preview_lanes():
     assert force["shellMode"] == "force"
     assert force["capabilities"]["simulationControls"] is True
     assert force["apiRoutes"]["save"] == "/api/force-save/{slug}"
-    assert force["apiRoutes"]["params"] == "/api/force-params/{slug}"
+    assert force["apiRoutes"]["spec"] == "/api/force-spec/{slug}"
+    assert "params" not in force["apiRoutes"]
     assert force["compatibility"]["documentKinds"] == ["force-spec"]
 
     sequence = payload[2]

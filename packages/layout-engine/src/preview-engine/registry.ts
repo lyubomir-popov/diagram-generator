@@ -49,10 +49,6 @@ export const FORCE_PREVIEW_ENGINE: PreviewEngineManifest = {
   apiRoutes: {
     save: '/api/force-save/{slug}',
     spec: '/api/force-spec/{slug}',
-    params: '/api/force-params/{slug}',
-    tick: '/api/force-tick/{slug}',
-    reset: '/api/force-reset/{slug}',
-    export: '/api/force-export/{slug}',
   },
   compatibility: {
     documentKinds: ['force-spec'],

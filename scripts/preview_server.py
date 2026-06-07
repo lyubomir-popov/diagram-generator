@@ -19,7 +19,6 @@ import argparse
 import http.server
 import importlib
 import json
-import math
 import os
 import pathlib
 import subprocess
@@ -68,7 +67,6 @@ WATCH_PATHS = [
 _rebuild_generation = 0
 _rebuild_lock = threading.Lock()
 _last_rebuild_error: str | None = None
-_force_sessions: dict[str, object] = {}
 
 
 def _ts_layout_disabled() -> bool:
@@ -204,8 +202,7 @@ def _is_safe_slug(slug: str) -> bool:
 
 
 def _rebuild(grid: bool = False) -> bool:
-    global _last_rebuild_error, _force_sessions
-    _force_sessions.clear()
+    global _last_rebuild_error
     try:
         # Clear pool caches so the next request re-runs Node with fresh YAML/dist.
         # Do NOT importlib.reload() here — the pools spawn fresh Node subprocesses
@@ -364,19 +361,6 @@ _REFERENCE_MAP: dict[str, str] = {
 }
 
 
-def _load_force_preview_module():
-    try:
-        import force_preview
-
-        return force_preview
-    except Exception:
-        return None
-
-
-def _force_backend_unavailable_message() -> str:
-    return "Force layout backend is not available in this checkout. Restore the TypeScript force lane before using /force."
-
-
 def _load_force_spec_from_disk(slug: str) -> dict | None:
     if not _is_safe_slug(slug):
         return None
@@ -390,122 +374,11 @@ def _load_force_spec_from_disk(slug: str) -> dict | None:
         return None
 
 
-def _force_style_for_yaml(node: dict) -> str | None:
-    style = node.get("style_override")
-    if style is None:
-        style = node.get("style")
-    if style == "accent":
-        return "parent"
-    if style in {"parent", "section", "annotation", "highlight"}:
-        return str(style)
-    return None
-
-
-def _force_snapshot_to_authored_spec(snapshot: dict) -> dict:
-    simulation = snapshot.get("simulation", {})
-    if isinstance(simulation, dict) and isinstance(simulation.get("params"), dict):
-        simulation_params = simulation.get("params", {})
-    elif isinstance(simulation, dict):
-        simulation_params = simulation
-    else:
-        simulation_params = {}
-    render = snapshot.get("render", {})
-
-    spec: dict[str, object] = {
-        "title": snapshot.get("title"),
-        "reference_image": snapshot.get("reference_image"),
-        "canvas": {
-            "width": snapshot.get("canvas", {}).get("width"),
-            "height": snapshot.get("canvas", {}).get("height"),
-        },
-        "render": {
-            key: render[key]
-            for key in ("curve_handle_ratio", "curve_handle_min", "curve_handle_max")
-            if render.get(key) is not None
-        },
-        "simulation": {
-            key: simulation_params[key]
-            for key in (
-                "alpha",
-                "alpha_min",
-                "alpha_decay",
-                "alpha_target",
-                "ticks_per_frame",
-                "max_iterations",
-                "charge_strength",
-                "link_distance",
-                "link_strength",
-                "link_iterations",
-                "collision_padding",
-                "collision_iterations",
-                "velocity_decay",
-                "center",
-            )
-            if simulation_params.get(key) is not None
-        },
-        "nodes": [],
-        "links": [],
-    }
-
-    nodes: list[dict[str, object]] = []
-    for node in snapshot.get("nodes", []):
-        if not isinstance(node, dict):
-            continue
-        entry: dict[str, object] = {
-            "id": node.get("id"),
-            "label": node.get("label") or [node.get("id")],
-            "width": node.get("width"),
-            "height": node.get("height"),
-            "x": node.get("x"),
-            "y": node.get("y"),
-        }
-        if node.get("fx") is not None:
-            entry["fx"] = node.get("fx")
-        if node.get("fy") is not None:
-            entry["fy"] = node.get("fy")
-        style = _force_style_for_yaml(node)
-        if style is not None:
-            entry["style"] = style
-        elif node.get("fill") not in (None, "#FFFFFF"):
-            entry["fill"] = node.get("fill")
-            if node.get("text_fill") is not None:
-                entry["text_fill"] = node.get("text_fill")
-        if node.get("stroke") not in (None, "#000000", "none"):
-            entry["stroke"] = node.get("stroke")
-        if node.get("stroke_width") not in (None, 0, 1):
-            entry["stroke_width"] = node.get("stroke_width")
-        if node.get("shape") is not None:
-            entry["shape"] = node.get("shape")
-        nodes.append(entry)
-    spec["nodes"] = nodes
-
-    links: list[dict[str, object]] = []
-    for link in snapshot.get("links", []):
-        if not isinstance(link, dict):
-            continue
-        entry: dict[str, object] = {
-            "source": link.get("source"),
-            "target": link.get("target"),
-        }
-        if link.get("stroke") is not None:
-            entry["stroke"] = link.get("stroke")
-        if link.get("stroke_width") is not None:
-            entry["stroke_width"] = link.get("stroke_width")
-        if isinstance(link.get("render"), dict) and link.get("render"):
-            entry["render"] = link.get("render")
-        links.append(entry)
-    spec["links"] = links
-
-    return spec
-
-
-def _save_force_snapshot_to_yaml(slug: str, snapshot: dict) -> None:
+def _save_force_authored_spec_to_yaml(slug: str, authored_spec: dict) -> None:
     spec_path = FORCE_DEFINITIONS_DIR / f"{slug}.yaml"
     if not spec_path.exists():
         raise FileNotFoundError(f"Unknown force example: {slug}")
-    authored = _force_snapshot_to_authored_spec(snapshot)
-    spec_path.write_text(yaml.safe_dump(authored, sort_keys=False, allow_unicode=True), encoding="utf-8")
-    _force_sessions.pop(slug, None)
+    spec_path.write_text(yaml.safe_dump(authored_spec, sort_keys=False, allow_unicode=True), encoding="utf-8")
 
 
 def _list_force_examples() -> list[str]:
@@ -561,49 +434,6 @@ def _build_browse_nav(current_path: str) -> str:
     return "".join(sections)
 
 
-def _get_force_state(slug: str, *, reset: bool = False):
-    global _force_sessions
-    force_preview = _load_force_preview_module()
-    if force_preview is None:
-        raise RuntimeError(_force_backend_unavailable_message())
-
-    if reset and slug in _force_sessions:
-        _force_sessions[slug] = force_preview.reset_force_state(_force_sessions[slug])
-    elif reset or slug not in _force_sessions:
-        _force_sessions[slug] = force_preview.create_force_state(slug)
-    return _force_sessions[slug]
-
-
-def _get_force_snapshot(slug: str, *, reset: bool = False, snap: bool = False) -> dict | None:
-    force_preview = _load_force_preview_module()
-    if force_preview is None:
-        return None
-    try:
-        state = _get_force_state(slug, reset=reset)
-        if snap:
-            return force_preview.export_force_snapshot(state)
-        return force_preview.get_force_snapshot(state)
-    except Exception:
-        import traceback
-
-        traceback.print_exc()
-        return None
-
-
-def _tick_force_snapshot(slug: str, iterations: int | None = None) -> dict | None:
-    force_preview = _load_force_preview_module()
-    if force_preview is None:
-        return None
-    try:
-        state = _get_force_state(slug)
-        return force_preview.tick_force_state(state, iterations=iterations)
-    except Exception:
-        import traceback
-
-        traceback.print_exc()
-        return None
-
-
 def _find_reference_image(slug: str) -> pathlib.Path | None:
     """Find the rough input sketch or corpus source PNG for a diagram slug."""
     corpus = _CORPUS_REF_DIR / f"{slug}-source.png"
@@ -614,15 +444,6 @@ def _find_reference_image(slug: str) -> pathlib.Path | None:
         spec = _load_force_spec_from_disk(slug)
         if spec is not None:
             filename = spec.get("reference_image")
-    if not filename:
-        force_preview = _load_force_preview_module()
-        if force_preview is not None:
-            try:
-                if slug in force_preview.list_force_examples():
-                    spec = force_preview.load_force_spec(slug)
-                    filename = spec.get("reference_image")
-            except Exception:
-                filename = None
     if not filename:
         return None
     for d in _INPUT_DIRS:
@@ -1071,12 +892,8 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self._serve_force_viewer(path[12:])
         elif path.startswith("/view/"):
             self._serve_viewer(path[6:])
-        elif path.startswith("/api/force-export/"):
-            self._serve_force_export(path[18:])
         elif path.startswith("/api/force-spec/"):
             self._serve_force_spec(path[16:])
-        elif path.startswith("/api/force/"):
-            self._serve_force_get(path[11:])
         elif path.startswith("/api/tree/"):
             self._serve_tree(path[10:])
         elif path.startswith("/api/preview-document/"):
@@ -1102,24 +919,10 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         path = urlparse(self.path).path.rstrip("/")
         if path.startswith("/api/overrides/"):
             self._serve_overrides_post(path[15:])
-        elif path.startswith("/api/force-reset/"):
-            self._serve_force_reset(path[17:])
         elif path.startswith("/api/force-save/"):
             self._serve_force_save(path[16:])
-        elif path.startswith("/api/force-node/"):
-            self._serve_force_node_update(path[16:])
-        elif path.startswith("/api/force-tick/"):
-            self._serve_force_tick(path[16:])
-        elif path.startswith("/api/force-params/"):
-            self._serve_force_params(path[18:])
         else:
             self.send_error(404)
-
-    def _ensure_force_backend(self) -> bool:
-        if _load_force_preview_module() is None:
-            self.send_error(501, _force_backend_unavailable_message())
-            return False
-        return True
 
     def _serve_index(self):
         slugs = _list_diagrams()
@@ -1491,21 +1294,6 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         }
         self._respond(200, "application/json", json.dumps(payload).encode())
 
-    def _serve_force_get(self, slug: str):
-        if not self._ensure_force_backend():
-            return
-        if not _is_safe_slug(slug):
-            self.send_error(400, "Invalid slug")
-            return
-        if slug not in _list_force_examples():
-            self.send_error(404, f"Unknown force example: {slug}")
-            return
-        result = _get_force_snapshot(slug)
-        if result is None:
-            self.send_error(500, "Force preview failed")
-            return
-        self._respond(200, "application/json", json.dumps(result).encode())
-
     def _serve_force_spec(self, slug: str):
         if not _is_safe_slug(slug):
             self.send_error(400, "Invalid slug")
@@ -1515,140 +1303,6 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404, f"Unknown force example: {slug}")
             return
         self._respond(200, "application/json", json.dumps(spec).encode())
-
-    def _serve_force_reset(self, slug: str):
-        if not self._ensure_force_backend():
-            return
-        if not _is_safe_slug(slug):
-            self.send_error(400, "Invalid slug")
-            return
-        if slug not in _list_force_examples():
-            self.send_error(404, f"Unknown force example: {slug}")
-            return
-        result = _get_force_snapshot(slug, reset=True)
-        if result is None:
-            self.send_error(500, "Force reset failed")
-            return
-        self._respond(200, "application/json", json.dumps(result).encode())
-
-    def _serve_force_tick(self, slug: str):
-        if not self._ensure_force_backend():
-            return
-        if not _is_safe_slug(slug):
-            self.send_error(400, "Invalid slug")
-            return
-        if slug not in _list_force_examples():
-            self.send_error(404, f"Unknown force example: {slug}")
-            return
-        content_length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(content_length) if content_length else b"{}"
-        try:
-            params = json.loads(body)
-        except json.JSONDecodeError:
-            self.send_error(400, "Invalid JSON")
-            return
-        iterations = params.get("iterations")
-        if iterations is not None:
-            iterations = int(iterations)
-        result = _tick_force_snapshot(slug, iterations=iterations)
-        if result is None:
-            self.send_error(500, "Force tick failed")
-            return
-        self._respond(200, "application/json", json.dumps(result).encode())
-
-    def _serve_force_node_update(self, slug: str):
-        if not self._ensure_force_backend():
-            return
-        if not _is_safe_slug(slug):
-            self.send_error(400, "Invalid slug")
-            return
-        if slug not in _list_force_examples():
-            self.send_error(404, f"Unknown force example: {slug}")
-            return
-
-        content_length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(content_length) if content_length else b"{}"
-        try:
-            params = json.loads(body)
-        except json.JSONDecodeError:
-            self.send_error(400, "Invalid JSON")
-            return
-
-        node_id = params.get("node_id")
-        if not isinstance(node_id, str) or not _is_safe_slug(node_id):
-            self.send_error(400, "Invalid node_id")
-            return
-
-        try:
-            x = None if "x" not in params or params.get("x") is None else float(params.get("x"))
-            y = None if "y" not in params or params.get("y") is None else float(params.get("y"))
-        except (TypeError, ValueError):
-            self.send_error(400, "Invalid node position")
-            return
-
-        try:
-            w = None if "width" not in params or params.get("width") is None else float(params.get("width"))
-            h = None if "height" not in params or params.get("height") is None else float(params.get("height"))
-        except (TypeError, ValueError):
-            self.send_error(400, "Invalid node dimensions")
-            return
-
-        if x is not None and not math.isfinite(x):
-            self.send_error(400, "Invalid x position")
-            return
-        if y is not None and not math.isfinite(y):
-            self.send_error(400, "Invalid y position")
-            return
-        if w is not None and (not math.isfinite(w) or w <= 0):
-            self.send_error(400, "Invalid width")
-            return
-        if h is not None and (not math.isfinite(h) or h <= 0):
-            self.send_error(400, "Invalid height")
-            return
-
-        # Validate label if provided
-        _LABEL_UNSET = object()
-        label_val = _LABEL_UNSET
-        if "label" in params:
-            raw_label = params["label"]
-            if raw_label is None or raw_label == []:
-                label_val = None
-            elif isinstance(raw_label, list) and all(isinstance(ln, str) for ln in raw_label) and len(raw_label) <= 20:
-                label_val = raw_label
-            else:
-                self.send_error(400, "Invalid label: must be a list of strings (max 20)")
-                return
-
-        try:
-            force_preview = _load_force_preview_module()
-            if force_preview is None:
-                raise RuntimeError(_force_backend_unavailable_message())
-            state = _get_force_state(slug)
-            result = force_preview.update_force_node(
-                state,
-                node_id,
-                pinned=(bool(params["pinned"]) if "pinned" in params else None),
-                x=x,
-                y=y,
-                width=w,
-                height=h,
-                style=(params["style"] if "style" in params else force_preview.STYLE_UNSET),
-                label=(label_val if label_val is not _LABEL_UNSET else force_preview.STYLE_UNSET),
-            )
-        except KeyError:
-            self.send_error(404, f"Unknown force node: {node_id}")
-            return
-        except ValueError as exc:
-            self.send_error(400, str(exc))
-            return
-        except Exception:
-            import traceback
-
-            traceback.print_exc()
-            self.send_error(500, "Force node update failed")
-            return
-
-        self._respond(200, "application/json", json.dumps(result).encode())
 
     def _serve_force_save(self, slug: str):
         if not _is_safe_slug(slug):
@@ -1668,7 +1322,11 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
 
         if isinstance(params, dict) and isinstance(params.get("nodes"), list) and isinstance(params.get("links"), list):
             try:
-                _save_force_snapshot_to_yaml(slug, params)
+                simulation = params.get("simulation")
+                if isinstance(simulation, dict) and isinstance(simulation.get("params"), dict):
+                    self.send_error(400, "Expected authored force spec JSON payload, not runtime snapshot state")
+                    return
+                _save_force_authored_spec_to_yaml(slug, params)
                 payload = {
                     "ok": True,
                     "canonicalState": _canonical_force_saved_state(slug),
@@ -1681,75 +1339,7 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
                 return
             self._respond(200, "application/json", json.dumps(payload).encode())
             return
-
-        if not self._ensure_force_backend():
-            return
-
-        try:
-            force_preview = _load_force_preview_module()
-            if force_preview is None:
-                raise RuntimeError(_force_backend_unavailable_message())
-            state = _get_force_state(slug)
-            force_preview.save_force_overrides(state)
-            payload = {
-                "ok": True,
-                "canonicalState": _canonical_force_saved_state(slug),
-            }
-        except Exception:
-            import traceback
-
-            traceback.print_exc()
-            self.send_error(500, "Force save failed")
-            return
-
-        self._respond(200, "application/json", json.dumps(payload).encode())
-
-    def _serve_force_params(self, slug: str):
-        if not self._ensure_force_backend():
-            return
-        if not _is_safe_slug(slug):
-            self.send_error(400, "Invalid slug")
-            return
-        if slug not in _list_force_examples():
-            self.send_error(404, f"Unknown force example: {slug}")
-            return
-
-        content_length = int(self.headers.get("Content-Length", 0))
-        body = self.rfile.read(content_length) if content_length else b"{}"
-        try:
-            params = json.loads(body)
-        except json.JSONDecodeError:
-            self.send_error(400, "Invalid JSON")
-            return
-
-        try:
-            force_preview = _load_force_preview_module()
-            if force_preview is None:
-                raise RuntimeError(_force_backend_unavailable_message())
-            state = _get_force_state(slug)
-            result = force_preview.update_simulation_params(state, params)
-        except Exception:
-            import traceback
-            traceback.print_exc()
-            self.send_error(500, "Force params update failed")
-            return
-
-        self._respond(200, "application/json", json.dumps(result).encode())
-
-    def _serve_force_export(self, slug: str):
-        if not self._ensure_force_backend():
-            return
-        if not _is_safe_slug(slug):
-            self.send_error(400, "Invalid slug")
-            return
-        if slug not in _list_force_examples():
-            self.send_error(404, f"Unknown force example: {slug}")
-            return
-        result = _get_force_snapshot(slug, snap=True)
-        if result is None:
-            self.send_error(500, "Force export failed")
-            return
-        self._respond(200, "application/json", json.dumps(result).encode())
+        self.send_error(400, "Expected authored force spec JSON payload")
 
     def _serve_sse(self):
         self.send_response(200)

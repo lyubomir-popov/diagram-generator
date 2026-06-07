@@ -73,7 +73,7 @@ Completed work belongs here so `TODO.md` stays lean.
 - Mainline ELK save/persistence is now authoritative: the preview rehydrates from canonical persisted server state, `frame_yaml_persistence.py` preserves unrelated `meta.elk` keys, and ELK control metadata no longer lives in duplicate Python/browser tables.
 - Added `/api/runtime-identity` so preview sessions report repo root, branch, frames dir, PID, and port for multi-worktree diagnosis.
 - Reconciled the composer ELK worktree selectively instead of merging stale preview/runtime code backwards: retained the useful QA/contract additions on `main` via `scripts/test_elk_preview_qa.py`, `scripts/test_preview_shell_bf_contract.py`, and `scripts/preview_html_allowlist.txt`.
-- Validation: `npm --prefix packages/layout-engine run build:browser`, `python -m pytest scripts/test_preview_elk_layout_save.py scripts/test_frame_yaml_persistence.py scripts/test_elk_preview_qa.py scripts/test_preview_shell_bf_contract.py -q`, `python -m pytest scripts/test_preview_force_api.py -q`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`, `python scripts/benchmark_force.py --ticks 5 --sizes 10`.
+- Validation: `npm --prefix packages/layout-engine run build:browser`, `python -m pytest scripts/test_preview_elk_layout_save.py scripts/test_frame_yaml_persistence.py scripts/test_elk_preview_qa.py scripts/test_preview_shell_bf_contract.py -q`, `python -m pytest scripts/test_preview_force_api.py -q`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`, `node packages/layout-engine/scripts/benchmark-force.mjs --ticks 5 --sizes 10`.
 
 ### 2026-06-05 – Spec 022 compiler scaffold
 
@@ -87,8 +87,8 @@ Completed work belongs here so `TODO.md` stays lean.
 - Added focused force smoke coverage in `scripts/test_preview_force_api.py` for preview-index discovery, `/force` and `/force/view/<slug>` availability, `/api/force-spec/<slug>`, and TS-local save persistence into YAML.
 - Added `DG_FORCE_DEFINITIONS_DIR` override support in `preview_server.py` so force preview discovery and save tests can run against isolated temporary force-spec directories instead of mutating the canonical demos.
 - Extended `packages/layout-engine/tests/force-runtime.test.ts` with export snapping plus reset-to-authored-state coverage, locking the TS-local export/reset contract behind a focused unit test.
-- Replaced the stale Python-era `benchmark_force.py` path with a real TypeScript runtime benchmark via `packages/layout-engine/scripts/benchmark-force.mjs`, while keeping `python scripts/benchmark_force.py` as the user-facing entrypoint.
-- Validation: `python -m pytest scripts/test_preview_force_api.py -q`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`, `python scripts/benchmark_force.py --ticks 5 --sizes 10`.
+- Replaced the stale Python-era benchmark path with a direct TypeScript runtime benchmark at `packages/layout-engine/scripts/benchmark-force.mjs`.
+- Validation: `python -m pytest scripts/test_preview_force_api.py -q`, `npm --prefix packages/layout-engine test -- tests/force-runtime.test.ts`, `node packages/layout-engine/scripts/benchmark-force.mjs --ticks 5 --sizes 10`.
 
 ### 2026-06-05 – Spec 023 force follow-up: save persistence + stable live controls
 
