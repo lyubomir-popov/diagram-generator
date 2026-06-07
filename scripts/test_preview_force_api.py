@@ -235,7 +235,9 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
             data=json.dumps(snapshot).encode("utf-8"),
         )
         assert status == 200
-        assert payload == {"ok": True}
+        assert payload["ok"] is True
+        assert payload["canonicalState"]["slug"] == slug
+        assert payload["canonicalState"]["authoredSpec"]["simulation"]["ticks_per_frame"] == 2
 
         saved_yaml = yaml.safe_load(force_path.read_text(encoding="utf-8"))
         assert saved_yaml["simulation"]["ticks_per_frame"] == 2
@@ -266,7 +268,8 @@ def test_force_save_persists_ts_snapshot_to_yaml(tmp_path: pathlib.Path):
             data=json.dumps(unpinned_snapshot).encode("utf-8"),
         )
         assert status == 200
-        assert payload == {"ok": True}
+        assert payload["ok"] is True
+        assert payload["canonicalState"]["authoredSpec"]["nodes"][0]["style"] == "highlight"
 
         saved_yaml = yaml.safe_load(force_path.read_text(encoding="utf-8"))
         assert "fx" not in saved_yaml["nodes"][0]

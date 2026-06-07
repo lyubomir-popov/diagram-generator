@@ -6,6 +6,7 @@
  */
 
 export type PreviewShellMode = 'grid' | 'force';
+export type PreviewDocumentKind = 'frame-diagram' | 'sequence' | 'force-spec';
 
 export type PreviewControlKind = 'number' | 'enum' | 'boolean' | 'text';
 
@@ -45,6 +46,16 @@ export interface PreviewEngineApiRoutes {
   export?: string;
 }
 
+export interface PreviewEngineCompatibility {
+  /** Authored/compiled document kinds this engine can host. */
+  documentKinds: ReadonlyArray<PreviewDocumentKind>;
+  /**
+   * Required `meta.layout_engine` key when this engine is selected from a
+   * frame-YAML-backed preview lane.
+   */
+  requiredLayoutEngineKey?: string;
+}
+
 /** Serializable manifest consumed by the preview shell and preview server. */
 export interface PreviewEngineManifest {
   id: string;
@@ -57,9 +68,11 @@ export interface PreviewEngineManifest {
   /** Relative paths under `/preview/` loaded for this engine lane. */
   scripts: string[];
   apiRoutes?: PreviewEngineApiRoutes;
+  compatibility: PreviewEngineCompatibility;
 }
 
 export interface PreviewEngineContext {
   layoutEngine?: string | null;
   shellMode?: PreviewShellMode | null;
+  previewDocumentKind?: PreviewDocumentKind | null;
 }

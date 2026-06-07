@@ -38,6 +38,11 @@ def test_layout_bridge_exports_runtime_surface():
         assert symbol in text, f"missing runtime symbol: {symbol}"
 
 
+def test_layout_bridge_does_not_persist_shell_state_in_local_storage():
+    text = (PREVIEW / "layout-bridge.js").read_text(encoding="utf-8")
+    assert "localStorage" not in text
+
+
 def test_shell_modules_do_not_reimplement_layout_bridge():
     save_client = (PREVIEW / "save-client.js").read_text(encoding="utf-8")
     editor_state = (PREVIEW / "editor-state.js").read_text(encoding="utf-8")

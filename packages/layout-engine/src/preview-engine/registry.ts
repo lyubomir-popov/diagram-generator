@@ -23,6 +23,10 @@ export const ELK_LAYERED_PREVIEW_ENGINE: PreviewEngineManifest = {
   },
   controlSpecs: elkLayeredPreviewControlSpecs(),
   scripts: ['elk-layout-controls.js', 'elk-controller.js'],
+  compatibility: {
+    documentKinds: ['frame-diagram'],
+    requiredLayoutEngineKey: 'elk-layered',
+  },
 };
 
 export const FORCE_PREVIEW_ENGINE: PreviewEngineManifest = {
@@ -50,6 +54,9 @@ export const FORCE_PREVIEW_ENGINE: PreviewEngineManifest = {
     reset: '/api/force-reset/{slug}',
     export: '/api/force-export/{slug}',
   },
+  compatibility: {
+    documentKinds: ['force-spec'],
+  },
 };
 
 export const SEQUENCE_PREVIEW_ENGINE: PreviewEngineManifest = {
@@ -70,6 +77,10 @@ export const SEQUENCE_PREVIEW_ENGINE: PreviewEngineManifest = {
   },
   controlSpecs: [],
   scripts: [],
+  compatibility: {
+    documentKinds: ['sequence'],
+    requiredLayoutEngineKey: 'sequence',
+  },
 };
 
 /** Registered preview engines — extend here when onboarding new packages. */
@@ -105,6 +116,36 @@ export function resolvePreviewEngine(
   }
 
   return undefined;
+}
+
+export function listHostableLayoutEngineKeys(): string[] {
+  return PREVIEW_ENGINE_REGISTRY
+    .map((entry) => entry.layoutEngineKey)
+    .filter((key): key is string => typeof key === 'string' && key.length > 0);
+}
+
+export function isPreviewEngineCompatible(
+  engine: PreviewEngineManifest,
+  context: PreviewEngineContext,
+): boolean {
+  const previewDocumentKind = context.previewDocumentKind ?? null;
+  if (previewDocumentKind && !engine.compatibility.documentKinds.includes(previewDocumentKind)) {
+    return false;
+  }
+
+  const requiredLayoutEngineKey = engine.compatibility.requiredLayoutEngineKey;
+  const layoutEngine = context.layoutEngine?.trim() ?? '';
+  if (requiredLayoutEngineKey && layoutEngine && layoutEngine !== requiredLayoutEngineKey) {
+    return false;
+  }
+
+  return true;
+}
+
+export function listCompatiblePreviewEngines(
+  context: PreviewEngineContext,
+): PreviewEngineManifest[] {
+  return PREVIEW_ENGINE_REGISTRY.filter((entry) => isPreviewEngineCompatible(entry, context));
 }
 
 /** JSON-serializable manifest list for preview-server consumption. */

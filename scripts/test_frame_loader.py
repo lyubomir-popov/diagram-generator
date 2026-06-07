@@ -224,7 +224,7 @@ engine: v3
 meta:
   diagram_type: system_architecture
   abstraction_level: container
-  layout_engine: elk-force
+  layout_engine: elk-layered
   presentation_form: swimlane
 root:
   id: root
@@ -237,7 +237,7 @@ root:
 
     assert diagram.diagram_type == "system_architecture"
     assert diagram.abstraction_level == "container"
-    assert diagram.layout_engine == "elk-force"
+    assert diagram.layout_engine == "elk-layered"
     assert diagram.presentation_form == "swimlane"
 
 
@@ -288,10 +288,10 @@ def test_svg_meta_filters_none_values():
 
     d = FrameDiagram(
         diagram_type="system_architecture",
-        layout_engine="elk-force",
+        layout_engine="elk-layered",
     )
     meta = d.svg_meta()
-    assert meta == {"diagram_type": "system_architecture", "layout_engine": "elk-force"}
+    assert meta == {"diagram_type": "system_architecture", "layout_engine": "elk-layered"}
 
 
 def test_svg_meta_returns_none_when_all_fields_empty():
@@ -344,6 +344,29 @@ root:
 """,
         )
     assert any("not a recognised value" in str(x.message) for x in w)
+
+
+def test_unsupported_layout_engine_warns_and_is_not_loaded(tmp_path):
+    import warnings
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        diagram = _load(
+            tmp_path,
+            """
+engine: v3
+meta:
+  layout_engine: elk-force
+root:
+  id: root
+  children:
+    - id: child
+      label:
+        - Hello
+""",
+        )
+    assert any("not a recognised value" in str(x.message) for x in w)
+    assert diagram.layout_engine is None
 
 
 # ── Variant overlays ───────────────────────────────────────────────

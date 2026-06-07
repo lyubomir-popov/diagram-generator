@@ -6,6 +6,9 @@ import {
   PREVIEW_ENGINE_REGISTRY,
   SEQUENCE_PREVIEW_ENGINE,
   getPreviewEngine,
+  isPreviewEngineCompatible,
+  listCompatiblePreviewEngines,
+  listHostableLayoutEngineKeys,
   listPreviewEngines,
   resolvePreviewEngine,
   serializePreviewEngineManifest,
@@ -45,6 +48,8 @@ describe('preview-engine registry', () => {
     expect(roundTrip[0].id).toBe('elk-layered');
     expect(roundTrip[1].capabilities.simulationControls).toBe(true);
     expect(roundTrip[2].id).toBe('sequence');
+    expect(roundTrip[0].compatibility.documentKinds).toEqual(['frame-diagram']);
+    expect(roundTrip[2].compatibility.requiredLayoutEngineKey).toBe('sequence');
     expect(listPreviewEngines()).toEqual(serialized);
   });
 
@@ -55,5 +60,26 @@ describe('preview-engine registry', () => {
     expect(FORCE_PREVIEW_ENGINE.capabilities.simulationControls).toBe(true);
     expect(SEQUENCE_PREVIEW_ENGINE.capabilities.localRelayout).toBe(true);
     expect(SEQUENCE_PREVIEW_ENGINE.capabilities.nodeInspector).toBe(false);
+  });
+
+  it('exposes hostable layout-engine keys and typed compatibility helpers', () => {
+    expect(listHostableLayoutEngineKeys()).toEqual(['elk-layered', 'sequence']);
+    expect(
+      isPreviewEngineCompatible(ELK_LAYERED_PREVIEW_ENGINE, {
+        previewDocumentKind: 'frame-diagram',
+        layoutEngine: 'elk-layered',
+      }),
+    ).toBe(true);
+    expect(
+      isPreviewEngineCompatible(ELK_LAYERED_PREVIEW_ENGINE, {
+        previewDocumentKind: 'sequence',
+      }),
+    ).toBe(false);
+    expect(
+      listCompatiblePreviewEngines({ previewDocumentKind: 'frame-diagram' }).map((entry) => entry.id),
+    ).toEqual(['elk-layered']);
+    expect(
+      listCompatiblePreviewEngines({ previewDocumentKind: 'force-spec' }).map((entry) => entry.id),
+    ).toEqual(['force']);
   });
 });

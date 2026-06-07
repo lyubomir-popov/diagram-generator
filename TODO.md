@@ -38,7 +38,7 @@ Feature package: `specs/036-headingless-wrapper-contract/`.
 
 Feature package: `specs/037-preview-engine-drift-closeout/`.
 
-- [ ] `[H]` **Close the engine-surface drift called out in the 2026-06-06 architectural review.** Scope: accepted engine ids must match hostable runtime lanes, force save must return canonical persisted state, forbidden `localStorage` writes must go, and the preview-engine model needs typed compatibility groundwork for spec 035.
+- [x] `[H]` **Close the engine-surface drift called out in the 2026-06-06 architectural review.** Closed on `feat/037-preview-engine-drift-closeout`: hostable frame-engine ids now come from the TS manifest/runtime surface, force save rehydrates from canonical persisted state, forbidden `localStorage` usage is removed from the live preview path, and typed compatibility metadata is in place as groundwork for spec 035.
 
 #### Preview shell decomposition + TS migration (spec 026)
 

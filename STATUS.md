@@ -65,11 +65,12 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 - Mainline now reflects the first bounded guard: style reset labels say `as defined`, implicit headingless wrappers no longer advertise visible style-picker controls in the preview shell, and stale save payloads can no longer promote a clean wrapper into `parent` / `section` chrome.
 - Remaining work is explicitly bounded in the spec: decide the long-term contract for intentionally visible non-headed groups and add broader end-to-end wrapper regression coverage.
 
-### Current delta — spec 037 preview engine drift closeout drafted (2026-06-07)
+### Current delta — spec 037 preview engine drift closeout complete (2026-06-07)
 
-- Added `specs/037-preview-engine-drift-closeout/` to convert the 2026-06-06 architectural review into a bounded cleanup slice.
-- The draft scope is explicit: align accepted engine ids with hostable runtime lanes, converge force save on canonical persisted state, remove forbidden `localStorage` usage from the live preview path, and add typed compatibility groundwork for spec 035.
-- This keeps the review findings actionable without widening them into an unbounded preview/runtime rewrite.
+- The preview-engine manifest is now the hostability authority for frame-backed runtime lanes: frame YAML `layout_engine` values are narrowed to hostable keys, preview viewer routes fail fast on unsupported values, and the old `elk-force` acceptance drift is closed instead of being silently tolerated.
+- Force save now returns canonical persisted state and the force preview rehydrates from that canonical authored payload after save instead of treating the pre-save local snapshot as authoritative.
+- Live preview no longer writes ELK debug/raw-view shell state into `localStorage`, and the preview-engine model now carries typed compatibility metadata for `frame-diagram`, `sequence`, and `force-spec` as groundwork for spec 035.
+- Focused validation for the closeout slice is green: `tests/preview-engine-registry.test.ts` plus targeted pytest coverage for manifest discovery, frame-loader hostability, layout-bridge persistence boundaries, and force save persistence.
 
 ### Current delta — spec 024 summary recorded on main (2026-06-06)
 

@@ -26,24 +26,31 @@ def _ensure_manifest_built() -> None:
     )
 
 
-def test_preview_engine_manifest_json_exists_and_lists_elk_and_force():
+def test_preview_engine_manifest_json_exists_and_lists_hostable_preview_lanes():
     _ensure_manifest_built()
     payload = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     assert isinstance(payload, list)
     ids = [entry["id"] for entry in payload]
-    assert ids == ["elk-layered", "force"]
+    assert ids == ["elk-layered", "force", "sequence"]
 
     elk = payload[0]
     assert elk["layoutEngineKey"] == "elk-layered"
     assert elk["shellMode"] == "grid"
     assert elk["capabilities"]["layoutControls"] is True
     assert any(spec["key"] == "elk.direction" for spec in elk["controlSpecs"])
+    assert elk["compatibility"]["documentKinds"] == ["frame-diagram"]
+    assert elk["compatibility"]["requiredLayoutEngineKey"] == "elk-layered"
 
     force = payload[1]
     assert force["shellMode"] == "force"
     assert force["capabilities"]["simulationControls"] is True
     assert force["apiRoutes"]["save"] == "/api/force-save/{slug}"
     assert force["apiRoutes"]["params"] == "/api/force-params/{slug}"
+    assert force["compatibility"]["documentKinds"] == ["force-spec"]
+
+    sequence = payload[2]
+    assert sequence["layoutEngineKey"] == "sequence"
+    assert sequence["compatibility"]["documentKinds"] == ["sequence"]
 
 
 def test_load_preview_engine_manifest_helper_matches_json_file():
@@ -66,7 +73,12 @@ def test_serve_preview_engines_returns_ts_manifest_json():
     assert status == HTTPStatus.OK
     assert content_type == "application/json"
     payload = json.loads(body.decode())
-    assert [entry["id"] for entry in payload] == ["elk-layered", "force"]
+    assert [entry["id"] for entry in payload] == ["elk-layered", "force", "sequence"]
+
+
+def test_hostable_frame_layout_engine_keys_come_from_ts_manifest():
+    _ensure_manifest_built()
+    assert preview_server._hostable_frame_layout_engine_keys() == {"elk-layered", "sequence"}
 
 
 def test_overrides_post_returns_canonical_state(monkeypatch):
@@ -77,7 +89,11 @@ def test_overrides_post_returns_canonical_state(monkeypatch):
     handler._respond = MagicMock()
 
     monkeypatch.setattr(preview_server, "_save_overrides", lambda slug, data: None)
-    monkeypatch.setattr(preview_server._ts_layout_pool, "frame_tree_json", lambda slug: {"root": {"id": "root"}})
+    monkeypatch.setattr(
+        preview_server,
+        "_get_preview_document",
+        lambda slug: {"kind": "frame-diagram", "frameTree": {"id": "root"}},
+    )
     monkeypatch.setattr(preview_server, "_get_component_tree", lambda slug: [{"id": "root"}])
     monkeypatch.setattr(preview_server, "_get_grid_info", lambda slug: {"col_gap": 24})
 
@@ -90,6 +106,10 @@ def test_overrides_post_returns_canonical_state(monkeypatch):
     payload = json.loads(response_body.decode())
     assert payload["ok"] is True
     assert payload["canonicalState"]["slug"] == "preview-smoke"
-    assert payload["canonicalState"]["frameTree"] == {"root": {"id": "root"}}
+    assert payload["canonicalState"]["previewDocument"] == {
+        "kind": "frame-diagram",
+        "frameTree": {"id": "root"},
+    }
+    assert payload["canonicalState"]["frameTree"] == {"id": "root"}
     assert payload["canonicalState"]["componentTree"] == [{"id": "root"}]
     assert payload["canonicalState"]["gridInfo"] == {"col_gap": 24}

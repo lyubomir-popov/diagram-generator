@@ -744,6 +744,27 @@ def _resolve_preview_engine_manifest(
     return None
 
 
+def _hostable_frame_layout_engine_keys() -> set[str]:
+    keys: set[str] = set()
+    for entry in _load_preview_engine_manifest():
+        layout_engine_key = entry.get("layoutEngineKey")
+        if entry.get("shellMode") != "grid":
+            continue
+        if isinstance(layout_engine_key, str) and layout_engine_key:
+            keys.add(layout_engine_key)
+    return keys
+
+
+def _canonical_force_saved_state(slug: str) -> dict[str, object]:
+    authored_spec = _load_force_spec_from_disk(slug)
+    if not isinstance(authored_spec, dict):
+        raise FileNotFoundError(f"Canonical force spec not found after save: {slug}")
+    return {
+        "slug": slug,
+        "authoredSpec": authored_spec,
+    }
+
+
 def _preview_engine_script_tags(
     entry: dict[str, object] | None,
     fallback_scripts: list[str] | None = None,
@@ -1219,6 +1240,14 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             if real_slug not in _list_diagrams():
                 self.send_error(404, f"Unknown diagram: {real_slug}")
                 return
+        if is_v3:
+            layout_engine = _frame_yaml_layout_engine(real_slug)
+            if layout_engine and layout_engine not in _hostable_frame_layout_engine_keys():
+                self.send_error(
+                    400,
+                    f"Frame layout_engine '{layout_engine}' is not hostable by this preview runtime",
+                )
+                return
         html = _build_viewer_html(slug, _list_diagrams(), self.grid)
         self._respond(200, "text/html", html.encode())
 
@@ -1624,13 +1653,17 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
         if isinstance(params, dict) and isinstance(params.get("nodes"), list) and isinstance(params.get("links"), list):
             try:
                 _save_force_snapshot_to_yaml(slug, params)
+                payload = {
+                    "ok": True,
+                    "canonicalState": _canonical_force_saved_state(slug),
+                }
             except Exception:
                 import traceback
 
                 traceback.print_exc()
                 self.send_error(500, "Force save failed")
                 return
-            self._respond(200, "application/json", b'{"ok":true}')
+            self._respond(200, "application/json", json.dumps(payload).encode())
             return
 
         if not self._ensure_force_backend():
@@ -1642,6 +1675,10 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
                 raise RuntimeError(_force_backend_unavailable_message())
             state = _get_force_state(slug)
             force_preview.save_force_overrides(state)
+            payload = {
+                "ok": True,
+                "canonicalState": _canonical_force_saved_state(slug),
+            }
         except Exception:
             import traceback
 
@@ -1649,7 +1686,7 @@ class PreviewHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(500, "Force save failed")
             return
 
-        self._respond(200, "application/json", b'{"ok":true}')
+        self._respond(200, "application/json", json.dumps(payload).encode())
 
     def _serve_force_params(self, slug: str):
         if not self._ensure_force_backend():

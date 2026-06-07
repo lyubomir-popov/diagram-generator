@@ -1462,27 +1462,16 @@ function refreshElkDebugOverlay() {
 
 window.__DG_setElkDebugOverlay = function (enabled) {
   window.__DG_elkDebugOverlay = !!enabled;
-  try {
-    localStorage.setItem("dg.elkDebugOverlay", enabled ? "1" : "0");
-  } catch (_) { /* ignore */ }
   refreshElkViewMode();
 };
 
 window.__DG_setElkRawView = function (enabled) {
   window.__DG_elkRawView = !!enabled;
-  try {
-    localStorage.setItem("dg.elkRawView", enabled ? "1" : "0");
-  } catch (_) { /* ignore */ }
   refreshElkViewMode();
 };
 
-try {
-  window.__DG_elkDebugOverlay = localStorage.getItem("dg.elkDebugOverlay") === "1";
-  window.__DG_elkRawView = localStorage.getItem("dg.elkRawView") === "1";
-} catch (_) {
-  window.__DG_elkDebugOverlay = false;
-  window.__DG_elkRawView = false;
-}
+window.__DG_elkDebugOverlay = window.__DG_elkDebugOverlay === true;
+window.__DG_elkRawView = window.__DG_elkRawView === true;
 
 /** HarfBuzz-backed text adapter for authoritative browser measurement. */
 let _textAdapter = null;

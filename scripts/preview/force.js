@@ -164,6 +164,24 @@ function markForceParamInputsSaved() {
   lastSavedForceParamState = serializeForceParamInputs();
 }
 
+function snapshotFromCanonicalState(canonicalState) {
+  if (!canonicalState || typeof canonicalState !== "object") {
+    return null;
+  }
+  if (
+    canonicalState.authoredSpec
+    && typeof canonicalState.authoredSpec === "object"
+    && window.LayoutEngine
+    && typeof window.LayoutEngine.createInitialForceSnapshot === "function"
+  ) {
+    return window.LayoutEngine.createInitialForceSnapshot(canonicalState.authoredSpec);
+  }
+  if (canonicalState.snapshot && typeof canonicalState.snapshot === "object") {
+    return canonicalState.snapshot;
+  }
+  return null;
+}
+
 // ---- Undo/Redo via shared UndoRedoManager ----
 
 function captureNodeState(nodeId) {
@@ -1048,12 +1066,12 @@ async function saveForceOverrides() {
   const snapshot = window.LayoutEngine?.exportForceSnapshot
     ? window.LayoutEngine.exportForceSnapshot(committedSnapshot)
     : committedSnapshot;
-  await fetchJson(forceApiPath("save", `/api/force-save/${encodeURIComponent(FORCE_SLUG)}`), {
+  const responsePayload = await fetchJson(forceApiPath("save", `/api/force-save/${encodeURIComponent(FORCE_SLUG)}`), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(snapshot),
   });
-  render(snapshot);
+  render(snapshotFromCanonicalState(responsePayload?.canonicalState) || snapshot);
   markForceParamInputsSaved();
   forceUndoManager.markSaved();
   updateLocalRuntimeControls();

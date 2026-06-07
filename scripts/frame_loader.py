@@ -306,8 +306,7 @@ _META_ENUMS: dict[str, set[str]] = {
     },
     "abstraction_level": {"context", "container", "component", "code"},
     "layout_engine": {
-        "elk-layered", "elk-force", "vertical-stack",
-        "sequence", "state-machine", "grid-matrix",
+        "elk-layered", "sequence",
     },
     "presentation_form": {"matrix", "swimlane", "tree"},
 }
@@ -473,6 +472,9 @@ def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:
     # Ontology metadata (optional)
     meta = data.get("meta", {}) if isinstance(data.get("meta"), dict) else {}
     _validate_meta(meta, str(p))
+    layout_engine = meta.get("layout_engine")
+    if layout_engine not in _META_ENUMS["layout_engine"]:
+        layout_engine = None
 
     return FrameDiagram(
         title=data.get("title", ""),
@@ -485,7 +487,7 @@ def load_frame_yaml(path: str | pathlib.Path) -> FrameDiagram:
         grid_outer_margin=int(grid.get("outer_margin", GRID_GUTTER)) if grid else None,
         diagram_type=meta.get("diagram_type"),
         abstraction_level=meta.get("abstraction_level"),
-        layout_engine=meta.get("layout_engine"),
+        layout_engine=layout_engine,
         presentation_form=meta.get("presentation_form"),
     )
 
