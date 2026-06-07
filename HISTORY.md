@@ -4,6 +4,13 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-07 – Spec 038 Phase 1 write slice: Node YAML save routes
+
+- Added `apps/preview/src/frame-yaml-persistence.ts`, a TypeScript port of the Python YAML persistence helper, including canonical style projection, grid restrictions, removed-id pruning, text updates, child reordering, and `meta.elk` passthrough verification.
+- Wired `POST /api/overrides/*` and `POST /api/force-save/*` into the Node preview app and kept the browser contract stable by returning the same canonical save payload shapes the existing preview shell expects.
+- Added `DG_FRAMES_DIR` and `DG_FORCE_DEFINITIONS_DIR` overrides to the Node app so save-path validation can run against temp fixtures instead of mutating the tracked corpus during development.
+- Validation: `npm --prefix apps/preview run build`, `npm --prefix packages/layout-engine run build:browser`, `node scripts/check_no_new_python.mjs`, temp-fixture POST route probes through the Node server, and direct persistence checks for byte-stable no-op saves plus `meta.elk` passthrough retention.
+
 ### 2026-06-07 – Spec 038 Phase 1 route slice: shell + GET preview APIs
 
 - Expanded `apps/preview/src/server.ts` from a placeholder page into a real Node preview surface that serves the existing unified shell template and static preview assets.

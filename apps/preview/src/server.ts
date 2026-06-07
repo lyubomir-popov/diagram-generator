@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -26,6 +26,12 @@ import {
   serializePreviewEngineManifest,
   type PreviewEngineManifest,
 } from "@diagram-generator/layout-engine";
+import {
+  persistForceAuthoredSpecToYaml,
+  persistOverridePayloadToYaml,
+  verifyElkLayoutPersisted,
+  type PersistOverridePayload,
+} from "./frame-yaml-persistence.js";
 
 const DEFAULT_PORT = 8100;
 const SPEC_HOME = "specs/038-ts-authority-python-removal/";
@@ -37,8 +43,10 @@ const APP_ROOT = path.resolve(__dirname, "..");
 const REPO_ROOT = path.resolve(APP_ROOT, "..", "..");
 const SCRIPTS_DIR = path.join(REPO_ROOT, "scripts");
 const PREVIEW_DIR = path.join(SCRIPTS_DIR, "preview");
-const FRAMES_DIR = path.join(SCRIPTS_DIR, "diagrams", "frames");
-const FORCE_DEFINITIONS_DIR = path.join(SCRIPTS_DIR, "diagrams", "force");
+const FRAMES_DIR = path.resolve(process.env.DG_FRAMES_DIR ?? path.join(SCRIPTS_DIR, "diagrams", "frames"));
+const FORCE_DEFINITIONS_DIR = path.resolve(
+  process.env.DG_FORCE_DEFINITIONS_DIR ?? path.join(SCRIPTS_DIR, "diagrams", "force"),
+);
 const ICONS_DIR = path.join(REPO_ROOT, "assets", "icons");
 const CORPUS_REF_DIR = path.join(REPO_ROOT, "docs", "corpus-references");
 const INPUT_DIRS = [path.join(REPO_ROOT, "diagrams", "1.input")];
@@ -142,6 +150,20 @@ function sendBytes(
     "Cache-Control": cacheControl,
   });
   res.end(body);
+}
+
+async function readJsonBody(req: IncomingMessage): Promise<unknown> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  const raw = Buffer.concat(chunks).toString("utf8").trim();
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error("Invalid JSON");
+  }
 }
 
 function requestUrl(req: IncomingMessage): URL {
@@ -480,6 +502,40 @@ function previewDocumentForSlug(slug: string) {
   };
 }
 
+function loadFrameDiagram(slug: string) {
+  return loadFrameYaml(path.join(FRAMES_DIR, `${slug}.yaml`));
+}
+
+function canonicalSavedState(slug: string) {
+  const diagram = loadFrameDiagram(slug);
+  const previewDocument = {
+    kind: "frame-diagram",
+    slug,
+    title: diagram.title,
+    layoutEngine: diagram.layoutEngine ?? null,
+    shellMode: "grid",
+    frameTree: serializeFrameDiagram(diagram),
+  };
+  return {
+    slug,
+    previewDocument,
+    frameTree: previewDocument.frameTree,
+    componentTree: buildComponentTree(diagram.root),
+    gridInfo: buildGridInfo(diagram, diagram.root),
+  };
+}
+
+function canonicalForceSavedState(slug: string) {
+  const authoredSpec = readForceSpec(slug);
+  if (!authoredSpec) {
+    throw new Error(`Canonical force spec not found after save: ${slug}`);
+  }
+  return {
+    slug,
+    authoredSpec,
+  };
+}
+
 function contentTypeForPath(filePath: string): string {
   return MIME_TYPES[path.extname(filePath).toLowerCase()] ?? "application/octet-stream";
 }
@@ -512,13 +568,90 @@ function handlePreviewEngines(res: ServerResponse): void {
 }
 
 async function handleRequest(req: IncomingMessage, res: ServerResponse, port: number): Promise<void> {
-  if (req.method !== "GET") {
+  const url = requestUrl(req);
+  const pathname = url.pathname;
+
+  if (req.method === "POST") {
+    if (pathname.startsWith("/api/overrides/")) {
+      const slug = normalizeFrameSlug(pathname.slice("/api/overrides/".length));
+      if (!slug) {
+        sendText(res, 400, "Invalid slug");
+        return;
+      }
+      const framePath = path.join(FRAMES_DIR, `${slug}.yaml`);
+      if (!existsSync(framePath)) {
+        sendText(res, 404, `Unknown frame slug: ${slug}`);
+        return;
+      }
+      let payload: unknown;
+      try {
+        payload = await readJsonBody(req);
+      } catch (error) {
+        sendText(res, 400, error instanceof Error ? error.message : String(error));
+        return;
+      }
+      try {
+        const baseline = readFileSync(framePath, "utf8");
+        const nextText = persistOverridePayloadToYaml(framePath, baseline, payload as PersistOverridePayload);
+        if (nextText !== baseline) {
+          writeFileSync(framePath, nextText, "utf8");
+        }
+        const elkOverrides =
+          payload && typeof payload === "object" && payload !== null && "elk_layout_overrides" in payload
+            ? (payload as Record<string, unknown>).elk_layout_overrides
+            : null;
+        if (elkOverrides && typeof elkOverrides === "object" && !Array.isArray(elkOverrides)) {
+          verifyElkLayoutPersisted(nextText, elkOverrides as Record<string, unknown>);
+        }
+        sendJson(res, 200, {
+          ok: true,
+          canonicalState: canonicalSavedState(slug),
+        });
+      } catch (error) {
+        sendText(res, 400, error instanceof Error ? error.message : String(error));
+      }
+      return;
+    }
+
+    if (pathname.startsWith("/api/force-save/")) {
+      const slug = normalizeFrameSlug(pathname.slice("/api/force-save/".length));
+      if (!slug) {
+        sendText(res, 400, "Invalid slug");
+        return;
+      }
+      const framePath = path.join(FORCE_DEFINITIONS_DIR, `${slug}.yaml`);
+      if (!existsSync(framePath)) {
+        sendText(res, 404, `Unknown force example: ${slug}`);
+        return;
+      }
+      let payload: unknown;
+      try {
+        payload = await readJsonBody(req);
+      } catch (error) {
+        sendText(res, 400, error instanceof Error ? error.message : String(error));
+        return;
+      }
+      try {
+        const nextText = persistForceAuthoredSpecToYaml(framePath, payload);
+        writeFileSync(framePath, nextText, "utf8");
+        sendJson(res, 200, {
+          ok: true,
+          canonicalState: canonicalForceSavedState(slug),
+        });
+      } catch (error) {
+        sendText(res, 400, error instanceof Error ? error.message : String(error));
+      }
+      return;
+    }
+
     sendJson(res, 405, { ok: false, error: "Method not allowed" });
     return;
   }
 
-  const url = requestUrl(req);
-  const pathname = url.pathname;
+  if (req.method !== "GET") {
+    sendJson(res, 405, { ok: false, error: "Method not allowed" });
+    return;
+  }
 
   if (pathname === "/") {
     sendHtml(res, 200, buildIndexHtml(port));
@@ -623,7 +756,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
       sendText(res, 400, "Invalid slug");
       return;
     }
-    const diagram = loadFrameYaml(path.join(FRAMES_DIR, `${slug}.yaml`));
+    const diagram = loadFrameDiagram(slug);
     sendJson(res, 200, buildComponentTree(diagram.root));
     return;
   }
@@ -633,7 +766,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
       sendText(res, 400, "Invalid slug");
       return;
     }
-    const diagram = loadFrameYaml(path.join(FRAMES_DIR, `${slug}.yaml`));
+    const diagram = loadFrameDiagram(slug);
     sendJson(res, 200, buildGridInfo(diagram, diagram.root));
     return;
   }
