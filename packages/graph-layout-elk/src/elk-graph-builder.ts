@@ -34,7 +34,7 @@ function mapNode(node: GraphNodeInput, compoundPadding?: string): ElkGraphNode {
     height: node.height,
     ...(hasChildren
       ? {
-          children: node.children!.map((child) => mapNode(child, compoundPadding)),
+          children: node.children!.map((child: GraphNodeInput) => mapNode(child, compoundPadding)),
           ...(compoundPadding
             ? { layoutOptions: { 'elk.padding': compoundPadding } }
             : {}),
@@ -57,7 +57,7 @@ export function buildElkGraph(
     targets: [edge.target],
     ...(edge.labels?.length
       ? {
-          labels: edge.labels.map((label) => ({
+          labels: edge.labels.map((label: NonNullable<GraphEdgeInput["labels"]>[number]) => ({
             text: label.text,
             width: label.width,
             height: label.height,
@@ -69,7 +69,7 @@ export function buildElkGraph(
   return {
     id: input.id,
     layoutOptions: rootOptions,
-    children: input.nodes.map((node) => mapNode(node, compoundPadding)),
+    children: input.nodes.map((node: GraphNodeInput) => mapNode(node, compoundPadding)),
     edges,
   };
 }

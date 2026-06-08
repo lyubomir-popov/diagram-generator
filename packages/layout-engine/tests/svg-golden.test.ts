@@ -39,7 +39,7 @@ describe('svg golden corpus subset', () => {
         }
 
         expect(existsSync(goldenPath), `missing golden file: ${goldenPath}`).toBe(true);
-        const expected = readFileSync(goldenPath, 'utf8');
+        const expected = normalizeSvg(readFileSync(goldenPath, 'utf8'));
         expect(svg).toBe(expected);
       });
     });

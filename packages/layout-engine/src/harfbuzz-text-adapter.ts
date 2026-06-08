@@ -7,11 +7,13 @@ import {
   type TextMeasureAdapter,
   type TextMeasureRequest,
 } from './text-measure.js';
+import type { ShapedGlyph, ShapedRun } from './render-ir.js';
 
 export interface HarfBuzzTextAdapterOptions {
   fontData: ArrayBuffer;
   defaultWeight?: number;
   widthAxis?: number;
+  fontUri?: string;
 }
 
 export interface HarfBuzzTextAdapterFetchOptions {
@@ -19,6 +21,7 @@ export interface HarfBuzzTextAdapterFetchOptions {
   defaultWeight?: number;
   widthAxis?: number;
   fetchImpl?: typeof fetch;
+  fontUri?: string;
 }
 
 export class HarfBuzzTextAdapter implements TextMeasureAdapter {
@@ -29,11 +32,13 @@ export class HarfBuzzTextAdapter implements TextMeasureAdapter {
   private readonly upem: number;
   private readonly defaultWeight: number;
   private readonly widthAxis: number;
+  private readonly fontUri: string;
   private readonly fonts = new Map<number, hb.Font>();
 
   constructor(options: HarfBuzzTextAdapterOptions) {
     this.defaultWeight = options.defaultWeight ?? 400;
     this.widthAxis = options.widthAxis ?? 100;
+    this.fontUri = options.fontUri ?? 'diagram-generator:ubuntu-sans';
     this.blob = new hb.Blob(options.fontData);
     this.face = new hb.Face(this.blob, 0);
     this.upem = this.face.upem;
@@ -72,6 +77,44 @@ export class HarfBuzzTextAdapter implements TextMeasureAdapter {
     width += letterSpacingAdvance(request.text, request.letterSpacing, request.fontSize);
     return width;
   }
+
+  shapeTextRun(
+    request: TextMeasureRequest & { fontFamily?: string | null },
+  ): ShapedRun {
+    const weight = request.weight ?? this.defaultWeight;
+    const font = this.getFont(weight);
+    const buffer = new hb.Buffer();
+    buffer.addText(request.text);
+    buffer.guessSegmentProperties();
+
+    const features = request.smallCaps
+      ? [new hb.Feature('smcp', 1), new hb.Feature('c2sc', 1)]
+      : undefined;
+
+    hb.shape(font, buffer, features);
+    const positions = buffer.getGlyphInfosAndPositions();
+    const glyphs: ShapedGlyph[] = positions.map((glyph) => ({
+      glyphId: glyph.codepoint,
+      cluster: glyph.cluster,
+      xAdvance: ((glyph.xAdvance ?? 0) * request.fontSize) / this.upem,
+      yAdvance: ((glyph.yAdvance ?? 0) * request.fontSize) / this.upem,
+      xOffset: ((glyph.xOffset ?? 0) * request.fontSize) / this.upem,
+      yOffset: ((glyph.yOffset ?? 0) * request.fontSize) / this.upem,
+    }));
+    return {
+      fontRef: {
+        kind: 'font',
+        uri: this.fontUri,
+      },
+      fontSize: request.fontSize,
+      glyphs,
+      text: request.text,
+      fontFamily: request.fontFamily ?? 'Ubuntu Sans',
+      fontWeight: weight,
+      letterSpacing: request.letterSpacing ?? null,
+      smallCaps: request.smallCaps ?? false,
+    };
+  }
 }
 
 export async function createHarfBuzzTextAdapter(
@@ -91,6 +134,7 @@ export async function createHarfBuzzTextAdapter(
     fontData,
     defaultWeight: options.defaultWeight,
     widthAxis: options.widthAxis,
+    fontUri: options.fontUri ?? options.fontUrl,
   });
 }
 
@@ -102,5 +146,6 @@ export async function createDefaultHarfBuzzTextAdapter(
     defaultWeight: options?.defaultWeight,
     widthAxis: options?.widthAxis,
     fetchImpl: options?.fetchImpl,
+    fontUri: options?.fontUri,
   });
 }

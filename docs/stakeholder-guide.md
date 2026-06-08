@@ -19,7 +19,7 @@ Use this page when you need an **on-brand architecture or workflow diagram** wit
 3. Start preview:
 
    ```bash
-   python scripts/preview_server.py
+   npm run preview
    ```
 
    Open: `http://127.0.0.1:8100/view/v3:<your-slug>`
@@ -64,4 +64,4 @@ Index: `http://127.0.0.1:8100/` lists all frame YAML diagrams.
 
 ## Architecture (one paragraph)
 
-Diagrams are **YAML on disk**. The **TypeScript** layout engine (`packages/layout-engine/`) measures and places frames (Figma-like autolayout). The preview editor runs layout in the browser; the server serves YAML APIs and emits SVG via Node (no Python SVG renderer). Python remains for **YAML save helpers** and layout parity tests — not for interactive editing or SVG export.
+Diagrams are **YAML on disk**. The **TypeScript** layout engine (`packages/layout-engine/`) measures and places frames (Figma-like autolayout). The preview editor runs layout in the browser; the Node preview app serves YAML APIs and emits SVG. Python remains only as a temporary parity oracle and utility debt outside the product path.

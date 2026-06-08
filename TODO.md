@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Active execution queue for `diagram-generator`. All new work targets TypeScript first. Python receives matching changes only for batch/export correctness.
+Active execution queue for `diagram-generator`. All new work targets TypeScript first. Python remains only as a dated parity oracle plus non-product utilities.
 
 **Jira:** This repo is Stream E (constrained editor) under [DE-941](https://warthogs.atlassian.net/browse/DE-941). Milestone-level issues tracked on Jira; detailed execution stays here and in `specs/`. See `diagram-generator-planning` for the broader project (corpus, taxonomy, Coda pages).
 
@@ -39,6 +39,12 @@ Feature package: `specs/036-headingless-wrapper-contract/`.
 Feature package: `specs/037-preview-engine-drift-closeout/`.
 
 - [x] `[H]` **Close the engine-surface drift called out in the 2026-06-06 architectural review.** Closed on `feat/037-preview-engine-drift-closeout`: hostable frame-engine ids now come from the TS manifest/runtime surface, force save rehydrates from canonical persisted state, forbidden `localStorage` usage is removed from the live preview path, and typed compatibility metadata is in place as groundwork for spec 035.
+
+#### TypeScript authority + Python removal (spec 038)
+
+Feature package: `specs/038-ts-authority-python-removal/`.
+
+- [x] `[H]` **Close the Python-preview retirement and design-foundry prep lane.** Closed on `feat/038-ts-authority-python-removal`: `apps/preview/` is the Node front door, preview/save/watch routes are TS-owned, the product-path Python preview files are deleted, the no-new-Python ratchet is active, and `packages/layout-engine/` now exposes the internal seams needed for the later `design-foundry` package move.
 
 #### Preview shell decomposition + TS migration (spec 026)
 
@@ -113,7 +119,7 @@ Feature package: `specs/006-arrow-routing-redesign/`.
 
 #### Root direction change should reset children sizing to hug
 
-- [ ] `[M]` **Switching root `direction` vertical→horizontal leaves top-level children as FILL on the old axis.** They should reset to HUG so authors re-opt in. Fix in the preview inspector direction handler (`editor.js`) and optionally in `frame_yaml_persistence.py` when `direction` is saved on `page`. Reported during a preview editor pass on 2026-06-04.
+- [ ] `[M]` **Switching root `direction` vertical→horizontal leaves top-level children as FILL on the old axis.** They should reset to HUG so authors re-opt in. Fix in the preview inspector direction handler (`editor.js`) and optionally in `apps/preview/src/persistence/frame-diagram.ts` when `direction` is saved on `page`. Reported during a preview editor pass on 2026-06-04.
 - [ ] `[H]` **Add drag-and-drop reordering in the layers palette.** Needed to repair cases like `complex-routing-usecase` where an absolute-positioned overlay (`dev team`) should be a separate protruding layer rather than living inside the wrong container.
 - [ ] `[M]` **Absolute-positioned items resize incorrectly from the left edge.** Left-edge resize currently expands the right side instead of moving the left boundary.
 - [ ] `[M]` **Wrapped text in the parent variant loses consistent heading styling across lines.** A parent-frame line that wraps to two visual lines currently renders the first line bold and the second line non-bold; both lines should carry the same resolved style.
@@ -124,7 +130,6 @@ Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`.
 - [ ] `[M]` **M4. Silent enum fallbacks.** Bad `sizing`/`direction`/`align`/`variant` silently default. Fix: warn on unknown values.
 - [ ] `[M]` **M5. Preview JSON contract stale.** Missing `justify`, `col_span`.
 - [ ] `[S]` **M6. `estimate_line_width` duplicated.** `diagram_shared.py` vs `text_metrics.py`.
-- [ ] `[L]` **Legacy Python parity harness drift.** `scripts/test_parity.py` still reconstructs the pre-WS3 heading/body model, so full `pytest scripts -q` has 5 stale failures. Either realign it with the current loader contract or retire it as a non-gating legacy oracle; do not block TS work on it.
 
 ### Lower priority
 
@@ -133,7 +138,6 @@ Full audit: `docs/architecture/adversarial-audit-2026-05-27.md`.
 - [ ] `[S]` Layout idempotency test
 - [ ] `[S]` Negative parser tests for invalid enums
 - [ ] `[M]` Forward ontology — auto-select engine from `diagram_type` + `layout_engine`
-- [ ] `[S]` `preview_server.py` decomposition (post-port)
 - [ ] `[L]` Security hardening before Stage 17
 - [ ] `[S]` Swappable engine interface — Phase 3+
 - [ ] `[S]` Constraint enforcement on force nodes

@@ -1,11 +1,11 @@
 # Status
 
-**Last updated:** 2026-06-07  
-**Branch:** `main`
+**Last updated:** 2026-06-08  
+**Branch:** `feat/038-ts-authority-python-removal`
 
 ## Stakeholder path
 
-Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stakeholder-guide.md)** — copy a frame YAML, run `python scripts/preview_server.py`, open `/view/v3:<slug>`, save and optionally export SVG.
+Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stakeholder-guide.md)** — copy a frame YAML, run `npm run preview`, open `/view/v3:<slug>`, save and optionally export SVG.
 
 **Hard rule:** no Python in the diagram product path. Preview, layout, render, export, and save belong on the Node / TypeScript path; remaining Python is temporary parity-oracle, draw.io, and token-bridge debt under spec 038.
 
@@ -30,20 +30,19 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | Area | State |
 |------|--------|
 | **Authoring** | Frame YAML in `scripts/diagrams/frames/` — **only** source of truth (11 canonical invariant-pack diagrams) |
-| **Interactive preview** | TS layout via `layout-bridge.js` + HarfBuzz; save → YAML via `frame_yaml_persistence.py` |
-| **Preview APIs** | TS-only: frame-tree, grid, component tree (`preview_ts_layout.py`) |
-| **Live preview SVG** | TS-only Node export (`preview_ts_export.py`); no Python SVG renderer (spec 012) |
+| **Interactive preview** | Node preview app + TS `layout-bridge.js` + HarfBuzz; save → YAML now has a TS path under `apps/preview/src/persistence/` |
+| **Preview APIs** | Node/TS-only: frame-tree, grid, component tree, preview document, icons, and save routes via `apps/preview/src/server.ts` |
+| **Live preview SVG** | TS-only Node export via `apps/preview/src/server.ts`; no Python SVG renderer (spec 012) |
 | **Batch SVG** | `export-frame-svg.mjs` — TS-only (`svg-render.ts`); golden harness `tests/svg-golden.test.ts` (3 canonical slugs after the first pruning pass) |
-| **Tests** | Latest full TS suite green in the current slice (`246/246`); retained 11-slug export sweep green; focused preview browser regressions green; spec 005 high-risk browser spot-checks render with zero errors; `test_preview_frames_dir.py` and `test_preview_ts_api.py` green. Full `pytest scripts -q` still has legacy parity drift outside the active TS path |
+| **Tests** | `npm --prefix packages/layout-engine test` green (`325/325`); `npm --prefix apps/preview test` green (`7/7`); full `python -m pytest scripts -q` green (`334 passed`, `65` subtests); focused Node-preview browser/Playwright lanes green for v3, force, and sequence; `node scripts/check_no_new_python.mjs` green |
 
-### Current delta — spec 038 Phase 1 scaffold started (2026-06-07)
+### Current delta — spec 038 complete (2026-06-08)
 
-- `apps/preview/` now exists as the first dedicated Node preview app package, with root `npm run preview` / `npm run preview:build` entrypoints.
-- The Node app now serves the real preview shell HTML plus the GET route slice the current editor depends on: `/preview/*`, `/reference/*`, `/api/icon/*`, `/api/preview-document/*`, `/api/frame-tree/*`, `/api/tree/*`, `/api/grid/*`, `/svg/*`, `/view/v3:*`, `/v3/view/*`, `/force/view/*`, and `/api/force-spec/*`.
-- The Node app now also owns the first write-path slice: `POST /api/overrides/*` and `POST /api/force-save/*`, backed by a TypeScript port of `frame_yaml_persistence.py` plus temp-fixture validation through `DG_FRAMES_DIR` / `DG_FORCE_DEFINITIONS_DIR`.
-- The Node app now also provides watcher-driven SSE reload on `/events`, with file-change generation bumps covering frame YAML, force YAML, preview shell assets, Baseline Foundry preview assets, and `packages/layout-engine/dist/`.
-- This still is not the full cutover: browser parity validation, spec 027 API validation on the Node server, and final Python preview deletion remain later spec 038 slices.
-- Validation for the read/write/reload slice is green: `npm --prefix apps/preview run build`, `npm --prefix packages/layout-engine run build:browser`, `node scripts/check_no_new_python.mjs`, direct Node-server probes on ports `8124` and `8128`, temp-fixture POST route probes on port `8125`, and direct persistence checks for byte-stable no-op saves plus `meta.elk` passthrough retention.
+- `apps/preview/` is now the live preview front door: shell HTML, GET preview APIs, POST save routes, icon/reference assets, and watcher-driven SSE reload all run through the Node app.
+- `scripts/preview_server.py`, `scripts/preview_ts_layout.py`, `scripts/preview_ts_export.py`, and `scripts/frame_yaml_persistence.py` are deleted; the retained Python loader/layout modules are explicitly dated parity oracles only.
+- Preview/browser coverage is now routed through the Node app harness, and the focused Playwright lanes for v3, force, and sequence all render cleanly from the Node server.
+- `packages/layout-engine/` now exposes the design-foundry-aligned internal seams needed for the later package relocation: `document-model/schema`, `operator-autolayout/facade`, `render-adapter/display-list` + `svg`, `render-ir`, and a text-shape-compatible adapter surface.
+- Validation for the closeout slice is green: `npm --prefix packages/layout-engine test`, `npm --prefix packages/layout-engine run build`, `npm --prefix packages/layout-engine run build:browser`, `npm --prefix apps/preview test`, `python -m pytest scripts -q`, `node scripts/check_no_new_python.mjs`, plus focused Node-preview Playwright route checks for v3 / force / sequence.
 
 ### Current delta — spec 022 diagram authoring AST closed (2026-06-06)
 
@@ -216,7 +215,7 @@ Commit **`a6822da`** (`scripts: land ts svg renderer cleanup`):
 | Golden SVG tests | `packages/layout-engine/tests/svg-golden.test.ts`, `tests/svg-golden-harness.ts` |
 | Browser relayout | `scripts/preview/layout-bridge.js` |
 | Editor UI | `scripts/preview/editor.js` |
-| Preview server | `scripts/preview_server.py` |
+| Preview server | `apps/preview/src/server.ts` |
 | Frame YAML | `scripts/diagrams/frames/*.yaml` |
 | Visual contract | `DIAGRAM.md` |
 | Stakeholder how-to | `docs/stakeholder-guide.md` |

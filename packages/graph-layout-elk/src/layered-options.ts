@@ -57,6 +57,10 @@ export interface LayeredLayoutConfig {
   optionOverrides?: Record<string, string>;
 }
 
+function unreachableLayeredFamily(family: string): never {
+  throw new Error(`Unhandled layered corpus family: ${family}`);
+}
+
 export function layeredConfigForFamily(family: LayeredCorpusFamily): LayeredLayoutConfig {
   switch (family) {
     case 'data_flow_and_integration':
@@ -72,6 +76,8 @@ export function layeredConfigForFamily(family: LayeredCorpusFamily): LayeredLayo
           'elk.padding': '[top=0,left=0,bottom=0,right=0]',
         },
       };
+    default:
+      return unreachableLayeredFamily(family);
   }
 }
 
@@ -81,19 +87,22 @@ export function layeredConfigForFamily(family: LayeredCorpusFamily): LayeredLayo
 export function buildLayeredLayoutOptions(config: LayeredLayoutConfig): ElkLayoutOptions {
   const { direction, spacingProfile } = config;
   const overrides = config.optionOverrides ?? {};
+  const defaultDirection = DIRECTION[direction];
+  const defaultBetweenLayers = BETWEEN_LAYERS[spacingProfile];
+  const defaultSameLayer = SAME_LAYER[spacingProfile];
 
   const base = elkParamDefaults();
-  base['elk.direction'] = DIRECTION[direction];
+  base['elk.direction'] = defaultDirection!;
   // YAML/session overrides must win — never let family betweenLayersPx clobber saved meta.elk.
   base['elk.layered.spacing.nodeNodeBetweenLayers'] = String(
     overrides['elk.layered.spacing.nodeNodeBetweenLayers']
       ?? config.betweenLayersPx
-      ?? BETWEEN_LAYERS[spacingProfile],
+      ?? defaultBetweenLayers!,
   );
   base['elk.spacing.nodeNode'] = String(
     overrides['elk.spacing.nodeNode']
       ?? config.sameLayerPx
-      ?? SAME_LAYER[spacingProfile],
+      ?? defaultSameLayer!,
   );
   base['elk.edgeLabels.inline'] = 'true';
 

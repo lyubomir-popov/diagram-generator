@@ -196,6 +196,12 @@
       throw new Error("PreviewSaveClient requires reloadDiagram() for post-save rehydration");
     }
     await deps.reloadDiagram({ preserveSelectionIds: preservedSelectionIds, canonicalState });
+    if (
+      preservedSelectionIds.length > 0
+      && typeof deps.restoreSelectionIds === "function"
+    ) {
+      deps.restoreSelectionIds(preservedSelectionIds);
+    }
     if (typeof deps.setStatus === "function") {
       deps.setStatus("Ready", "ok");
     }

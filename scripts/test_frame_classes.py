@@ -137,8 +137,8 @@ def _walk_violations(
             break
 
     if heading_child is not None and level is not None:
-        weight = heading_child.label[0].weight
-        small_caps = heading_child.label[0].small_caps
+        weight = heading_child.resolved_heading_weight or "400"
+        small_caps = bool(heading_child.resolved_heading_small_caps)
         if level >= 3:
             if weight != "700":
                 violations.append(

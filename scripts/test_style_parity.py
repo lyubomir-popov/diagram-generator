@@ -134,13 +134,20 @@ def _collect_actual_styles(frame: Frame, out: dict[str, dict] | None = None) -> 
             "resolvedFill": frame.resolved_fill,
             "resolvedStroke": frame.resolved_stroke,
         }
-        if frame.label:
-            line = frame.label[0]
+        if frame.role == "heading" and frame.label:
             snapshot["firstLine"] = {
-                "weight": line.weight,
-                "smallCaps": bool(line.small_caps),
-                "letterSpacing": line.letter_spacing,
-                "fill": line.fill,
+                "weight": frame.resolved_heading_weight or "400",
+                "smallCaps": bool(frame.resolved_heading_small_caps),
+                "letterSpacing": frame.resolved_heading_letter_spacing,
+                "fill": frame.resolved_text_fill or "#000000",
+            }
+        elif frame.label:
+            is_leaf_lead = frame.is_leaf
+            snapshot["firstLine"] = {
+                "weight": (frame.resolved_leaf_lead_weight if is_leaf_lead else None) or "400",
+                "smallCaps": bool(frame.resolved_leaf_lead_small_caps) if is_leaf_lead else False,
+                "letterSpacing": frame.resolved_leaf_lead_letter_spacing if is_leaf_lead else None,
+                "fill": frame.resolved_text_fill or "#000000",
             }
         out[frame.id] = snapshot
     for child in frame.children:

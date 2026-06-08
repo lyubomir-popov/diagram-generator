@@ -1,4 +1,10 @@
-"""Load native Frame YAML definitions into FrameDiagram objects.
+"""Dated parity oracle for native Frame YAML loading.
+
+Retired from the diagram product path on 2026-06-08. This module remains
+only for cross-language parity tests while the TypeScript loader is the
+runtime source of truth. Do not import it from product code.
+
+Load native Frame YAML definitions into FrameDiagram objects.
 
 Native frame YAML has ``engine: v3`` at the top level and defines a
 recursive Frame tree directly — no v2 Diagram intermediary.
@@ -278,6 +284,11 @@ def _parse_frame(data: dict, *, is_root: bool = False) -> Frame:
 
 def _parse_arrow(data: dict) -> Arrow:
     """Parse an arrow from YAML."""
+    if isinstance(data, str):
+        if "->" not in data:
+            raise ValueError(f"Invalid arrow shorthand: {data}")
+        source, target = (part.strip() for part in data.split("->", 1))
+        return Arrow(source=source, target=target)
     return Arrow(
         source=data.get("source", ""),
         target=data.get("target", ""),
@@ -387,8 +398,11 @@ def resolve_styles(root: Frame, *, _depth: int = 0, _parent_is_panel: bool = Fal
         # Root frame: invisible
         apply_frame_class(root, FRAME_CLASS_DEFS["hidden"])
     elif _is_layout_wrapper:
-        # Synthetic __heading / __body frames: transparent
-        apply_frame_class(root, FRAME_CLASS_DEFS["hidden"])
+        # Synthetic __heading / __body frames: transparent box chrome, but a
+        # parent-applied heading snapshot must survive for __heading content.
+        root.resolved_fill = "transparent"
+        root.resolved_stroke = "none"
+        root.resolved_stroke_width = 0
         # But __heading with a black-fill parent keeps its fill for contrast
         if root.fill == Fill.BLACK:
             root.resolved_fill = BLACK

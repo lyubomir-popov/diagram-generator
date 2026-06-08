@@ -10,7 +10,7 @@ export function toAbsolutePlacedNodes(nodes: PlacedNode[]): PlacedNode[] {
       x,
       y,
       ...(node.children?.length
-        ? { children: node.children.map((c) => mapNode(c, x, y)) }
+        ? { children: node.children.map((child: PlacedNode) => mapNode(child, x, y)) }
         : {}),
     };
   }

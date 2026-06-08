@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -60,6 +60,34 @@ const LAYOUT_ENGINE_BUNDLE = path.join(
   "dist",
   "layout-engine.iife.js",
 );
+const LAYOUT_ENGINE_HARFBUZZ_BUNDLE = path.join(
+  REPO_ROOT,
+  "packages",
+  "layout-engine",
+  "dist",
+  "layout-engine-harfbuzz.js",
+);
+const LAYOUT_ENGINE_WASM = path.join(REPO_ROOT, "packages", "layout-engine", "dist", "harfbuzz.wasm");
+const LAYOUT_ENGINE_FONT = path.join(REPO_ROOT, "assets", "UbuntuSans[wdth,wght].ttf");
+const LAYOUT_ENGINE_BROWSER_ENTRY = path.join(REPO_ROOT, "packages", "layout-engine", "src", "browser-entry.ts");
+const LAYOUT_ENGINE_HARFBUZZ_ENTRY = path.join(
+  REPO_ROOT,
+  "packages",
+  "layout-engine",
+  "src",
+  "harfbuzz-text-adapter.ts",
+);
+const GRAPH_LAYOUT_CORE_ENTRY = path.join(REPO_ROOT, "packages", "graph-layout-core", "src", "index.ts");
+const GRAPH_LAYOUT_ELK_ENTRY = path.join(REPO_ROOT, "packages", "graph-layout-elk", "src", "index.ts");
+const HARFBUZZ_WASM_SOURCE = path.join(
+  REPO_ROOT,
+  "packages",
+  "layout-engine",
+  "node_modules",
+  "harfbuzzjs",
+  "dist",
+  "harfbuzz.wasm",
+);
 const VIEWER_TEMPLATE = path.join(PREVIEW_DIR, "viewer-unified.html");
 
 const REFERENCE_MAP: Record<string, string> = {
@@ -84,6 +112,7 @@ const MIME_TYPES: Record<string, string> = {
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".ttf": "font/ttf",
+  ".wasm": "application/wasm",
   ".woff": "font/woff",
   ".woff2": "font/woff2",
 };
@@ -92,8 +121,11 @@ const iconLoader = createFsIconLoader(ICONS_DIR);
 const previewEngines = serializePreviewEngineManifest();
 const hostableGridLayoutKeys = new Set(
   previewEngines
-    .filter((entry) => entry.shellMode === "grid" && typeof entry.layoutEngineKey === "string")
-    .map((entry) => entry.layoutEngineKey as string),
+    .filter(
+      (entry: PreviewEngineManifest): entry is PreviewEngineManifest & { layoutEngineKey: string } =>
+        entry.shellMode === "grid" && typeof entry.layoutEngineKey === "string",
+    )
+    .map((entry) => entry.layoutEngineKey),
 );
 const textAdapterPromise = createHarfBuzzTextAdapter({
   fontData: readFileSync(path.join(REPO_ROOT, "assets", "UbuntuSans[wdth,wght].ttf")).buffer,
@@ -105,6 +137,7 @@ let lastRebuildError: string | null = null;
 let watchIntervalHandle: NodeJS.Timeout | null = null;
 let lastWatchMtimes = new Map<string, number>();
 const sseClients = new Set<ServerResponse>();
+let previewBundleBuildPromise: Promise<void> | null = null;
 
 function parsePort(argv: readonly string[], env: NodeJS.ProcessEnv): number {
   const rawArgPort = argv.find((arg) => arg.startsWith("--port="))?.split("=", 2)[1];
@@ -305,8 +338,91 @@ function listForceExamples(): string[] {
 function resolvePreviewAssetPath(filename: string): string | null {
   if (!filename || filename.includes("..")) return null;
   if (filename === "layout-engine.js") return LAYOUT_ENGINE_BUNDLE;
+  if (filename === "layout-engine-harfbuzz.js") return LAYOUT_ENGINE_HARFBUZZ_BUNDLE;
+  if (filename === "harfbuzz.wasm") return LAYOUT_ENGINE_WASM;
+  if (filename === "layout-font.ttf") return LAYOUT_ENGINE_FONT;
   const safe = path.posix.basename(filename);
   return path.join(PREVIEW_DIR, safe);
+}
+
+async function ensureLayoutEngineBrowserAssets(): Promise<void> {
+  if (existsSync(LAYOUT_ENGINE_BUNDLE) && existsSync(LAYOUT_ENGINE_HARFBUZZ_BUNDLE) && existsSync(LAYOUT_ENGINE_WASM)) {
+    return;
+  }
+  if (previewBundleBuildPromise) {
+    await previewBundleBuildPromise;
+    return;
+  }
+
+  previewBundleBuildPromise = (async () => {
+    mkdirSync(path.dirname(LAYOUT_ENGINE_BUNDLE), { recursive: true });
+    const layoutEngineRequire = createRequire(path.join(REPO_ROOT, "packages", "layout-engine", "package.json"));
+    const esbuild = layoutEngineRequire("esbuild") as {
+      build: (options: {
+        entryPoints: string[];
+        bundle: boolean;
+        format: "iife" | "esm";
+        globalName?: string;
+        outfile: string;
+        target: string;
+        platform?: "browser";
+        define?: Record<string, string>;
+        external?: string[];
+        plugins?: Array<{
+          name: string;
+          setup: (build: {
+            onResolve: (
+              options: { filter: RegExp },
+              callback: (args: { path: string }) => { path: string } | null,
+            ) => void;
+          }) => void;
+        }>;
+      }) => Promise<unknown>;
+    };
+    const localPackageAliasPlugin = {
+      name: "local-package-alias",
+      setup(build: {
+        onResolve: (
+          options: { filter: RegExp },
+          callback: (args: { path: string }) => { path: string } | null,
+        ) => void;
+      }) {
+        build.onResolve({ filter: /^@diagram-generator\/graph-layout-core$/ }, () => ({ path: GRAPH_LAYOUT_CORE_ENTRY }));
+        build.onResolve({ filter: /^@diagram-generator\/graph-layout-elk$/ }, () => ({ path: GRAPH_LAYOUT_ELK_ENTRY }));
+      },
+    };
+
+    await esbuild.build({
+      entryPoints: [LAYOUT_ENGINE_BROWSER_ENTRY],
+      bundle: true,
+      format: "iife",
+      globalName: "LayoutEngine",
+      outfile: LAYOUT_ENGINE_BUNDLE,
+      target: "es2022",
+      plugins: [localPackageAliasPlugin],
+    });
+
+    await esbuild.build({
+      entryPoints: [LAYOUT_ENGINE_HARFBUZZ_ENTRY],
+      bundle: true,
+      format: "esm",
+      outfile: LAYOUT_ENGINE_HARFBUZZ_BUNDLE,
+      platform: "browser",
+      target: "es2022",
+      define: {
+        process: "undefined",
+      },
+      external: ["module"],
+    });
+
+    copyFileSync(HARFBUZZ_WASM_SOURCE, LAYOUT_ENGINE_WASM);
+  })();
+
+  try {
+    await previewBundleBuildPromise;
+  } finally {
+    previewBundleBuildPromise = null;
+  }
 }
 
 function previewAssetUrl(filename: string): string {
@@ -354,7 +470,7 @@ function previewEngineScriptTags(
   fallbackScripts: readonly string[] = [],
 ): string {
   const scripts = Array.isArray(entry?.scripts) && entry.scripts.length > 0 ? entry.scripts : fallbackScripts;
-  return scripts.map((script) => `<script src="${previewAssetUrl(script)}"></script>`).join("\n");
+  return scripts.map((script: string) => `<script src="${previewAssetUrl(script)}"></script>`).join("\n");
 }
 
 function buildPreviewNavOptions(currentPath: string): string {
@@ -414,6 +530,19 @@ function buildBrowseNav(currentPath: string): string {
 
 function bfStylesLinkHtml(): string {
   return '<link rel="stylesheet" href="/preview/bf-os.css">';
+}
+
+function buildIndexSection(title: string, emptyText: string, links: Array<{ href: string; label: string }>): string {
+  const content =
+    links.length > 0
+      ? `<ul class="dg-browse-list">${links
+          .map(
+            (link) =>
+              `<li><a class="dg-browse-link" href="${link.href}">${htmlEscape(link.label)}</a></li>`,
+          )
+          .join("")}</ul>`
+      : `<p class="bf-form-help">${htmlEscape(emptyText)}</p>`;
+  return `<section class="dg-browse-group"><h2 class="dg-browse-heading">${htmlEscape(title)}</h2>${content}</section>`;
 }
 
 function applyUnifiedElkPlaceholders(html: string, isElk: boolean): string {
@@ -504,43 +633,35 @@ function buildForceViewerHtml(slug: string): string {
 }
 
 function buildIndexHtml(port: number): string {
-  const autolayoutLinks = listAutolayoutDiagrams()
-    .map((slug) => `<a href="/view/v3:${slug}">${htmlEscape(slug)}</a>`)
-    .join("\n");
-  const forceLinks = listForceExamples()
-    .map((slug) => `<a href="/force/view/${slug}">${htmlEscape(slug)}</a>`)
-    .join("\n");
+  const autolayoutLinks = listAutolayoutDiagrams().map((slug) => ({
+    href: `/view/v3:${slug}`,
+    label: slug,
+  }));
+  const forceLinks = listForceExamples().map((slug) => ({
+    href: `/force/view/${slug}`,
+    label: slug,
+  }));
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>Preview index</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Ubuntu Sans', system-ui, sans-serif; background: #1a1a1a; color: #e0e0e0; }
-  .page { padding: 16px 24px 32px; }
-  .section { margin-top: 20px; }
-  h1 { font-size: 16px; font-weight: 600; }
-  h2 { font-size: 13px; font-weight: 600; color: #aaa; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .meta { color: #aaa; margin-top: 8px; font-size: 13px; }
-  .nav { display: flex; flex-wrap: wrap; gap: 8px; }
-  .nav a { color: #6cc; text-decoration: none; padding: 6px 12px; border-radius: 4px; background: #2a2a2a; font-size: 14px; }
-  .nav a:hover { background: #3a3a3a; }
-</style>
+${bfStylesLinkHtml()}
+<link rel="stylesheet" href="/preview/editor.css">
 </head>
-<body>
-<div class="page">
-  <h1>Preview index</h1>
-  <div class="meta">Node preview app on port ${port}. Spec home: ${SPEC_HOME}</div>
-  <div class="section">
-    <h2>Autolayout</h2>
-    <div class="nav">${autolayoutLinks || "<span>No autolayout diagrams found.</span>"}</div>
-  </div>
-  <div class="section">
-    <h2>Force demos</h2>
-    <div class="nav">${forceLinks || "<span>No force demos found.</span>"}</div>
-  </div>
-</div>
+<body class="bf-theme bf-tier-os is-dark">
+<main class="bf-main">
+  <section class="bf-panel">
+    <div class="bf-panel-header">
+      <h1 class="bf-h4">Preview index</h1>
+      <p class="bf-form-help">Node preview app on port ${port}. Spec home: ${htmlEscape(SPEC_HOME)}</p>
+    </div>
+    <div class="bf-panel-content">
+      ${buildIndexSection("Autolayout", "No autolayout diagrams found.", autolayoutLinks)}
+      ${buildIndexSection("Force demos", "No force demos found.", forceLinks)}
+    </div>
+  </section>
+</main>
 </body>
 </html>`;
 }
@@ -588,6 +709,10 @@ function frameTreeForSlug(slug: string) {
 
 function loadFrameDiagram(slug: string) {
   return loadFrameYaml(path.join(FRAMES_DIR, `${slug}.yaml`));
+}
+
+function frameDiagramExists(slug: string): boolean {
+  return existsSync(path.join(FRAMES_DIR, `${slug}.yaml`));
 }
 
 function canonicalSavedState(slug: string) {
@@ -745,6 +870,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
     sendHtml(res, 200, buildIndexHtml(port));
     return;
   }
+  if (pathname === "/force") {
+    sendHtml(res, 200, buildIndexHtml(port));
+    return;
+  }
   if (pathname === "/api/runtime-identity") {
     handleRuntimeIdentity(res, port);
     return;
@@ -808,8 +937,14 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
       sendText(res, 400, "Invalid preview asset path");
       return;
     }
-    if (safeName === "layout-engine.js" && !existsSync(assetPath)) {
-      sendText(res, 404, "Layout engine bundle not built");
+    if (
+      (safeName === "layout-engine.js" || safeName === "layout-engine-harfbuzz.js" || safeName === "harfbuzz.wasm") &&
+      !existsSync(assetPath)
+    ) {
+      await ensureLayoutEngineBrowserAssets();
+    }
+    if (!existsSync(assetPath)) {
+      sendText(res, 404, `${safeName} not found`);
       return;
     }
     serveFile(res, assetPath, "public, max-age=300");
@@ -852,10 +987,25 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
     sendJson(res, 200, spec);
     return;
   }
+  if (
+    pathname.startsWith("/api/force/") ||
+    pathname.startsWith("/api/force-reset/") ||
+    pathname.startsWith("/api/force-node/") ||
+    pathname.startsWith("/api/force-tick/") ||
+    pathname.startsWith("/api/force-params/") ||
+    pathname.startsWith("/api/force-export/")
+  ) {
+    sendText(res, 404, `Route retired from the Node preview app: ${pathname}`);
+    return;
+  }
   if (pathname.startsWith("/api/preview-document/")) {
     const slug = normalizeFrameSlug(pathname.slice("/api/preview-document/".length));
     if (!slug) {
       sendText(res, 400, "Invalid slug");
+      return;
+    }
+    if (!frameDiagramExists(slug)) {
+      sendText(res, 404, `Unknown diagram: ${slug}`);
       return;
     }
     sendJson(res, 200, previewDocumentForSlug(slug));
@@ -867,6 +1017,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
       sendText(res, 400, "Invalid slug");
       return;
     }
+    if (!frameDiagramExists(slug)) {
+      sendText(res, 404, `Unknown diagram: ${slug}`);
+      return;
+    }
     sendJson(res, 200, frameTreeForSlug(slug));
     return;
   }
@@ -874,6 +1028,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
     const slug = normalizeFrameSlug(pathname.slice("/api/tree/".length));
     if (!slug) {
       sendText(res, 400, "Invalid slug");
+      return;
+    }
+    if (!frameDiagramExists(slug)) {
+      sendText(res, 404, `Unknown diagram: ${slug}`);
       return;
     }
     const diagram = loadFrameDiagram(slug);
@@ -884,6 +1042,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
     const slug = normalizeFrameSlug(pathname.slice("/api/grid/".length));
     if (!slug) {
       sendText(res, 400, "Invalid slug");
+      return;
+    }
+    if (!frameDiagramExists(slug)) {
+      sendText(res, 404, `Unknown diagram: ${slug}`);
       return;
     }
     const diagram = loadFrameDiagram(slug);

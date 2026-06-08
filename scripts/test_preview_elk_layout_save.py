@@ -4,74 +4,28 @@ from __future__ import annotations
 
 import contextlib
 import json
-import os
 import pathlib
 import shutil
-import socket
-import subprocess
-import sys
 import time
 import urllib.request
 
 import pytest
 import yaml
 from playwright.sync_api import sync_playwright
+from test_preview_app_harness import preview_app
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SCRIPTS = ROOT / "scripts"
-FRAMES = SCRIPTS / "diagrams" / "frames"
+FRAMES = ROOT / "scripts" / "diagrams" / "frames"
 SLUG = "juju-bootstrap-machines-process"
 SAME_LAYER_INPUT = "#elk-elk-spacing-nodeNode"
 SAME_LAYER_KEY = "elk.spacing.nodeNode"
 SCREENSHOT_DIR = ROOT / "tmp" / "elk-save-playwright"
 
 
-def _reserve_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
-
-
-def _wait_for_server(base_url: str, process: subprocess.Popen[str], timeout: float = 120.0) -> None:
-    deadline = time.time() + timeout
-    last_error: Exception | None = None
-    while time.time() < deadline:
-        if process.poll() is not None:
-            output = process.stdout.read() if process.stdout else ""
-            raise RuntimeError(f"Preview server exited ({process.returncode}).\n{output}")
-        try:
-            with urllib.request.urlopen(base_url, timeout=1):
-                return
-        except Exception as exc:
-            last_error = exc
-            time.sleep(0.25)
-    raise RuntimeError(f"Preview server did not start at {base_url}: {last_error}")
-
-
 @contextlib.contextmanager
 def _preview_server(frames_dir: pathlib.Path):
-    port = _reserve_port()
-    env = os.environ.copy()
-    env["DG_FRAMES_DIR"] = str(frames_dir)
-    process = subprocess.Popen(
-        [sys.executable, str(SCRIPTS / "preview_server.py"), "--port", str(port), "--no-watch"],
-        cwd=str(ROOT),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        env=env,
-    )
-    base_url = f"http://127.0.0.1:{port}"
-    try:
-        _wait_for_server(base_url, process)
+    with preview_app(extra_env={"DG_FRAMES_DIR": str(frames_dir)}, timeout=120.0) as base_url:
         yield base_url
-    finally:
-        process.terminate()
-        try:
-            process.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=10)
 
 
 def _wait_juju_ready(page) -> None:

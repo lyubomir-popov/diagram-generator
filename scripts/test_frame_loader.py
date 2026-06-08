@@ -942,7 +942,7 @@ root:
 
     content = _find_leaf(diagram.root.children[0])
     assert content is not None
-    assert content.label[0].fill == "#FFFFFF"
+    assert content.resolved_text_fill == "#FFFFFF"
 
 
 def test_overlays_parsed_from_yaml(tmp_path):

@@ -1,4 +1,10 @@
-"""Frame-based two-pass layout engine.
+"""Dated parity oracle for the legacy Python autolayout engine.
+
+Retired from the diagram product path on 2026-06-08. This module remains
+only for cross-language parity tests while the TypeScript engine is the
+runtime source of truth. Do not import it from product code.
+
+Frame-based two-pass layout engine.
 
 Pass 1 — measure(): bottom-up, computes natural size of each Frame.
 Pass 2 — place(): top-down, assigns positions and distributes fill space.
@@ -44,6 +50,9 @@ from diagram_shared import (
     tight_box_height,
     wrap_text_lines,
 )
+
+DEFAULT_MAX_WIDTH_CHARS = 66
+NO_WRAP_MAX_WIDTH_CHARS = 0
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +241,7 @@ def _estimate_text_width(lines: list[dict]) -> float:
 
 
 def _frame_owned_heading_to_dict(frame: Frame, line: Line) -> dict:
-    return _make_line(
+    return make_line(
         line.content,
         size=line.size,
         weight=frame.resolved_heading_weight or "400",
@@ -245,7 +254,7 @@ def _frame_owned_heading_to_dict(frame: Frame, line: Line) -> dict:
 
 def _frame_owned_label_to_dict(frame: Frame, line: Line, label_index: int) -> dict:
     is_leaf_lead = frame.is_leaf and label_index == 0
-    return _make_line(
+    return make_line(
         line.content,
         size=line.size,
         weight=(frame.resolved_leaf_lead_weight if is_leaf_lead else None) or "400",
@@ -265,6 +274,40 @@ def _leaf_all_lines(frame: Frame) -> list[dict]:
     if frame.label:
         lines.extend(_frame_owned_label_to_dict(frame, line, label_index) for label_index, line in enumerate(frame.label))
     return lines
+
+
+def _frame_has_text_content(frame: Frame) -> bool:
+    if frame.heading and frame.heading.content.strip():
+        return True
+    return any(line.content.strip() for line in frame.label)
+
+
+def _apply_text_layout_defaults(frame: Frame) -> None:
+    if _frame_has_text_content(frame) and frame.max_width_chars is None:
+        frame.max_width_chars = DEFAULT_MAX_WIDTH_CHARS
+    for child in frame.children:
+        _apply_text_layout_defaults(child)
+
+
+def _reference_line_for_wrap(frame: Frame, all_lines: list[dict]) -> dict:
+    for line in all_lines:
+        if str(line.get("content", "")).strip():
+            return line
+    return make_line("n", size=BODY_SIZE, weight="400")
+
+
+def _max_width_px_from_chars(char_count: int, reference: dict) -> float:
+    if char_count <= 0:
+        return 0.0
+    ref_content = str(reference.get("content", "")).strip()
+    sample = (
+        (ref_content * ((char_count + len(ref_content) - 1) // len(ref_content)))[:char_count]
+        if ref_content
+        else ("n" * char_count)
+    )
+    probe = dict(reference)
+    probe["content"] = sample or ("n" * char_count)
+    return round_up_to_grid(estimate_line_width(probe))
 
 
 def _leaf_natural_size(frame: Frame, constrained_w: float | None = None) -> tuple[float, float]:
@@ -287,8 +330,15 @@ def _leaf_natural_size(frame: Frame, constrained_w: float | None = None) -> tupl
             text_max_w = constrained_w - pad_l - pad_r - icon_col
         elif frame.width is not None:
             text_max_w = frame.width - pad_l - pad_r - icon_col
+        elif frame.max_width is not None:
+            text_max_w = frame.max_width - pad_l - pad_r - icon_col
         else:
-            text_max_w = BLOCK_WIDTH - pad_l - pad_r - icon_col
+            chars = frame.max_width_chars if frame.max_width_chars is not None else DEFAULT_MAX_WIDTH_CHARS
+            if chars == NO_WRAP_MAX_WIDTH_CHARS:
+                text_max_w = 1_000_000_000
+            else:
+                outer_px = _max_width_px_from_chars(chars, _reference_line_for_wrap(frame, all_lines))
+                text_max_w = outer_px - pad_l - pad_r - icon_col
         text_max_w = max(0, text_max_w)
         wrapped_lines = wrap_text_lines(all_lines, text_max_w)
         text_h = stepped_lines_height(wrapped_lines, top_pad=pad_t, bottom_pad=pad_b, min_height=0)
@@ -1906,6 +1956,7 @@ def layout_frame_diagram(diagram: FrameDiagram) -> LayoutResult:
         # Ensure styles are resolved tree-wide (idempotent). This avoids
         # partial-resolution drift when diagrams are built outside the loader.
         resolve_styles(root)
+        _apply_text_layout_defaults(root)
 
         # Pass 1: measure (root uses sum-based sizing to avoid canvas inflation)
         measure(root, _is_root=True)

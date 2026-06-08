@@ -1,13 +1,26 @@
-"""Regression: ELK controller extracted from editor.js (spec 026 T011)."""
+"""Regression: ELK controller stays wired through the unified preview shell."""
 
 from __future__ import annotations
 
 import pathlib
+import urllib.request
 
-import preview_server
+import pytest
+from test_preview_app_harness import preview_app
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PREVIEW = ROOT / "scripts" / "preview"
+
+
+def _fetch_text(url: str) -> str:
+    with urllib.request.urlopen(url, timeout=60) as resp:
+        return resp.read().decode()
+
+
+@pytest.fixture(scope="module")
+def preview_base() -> str:
+    with preview_app() as base:
+        yield base
 
 
 def test_elk_controller_module_exists():
@@ -26,8 +39,8 @@ def test_elk_shell_scripts_live_in_unified_template():
     assert "elk-layout-controls.js" not in unified
 
 
-def test_built_elk_viewer_html_includes_manifest_scripts():
-    html = preview_server._build_viewer_html("v3:juju-bootstrap-machines-process", [], False)
+def test_elk_viewer_html_includes_manifest_scripts(preview_base: str):
+    html = _fetch_text(f"{preview_base}/view/v3:juju-bootstrap-machines-process")
     assert "/preview/elk-layout-controls.js" in html
     assert "/preview/elk-controller.js" in html
 

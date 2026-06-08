@@ -106,12 +106,12 @@ def apply_frame_class(frame, frame_class: FrameClassDefinition) -> None:
     frame.resolved_leaf_lead_small_caps = frame_class.leaf_lead_text.small_caps if frame_class.leaf_lead_text else None
     frame.resolved_leaf_lead_letter_spacing = frame_class.leaf_lead_text.letter_spacing if frame_class.leaf_lead_text else None
 
-    if frame_class.heading_text:
-        for child in frame.children:
-            if child.role != "heading":
-                continue
-            child.resolved_text_fill = frame_class.text_fill
-            child.resolved_icon_fill = frame_class.icon_fill
+    for child in frame.children:
+        if child.role != "heading":
+            continue
+        child.resolved_text_fill = frame_class.text_fill
+        child.resolved_icon_fill = frame_class.icon_fill
+        if frame_class.heading_text:
             child.resolved_heading_weight = frame_class.heading_text.weight
             child.resolved_heading_small_caps = frame_class.heading_text.small_caps
             child.resolved_heading_letter_spacing = frame_class.heading_text.letter_spacing

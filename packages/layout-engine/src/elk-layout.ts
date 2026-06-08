@@ -279,7 +279,7 @@ function applyElkEdgeLabels(
       delete arrow.elkLabels;
       continue;
     }
-    arrow.elkLabels = edge.labels.map((label) => ({
+    arrow.elkLabels = edge.labels.map((label: NonNullable<PlacedEdge["labels"]>[number]) => ({
       text: label.text,
       x: label.x + originX,
       y: label.y + originY,

@@ -7,6 +7,10 @@ export interface ForceLayoutConfig {
 
 export type ElkForceLayoutOptions = Record<string, string>;
 
+function unreachableForceFamily(family: string): never {
+  throw new Error(`Unhandled force corpus family: ${family}`);
+}
+
 export function forceConfigForFamily(family: ForceCorpusFamily): ForceLayoutConfig {
   switch (family) {
     case 'system_architecture':
@@ -15,6 +19,8 @@ export function forceConfigForFamily(family: ForceCorpusFamily): ForceLayoutConf
     case 'infrastructure_and_network_topology':
     case 'data_model_and_relationships':
       return { spacingProfile: 'normal' };
+    default:
+      return unreachableForceFamily(family);
   }
 }
 

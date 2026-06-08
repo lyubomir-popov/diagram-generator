@@ -6462,6 +6462,11 @@ function _initPreviewSaveClient() {
     slug: SLUG,
     getModel: () => model,
     getSelectedIds: () => [...selectedIds],
+    restoreSelectionIds: (ids) => {
+      selectedIds.clear();
+      ids.forEach(id => selectedIds.add(id));
+      reapplySelection();
+    },
     serializeDirtyState: () => EditorState.serializeDirtyState(),
     reloadDiagram: (options) => loadSVG(options),
     isElkLayeredDiagram: () => ElkPreviewController.isElkLayeredDiagram(),

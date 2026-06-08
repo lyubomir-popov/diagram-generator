@@ -19,7 +19,8 @@ The repo uses a single render engine: **v3 autolayout** – a Figma-like nested 
 Fastest way to see the project working:
 
 ```bash
-python scripts/preview_server.py
+npm install
+npm run preview
 # open http://127.0.0.1:8100/view/v3:support-engineering-flow
 ```
 
@@ -32,7 +33,7 @@ If you are changing the autolayout engine, read these in order before editing co
 3. [`STATUS.md`](STATUS.md) – cold-start orientation, architecture, key files.
 4. [`.github/copilot-instructions.md`](.github/copilot-instructions.md) – workflow discipline and anti-patch protocol.
 
-Key files: `packages/layout-engine/src/layout.ts` (measure→place), `packages/layout-engine/src/svg-render.ts` + `export-frame-svg.mjs` (batch SVG; golden tests in `tests/svg-golden.test.ts`), `scripts/preview/layout-bridge.js` (interactive relayout), `scripts/preview_server.py` (preview + TS SVG pool), `scripts/diagrams/frames/*.yaml` (authored diagrams). See `docs/stakeholder-guide.md` for the edit→preview→export loop.
+Key files: `packages/layout-engine/src/layout.ts` (measure→place), `packages/layout-engine/src/svg-render.ts` + `export-frame-svg.mjs` (batch SVG; golden tests in `tests/svg-golden.test.ts`), `scripts/preview/layout-bridge.js` (interactive relayout), `apps/preview/src/server.ts` (Node preview front door), `scripts/diagrams/frames/*.yaml` (authored diagrams). See `docs/stakeholder-guide.md` for the edit→preview→export loop.
 
 ### Recommended exemplar path
 
@@ -52,7 +53,7 @@ Open this repo and demo the current v3 workflow end-to-end.
 1. Work from the repo root.
 2. The only live render surface is v3 autolayout with Frame YAML in `scripts/diagrams/frames/`.
 3. Start the interactive preview server:
-    - python scripts/preview_server.py
+    - npm run preview
 4. Open these demo surfaces (prefer VS Code webview or Simple Browser; otherwise default browser):
     - http://127.0.0.1:8100/view/v3:support-engineering-flow
     - http://127.0.0.1:8100/view/v3:example-platform-architecture
@@ -70,17 +71,14 @@ All editor and preview UI must use [Baseline Foundry](../baseline-foundry/) comp
 
 ```bash
 git clone <repo-url> && cd diagram-generator
-python -m venv .venv
-.venv/Scripts/activate  # Windows
-# source .venv/bin/activate  # macOS/Linux
-
-python scripts/preview_server.py
+npm install
+npm run preview
 # open http://127.0.0.1:8100/view/v3:support-engineering-flow
 ```
 
 ### Creating your own diagram
 
-**Native Frame YAML (preferred):** Drop a `.yaml` file in `scripts/diagrams/frames/` and it is auto-discovered by the preview server. No registration needed.
+**Native Frame YAML (preferred):** Drop a `.yaml` file in `scripts/diagrams/frames/` and it is auto-discovered by the Node preview app. No registration needed.
 
 ```yaml
 engine: v3
@@ -102,7 +100,7 @@ root:
       icon: Package.svg
 ```
 
-Start the preview server with `python scripts/preview_server.py` and open `http://127.0.0.1:8100/view/v3:my-diagram`. See `scripts/diagrams/frames/example-deployment-pipeline.yaml` for a compact working example and `scripts/diagrams/frames/support-engineering-flow.yaml` for a fuller authored surface.
+Start the preview app with `npm run preview` and open `http://127.0.0.1:8100/view/v3:my-diagram`. See `scripts/diagrams/frames/example-deployment-pipeline.yaml` for a compact working example and `scripts/diagrams/frames/support-engineering-flow.yaml` for a fuller authored surface.
 
 ### Example diagrams (tracked)
 
@@ -118,12 +116,12 @@ Tracked examples ship with the repo for reference:
 
 ### Interactive autolayout demo
 
-The interactive autolayout demo is the hot-reload preview server. It is the live editor surface for local relayout, spacing controls, align/distribute actions, and save-back into Frame YAML.
+The interactive autolayout demo is the hot-reload Node preview app. It is the live editor surface for local relayout, spacing controls, align/distribute actions, and save-back into Frame YAML.
 
-The preview server serves the repo-owned vendored BF `os` tier stylesheet and Ubuntu Sans snapshot under `assets/baseline-foundry/`, so fresh clones get the same preview shell without depending on a sibling checkout at runtime. Refresh that vendored snapshot with `python scripts/sync_baseline_foundry_assets.py` when you want to roll a newer Foundry release into this repo from a sibling checkout.
+The preview app serves the repo-owned vendored BF `os` tier stylesheet and Ubuntu Sans snapshot under `assets/baseline-foundry/`, so fresh clones get the same preview shell without depending on a sibling checkout at runtime. Refresh that vendored snapshot with `python scripts/sync_baseline_foundry_assets.py` when you want to roll a newer Foundry release into this repo from a sibling checkout.
 
 ```bash
-python scripts/preview_server.py
+npm run preview
 ```
 
 Then open one of these URLs in your browser:
@@ -135,7 +133,7 @@ Then open one of these URLs in your browser:
 
 Suggested demo flow:
 
-1. Start `python scripts/preview_server.py`
+1. Start `npm run preview`
 2. Open `http://127.0.0.1:8100/view/v3:support-engineering-flow`
 3. Resize a parent panel or change gutter controls to watch autolayout recompute child placement
 4. Multi-select a few boxes to try distribute/align actions in the inspector
@@ -153,7 +151,7 @@ Open this repo and launch the interactive autolayout demo for `support-engineeri
 Work from the repo root. Do not stop at instructions; actually run the setup and open the demo.
 
 1. Start the preview server in an integrated terminal with:
-    python scripts/preview_server.py
+    npm run preview
 2. Keep that terminal running.
 3. Prefer opening the demo in a VS Code webview or Simple Browser if your environment supports it. Otherwise open it in the default browser at:
   http://127.0.0.1:8100/view/v3:support-engineering-flow
@@ -232,7 +230,7 @@ Key rules you must not violate:
 Validate the live v3 surface:
 
 1. Add a new `.yaml` file under [`scripts/diagrams/frames/`](scripts/diagrams/frames/)
-2. Start `python scripts/preview_server.py`
+2. Start `npm run preview`
 3. Open `http://127.0.0.1:8100/view/v3:<slug>` and browser-check the result
 4. If you changed layout or render behaviour, run `python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q`
 5. Run `node scripts/check_no_new_python.mjs`

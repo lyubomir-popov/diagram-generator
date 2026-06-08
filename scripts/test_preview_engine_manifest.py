@@ -1,34 +1,68 @@
-"""Regression coverage for TS-owned preview-engine manifest discovery (spec 025 T003)."""
+"""Regression coverage for TS-owned preview-engine manifest discovery."""
 
 from __future__ import annotations
 
 import json
-import os
 import pathlib
 import subprocess
-from http import HTTPStatus
-from unittest.mock import MagicMock
+import urllib.request
 
-import preview_server
+import pytest
+from test_preview_app_harness import preview_app
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-MANIFEST_PATH = ROOT / "packages" / "layout-engine" / "dist" / "preview-engine-manifest.json"
 
 
-def _ensure_manifest_built() -> None:
-    npm_executable = "npm.cmd" if os.name == "nt" else "npm"
-    subprocess.run(
-        [npm_executable, "run", "build:browser"],
-        cwd=str(ROOT / "packages" / "layout-engine"),
+def _load_manifest_from_source() -> list[dict[str, object]]:
+    process = subprocess.run(
+        [
+            "node",
+            "--import",
+            "tsx",
+            "--eval",
+            (
+                "import { serializePreviewEngineManifest } "
+                "from '../../packages/layout-engine/src/index.ts'; "
+                "console.log(JSON.stringify(serializePreviewEngineManifest()));"
+            ),
+        ],
+        cwd=str(ROOT / "apps" / "preview"),
         check=True,
         capture_output=True,
         text=True,
     )
+    return json.loads(process.stdout)
+
+
+def _fetch_json(url: str) -> object:
+    with urllib.request.urlopen(url, timeout=60) as resp:
+        return json.loads(resp.read().decode())
+
+
+def _manifest_contract(payload: list[dict[str, object]]) -> list[dict[str, object]]:
+    return [
+        {
+            "id": entry["id"],
+            "shellMode": entry["shellMode"],
+            "layoutEngineKey": entry.get("layoutEngineKey"),
+            "scripts": entry.get("scripts", []),
+            "apiRoutes": entry.get("apiRoutes"),
+            "compatibility": entry.get("compatibility"),
+            "capabilities": entry.get("capabilities"),
+            "controlKeys": [spec["key"] for spec in entry.get("controlSpecs", [])],
+        }
+        for entry in payload
+    ]
+
+
+@pytest.fixture(scope="module")
+def preview_base() -> str:
+    with preview_app() as base:
+        yield base
 
 
 def test_preview_engine_manifest_json_exists_and_lists_hostable_preview_lanes():
-    _ensure_manifest_built()
-    payload = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+    payload = _load_manifest_from_source()
     assert isinstance(payload, list)
     ids = [entry["id"] for entry in payload]
     assert ids == ["elk-layered", "force", "sequence"]
@@ -54,77 +88,48 @@ def test_preview_engine_manifest_json_exists_and_lists_hostable_preview_lanes():
     assert sequence["compatibility"]["documentKinds"] == ["sequence"]
 
 
-def test_load_preview_engine_manifest_helper_matches_json_file():
-    _ensure_manifest_built()
-    from_file = preview_server._load_preview_engine_manifest()
-    from_disk = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    assert from_file == from_disk
+def test_preview_engines_route_matches_built_manifest(preview_base: str):
+    from_route = _fetch_json(f"{preview_base}/api/preview-engines")
+    assert _manifest_contract(from_route) == _manifest_contract(_load_manifest_from_source())
 
 
-def test_serve_preview_engines_returns_ts_manifest_json():
-    _ensure_manifest_built()
-
-    handler = object.__new__(preview_server.PreviewHandler)
-    handler._respond = MagicMock()
-
-    handler._serve_preview_engines()
-
-    handler._respond.assert_called_once()
-    status, content_type, body = handler._respond.call_args[0]
-    assert status == HTTPStatus.OK
-    assert content_type == "application/json"
-    payload = json.loads(body.decode())
-    assert [entry["id"] for entry in payload] == ["elk-layered", "force", "sequence"]
-
-
-def test_hostable_frame_layout_engine_keys_come_from_ts_manifest():
-    _ensure_manifest_built()
-    assert preview_server._try_hostable_frame_layout_engine_keys() == {"elk-layered", "sequence"}
-
-
-def test_normalize_hostable_frame_layout_engine_ignores_unhostable_values():
-    _ensure_manifest_built()
-    assert preview_server._normalize_hostable_frame_layout_engine("elk-layered") == "elk-layered"
-    assert preview_server._normalize_hostable_frame_layout_engine("sequence") == "sequence"
-    assert preview_server._normalize_hostable_frame_layout_engine("elk-force") is None
-    assert preview_server._normalize_hostable_frame_layout_engine("vertical-stack") is None
-
-
-def test_normalize_hostable_frame_layout_engine_degrades_open_when_manifest_missing(monkeypatch):
-    monkeypatch.setattr(preview_server, "_try_hostable_frame_layout_engine_keys", lambda: None)
-    assert preview_server._normalize_hostable_frame_layout_engine("elk-layered") == "elk-layered"
-    assert preview_server._normalize_hostable_frame_layout_engine("elk-force") == "elk-force"
-
-
-def test_overrides_post_returns_canonical_state(monkeypatch):
-    handler = object.__new__(preview_server.PreviewHandler)
-    body = json.dumps({"overrides": {}, "grid_overrides": {}}).encode("utf-8")
-    handler.headers = {"Content-Length": str(len(body))}
-    handler.rfile = __import__("io").BytesIO(body)
-    handler._respond = MagicMock()
-
-    monkeypatch.setattr(preview_server, "_save_overrides", lambda slug, data: None)
-    monkeypatch.setattr(
-        preview_server,
-        "_get_preview_document",
-        lambda slug: {"kind": "frame-diagram", "frameTree": {"id": "root"}},
-    )
-    monkeypatch.setattr(preview_server, "_get_component_tree", lambda slug: [{"id": "root"}])
-    monkeypatch.setattr(preview_server, "_get_grid_info", lambda slug: {"col_gap": 24})
-
-    handler._serve_overrides_post("preview-smoke")
-
-    handler._respond.assert_called_once()
-    status, content_type, response_body = handler._respond.call_args[0]
-    assert status == HTTPStatus.OK
-    assert content_type == "application/json"
-    payload = json.loads(response_body.decode())
+def test_runtime_identity_reports_node_preview_app(preview_base: str):
+    payload = _fetch_json(f"{preview_base}/api/runtime-identity")
     assert payload["ok"] is True
-    assert payload["canonicalState"]["slug"] == "preview-smoke"
+    assert payload["app"] == "@diagram-generator/preview-app"
+    assert payload["repoRoot"] == str(ROOT)
+    assert payload["appRoot"].endswith(str(pathlib.Path("apps") / "preview"))
+    assert payload["framesDir"].endswith(str(pathlib.Path("scripts") / "diagrams" / "frames"))
+    assert isinstance(payload["pid"], int)
+    assert isinstance(payload["port"], int)
+    assert payload["node"].startswith("v")
+
+
+def test_overrides_post_returns_canonical_state(tmp_path: pathlib.Path):
+    frames_dir = tmp_path / "frames"
+    frames_dir.mkdir()
+    slug = "preview-smoke"
+    source = ROOT / "scripts" / "diagrams" / "frames" / f"{slug}.yaml"
+    target = frames_dir / f"{slug}.yaml"
+    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    with preview_app(extra_env={"DG_FRAMES_DIR": str(frames_dir)}) as base:
+        request = urllib.request.Request(
+            f"{base}/api/overrides/{slug}",
+            data=json.dumps({"overrides": {}, "grid_overrides": {}}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(request, timeout=60) as resp:
+            payload = json.loads(resp.read().decode())
+
+    assert payload["ok"] is True
+    assert payload["canonicalState"]["slug"] == slug
     assert payload["canonicalState"]["previewDocument"] == {
         "kind": "frame-diagram",
-        "frameTree": {"id": "root"},
+        "slug": slug,
+        "title": "Preview smoke",
+        "layoutEngine": None,
+        "shellMode": "grid",
+        "frameTree": payload["canonicalState"]["frameTree"],
     }
-    assert payload["canonicalState"]["frameTree"] == {"id": "root"}
-    assert payload["canonicalState"]["componentTree"] == [{"id": "root"}]
-    assert payload["canonicalState"]["gridInfo"] == {"col_gap": 24}
+    assert payload["canonicalState"]["componentTree"][0]["id"] == "page"
+    assert payload["canonicalState"]["gridInfo"]["col_gap"] == 24

@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prebuild": "npm --prefix ../../packages/layout-engine run build",
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts"
+    "start": "tsx src/server.ts",
+    "test": "node --import tsx --test src/persistence/*.test.ts"
   },
   "dependencies": {
     "@diagram-generator/layout-engine": "file:../../packages/layout-engine",

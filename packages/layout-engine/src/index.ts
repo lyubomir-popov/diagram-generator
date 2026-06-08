@@ -71,6 +71,12 @@ export {
   type HarfBuzzTextAdapterOptions,
   type HarfBuzzTextAdapterFetchOptions,
 } from './harfbuzz-text-adapter.js';
+export {
+  isTextShapeCompatibleAdapter,
+  shapeLineSpec,
+  type ShapeTextRunRequest,
+  type TextShapeCompatibleAdapter,
+} from './text-adapter/shape-compatible.js';
 
 export {
   distributeFillSpace,
@@ -111,6 +117,27 @@ export { serializeFrameDiagram, serializeFrame } from './frame-serialize.js';
 export { buildGridInfo, type GridInfo } from './grid-info.js';
 export { buildComponentTree, type ComponentInfo } from './component-tree.js';
 export { renderFrameDiagramToSvg, type SvgRenderOptions } from './svg-render.js';
+export {
+  emitFrameDiagramDisplayList,
+} from './render-adapter/display-list.js';
+export { renderDisplayListToSvg } from './render-adapter/svg.js';
+export type {
+  AssetRef,
+  Color,
+  DisplayList,
+  DisplayListItem,
+  GlyphRunItem,
+  GroupItem,
+  LineItem,
+  Paint,
+  PathCommand,
+  PathItem,
+  RectItem,
+  ShapedGlyph,
+  ShapedRun,
+  StrokeStyle,
+  Viewport,
+} from './render-ir.js';
 export {
   collectIconNames,
   createFsIconLoader,
@@ -225,6 +252,29 @@ export type {
   EditorStateStoreDeps,
   EditorStateStoreOptions,
 } from './preview-shell/index.js';
+
+export {
+  AUTOLAYOUT_DOCUMENT_KIND,
+  fromFrameDiagram,
+  toFrameDiagram,
+} from './document-model/schema.js';
+export type { AutolayoutDocument } from './document-model/schema.js';
+
+export {
+  AUTOLAYOUT_OPERATOR_FACADE,
+  evaluateAutolayoutOperator,
+} from './operator-autolayout/facade.js';
+export type {
+  AutolayoutOperatorInputs,
+  AutolayoutOperatorOutputs,
+  AutolayoutOperatorParams,
+  EvaluateContext,
+  InputPort,
+  OperatorDefinition,
+  OutputPort,
+  ParameterField,
+  ParameterType,
+} from './operator-autolayout/facade.js';
 
 export {
   ELK_LAYERED_PREVIEW_ENGINE,

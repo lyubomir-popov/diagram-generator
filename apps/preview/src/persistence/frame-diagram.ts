@@ -1,5 +1,6 @@
 import path from "node:path";
 import { createRequire } from "node:module";
+import { EOL } from "node:os";
 
 const require = createRequire(import.meta.url);
 const yaml = require("yaml") as {
@@ -493,11 +494,14 @@ export function persistFrameDiagramOverridePayloadToYaml(
     applyFrameOverride(target, override, frameId);
   }
 
-  return yaml.stringify(document, {
+  const dumped = yaml.stringify(document, {
     aliasDuplicateObjects: false,
+    indentSeq: false,
     lineWidth: 1000,
+    singleQuote: true,
     sortMapEntries: false,
   });
+  return dumped.replace(/\n/g, EOL);
 }
 
 export function framePersistenceFileLabel(filePath: string): string {

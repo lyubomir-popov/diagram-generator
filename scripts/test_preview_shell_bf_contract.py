@@ -4,14 +4,12 @@ from __future__ import annotations
 import os
 import pathlib
 import re
-import sys
+import urllib.request
 
 import pytest
+from test_preview_app_harness import preview_app
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SCRIPTS = ROOT / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
 ALLOWLIST_FILE = ROOT / "scripts" / "preview_html_allowlist.txt"
 BF_LINK = re.compile(r"%BF_STYLES%|/preview/bf-os\.css")
 INLINE_STYLE = re.compile(r"<style\b", re.IGNORECASE)
@@ -94,12 +92,24 @@ def test_no_handrolled_html_under_packages() -> None:
     assert not pkg_html, (
         "Hand-rolled HTML under packages/ is forbidden (found: "
         + ", ".join(p.relative_to(ROOT).as_posix() for p in pkg_html)
-        + "). Use scripts/preview_server.py + Frame YAML."
+        + "). Use apps/preview + Frame YAML."
     )
 
 
 def test_preview_server_requires_bf_at_startup() -> None:
-    import preview_server
+    with preview_app() as base:
+        with urllib.request.urlopen(f"{base}/preview/bf-os.css", timeout=30) as resp:
+            assert resp.status == 200
+            body = resp.read().decode()
+    assert "@font-face" in body
 
-    assert hasattr(preview_server, "_require_bf_preview_assets")
-    preview_server._require_bf_preview_assets()
+
+def test_preview_index_page_uses_baseline_foundry() -> None:
+    with preview_app() as base:
+        with urllib.request.urlopen(base, timeout=30) as resp:
+            assert resp.status == 200
+            body = resp.read().decode()
+
+    assert "/preview/bf-os.css" in body
+    assert "/preview/editor.css" in body
+    assert "<style" not in body.lower()

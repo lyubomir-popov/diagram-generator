@@ -15,7 +15,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import diagram_shared
-from diagram_shared import ICON_SIZE, INSET
+from diagram_shared import GRID_GUTTER, ICON_SIZE, INSET
 from frame_model import (
     Align, Border, Direction, Fill, Frame, Justify, Line, Sizing,
 )
@@ -41,6 +41,12 @@ _SIZING = {"HUG": Sizing.HUG, "FILL": Sizing.FILL, "FIXED": Sizing.FIXED}
 _ALIGN = {a.name: a for a in Align}
 _FILL = {"#FFFFFF": Fill.WHITE, "#F3F3F3": Fill.GREY, "#000000": Fill.BLACK}
 _BORDER = {"SOLID": Border.SOLID, "NONE": Border.NONE, "DASHED": Border.DASHED, "FILL": Border.FILL}
+
+
+def _derive_content_gap(children: list[Frame]) -> int:
+    if not children:
+        return 0
+    return GRID_GUTTER if any(child.is_container for child in children) else INSET
 
 
 def _build_frame(data: dict) -> Frame:
@@ -89,7 +95,7 @@ def _build_frame(data: dict) -> Frame:
         y=data.get("y", 0),
     )
 
-    # Heading-as-child transformation (mirrors frame_loader.py Phase 2)
+    # Heading-as-child transformation mirrors the current TS fixture builder.
     if heading and frame.is_container:
         heading_child = Frame(
             id=f"{frame.id}__heading" if frame.id else "__heading",
@@ -101,19 +107,20 @@ def _build_frame(data: dict) -> Frame:
             icon=data.get("icon"),
             icon_fill=data.get("iconFill"),
         )
+        body = Frame(
+            id=f"{frame.id}__body" if frame.id else "__body",
+            direction=Direction.HORIZONTAL if frame.direction == Direction.HORIZONTAL else Direction.VERTICAL,
+            gap=_derive_content_gap(frame.children),
+            align=frame.align,
+            sizing_w=Sizing.FILL,
+            sizing_h=Sizing.HUG,
+            border=Border.NONE,
+            padding=0,
+            children=list(frame.children),
+        )
+        frame.children = [heading_child, body]
         if frame.direction == Direction.HORIZONTAL:
-            body = Frame(
-                id=f"{frame.id}__body" if frame.id else "__body",
-                direction=Direction.HORIZONTAL,
-                gap=frame.gap, align=frame.align, justify=frame.justify,
-                sizing_w=Sizing.FILL, sizing_h=Sizing.HUG,
-                border=Border.NONE, padding=0,
-                children=list(frame.children),
-            )
-            frame.children = [heading_child, body]
             frame.direction = Direction.VERTICAL
-        else:
-            frame.children = [heading_child] + list(frame.children)
         frame.icon = None
 
     return frame

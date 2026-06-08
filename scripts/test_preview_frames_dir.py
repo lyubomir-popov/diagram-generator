@@ -84,7 +84,7 @@ def test_emit_frame_diagram_json_strips_line_style_fields_runtime(tmp_path: Path
     assert proc.returncode == 0, proc.stderr
 
     data = json.loads(proc.stdout)
-    note = data["root"]["children"][1]
+    note = data["frameTree"]["root"]["children"][1]
     assert note["label"] == [{"content": "Styled label"}]
 
 

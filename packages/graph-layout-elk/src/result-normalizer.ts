@@ -96,7 +96,7 @@ function offsetSection(section: RoutedEdgeSection, dx: number, dy: number): Rout
     endPoint: snapPoint({ x: section.endPoint.x + dx, y: section.endPoint.y + dy }),
     ...(section.bendPoints?.length
       ? {
-          bendPoints: section.bendPoints.map((bp) =>
+          bendPoints: section.bendPoints.map((bp: Point2) =>
             snapPoint({ x: bp.x + dx, y: bp.y + dy }),
           ),
         }

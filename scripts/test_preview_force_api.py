@@ -6,47 +6,21 @@ import contextlib
 import json
 import os
 import pathlib
-import socket
-import subprocess
-import sys
-import time
 import urllib.error
 import urllib.request
 
 import pytest
 import yaml
 from playwright.sync_api import sync_playwright
+from test_preview_app_harness import preview_app
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SCRIPTS = ROOT / "scripts"
 FORCE_SLUGS = [
     "force-stakeholders",
     "force-juju-landing-pages",
     "force-support-case-lifecycle",
 ]
 DIRTY_DIAGRAM_NAV_CONFIRM = "You have unsaved changes. Leave this diagram without saving?"
-
-
-def _reserve_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
-
-
-def _wait_for_server(base_url: str, process: subprocess.Popen[str], timeout: float = 90.0) -> None:
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        if process.poll() is not None:
-            output = process.stdout.read() if process.stdout else ""
-            raise RuntimeError(
-                f"Preview server exited with code {process.returncode}.\n{output}"
-            )
-        try:
-            with urllib.request.urlopen(base_url, timeout=1):
-                return
-        except Exception:
-            time.sleep(0.25)
-    raise RuntimeError(f"Preview server did not start at {base_url}")
 
 
 def _fetch_json(url: str, data: bytes | None = None) -> tuple[int, object]:
@@ -76,36 +50,8 @@ def _fetch_text(url: str) -> tuple[int, str]:
 
 @contextlib.contextmanager
 def _preview_server(*, extra_env: dict[str, str] | None = None) -> str:
-    port = _reserve_port()
-    env = os.environ.copy()
-    env["DG_DISABLE_TS_EXPORT"] = "1"
-    if extra_env:
-        env.update(extra_env)
-    process = subprocess.Popen(
-        [
-            sys.executable,
-            str(SCRIPTS / "preview_server.py"),
-            "--port",
-            str(port),
-            "--no-watch",
-        ],
-        cwd=str(ROOT),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        env=env,
-    )
-    base = f"http://127.0.0.1:{port}"
-    try:
-        _wait_for_server(base, process)
+    with preview_app(extra_env=extra_env) as base:
         yield base
-    finally:
-        process.terminate()
-        try:
-            process.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=10)
 
 
 @pytest.fixture(scope="module")
@@ -215,27 +161,7 @@ def test_force_save_persists_authored_spec_to_yaml(tmp_path: pathlib.Path):
         encoding="utf-8",
     )
 
-    port = _reserve_port()
-    env = os.environ.copy()
-    env["DG_DISABLE_TS_EXPORT"] = "1"
-    env["DG_FORCE_DEFINITIONS_DIR"] = str(force_dir)
-    process = subprocess.Popen(
-        [
-            sys.executable,
-            str(SCRIPTS / "preview_server.py"),
-            "--port",
-            str(port),
-            "--no-watch",
-        ],
-        cwd=str(ROOT),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        env=env,
-    )
-    base = f"http://127.0.0.1:{port}"
-    try:
-        _wait_for_server(base, process)
+    with preview_app(extra_env={"DG_FORCE_DEFINITIONS_DIR": str(force_dir)}) as base:
         authored_spec = {
             "title": "Save probe",
             "reference_image": "force/IMG_3229.jpg",
@@ -346,13 +272,6 @@ def test_force_save_persists_authored_spec_to_yaml(tmp_path: pathlib.Path):
             with pytest.raises(urllib.error.HTTPError) as exc_info:
                 urllib.request.urlopen(f"{base}/api/{route}/{slug}")
             assert exc_info.value.code == 404
-    finally:
-        process.terminate()
-        try:
-            process.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=10)
 
 
 def test_force_save_button_tracks_persisted_state(tmp_path: pathlib.Path):

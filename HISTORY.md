@@ -4,6 +4,14 @@ Completed work belongs here so `TODO.md` stays lean.
 
 ## Short-term
 
+### 2026-06-08 – Spec 038 complete: Node preview front door and Python-preview retirement
+
+- Completed the full Node preview cutover: `apps/preview/` now owns the live shell, preview/read APIs, YAML save routes, watcher-driven SSE reload, and canonical save rehydration.
+- Deleted the remaining product-path Python preview files: `preview_server.py`, `preview_ts_layout.py`, `preview_ts_export.py`, and `frame_yaml_persistence.py`; browser/test harnesses now target the Node app directly.
+- Demoted `frame_loader.py` and `layout_v3.py` to dated parity-oracle status, tightened the `check_no_new_python.mjs` allowlist, and realigned the retained Python parity tests with the current TS heading/style/text-wrap contracts so the full Python suite is green again.
+- Added design-foundry-aligned seams inside `packages/layout-engine/`: `document-model/schema`, `operator-autolayout/facade`, `render-ir`, `render-adapter/display-list` + `svg`, and a text-shape-compatible adapter path, with geometry-parity tests proving the display-list and SVG-string render paths stay aligned.
+- Validation: `npm --prefix packages/layout-engine test`, `npm --prefix packages/layout-engine run build`, `npm --prefix packages/layout-engine run build:browser`, `npm --prefix apps/preview test`, `python -m pytest scripts -q`, `node scripts/check_no_new_python.mjs`, plus focused Node-preview Playwright lane checks for v3, force, and sequence.
+
 ### 2026-06-08 – Spec 038 Phase 1 reload slice: frame-tree + SSE watcher
 
 - Completed the remaining early Node preview parity plumbing by adding `/api/frame-tree/*` and `/events` to the preview app.
