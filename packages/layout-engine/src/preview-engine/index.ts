@@ -21,6 +21,7 @@ export {
   PREVIEW_ENGINE_REGISTRY,
   evaluatePreviewEngineCompatibility,
   getPreviewEngine,
+  getPreviewEngineByLayoutKey,
   isPreviewEngineCompatible,
   listCompatiblePreviewEngines,
   listHostableLayoutEngineKeys,

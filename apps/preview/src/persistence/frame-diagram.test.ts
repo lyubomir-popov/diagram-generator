@@ -9,6 +9,11 @@ import {
   verifyElkLayoutPersisted,
   type PersistOverridePayload,
 } from "./frame-diagram.js";
+import {
+  loadFrameYaml,
+  resolvePreviewEngine,
+  type PreviewEngineContext,
+} from "@diagram-generator/layout-engine";
 
 const REPO_ROOT = path.resolve(process.cwd(), "..", "..");
 const FRAME_FIXTURE = path.join(REPO_ROOT, "scripts", "diagrams", "frames", "support-engineering-flow.yaml");
@@ -426,36 +431,38 @@ test("persist layout_engine preserves other meta fields (spec 035)", () => {
   assert.strictEqual(output, expected);
 });
 
-test("persist→reload round-trip: layout_engine survives write and re-parse (spec 035)", () => {
-  const baselineText = [
-    "engine: v3",
-    "title: Round-trip test",
-    "root:",
-    "  id: page",
-    "  direction: vertical",
-    "  children:",
-    "    - id: leaf",
-    "      label: [Demo]",
-    "",
-  ].join("\n");
+test("persist→reload round-trip: layout_engine survives write and resolves via registry (spec 035, T020)", () => {
+  const baselineText = fs.readFileSync(FRAME_FIXTURE, "utf8");
 
-  // Step 1: Persist an engine choice
+  // Step 1: Persist an engine choice onto a real frame YAML.
   const persistent = persistToYaml("roundtrip.yaml", baselineText, {
     layout_engine: "elk-layered",
   });
+  assert.match(persistent, /layout_engine: elk-layered/);
 
-  // Verify the output contains the meta.layout_engine field
-  assert.match(persistent, /meta:\s*\n\s*layout_engine: elk-layered/);
+  // Step 2: Write the persisted YAML to disk and reload it through the actual
+  // loader the preview server uses — no string inspection.
+  const reloadedPath = writeTempFrame("roundtrip-reloaded.yaml", persistent);
+  const reloaded = loadFrameYaml(reloadedPath);
 
-  // Step 2: Simulate reloading the file and parsing it
-  // (In the real flow, this happens when the diagram is loaded again)
-  const reloadedYaml = persistent; // In a real scenario, this would be read from disk
-  
-  // Step 3: Verify that the engine choice is preserved after round-trip
-  assert.match(reloadedYaml, /layout_engine: elk-layered/);
-  
-  // Also verify that other fields are not corrupted
-  assert.match(reloadedYaml, /engine: v3/);
-  assert.match(reloadedYaml, /title: Round-trip test/);
-  assert.match(reloadedYaml, /id: page/);
+  // Step 3: The reloaded diagram must carry the persisted engine key.
+  assert.strictEqual(
+    reloaded.layoutEngine,
+    "elk-layered",
+    "layout_engine must survive write + re-parse via loadFrameYaml",
+  );
+
+  // Step 4: Resolve the engine through the registry, exactly as the server does.
+  const context: PreviewEngineContext = {
+    layoutEngine: reloaded.layoutEngine,
+    shellMode: "grid",
+    previewDocumentKind: "frame-diagram",
+  };
+  const resolved = resolvePreviewEngine(context);
+  assert.ok(resolved, "registry must resolve a preview engine for the persisted key");
+  assert.strictEqual(
+    resolved?.layoutEngineKey,
+    "elk-layered",
+    "resolved engine must match the persisted layout_engine key",
+  );
 });

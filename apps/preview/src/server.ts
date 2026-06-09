@@ -18,7 +18,7 @@ import {
   createFsIconLoader,
   createHarfBuzzTextAdapter,
   evaluatePreviewEngineCompatibility,
-  getPreviewEngine,
+  getPreviewEngineByLayoutKey,
   layoutFrameTree,
   listPreviewEngines,
   loadFrameYaml,
@@ -606,7 +606,8 @@ function buildGridViewerHtml(slug: string): string {
     `<script src="${previewAssetUrl("layout-bridge.js")}"></script>\n` +
     `<script src="${previewAssetUrl("component-model.js")}"></script>\n` +
     `<script src="${previewAssetUrl("constraints.js")}"></script>\n` +
-    `<script src="${previewAssetUrl("editor.js")}"></script>`;
+    `<script src="${previewAssetUrl("editor.js")}"></script>\n` +
+    `<script src="${previewAssetUrl("engine-switcher.js")}"></script>`;
 
   return stripUnresolvedPlaceholders(
     applyUnifiedElkPlaceholders(template, isElk)
@@ -855,8 +856,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
           }
           const documentKind = determineFrameYamlKind(baseline);
 
-          // Get the engine manifest and evaluate compatibility
-          const engine = getPreviewEngine(normalizeLayoutEngine(requested));
+          // Resolve the engine by its hostable layoutEngineKey (the persisted
+          // `meta.layout_engine` value), NOT by manifest id. These differ
+          // semantically even where they coincide today.
+          const engine = getPreviewEngineByLayoutKey(normalizeLayoutEngine(requested));
           if (!engine) {
             sendText(res, 400, `Unknown layout_engine: '${requested}'`);
             return;

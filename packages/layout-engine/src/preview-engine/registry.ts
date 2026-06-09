@@ -99,6 +99,21 @@ export function getPreviewEngine(id: string): PreviewEngineManifest | undefined 
   return PREVIEW_ENGINE_REGISTRY.find((entry) => entry.id === id);
 }
 
+/**
+ * Look up a preview engine by its hostable `layoutEngineKey` (the value persisted
+ * in `meta.layout_engine`), NOT by its `id`. These coincide for some engines today
+ * (e.g. `elk-layered`) but are semantically distinct: `id` is the manifest identity,
+ * `layoutEngineKey` is the document-facing engine selector. Callers validating a
+ * persisted/requested `layout_engine` value must use this, not `getPreviewEngine`.
+ */
+export function getPreviewEngineByLayoutKey(
+  layoutEngineKey: string,
+): PreviewEngineManifest | undefined {
+  const key = layoutEngineKey.trim();
+  if (!key) return undefined;
+  return PREVIEW_ENGINE_REGISTRY.find((entry) => entry.layoutEngineKey === key);
+}
+
 export function resolvePreviewEngine(
   context: PreviewEngineContext,
 ): PreviewEngineManifest | undefined {

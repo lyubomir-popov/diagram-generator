@@ -7,9 +7,20 @@ diagrams/2.output/png/
 node_modules/
 packages/*/dist/
 apps/*/dist/
+# Guard against tsc accidentally emitting build outputs into TS source trees.
+# Source authority is .ts only; compiled JS/d.ts belong in dist/ (gitignored above).
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
+apps/*/src/**/*.js
+apps/*/src/**/*.js.map
+apps/*/src/**/*.d.ts
+apps/*/src/**/*.d.ts.map
 .preview_server_test.err.log
 .preview_server_test.out.log
 .env.local
+preview.log
 
 # Scratch screenshots at repo root (not deliverables)
 /image-*.png

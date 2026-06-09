@@ -284,6 +284,7 @@ export {
   elkLayeredPreviewControlSpecs,
   evaluatePreviewEngineCompatibility,
   getPreviewEngine,
+  getPreviewEngineByLayoutKey,
   listPreviewEngines,
   resolvePreviewEngine,
   serializePreviewEngineManifest,
