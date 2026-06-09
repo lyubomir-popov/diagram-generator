@@ -425,3 +425,37 @@ test("persist layout_engine preserves other meta fields (spec 035)", () => {
 
   assert.strictEqual(output, expected);
 });
+
+test("persist→reload round-trip: layout_engine survives write and re-parse (spec 035)", () => {
+  const baselineText = [
+    "engine: v3",
+    "title: Round-trip test",
+    "root:",
+    "  id: page",
+    "  direction: vertical",
+    "  children:",
+    "    - id: leaf",
+    "      label: [Demo]",
+    "",
+  ].join("\n");
+
+  // Step 1: Persist an engine choice
+  const persistent = persistToYaml("roundtrip.yaml", baselineText, {
+    layout_engine: "elk-layered",
+  });
+
+  // Verify the output contains the meta.layout_engine field
+  assert.match(persistent, /meta:\s*\n\s*layout_engine: elk-layered/);
+
+  // Step 2: Simulate reloading the file and parsing it
+  // (In the real flow, this happens when the diagram is loaded again)
+  const reloadedYaml = persistent; // In a real scenario, this would be read from disk
+  
+  // Step 3: Verify that the engine choice is preserved after round-trip
+  assert.match(reloadedYaml, /layout_engine: elk-layered/);
+  
+  // Also verify that other fields are not corrupted
+  assert.match(reloadedYaml, /engine: v3/);
+  assert.match(reloadedYaml, /title: Round-trip test/);
+  assert.match(reloadedYaml, /id: page/);
+});

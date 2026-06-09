@@ -17,13 +17,18 @@ import {
   collectIconNames,
   createFsIconLoader,
   createHarfBuzzTextAdapter,
+  evaluatePreviewEngineCompatibility,
+  getPreviewEngine,
   layoutFrameTree,
+  listPreviewEngines,
   loadFrameYaml,
   preloadIconMarkup,
   renderFrameDiagramToSvg,
   resolvePreviewEngine,
   serializeFrameDiagram,
   serializePreviewEngineManifest,
+  type PreviewDocumentKind,
+  type PreviewEngineContext,
   type PreviewEngineManifest,
 } from "@diagram-generator/layout-engine";
 import {
@@ -560,7 +565,19 @@ function buildGridViewerHtml(slug: string): string {
   const template = readFileSync(VIEWER_TEMPLATE, "utf8");
   const diagram = loadFrameYaml(path.join(FRAMES_DIR, `${slug}.yaml`));
   const layoutEngine = normalizeLayoutEngine(diagram.layoutEngine);
-  const engineManifest = resolvePreviewEngine({ layoutEngine, shellMode: "grid" });
+  const baselineYaml = readFileSync(path.join(FRAMES_DIR, `${slug}.yaml`), "utf8");
+  const documentKind = determineFrameYamlKind(baselineYaml);
+  const engineManifest = resolvePreviewEngine({ layoutEngine, shellMode: "grid", previewDocumentKind: documentKind });
+  
+  // Spec 035: list compatible engines for the switcher UI
+  const compatibleEngines = listPreviewEngines()
+    .filter((engine) => evaluatePreviewEngineCompatibility(engine, { 
+      shellMode: "grid",
+      previewDocumentKind: documentKind,
+    }).compatible)
+    .map((e) => e.layoutEngineKey)
+    .filter((k) => k !== null) as string[];
+  
   const isElk = layoutEngine === "elk-layered";
   const hasReference = findReferenceImage(slug) !== null;
   const configScript = [
@@ -568,6 +585,7 @@ function buildGridViewerHtml(slug: string): string {
     `"slug":"${slug}",`,
     '"engine":"v3",',
     `"layout_engine":"${layoutEngine}",`,
+    `"compatible_engines":${JSON.stringify(compatibleEngines)},`,
     '"grid":false,',
     `"inset":${INSET},`,
     `"head_len":${ARROW_HEAD_LENGTH},`,
@@ -749,6 +767,23 @@ function contentTypeForPath(filePath: string): string {
   return MIME_TYPES[path.extname(filePath).toLowerCase()] ?? "application/octet-stream";
 }
 
+/**
+ * Determine the preview document kind from a frame YAML file.
+ * - If the YAML has a `sequence:` key, it's a sequence document
+ * - Otherwise, it's a frame-diagram document
+ */
+function determineFrameYamlKind(yamlContent: string): PreviewDocumentKind {
+  try {
+    const parsed = parseYaml(yamlContent);
+    if (parsed && typeof parsed === "object" && "sequence" in parsed) {
+      return "sequence";
+    }
+  } catch {
+    // Fall back to frame-diagram if parsing fails
+  }
+  return "frame-diagram";
+}
+
 function serveFile(res: ServerResponse, filePath: string, cacheControl = "no-store"): void {
   if (!existsSync(filePath)) {
     sendText(res, 404, "Not found");
@@ -799,21 +834,52 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
         sendText(res, 400, error instanceof Error ? error.message : String(error));
         return;
       }
-      // Spec 035: a persisted engine choice must be a hostable grid engine.
-      // The switcher must never write an engine the document/shell cannot host.
+
+      // Spec 035: validate engine compatibility before persisting.
+      // The switcher must never write an engine the document kind cannot host.
       if (payload && typeof payload === "object" && !Array.isArray(payload) && "layout_engine" in payload) {
         const requested = (payload as Record<string, unknown>).layout_engine;
         if (requested !== null && requested !== undefined && requested !== "") {
-          if (typeof requested !== "string" || normalizeLayoutEngine(requested) !== requested.trim()) {
+          if (typeof requested !== "string") {
+            sendText(res, 400, `Invalid layout_engine: must be a string`);
+            return;
+          }
+
+          // Determine the document kind from the YAML
+          let baseline: string;
+          try {
+            baseline = readFileSync(framePath, "utf8");
+          } catch {
+            sendText(res, 400, "Could not read frame file");
+            return;
+          }
+          const documentKind = determineFrameYamlKind(baseline);
+
+          // Get the engine manifest and evaluate compatibility
+          const engine = getPreviewEngine(normalizeLayoutEngine(requested));
+          if (!engine) {
+            sendText(res, 400, `Unknown layout_engine: '${requested}'`);
+            return;
+          }
+
+          // Evaluate compatibility with the actual document kind
+          const context: PreviewEngineContext = {
+            layoutEngine: requested.trim(),
+            shellMode: "grid",
+            previewDocumentKind: documentKind,
+          };
+          const compatibility = evaluatePreviewEngineCompatibility(engine, context);
+          if (!compatibility.compatible) {
             sendText(
               res,
               400,
-              `Incompatible layout_engine '${String(requested)}': not a hostable preview engine`,
+              `Cannot use engine '${requested}' with ${documentKind}: ${compatibility.reason ?? "incompatible"}`,
             );
             return;
           }
         }
       }
+
       try {
         const baseline = readFileSync(framePath, "utf8");
         const nextText = persistFrameDiagramOverridePayloadToYaml(

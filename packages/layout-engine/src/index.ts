@@ -282,14 +282,17 @@ export {
   FORCE_PREVIEW_PARAM_SPECS,
   PREVIEW_ENGINE_REGISTRY,
   elkLayeredPreviewControlSpecs,
+  evaluatePreviewEngineCompatibility,
   getPreviewEngine,
   listPreviewEngines,
   resolvePreviewEngine,
   serializePreviewEngineManifest,
 } from './preview-engine/index.js';
 export type {
+  CompatibilityResult,
   PreviewControlKind,
   PreviewControlSpec,
+  PreviewDocumentKind,
   PreviewEngineApiRoutes,
   PreviewEngineCapabilities,
   PreviewEngineContext,

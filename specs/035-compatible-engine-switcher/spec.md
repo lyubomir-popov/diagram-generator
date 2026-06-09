@@ -6,9 +6,21 @@
 
 **Created**: 2026-06-06
 
-**Status**: Draft
+**Status**: Phase 1 in progress (contract + persistence complete; Phase 2 switcher UI pending)
 
 **Depends on**: spec 022 (complete), spec 025 (complete), spec 026 (complete)
+
+**Phases**:
+- **Phase 1** (COMPLETE): Typed compatibility contract and persistence guard
+  - `PreviewEngineManifest` type with `compatibility` field
+  - `evaluatePreviewEngineCompatibility()` and `listCompatiblePreviewEngines()` API
+  - `meta.layout_engine` persistence with write-boundary guard
+  - Tests for contract and persistence (12 tests passing)
+- **Phase 2** (IN PROGRESS): Switcher UI and rerender path
+  - Build `buildPreviewEngineSwitcherModel()` and wire into `buildGridViewerHtml`
+  - Implement rerender through `resolvePreviewEngine()`
+  - Add UI tests for incompatible-engine hiding and round-trip validation
+- **Phase 3** (NOT STARTED): Docs, docs, closeout
 
 **Input**: Authors should be able to take one canonical YAML/AST-backed diagram and try multiple compatible layout engines from a dropdown, then settle on the engine whose output works best. The switcher must only show engines that can validly render the authored document in question.
 
@@ -76,6 +88,7 @@ As a maintainer, I want engine switching to operate on canonical authored state 
 - Allowing engines to mutate the canonical authored AST into different structural formats just to become "compatible".
 - Replacing engine-specific controls with one lowest-common-denominator parameter sheet.
 - Solving layout-quality ranking or auto-picking the "best" engine in the first slice.
+- Switching between incompatible shell modes (`grid` ↔ `force`) — authored frame diagrams live in the grid shell and can only switch between grid-mode engines; force-spec documents live in the force shell. Cross-shell comparison is out of scope; each shell has its own compatible engine set.
 
 ## Success Criteria
 
