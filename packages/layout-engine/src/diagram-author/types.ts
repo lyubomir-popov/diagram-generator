@@ -49,6 +49,7 @@ export interface FrameTemplate {
   heading?: LineSpec;
   direction?: 'vertical' | 'horizontal';
   gap?: number;
+  gapDelta?: number;
   padding?: number;
 }
 
@@ -56,6 +57,7 @@ export interface AuthorFrameNode {
   id: string;
   direction?: 'vertical' | 'horizontal';
   gap?: number;
+  gapDelta?: number;
   padding?: number;
   paddingTop?: number;
   paddingRight?: number;

@@ -19,6 +19,7 @@ const STYLE_SEMANTICS: Record<string, { level: number | null; fill: string; bord
 const SUPPORTED_FRAME_KEYS = new Set([
   "direction",
   "gap",
+  "gap_delta",
   "padding",
   "padding_top",
   "padding_right",
@@ -55,6 +56,7 @@ const UNSUPPORTED_GRID_KEYS = new Set(["rows", "slack_absorption"]);
 const LOWER_KEYS = new Set(["direction", "sizing", "sizing_w", "sizing_h", "fill", "border", "position"]);
 const INT_KEYS = new Set([
   "gap",
+  "gap_delta",
   "padding",
   "padding_top",
   "padding_right",
@@ -373,6 +375,16 @@ function applyFrameOverride(frameData: Record<string, unknown>, override: unknow
       delete frameData.padding_right;
       delete frameData.padding_bottom;
       delete frameData.padding_left;
+      continue;
+    }
+    if (key === "gap") {
+      applyDirectField(frameData, key, value);
+      delete frameData.gap_delta;
+      continue;
+    }
+    if (key === "gap_delta") {
+      applyDirectField(frameData, key, value);
+      delete frameData.gap;
       continue;
     }
     if ((key === "level" || key === "fill" || key === "border") && "style" in override) {

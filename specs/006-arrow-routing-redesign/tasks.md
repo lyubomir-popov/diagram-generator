@@ -62,7 +62,7 @@ Maps to spec.md addendum FR-007–FR-020 and SC-004–SC-006.
 - [ ] T080 Add a layout-time route-lane classifier: detect which inter-child lanes arrow paths cross, keyed by the gap class of the owning stack
 - [ ] T081 Promote a whole gap class to the arrow-lane minimum (24px) when any lane in that class is crossed; keep promotion out of YAML
 - [ ] T082 Name arrow-lane-min (24px) and default-child-gap (8px) as tokens; remove any per-diagram literals
-- [ ] T083 Fixture: `ssdlc-lifecycle` leaf-stack gaps resolve to 24px globally; no gap value written to YAML (SC-004)
+- [x] T083 Fixture: `ssdlc-lifecycle` leaf-stack gaps resolve to 24px globally; no gap value written to YAML (SC-004)
 
 ### 9b. Delta-only manual gap overrides (FR-011–FR-014)
 
@@ -73,16 +73,16 @@ Maps to spec.md addendum FR-007–FR-020 and SC-004–SC-006.
 
 ### 9c. Improved first-guess routing — sibling fan / shared stem (FR-015–FR-017)
 
-- [ ] T088 Detect sibling-fan: single source, multiple targets sharing a dominant side; assign all the shared source side
-- [ ] T089 Emit shared stem + fork geometry (deterministic trident) instead of independent per-arrow polylines
+- [x] T088 Detect sibling-fan: single source, multiple targets sharing a dominant side; assign all the shared source side
+- [x] T089 Emit shared stem + fork geometry (deterministic trident) instead of independent per-arrow polylines
 - [ ] T090 Deterministic, order-independent detection; graceful fallback to per-arrow routing when no fan
-- [ ] T091 Fixture: `ssdlc-lifecycle` renders merged trident with no side-edge box entries
+- [x] T091 Fixture: `ssdlc-lifecycle` renders merged trident with no side-edge box entries
 
 ### 9d. Manual arrow overrides — waypoints + arrow-to-arrow attachment (FR-018–FR-020)
 
 - [ ] T092 Implement anchored (relayout-stable) waypoints (`{ lane / between / *_frac, offset }`), recomputed from anchors each layout pass (FR-018a)
 - [ ] T092b Demote absolute pixel waypoints to a marked escape hatch (`pinned: true` + `waypoints_abs`); migrate the existing `waypoints: [[x,y]]` field and make the drag UI persist the nearest anchored form by default (FR-018b/c)
-- [ ] T093 Extend endpoint selector grammar with `arrow:<id>` / `@<id>` attachment to another arrow's segment
+- [x] T093 Extend endpoint selector grammar with `arrow:<id>` / `@<id>` attachment to another arrow's segment
 - [ ] T094 Topologically order arrow dependencies; reject attachment cycles with explicit diagnostics
 - [ ] T095 Emit tracked junction geometry + renderer junction dot; junction follows host reroute (SC-006)
 - [ ] T096 Contract test: renderer re-infers none of sides/waypoints/attachment (consistent with T052)

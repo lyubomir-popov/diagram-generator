@@ -1,4 +1,4 @@
-import { extractBaseFrameId } from './ref-grammar.js';
+import { extractArrowRefId, extractBaseFrameId } from './ref-grammar.js';
 import type { AuthorArrow, AuthorFrameNode, Diagnostic, FrameIndexEntry, FrameTemplate } from './types.js';
 
 function arrowSignature(arrow: AuthorArrow): string {
@@ -21,11 +21,41 @@ function collectLeafIds(root: AuthorFrameNode | null): string[] {
   return leafIds;
 }
 
+function collectEndpointFrameIds(
+  ref: string,
+  arrowById: Map<string, AuthorArrow>,
+  ids: Set<string>,
+  seenArrowIds: Set<string>,
+): void {
+  const arrowId = extractArrowRefId(ref);
+  if (arrowId) {
+    if (seenArrowIds.has(arrowId)) return;
+    seenArrowIds.add(arrowId);
+    const hostArrow = arrowById.get(arrowId);
+    if (!hostArrow) return;
+    collectEndpointFrameIds(hostArrow.source, arrowById, ids, seenArrowIds);
+    collectEndpointFrameIds(hostArrow.target, arrowById, ids, seenArrowIds);
+    return;
+  }
+
+  const frameId = extractBaseFrameId(ref);
+  if (frameId) {
+    ids.add(frameId);
+  }
+}
+
 function incidentArrowCount(frameId: string, arrows: AuthorArrow[]): number {
+  const arrowById = new Map(
+    arrows
+      .filter((arrow): arrow is AuthorArrow & { id: string } => typeof arrow.id === 'string' && arrow.id.length > 0)
+      .map((arrow) => [arrow.id, arrow]),
+  );
+
   return arrows.filter(arrow => {
-    const sourceId = extractBaseFrameId(arrow.source);
-    const targetId = extractBaseFrameId(arrow.target);
-    return sourceId === frameId || targetId === frameId;
+    const incidentIds = new Set<string>();
+    collectEndpointFrameIds(arrow.source, arrowById, incidentIds, new Set<string>());
+    collectEndpointFrameIds(arrow.target, arrowById, incidentIds, new Set<string>());
+    return incidentIds.has(frameId);
   }).length;
 }
 

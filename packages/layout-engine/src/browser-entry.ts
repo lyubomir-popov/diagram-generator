@@ -150,6 +150,11 @@ export { renderSequenceDiagramToSvg } from './sequence-layout/render-svg.js';
 export type { SequenceSvgRenderOptions } from './sequence-layout/render-svg.js';
 
 export {
+  routeArrows,
+} from './arrow-routing.js';
+export type { RoutedArrow } from './arrow-routing.js';
+
+export {
   normalizeSequenceDiagram,
   type NormalizeSequenceDiagramResult,
   type SequenceDiagramInput,

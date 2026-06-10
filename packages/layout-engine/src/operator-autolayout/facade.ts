@@ -69,7 +69,7 @@ export function evaluateAutolayoutOperator(
     throw new Error(`Unsupported autolayout document kind: ${document.kind}`);
   }
   const diagram = toFrameDiagram(document);
-  const layout = layoutFrameTree(diagram.root, textAdapter, params);
+  const layout = layoutFrameTree(diagram.root, textAdapter, { ...params, arrows: diagram.arrows });
   const displayListDocument = emitFrameDiagramDisplayList(diagram, layout, textAdapter);
   return {
     layout,

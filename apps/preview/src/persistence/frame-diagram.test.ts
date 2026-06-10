@@ -202,6 +202,43 @@ test("empty payload is a no-op without rewriting yaml", () => {
   assert.strictEqual(output, baselineText);
 });
 
+test("persist→reload round-trip: gap_delta survives write without emitting absolute gap", () => {
+  const baselineText = [
+    "engine: v3",
+    "title: Gap delta",
+    "root:",
+    "  id: page",
+    "  direction: vertical",
+    "  children:",
+    "    - id: flow",
+    "      direction: vertical",
+    "      children:",
+    "        - id: phase",
+    "          label: [Phase]",
+    "        - id: purpose",
+    "          label: [Purpose]",
+    "",
+  ].join("\n");
+
+  const persistent = persistToYaml("gap-delta-roundtrip.yaml", baselineText, {
+    overrides: {
+      flow: {
+        gap_delta: 16,
+      },
+    },
+  });
+
+  assert.match(persistent, /gap_delta: 16/);
+  assert.doesNotMatch(persistent, /\n\s+gap: 24/);
+
+  const reloadedPath = writeTempFrame("gap-delta-reloaded.yaml", persistent);
+  const reloaded = loadFrameYaml(reloadedPath);
+  const flow = reloaded.root.children.find((child) => child.id === "flow");
+
+  assert.ok(flow, "flow frame must survive save + reload");
+  assert.strictEqual(flow?.gap, 24, "gap_delta should add to the derived 8px leaf-stack gap");
+});
+
 test("persist style does not promote implicit headingless wrapper", () => {
   const baselineText = [
     "engine: v3",

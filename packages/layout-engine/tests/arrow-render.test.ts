@@ -1,11 +1,29 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createArrow, createLine, Frame, FrameDiagram } from '../src/frame-model.js';
+import { routeArrows } from '../src/arrow-routing.js';
 import { loadFrameYaml } from '../src/frame-yaml-loader.js';
+import { layoutFrameTree } from '../src/layout.js';
+import { emitFrameDiagramDisplayList } from '../src/render-adapter/display-list.js';
 import { MockTextAdapter } from '../src/text-measure.js';
 import { renderFrameDiagramToSvg } from '../src/svg-render.js';
+
+function findFrameById(frame: Frame, id: string): Frame {
+  const match = maybeFindFrameById(frame, id);
+  if (match) return match;
+  throw new Error(`Frame not found: ${id}`);
+}
+
+function maybeFindFrameById(frame: Frame, id: string): Frame | undefined {
+  if (frame.id === id) return frame;
+  for (const child of frame.children) {
+    const match = maybeFindFrameById(child, id);
+    if (match) return match;
+  }
+  return undefined;
+}
 
 describe('arrow rendering parity', () => {
   it('loadFrameYaml parses arrow label arrays and label_gap', () => {
@@ -156,6 +174,61 @@ describe('arrow rendering parity', () => {
       expect(cluster.gap).toBe(8);
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('warns when a programmatic arrow ref cannot attach to a routed host arrow', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      const routed = routeArrows(
+        [
+          createArrow('arrow:stem', 'branch.left'),
+          createArrow('source.bottom', 'target.top', { id: 'stem' }),
+        ],
+        {
+          source: { x: 0, y: 0, w: 80, h: 40 },
+          target: { x: 0, y: 120, w: 80, h: 40 },
+          branch: { x: 160, y: 120, w: 80, h: 40 },
+        },
+      );
+
+      expect(routed).toHaveLength(1);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('unresolved source arrow attachment stem'));
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('clamps dense-stack gap_delta so arrow lanes never shrink below 24px', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const stack = new Frame({
+      id: 'stack',
+      gap: 0,
+      gapDelta: -16,
+      children: [
+        new Frame({ id: 'alpha', label: [{ content: 'Alpha' }] }),
+        new Frame({ id: 'beta', label: [{ content: 'Beta' }] }),
+      ],
+    });
+    const root = new Frame({
+      id: 'page',
+      children: [stack],
+    });
+
+    try {
+      layoutFrameTree(root, new MockTextAdapter(), {
+        arrows: [createArrow('alpha.bottom', 'beta.top')],
+      });
+
+      const alpha = stack.children[0]!;
+      const beta = stack.children[1]!;
+      const actualGap = beta._layout.placedY - (alpha._layout.placedY + alpha._layout.placedH);
+
+      expect(actualGap).toBe(24);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('clamped gap_delta'));
+    } finally {
+      warn.mockRestore();
     }
   });
 
@@ -344,5 +417,157 @@ describe('arrow rendering parity', () => {
     expect(svg).not.toContain('fill="#FF00FF">Fast path</tspan>');
     expect(svg).not.toContain('font-weight="900"');
     expect(svg).not.toContain('font-variant-caps="small-caps">Fast path</tspan>');
+  });
+
+  it('promotes dense leaf-stack gaps globally when arrows need inter-child lanes', () => {
+    const diagram = loadFrameYaml('../../scripts/diagrams/frames/ssdlc-lifecycle.yaml');
+    const adapter = new MockTextAdapter();
+    layoutFrameTree(diagram.root, adapter, {
+      gridCols: diagram.gridCols,
+      gridColGap: diagram.gridColGap,
+      gridRowGap: diagram.gridRowGap,
+      gridOuterMargin: diagram.gridOuterMargin,
+      arrows: diagram.arrows,
+    });
+
+    const phaseA = findFrameById(diagram.root, 'phase_a');
+    const purposeA = findFrameById(diagram.root, 'purpose_a');
+    const phaseB = findFrameById(diagram.root, 'phase_b');
+    const purposeB = findFrameById(diagram.root, 'purpose_b');
+    const phaseC = findFrameById(diagram.root, 'phase_c');
+    const purposeC = findFrameById(diagram.root, 'purpose_c');
+
+    const gapA = purposeA._layout.placedY - (phaseA._layout.placedY + phaseA._layout.placedH);
+    const gapB = purposeB._layout.placedY - (phaseB._layout.placedY + phaseB._layout.placedH);
+    const gapC = purposeC._layout.placedY - (phaseC._layout.placedY + phaseC._layout.placedH);
+
+    expect(gapA).toBe(24);
+    expect(gapB).toBe(24);
+    expect(gapC).toBe(24);
+  });
+
+  it('applies authored gap_delta on top of the promoted dense arrow lane gap', () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'dg-arrow-test-'));
+    const yamlPath = join(tempDir, 'gap-delta.yaml');
+
+    try {
+      writeFileSync(
+        yamlPath,
+        [
+          'engine: v3',
+          'title: gap delta override',
+          'arrows:',
+          '  - source: phase',
+          '    target: purpose',
+          'root:',
+          '  id: page',
+          '  direction: vertical',
+          '  children:',
+          '    - id: flow',
+          '      direction: vertical',
+          '      gap_delta: 4',
+          '      children:',
+          '        - id: phase',
+          '          label: [Phase]',
+          '        - id: purpose',
+          '          label: [Purpose]',
+          '',
+        ].join('\n'),
+        'utf8',
+      );
+
+      const diagram = loadFrameYaml(yamlPath);
+      const adapter = new MockTextAdapter();
+      layoutFrameTree(diagram.root, adapter, {
+        gridCols: diagram.gridCols,
+        gridColGap: diagram.gridColGap,
+        gridRowGap: diagram.gridRowGap,
+        gridOuterMargin: diagram.gridOuterMargin,
+        arrows: diagram.arrows,
+      });
+
+      const flow = findFrameById(diagram.root, 'flow');
+      const phase = findFrameById(diagram.root, 'phase');
+      const purpose = findFrameById(diagram.root, 'purpose');
+      const gap = purpose._layout.placedY - (phase._layout.placedY + phase._layout.placedH);
+
+      expect(flow.gap).toBe(12);
+      expect(gap).toBe(28);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('routes ssdlc fan arrows from a shared bottom stem into the phase tops', () => {
+    const diagram = loadFrameYaml('../../scripts/diagrams/frames/ssdlc-lifecycle.yaml');
+    const adapter = new MockTextAdapter();
+    const layout = layoutFrameTree(diagram.root, adapter, {
+      gridCols: diagram.gridCols,
+      gridColGap: diagram.gridColGap,
+      gridRowGap: diagram.gridRowGap,
+      gridOuterMargin: diagram.gridOuterMargin,
+      arrows: diagram.arrows,
+    });
+    const displayList = emitFrameDiagramDisplayList(diagram, layout, adapter);
+
+    const ssdlc = findFrameById(diagram.root, 'ssdlc');
+    const phaseA = findFrameById(diagram.root, 'phase_a');
+    const phaseB = findFrameById(diagram.root, 'phase_b');
+    const phaseC = findFrameById(diagram.root, 'phase_c');
+    const sourceCenterX = ssdlc._layout.placedX + ssdlc._layout.placedW / 2;
+    const sourceBottomY = ssdlc._layout.placedY + ssdlc._layout.placedH;
+    const targetCenters = new Map([
+      ['ssdlc->phase_a', phaseA._layout.placedX + phaseA._layout.placedW / 2],
+      ['ssdlc->phase_b', phaseB._layout.placedX + phaseB._layout.placedW / 2],
+      ['ssdlc->phase_c', phaseC._layout.placedX + phaseC._layout.placedW / 2],
+    ]);
+    const centerArrowId = 'ssdlc->phase_b';
+
+    for (const [arrowId, targetCenterX] of targetCenters) {
+      const group = displayList.items.find(
+        item => item.kind === 'group' && item.id === arrowId,
+      );
+      expect(group && group.kind === 'group').toBeTruthy();
+      const lines = group && group.kind === 'group'
+        ? group.children.filter(item => item.kind === 'line')
+        : [];
+      if (arrowId === centerArrowId) {
+        expect(lines).toHaveLength(1);
+      } else {
+        expect(lines.length).toBeGreaterThan(1);
+      }
+
+      const firstLine = lines[0]!;
+      expect(firstLine.x1).toBe(sourceCenterX);
+      expect(firstLine.x2).toBe(sourceCenterX);
+      expect(firstLine.y1).toBe(sourceBottomY);
+
+      if (arrowId === centerArrowId) {
+        expect(firstLine.x1).toBe(targetCenterX);
+        expect(firstLine.x2).toBe(targetCenterX);
+      } else {
+        const horizontalFork = lines.find(line => line.y1 === line.y2 && line.x1 !== line.x2);
+        expect(horizontalFork).toBeTruthy();
+        expect(horizontalFork?.x2).toBe(targetCenterX);
+      }
+    }
+  });
+
+  it('attaches arrow:<id> branches onto the routed stem segment', () => {
+    const routed = routeArrows(
+      [
+        createArrow('source.bottom', 'target.top', { id: 'stem' }),
+        createArrow('arrow:stem', 'branch.left'),
+      ],
+      {
+        source: { x: 100, y: 0, w: 60, h: 40 },
+        target: { x: 100, y: 140, w: 60, h: 40 },
+        branch: { x: 220, y: 60, w: 60, h: 40 },
+      },
+    );
+
+    expect(routed).toHaveLength(2);
+    expect(routed[1]?.points[0]).toEqual([130, 80]);
+    expect(routed[1]?.points[routed[1]!.points.length - 1]).toEqual([220, 80]);
   });
 });

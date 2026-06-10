@@ -1,4 +1,4 @@
-import { extractBaseFrameId } from './ref-grammar.js';
+import { extractArrowRefId, extractBaseFrameId } from './ref-grammar.js';
 import type { AuthorArrow, AuthorFrameNode, DiagramDocument, Diagnostic, FrameIndexEntry } from './types.js';
 
 export interface D2ExportResult {
@@ -147,6 +147,8 @@ function renderArrow(
   frameIndex: Record<string, FrameIndexEntry>,
   rootId: string | undefined,
 ): void {
+  const sourceArrowId = extractArrowRefId(arrow.source);
+  const targetArrowId = extractArrowRefId(arrow.target);
   const sourceBase = extractBaseFrameId(arrow.source);
   const targetBase = extractBaseFrameId(arrow.target);
 
@@ -157,6 +159,26 @@ function renderArrow(
       message: `D2 export skips arrows that target the root canvas frame: ${arrow.source} -> ${arrow.target}`,
       path: `arrows[${index}]`,
     });
+    return;
+  }
+
+  if (sourceArrowId || targetArrowId) {
+    if (sourceArrowId) {
+      warnings.push({
+        code: 'D2_UNSUPPORTED_ANCHOR_REF',
+        level: 'warning',
+        message: `D2 export skips arrow-to-arrow source ref: ${arrow.source}`,
+        path: `arrows[${index}]`,
+      });
+    }
+    if (targetArrowId) {
+      warnings.push({
+        code: 'D2_UNSUPPORTED_ANCHOR_REF',
+        level: 'warning',
+        message: `D2 export skips arrow-to-arrow target ref: ${arrow.target}`,
+        path: `arrows[${index}]`,
+      });
+    }
     return;
   }
 

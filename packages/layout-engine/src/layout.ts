@@ -11,11 +11,12 @@
 
 import {
   Frame, Direction, Sizing, Align, Border, Justify,
+  type Arrow,
   type Line, type CoercedOverride, enforceFillHugInvariant,
 } from './frame-model.js';
 import {
   BASELINE_UNIT, BLOCK_WIDTH, BOX_MIN_HEIGHT, ICON_SIZE,
-  BODY_LINE_STEP, BODY_SIZE,
+  BODY_LINE_STEP, BODY_SIZE, GRID_GUTTER, INSET,
   roundUpToGrid, sizeToPx, steppedLinesHeight, clampToConstraints,
   setActiveGridStep, getActiveGridStep,
 } from './tokens.js';
@@ -44,6 +45,7 @@ import {
 interface SemanticSnapshot {
   width: number | undefined;
   height: number | undefined;
+  gap: number;
   sizingW: Sizing;
   sizingH: Sizing;
 }
@@ -52,6 +54,8 @@ function captureSemanticState(frame: Frame, state: Map<Frame, SemanticSnapshot>)
   state.set(frame, {
     width: frame.width,
     height: frame.height,
+    // Gap promotion is transient layout state; preserve the authored gap after placement.
+    gap: frame.gap,
     sizingW: frame.sizingW,
     sizingH: frame.sizingH,
   });
@@ -65,6 +69,7 @@ function restoreSemanticState(frame: Frame, state: Map<Frame, SemanticSnapshot>)
   if (snap) {
     frame.width = snap.width;
     frame.height = snap.height;
+    frame.gap = snap.gap;
     frame.sizingW = snap.sizingW;
     frame.sizingH = snap.sizingH;
   }
@@ -90,6 +95,72 @@ function equalizeGridColumns(root: Frame): void {
     if (child.sizingH === Sizing.HUG) {
       child.sizingH = Sizing.FILL;
     }
+  }
+}
+
+function endpointId(ref: string): string {
+  if (ref.includes('.')) {
+    const parts = ref.split('.');
+    const side = parts[parts.length - 1];
+    if (side === 'top' || side === 'bottom' || side === 'left' || side === 'right') {
+      return parts.slice(0, -1).join('.');
+    }
+  }
+  return ref;
+}
+
+function collectFrameIndexes(
+  frame: Frame,
+  frameById: Map<string, Frame>,
+  parentById: Map<string, Frame>,
+): void {
+  if (frame.id) frameById.set(frame.id, frame);
+  for (const child of frame.children) {
+    if (child.id) parentById.set(child.id, frame);
+    collectFrameIndexes(child, frameById, parentById);
+  }
+}
+
+function isDenseLeafStack(frame: Frame): boolean {
+  const autoChildren = frame.children.filter(child => child.positionType !== 'ABSOLUTE');
+  return autoChildren.length > 1 && autoChildren.every(child => child.isLeaf);
+}
+
+function promoteDenseLeafStackGaps(frame: Frame): void {
+  if (isDenseLeafStack(frame)) {
+    if (frame.gapDelta != null) {
+      const promotedGap = GRID_GUTTER + frame.gapDelta;
+      const clampedGap = Math.max(GRID_GUTTER, promotedGap);
+      if (clampedGap !== promotedGap) {
+        console.warn(
+          `layoutFrameTree: clamped gap_delta for ${frame.id || '<anonymous>'} to preserve ${GRID_GUTTER}px arrow lane minimum`,
+        );
+      }
+      frame.gap = clampedGap;
+    } else if (frame.gap === INSET) {
+      frame.gap = GRID_GUTTER;
+    }
+  }
+  for (const child of frame.children) {
+    promoteDenseLeafStackGaps(child);
+  }
+}
+
+function applyArrowAwareGapPromotion(root: Frame, arrows: readonly Arrow[] | undefined): void {
+  if (!arrows || arrows.length === 0) return;
+  const frameById = new Map<string, Frame>();
+  const parentById = new Map<string, Frame>();
+  collectFrameIndexes(root, frameById, parentById);
+
+  for (const arrow of arrows) {
+    const sourceId = endpointId(arrow.source);
+    const targetId = endpointId(arrow.target);
+    const sourceParent = parentById.get(sourceId);
+    const targetParent = parentById.get(targetId);
+    if (!sourceParent || sourceParent !== targetParent) continue;
+    if (!isDenseLeafStack(sourceParent)) continue;
+    promoteDenseLeafStackGaps(root);
+    return;
   }
 }
 
@@ -948,6 +1019,7 @@ export interface LayoutOptions {
   gridCols?: number;
   gridColGap?: number;
   gridOuterMargin?: number;
+  arrows?: readonly Arrow[];
 }
 
 /**
@@ -982,6 +1054,7 @@ function _layoutFrameTreeInner(
 
   try {
     applyTextLayoutDefaults(root);
+    applyArrowAwareGapPromotion(root, options?.arrows);
     // Pass 1: measure (root uses sum-based sizing)
     measure(root, adapter, true);
 

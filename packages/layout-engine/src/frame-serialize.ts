@@ -16,6 +16,7 @@ export function serializeFrame(frame: Frame): Record<string, unknown> {
     id: frame.id,
     direction: frame.direction,
     gap: frame.gap,
+    gapDelta: frame.gapDelta,
     padding: frame.padding,
     paddingTop: frame.paddingTop,
     paddingRight: frame.paddingRight,

@@ -34,6 +34,7 @@ export function authorNodeToRecord(node: AuthorFrameNode): Record<string, unknow
 
   assignIfDefined(record, 'direction', node.direction);
   assignIfDefined(record, 'gap', node.gap);
+  assignIfDefined(record, 'gap_delta', node.gapDelta);
   assignIfDefined(record, 'padding', node.padding);
   assignIfDefined(record, 'padding_top', node.paddingTop);
   assignIfDefined(record, 'padding_right', node.paddingRight);

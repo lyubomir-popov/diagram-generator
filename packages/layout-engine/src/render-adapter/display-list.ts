@@ -23,6 +23,7 @@ import {
   frameOwnedTextBlocks,
   frameOwnedTextBlockGap,
 } from "../resolved-spec-typography.js";
+import { routeArrows } from "../arrow-routing.js";
 import type { LayoutOutput } from "../layout.js";
 import type {
   Color,
@@ -41,8 +42,6 @@ import { shapeLineSpec } from "../text-adapter/shape-compatible.js";
 
 const ASCENT_RATIO = 0.94;
 const WHITE = parseColor("#FFFFFF");
-
-type Side = "top" | "bottom" | "left" | "right";
 
 function parseColor(value: string): Color {
   const normalized = value.trim().toLowerCase();
@@ -213,139 +212,6 @@ function simplifyPath(points: [number, number][]): [number, number][] {
     }
   }
   result.push(points[points.length - 1]!);
-  return result;
-}
-
-function inferSides(
-  sx: number,
-  sy: number,
-  sw: number,
-  sh: number,
-  tx: number,
-  ty: number,
-  tw: number,
-  th: number,
-): [Side, Side] {
-  const dx = tx + tw / 2 - (sx + sw / 2);
-  const dy = ty + th / 2 - (sy + sh / 2);
-  if (Math.abs(dy) >= Math.abs(dx)) {
-    return dy >= 0 ? ["bottom", "top"] : ["top", "bottom"];
-  }
-  return dx >= 0 ? ["right", "left"] : ["left", "right"];
-}
-
-function parseRef(ref: string): [string, Side | null] {
-  if (ref.includes(".")) {
-    const parts = ref.split(".");
-    const side = parts[parts.length - 1];
-    if (side === "top" || side === "bottom" || side === "left" || side === "right") {
-      return [parts.slice(0, -1).join("."), side];
-    }
-  }
-  return [ref, null];
-}
-
-function edgePoint(x: number, y: number, w: number, h: number, side: Side): [number, number] {
-  switch (side) {
-    case "left":
-      return [x, y + h / 2];
-    case "right":
-      return [x + w, y + h / 2];
-    case "top":
-      return [x + w / 2, y];
-    case "bottom":
-      return [x + w / 2, y + h];
-  }
-}
-
-function orthogonalWaypoints(
-  start: [number, number],
-  end: [number, number],
-  srcSide: Side,
-  tgtSide: Side,
-): [number, number][] {
-  const [sx, sy] = start;
-  const [ex, ey] = end;
-  if ((srcSide === "right" && tgtSide === "left") || (srcSide === "left" && tgtSide === "right")) {
-    const midX = (sx + ex) / 2;
-    return [
-      [midX, sy],
-      [midX, ey],
-    ];
-  }
-  if ((srcSide === "bottom" && tgtSide === "top") || (srcSide === "top" && tgtSide === "bottom")) {
-    const midY = (sy + ey) / 2;
-    return [
-      [sx, midY],
-      [ex, midY],
-    ];
-  }
-  return [[ex, sy]];
-}
-
-interface RoutedArrow {
-  points: [number, number][];
-  color: string;
-  label?: Arrow["label"];
-  labelGap: number;
-  componentId?: string;
-}
-
-function routeArrows(
-  arrows: Arrow[],
-  bounds: Record<string, { x: number; y: number; w: number; h: number }>,
-): RoutedArrow[] {
-  const result: RoutedArrow[] = [];
-  for (const arrow of arrows) {
-    const [srcId, srcSideExplicit] = parseRef(arrow.source);
-    const [tgtId, tgtSideExplicit] = parseRef(arrow.target);
-    const source = bounds[srcId];
-    const target = bounds[tgtId];
-    if (!source || !target) continue;
-
-    if (arrow.layoutPath && arrow.layoutPath.length >= 2) {
-      result.push({
-        points: simplifyPath(arrow.layoutPath.map((point) => [point[0], point[1]] as [number, number])),
-        color: arrow.color ?? ARROW_COLOR,
-        label: arrow.label && arrow.label.length > 0 ? arrow.label : undefined,
-        labelGap: arrow.labelGap ?? GRID_GUTTER,
-        componentId: arrow.id ?? `${arrow.source}->${arrow.target}`,
-      });
-      continue;
-    }
-
-    let srcSide = srcSideExplicit;
-    let tgtSide = tgtSideExplicit;
-    if (!srcSide || !tgtSide) {
-      const [inferredSrc, inferredTgt] = inferSides(
-        source.x,
-        source.y,
-        source.w,
-        source.h,
-        target.x,
-        target.y,
-        target.w,
-        target.h,
-      );
-      srcSide ??= inferredSrc;
-      tgtSide ??= inferredTgt;
-    }
-
-    const start = edgePoint(source.x, source.y, source.w, source.h, srcSide);
-    const end = edgePoint(target.x, target.y, target.w, target.h, tgtSide);
-    const rawWaypoints =
-      arrow.waypoints && arrow.waypoints.length > 0
-        ? arrow.waypoints
-        : orthogonalWaypoints(start, end, srcSide, tgtSide);
-
-    result.push({
-      points: simplifyPath([start, ...rawWaypoints, end]),
-      color: arrow.color ?? ARROW_COLOR,
-      label: arrow.label && arrow.label.length > 0 ? arrow.label : undefined,
-      labelGap: arrow.labelGap ?? GRID_GUTTER,
-      componentId: arrow.id ?? `${arrow.source}->${arrow.target}`,
-    });
-  }
   return result;
 }
 

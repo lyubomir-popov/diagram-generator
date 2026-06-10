@@ -311,12 +311,12 @@ arrows:
 
   # Arrow-to-arrow attachment / merged stem (FR-019).
   # This arrow starts on the middle of arrow `a_stem`, not on a box port.
-  - id: a_fork_b
-    source: arrow:a_stem        # or "@a_stem"
-    target: phase_a.top
   - id: a_stem
     source: ssdlc.bottom
     target: phase_b.top
+  - id: a_fork_b
+    source: arrow:a_stem        # or "@a_stem"
+    target: phase_a.top
 ```
 
 Rules for the shape:
@@ -329,6 +329,13 @@ Rules for the shape:
   recomputed from anchors each layout. The legacy absolute `waypoints: [[x, y]]` form is
   migrated to the marked, fragile `pinned: true` + `waypoints_abs` escape hatch and is
   never what the UI writes by default.
+
+### Current implementation note (2026-06-10)
+
+The current branch implements a narrower interim gap-promotion heuristic than FR-007 to
+FR-009 describe: any arrow between siblings in a dense leaf stack promotes the dense
+leaf-stack class globally for the current layout pass. This is enough to satisfy SC-004 on
+`ssdlc-lifecycle`, but it is **not** the full route-lane classifier in T080/T081 yet.
 
 ### Additional Edge Cases
 

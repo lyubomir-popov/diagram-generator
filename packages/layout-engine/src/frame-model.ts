@@ -185,6 +185,8 @@ export interface FrameInit {
   // Layout properties
   direction?: Direction;
   gap?: number;
+  gapDelta?: number;
+  gapIsAuthored?: boolean;
   padding?: number;
   align?: Align;
   justify?: Justify;
@@ -266,6 +268,8 @@ export class Frame {
   // Layout properties
   direction: Direction;
   gap: number;
+  gapDelta: number | undefined;
+  gapIsAuthored: boolean;
   padding: number;
   align: Align;
   justify: Justify;
@@ -333,6 +337,8 @@ export class Frame {
 
     this.direction = init?.direction ?? Direction.VERTICAL;
     this.gap = init?.gap ?? 24;
+    this.gapDelta = init?.gapDelta;
+    this.gapIsAuthored = init?.gapIsAuthored ?? false;
     this.padding = init?.padding ?? 8;
     this.align = init?.align ?? Align.TOP_LEFT;
     this.justify = init?.justify ?? Justify.PACKED;

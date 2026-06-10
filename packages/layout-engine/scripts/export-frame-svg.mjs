@@ -43,6 +43,7 @@ async function main() {
     gridColGap: diagram.gridColGap,
     gridRowGap: diagram.gridRowGap,
     gridOuterMargin: diagram.gridOuterMargin,
+    arrows: diagram.arrows,
   });
   const iconLoader = createFsIconLoader(ICONS_DIR);
   const iconMarkupByName = preloadIconMarkup(iconLoader, collectIconNames(diagram.root));

@@ -1,7 +1,7 @@
 # Status
 
-**Last updated:** 2026-06-10 (updated for spec 035 closeout)
-**Branch:** `feat/035-compatible-engine-switcher` (spec 035 complete)
+**Last updated:** 2026-06-10 (updated for spec 006 review follow-up + inbox drain)
+**Branch:** `feat/006-arrow-routing-redesign` (spec 006 review follow-up in progress)
 
 ## Stakeholder path
 
@@ -34,7 +34,14 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | **Preview APIs** | Node/TS-only: frame-tree, grid, component tree, preview document, icons, and save routes via `apps/preview/src/server.ts` |
 | **Live preview SVG** | TS-only Node export via `apps/preview/src/server.ts`; no Python SVG renderer (spec 012) |
 | **Batch SVG** | `export-frame-svg.mjs` — TS-only (`svg-render.ts`); golden harness `tests/svg-golden.test.ts` (3 canonical slugs after the first pruning pass) |
-| **Tests** | `npm --prefix packages/layout-engine test` green (`333/333`); `npm --prefix apps/preview test` green (`13/13`); full `python -m pytest scripts -q` last known green (`334 passed`, `65` subtests); focused Node-preview browser/Playwright lanes green for v3, force, and sequence; `node scripts/check_no_new_python.mjs` green |
+| **Tests** | `npm --prefix packages/layout-engine test` green (`341/341`); `npm --prefix apps/preview test` green (`14/14`); full `python -m pytest scripts -q` last known green (`334 passed`, `65` subtests); focused Node-preview browser/Playwright lanes green for v3, force, and sequence; `node scripts/check_no_new_python.mjs` green |
+
+### Current delta — spec 006 adversarial-review follow-up (2026-06-10)
+
+- The prior high-severity review items are resolved in the current branch state: browser routing delegates to the shared TS `routeArrows` implementation, the browser bundle was rebuilt, and the `example-platform-architecture` golden fixture now matches the intended trident output.
+- Focused follow-up fixes now cover the author-tooling fallout from `arrow:<id>` refs: compile orphan warnings resolve incident leaves through referenced host arrows, and Mermaid/D2 exporters skip arrow-to-arrow refs with explicit unsupported-anchor warnings instead of misleading missing-frame diagnostics.
+- Gap promotion remains an **interim dense-leaf-stack heuristic**, not the full route-lane classifier described in spec 006 FR-007 to FR-009. The spec addendum now says that explicitly; the full classifier remains open in T080/T081.
+- Routing geometry is still owned by the shared `routeArrows` helper called from the render surfaces rather than precomputed in `layout.ts`; Phase 6 (`T050`-`T052`, FR-005) remains open and should be treated as a deliberate next slice, not implied complete.
 
 ### Current delta — spec 035 compatible engine switcher complete (2026-06-10)
 

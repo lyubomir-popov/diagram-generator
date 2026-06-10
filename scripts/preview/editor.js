@@ -5259,6 +5259,12 @@ function buildAutolayoutPanel(cid, node) {
 
   if (isContainer) {
     const direction = ovr.direction || (node.layout === 'horizontal' ? 'HORIZONTAL' : 'VERTICAL');
+    const runtimeGap = direction === 'HORIZONTAL'
+      ? (node.layoutColGap ?? node.layoutGap ?? 24)
+      : (node.layoutRowGap ?? node.layoutGap ?? 24);
+    const currentGapDelta = Number(ovr.gap_delta ?? node.data?.gapDelta ?? 0) || 0;
+    const automaticGap = Math.max(0, runtimeGap);
+    const effectiveGap = Math.max(0, automaticGap + currentGapDelta);
 
     html += '<span class="label" style="margin-bottom:4px;display:block">Auto-layout · ' + cid + '</span>';
 
@@ -5268,6 +5274,14 @@ function buildAutolayoutPanel(cid, node) {
     html += '<option value="VERTICAL"' + (direction === 'VERTICAL' ? ' selected' : '') + '>Vertical</option>';
     html += '<option value="HORIZONTAL"' + (direction === 'HORIZONTAL' ? ' selected' : '') + '>Horizontal</option>';
     html += '</select></div>';
+
+    html += '<div class="field"><span class="label">Gap bump</span>';
+    html += '<input class="bf-input" type="number" step="8" value="' + currentGapDelta + '"';
+    html += ' onchange="setFrameProp(\'' + cid + '\',\'gap_delta\',this.value)"';
+    html += ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();event.stopPropagation();this.blur();}"';
+    html += ' style="width:64px;margin-left:4px">';
+    html += '<span class="label" style="margin-left:4px">px</span></div>';
+    html += '<div class="hint">Effective gap ' + effectiveGap + 'px = auto ' + automaticGap + 'px + delta ' + currentGapDelta + 'px. Set 0 to clear the manual bump.</div>';
 
     html += '<div class="hint">Padding now derives from frame defaults: 8px for non-root frames, with annotation side padding collapsed to 0.</div>';
   } else {
@@ -5422,6 +5436,21 @@ function setFrameProp(cid, prop, value) {
   // Clamp numeric frame properties to sane ranges
   if (prop === 'gap' || prop === 'padding' || prop === 'padding_top' || prop === 'padding_right' || prop === 'padding_bottom' || prop === 'padding_left') {
     value = Math.max(0, Number.isFinite(value) ? value : 0);
+  }
+  if (prop === 'gap_delta') {
+    const numeric = Number(value);
+    if (value === '' || value == null || !Number.isFinite(numeric) || snapToGrid(numeric) === 0) {
+      delete overrides[cid].gap_delta;
+      if (Object.keys(overrides[cid]).length === 0) delete overrides[cid];
+      setDirty(true);
+      EditorState.commitOverridePatchAction('Change gap_delta', fpBefore, EditorState.captureOverrideEntries(fpIds));
+      clearTimeout(_v3RelayoutTimer);
+      _v3RelayoutTimer = setTimeout(() => requestV3Relayout(cid), 300);
+      renderSelectionInspector(cid);
+      return;
+    }
+    value = snapToGrid(numeric);
+    delete overrides[cid].gap;
   }
   // When setting uniform padding, clear per-side overrides
   if (prop === 'padding') {
@@ -5795,6 +5824,8 @@ document.getElementById("btn-clear-all").addEventListener("click", () => {
 
 // Keyboard shortcuts: Ctrl+S to save, Ctrl+Z to undo, Ctrl+Shift+Z/Ctrl+Y to redo, arrows to nudge
 document.addEventListener("keydown", (e) => {
+  const tag = (e.target && e.target.tagName) || "";
+  const isEditableTarget = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.target.isContentEditable;
   // Alt+1 / Alt+2: toggle left / right sidebars
   if (e.altKey && (e.key === "1" || e.key === "2") && !e.ctrlKey && !e.metaKey) {
     e.preventDefault();
@@ -5813,8 +5844,7 @@ document.addEventListener("keydown", (e) => {
     e.preventDefault();
     void EditorState.redo(_applyUndoCommand);
   } else if ((e.key === "Delete" || e.key === "Backspace") && !e.ctrlKey && !e.metaKey && !e.altKey) {
-    const tag = (e.target && e.target.tagName) || "";
-    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.target.isContentEditable) {
+    if (isEditableTarget) {
       return;
     }
     if (selectedIds.size > 0 && !mgr.isBusy) {
@@ -5842,7 +5872,7 @@ document.addEventListener("keydown", (e) => {
   } else if ((e.key === "w" || e.key === "W") && !e.ctrlKey && !e.metaKey && !e.altKey) {
     cycleGuideMode();
   } else if (e.key === "Enter" && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey &&
-             selectedIds.size > 0 && !mgr.isMode(InteractionMode.TEXT_EDITING)) {
+             selectedIds.size > 0 && !mgr.isMode(InteractionMode.TEXT_EDITING) && !isEditableTarget) {
     // Shift+Enter: navigate to parent
     e.preventDefault();
     const primary = [...selectedIds][0];
@@ -5851,7 +5881,7 @@ document.addEventListener("keydown", (e) => {
       selectComponent(parent.id);
     }
   } else if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey &&
-             selectedIds.size > 0 && !mgr.isMode(InteractionMode.TEXT_EDITING)) {
+             selectedIds.size > 0 && !mgr.isMode(InteractionMode.TEXT_EDITING) && !isEditableTarget) {
     // Enter: select all children of selected containers (recursive descent)
     e.preventDefault();
     const childIds = [];

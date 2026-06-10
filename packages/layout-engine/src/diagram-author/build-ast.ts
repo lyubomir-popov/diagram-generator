@@ -41,6 +41,9 @@ function normalizeFrameFields(record: Record<string, unknown>): Omit<AuthorFrame
   const gap = readNumber(record, 'gap', 'gap');
   if (gap !== undefined) node.gap = gap;
 
+  const gapDelta = readNumber(record, 'gapDelta', 'gap_delta');
+  if (gapDelta !== undefined) node.gapDelta = gapDelta;
+
   const padding = readNumber(record, 'padding', 'padding');
   if (padding !== undefined) node.padding = padding;
 
@@ -159,6 +162,7 @@ const FRAME_TEMPLATE_KEYS: (keyof FrameTemplate)[] = [
   'heading',
   'direction',
   'gap',
+  'gapDelta',
   'padding',
 ];
 

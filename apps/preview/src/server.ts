@@ -707,6 +707,7 @@ async function buildFrameDiagramState(slug: string) {
     gridCols: diagram.gridCols,
     gridColGap: diagram.gridColGap,
     gridOuterMargin: diagram.gridOuterMargin,
+    arrows: diagram.arrows,
   });
   return { diagram, layout };
 }

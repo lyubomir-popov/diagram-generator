@@ -220,6 +220,15 @@ function applyOverridesToFrameTree(diagram, allOverrides, gridOverrides) {
     if (ovr.gap != null) {
       const gap = Math.max(0, parseInt(ovr.gap, 10));
       target.gap = gap;
+      target.gapDelta = undefined;
+    }
+    if (ovr.gap_delta != null) {
+      const gapDelta = parseInt(ovr.gap_delta, 10);
+      const currentGap = Number.isFinite(target.gap) ? target.gap : 0;
+      const currentGapDelta = Number.isFinite(target.gapDelta) ? target.gapDelta : 0;
+      const automaticGap = currentGap - currentGapDelta;
+      target.gapDelta = gapDelta;
+      target.gap = automaticGap + gapDelta;
     }
     if (ovr.padding != null) {
       const p = Math.max(0, parseInt(ovr.padding, 10));
@@ -953,143 +962,32 @@ function syncArrowsInModel(model, arrows, routedArrows) {
   model.loadArrows(payload);
 }
 
-function _inferSides(sx, sy, sw, sh, tx, ty, tw, th) {
-  const dx = (tx + tw / 2) - (sx + sw / 2);
-  const dy = (ty + th / 2) - (sy + sh / 2);
-  if (Math.abs(dy) >= Math.abs(dx)) {
-    return dy >= 0 ? ["bottom", "top"] : ["top", "bottom"];
-  }
-  return dx >= 0 ? ["right", "left"] : ["left", "right"];
-}
-
-function _parseRef(ref) {
-  if (ref.includes(".")) {
-    const parts = ref.split(".");
-    const side = parts[parts.length - 1];
-    if (["top", "bottom", "left", "right"].includes(side)) {
-      return [parts.slice(0, -1).join("."), side];
-    }
-  }
-  return [ref, null];
-}
-
-function _edgePoint(x, y, w, h, side) {
-  switch (side) {
-    case "left":   return [x, y + h / 2];
-    case "right":  return [x + w, y + h / 2];
-    case "top":    return [x + w / 2, y];
-    case "bottom": return [x + w / 2, y + h];
-    default:       return [x + w, y + h / 2];
-  }
-}
-
-function _orthogonalWaypoints(start, end, srcSide, tgtSide) {
-  const [sx, sy] = start;
-  const [ex, ey] = end;
-  if (srcSide === "right" && tgtSide === "left") {
-    const midX = (sx + ex) / 2;
-    return [[midX, sy], [midX, ey]];
-  }
-  if (srcSide === "bottom" && tgtSide === "top") {
-    const midY = (sy + ey) / 2;
-    return [[sx, midY], [ex, midY]];
-  }
-  if (srcSide === "left" && tgtSide === "right") {
-    const midX = (sx + ex) / 2;
-    return [[midX, sy], [midX, ey]];
-  }
-  if (srcSide === "top" && tgtSide === "bottom") {
-    const midY = (sy + ey) / 2;
-    return [[sx, midY], [ex, midY]];
-  }
-  return [[ex, sy]];
-}
-
-/**
- * Remove collinear intermediate points from an orthogonal path.
- * Mirrors Python's ``_simplify_path`` so the bridge produces the same
- * clean segment list the engine does.
- */
-function _simplifyPath(points) {
-  if (points.length <= 2) return points;
-  const result = [points[0]];
-  for (let i = 1; i < points.length - 1; i++) {
-    const [px, py] = points[i - 1];
-    const [cx, cy] = points[i];
-    const [nx, ny] = points[i + 1];
-    // Keep point only if direction changes (not collinear)
-    if (!((px === cx && cx === nx) || (py === cy && cy === ny))) {
-      result.push(points[i]);
-    }
-  }
-  result.push(points[points.length - 1]);
-  return result;
-}
-
 function routeArrows(arrows, boundsMap) {
-  const result = [];
-  for (const arrow of arrows) {
-    if (arrow.layoutPath && arrow.layoutPath.length >= 2) {
-      const fullPath = _simplifyPath(arrow.layoutPath.map((p) => [p[0], p[1]]));
-      result.push({
-        start: fullPath[0],
-        end: fullPath[fullPath.length - 1],
-        waypoints: fullPath.slice(1, -1),
-        direction: "top",
-        componentId: arrowComponentId(arrow),
-        sourceRef: arrow.source,
-        targetRef: arrow.target,
-        color: arrow.color || "#E95420",
-        label: arrow.label,
-        labelGap: arrow.labelGap ?? LayoutEngine.GRID_GUTTER ?? 24,
-        elkLabels: arrow.elkLabels,
-      });
-      continue;
-    }
-
-    const [srcId, srcSideExplicit] = _parseRef(arrow.source);
-    const [tgtId, tgtSideExplicit] = _parseRef(arrow.target);
-    const sb = boundsMap[srcId];
-    const tb = boundsMap[tgtId];
-    if (!sb || !tb) continue;
-
-    let srcSide = srcSideExplicit;
-    let tgtSide = tgtSideExplicit;
-    if (!srcSide || !tgtSide) {
-      const [inferredSrc, inferredTgt] = _inferSides(
-        sb.x, sb.y, sb.w, sb.h, tb.x, tb.y, tb.w, tb.h
-      );
-      if (!srcSide) srcSide = inferredSrc;
-      if (!tgtSide) tgtSide = inferredTgt;
-    }
-
-    const start = _edgePoint(sb.x, sb.y, sb.w, sb.h, srcSide);
-    const end = _edgePoint(tb.x, tb.y, tb.w, tb.h, tgtSide);
-    const rawWaypoints =
-      arrow.waypoints && arrow.waypoints.length > 0
-        ? arrow.waypoints
-        : _orthogonalWaypoints(start, end, srcSide, tgtSide);
-    // Simplify the full path to remove collinear points so the segment
-    // count matches the number of SVG <line> elements the Python renderer
-    // emitted.  Without this, straight arrows get extra midpoints and the
-    // shaft-to-arrowhead junction misaligns.
-    const fullPath = _simplifyPath([start, ...rawWaypoints, end]);
-    const waypoints = fullPath.slice(1, -1);
-
-    result.push({
-      start: fullPath[0],
-      end: fullPath[fullPath.length - 1],
-      waypoints,
-      direction: tgtSide,
-      componentId: arrowComponentId(arrow),
-      sourceRef: arrow.source,
-      targetRef: arrow.target,
-      color: arrow.color || "#E95420",
-      label: arrow.label,
-      labelGap: arrow.labelGap ?? LayoutEngine.GRID_GUTTER ?? 24,
-    });
+  if (typeof LayoutEngine.routeArrows !== "function") {
+    console.warn("layout-bridge: LayoutEngine.routeArrows is unavailable");
+    return [];
   }
-  return result;
+
+  const authoredByComponentId = new Map(
+    (arrows || []).map((arrow) => [arrowComponentId(arrow), arrow]),
+  );
+
+  return LayoutEngine.routeArrows(arrows, boundsMap)
+    .map((routed) => {
+      const points = routed.points || [];
+      const authored = authoredByComponentId.get(routed.componentId) || {};
+      return {
+        start: points[0],
+        end: points[points.length - 1],
+        waypoints: points.slice(1, -1),
+        componentId: routed.componentId || arrowComponentId(authored),
+        color: routed.color || authored.color || "#E95420",
+        label: routed.label ?? authored.label,
+        labelGap: routed.labelGap ?? authored.labelGap ?? LayoutEngine.GRID_GUTTER ?? 24,
+        elkLabels: authored.elkLabels,
+      };
+    })
+    .filter((arrow) => arrow.start && arrow.end);
 }
 
 /**
@@ -1762,6 +1660,7 @@ function _layoutOptionsFromDiagram(diagram) {
     gridCols: diagram.gridCols,
     gridColGap: diagram.gridColGap,
     gridOuterMargin: diagram.gridOuterMargin,
+    arrows: diagram.arrows,
   };
 }
 
@@ -1784,7 +1683,7 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
 
     // Build override map (same format as requestV3Relayout sends)
     const FRAME_KEYS = [
-      "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
+      "direction", "gap", "gap_delta", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
       "sizing", "sizing_w", "sizing_h",
       "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "max_width_chars", "min_height",
       "max_height", "children_order", "fill", "border", "level", "text",
@@ -2171,7 +2070,7 @@ async function renderFreshSvg(overrides, gridOverrides, model) {
 
   // Build override map (same format as performLocalRelayout)
   const FRAME_KEYS = [
-    "direction", "gap", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
+    "direction", "gap", "gap_delta", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
     "sizing", "sizing_w", "sizing_h",
     "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "max_width_chars", "min_height",
     "max_height", "children_order", "fill", "border", "level", "text",

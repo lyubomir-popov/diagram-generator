@@ -78,6 +78,7 @@ export function applyHeadingAsChild(
     id: frame.id ? `${frame.id}__body` : '__body',
     direction: bodyDirection,
     gap: deriveContentGap(frame.children),
+    gapIsAuthored: false,
     align: frame.align,
     sizingW: Sizing.FILL,
     sizingH: Sizing.HUG,

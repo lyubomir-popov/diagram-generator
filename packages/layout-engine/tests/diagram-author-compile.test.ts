@@ -664,6 +664,35 @@ describe('compileDiagramYaml', () => {
     );
   });
 
+  it('treats arrow-to-arrow attachments as incident on the host arrow endpoints', () => {
+    const result = compileDiagramYaml(
+      [
+        'schema: author-v1',
+        'title: Arrow attachment incidents',
+        'engine: v3',
+        'arrows:',
+        '  - id: stem',
+        '    source: source',
+        '    target: target',
+        '  - source: branch',
+        '    target: arrow:stem',
+        'root:',
+        '  id: page',
+        '  children:',
+        '    - id: source',
+        '      children: []',
+        '    - id: target',
+        '      children: []',
+        '    - id: branch',
+        '      children: []',
+        '',
+      ].join('\n'),
+    );
+
+    expect(result.errors).toEqual([]);
+    expect(result.warnings.filter(w => w.code === 'ORPHAN_LEAF')).toEqual([]);
+  });
+
   it('warns about duplicate arrows and self-loops by default', () => {
     const result = compileDiagramYaml(
       [

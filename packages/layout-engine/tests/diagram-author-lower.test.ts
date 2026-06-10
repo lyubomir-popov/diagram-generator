@@ -27,4 +27,62 @@ describe('diagram author lowering regression', () => {
     );
     expect(compiled.frameDiagram?.title).toBe(lowered.title);
   });
+
+  it('accepts arrow:<id> refs when they target an already-defined arrow', () => {
+    const raw = [
+      'engine: v3',
+      'title: arrow ref',
+      'arrows:',
+      '  - id: stem',
+      '    source: source.bottom',
+      '    target: target.top',
+      '  - source: arrow:stem',
+      '    target: branch.left',
+      'root:',
+      '  id: page',
+      '  direction: vertical',
+      '  children:',
+      '    - id: source',
+      '      label: [Source]',
+      '    - id: target',
+      '      label: [Target]',
+      '    - id: branch',
+      '      label: [Branch]',
+      '',
+    ].join('\n');
+
+    const compiled = compileDiagramYaml(raw, { sourcePath: 'arrow-ref.yaml' });
+    const lowered = loadFrameYamlFromString(raw, 'arrow-ref.yaml');
+
+    expect(compiled.errors).toEqual([]);
+    expect(lowered.arrows[1]?.source).toBe('arrow:stem');
+  });
+
+  it('rejects forward arrow:<id> refs so routing stays deterministic', () => {
+    const raw = [
+      'engine: v3',
+      'title: arrow ref forward',
+      'arrows:',
+      '  - source: arrow:stem',
+      '    target: branch.left',
+      '  - id: stem',
+      '    source: source.bottom',
+      '    target: target.top',
+      'root:',
+      '  id: page',
+      '  direction: vertical',
+      '  children:',
+      '    - id: source',
+      '      label: [Source]',
+      '    - id: target',
+      '      label: [Target]',
+      '    - id: branch',
+      '      label: [Branch]',
+      '',
+    ].join('\n');
+
+    const compiled = compileDiagramYaml(raw, { sourcePath: 'arrow-ref-forward.yaml' });
+
+    expect(compiled.errors.map(error => error.code)).toContain('ARROW_UNKNOWN_SOURCE_ARROW');
+  });
 });

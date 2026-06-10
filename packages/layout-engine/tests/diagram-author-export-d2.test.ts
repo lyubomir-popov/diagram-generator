@@ -178,6 +178,42 @@ describe('exportD2', () => {
     );
   });
 
+  it('warns cleanly for arrow-to-arrow refs without misreporting missing frames', () => {
+    const ast = {
+      metadata: {},
+      defaults: {},
+      root: {
+        id: 'page',
+        children: [{ id: 'source', children: [] }, { id: 'target', children: [] }],
+      },
+      arrows: [
+        { id: 'stem', source: 'source', target: 'target', kind: 'directed' as const },
+        { source: 'arrow:stem', target: 'target', kind: 'directed' as const },
+      ],
+      frameIndex: {
+        source: { id: 'source', isContainer: false, path: 'root.children[0]', parentId: 'page' },
+        target: { id: 'target', isContainer: false, path: 'root.children[1]', parentId: 'page' },
+      },
+      source: {},
+    };
+
+    const exported = exportD2(ast);
+
+    expect(exported.d2).toContain('source -> target');
+    expect(exported.warnings).toContainEqual(
+      expect.objectContaining({
+        code: 'D2_UNSUPPORTED_ANCHOR_REF',
+        path: 'arrows[1]',
+      }),
+    );
+    expect(exported.warnings).not.toContainEqual(
+      expect.objectContaining({
+        code: 'D2_MISSING_FRAME_REF',
+        path: 'arrows[1]',
+      }),
+    );
+  });
+
   it('warns when arrow style metadata is ignored', () => {
     const result = compileDiagramYaml(
       [

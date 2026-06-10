@@ -23,6 +23,7 @@ const result = layoutFrameTree(diagram.root, adapter, {
   gridColGap: diagram.gridColGap,
   gridRowGap: diagram.gridRowGap,
   gridOuterMargin: diagram.gridOuterMargin,
+  arrows: diagram.arrows,
 });
 
 const payload = {

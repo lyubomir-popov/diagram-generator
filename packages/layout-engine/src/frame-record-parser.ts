@@ -106,6 +106,8 @@ export function parseFrameRecord(data: Record<string, unknown>, isRoot = false):
   const isPanel = border !== Border.NONE || hasHeading;
   const isAnnotation = border === Border.NONE && !isContainer;
   const defaultGap = hasHeading ? 0 : deriveContentGap(children, { isRoot });
+  const gapDelta = data.gap_delta != null ? Number(data.gap_delta) : undefined;
+  const resolvedGap = data.gap != null ? Number(data.gap) : defaultGap + (gapDelta ?? 0);
 
   let sizingW: Sizing;
   let sizingH: Sizing;
@@ -130,7 +132,9 @@ export function parseFrameRecord(data: Record<string, unknown>, isRoot = false):
   const frame = new Frame({
     id: String(data.id ?? ''),
     direction: DIRECTION[String(data.direction ?? 'vertical')] ?? Direction.VERTICAL,
-    gap: Number(data.gap ?? defaultGap),
+    gap: resolvedGap,
+    gapDelta,
+    gapIsAuthored: 'gap' in data || 'gap_delta' in data,
     padding: uniformPadding,
     paddingTop: data.padding_top != null ? Number(data.padding_top) : undefined,
     paddingRight:

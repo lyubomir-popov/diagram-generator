@@ -1,4 +1,4 @@
-import { extractBaseFrameId } from './ref-grammar.js';
+import { extractArrowRefId, extractBaseFrameId } from './ref-grammar.js';
 import type { AuthorArrow, AuthorFrameNode, DiagramDocument, Diagnostic } from './types.js';
 
 export interface MermaidExportResult {
@@ -108,6 +108,8 @@ function renderArrow(
   warnings: Diagnostic[],
   ast: DiagramDocument,
 ): void {
+  const sourceArrowId = extractArrowRefId(arrow.source);
+  const targetArrowId = extractArrowRefId(arrow.target);
   const sourceBase = extractBaseFrameId(arrow.source);
   const targetBase = extractBaseFrameId(arrow.target);
 
@@ -118,6 +120,26 @@ function renderArrow(
       message: `Mermaid export skips arrows that target the root canvas frame: ${arrow.source} -> ${arrow.target}`,
       path: `arrows[${index}]`,
     });
+    return;
+  }
+
+  if (sourceArrowId || targetArrowId) {
+    if (sourceArrowId) {
+      warnings.push({
+        code: 'MERMAID_UNSUPPORTED_ANCHOR_REF',
+        level: 'warning',
+        message: `Mermaid export skips arrow-to-arrow source ref: ${arrow.source}`,
+        path: `arrows[${index}]`,
+      });
+    }
+    if (targetArrowId) {
+      warnings.push({
+        code: 'MERMAID_UNSUPPORTED_ANCHOR_REF',
+        level: 'warning',
+        message: `Mermaid export skips arrow-to-arrow target ref: ${arrow.target}`,
+        path: `arrows[${index}]`,
+      });
+    }
     return;
   }
 
