@@ -25,16 +25,15 @@
   const help = document.getElementById("engine-switcher-help");
   if (!section || !select) return;
 
-  // Nothing meaningful to switch between unless there are at least two options.
-  if (compatible.length < 2) {
-    section.hidden = true;
-    return;
-  }
-
   // Build options. Ensure the current engine is present and selected.
   const keys = compatible.includes(current) || !current
     ? compatible.slice()
     : [current, ...compatible];
+  if (keys.length < 1) {
+    section.hidden = true;
+    return;
+  }
+
   select.innerHTML = "";
   for (const key of keys) {
     const option = document.createElement("option");
@@ -43,6 +42,7 @@
     if (key === current) option.selected = true;
     select.appendChild(option);
   }
+  select.disabled = keys.length < 2;
   section.hidden = false;
 
   function setHelp(message, isError) {
@@ -52,6 +52,11 @@
   }
 
   const defaultHelp = help ? help.textContent : "";
+  if (select.disabled && help) {
+    setHelp("This document has a single compatible engine.", false);
+  } else if (defaultHelp) {
+    setHelp(defaultHelp, false);
+  }
 
   select.addEventListener("change", async () => {
     const chosen = select.value;

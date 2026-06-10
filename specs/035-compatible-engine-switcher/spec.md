@@ -6,7 +6,7 @@
 
 **Created**: 2026-06-06
 
-**Status**: Phase 1 in progress (contract + persistence complete; Phase 2 switcher UI pending)
+**Status**: Complete (2026-06-10)
 
 **Depends on**: spec 022 (complete), spec 025 (complete), spec 026 (complete)
 
@@ -15,12 +15,16 @@
   - `PreviewEngineManifest` type with `compatibility` field
   - `evaluatePreviewEngineCompatibility()` and `listCompatiblePreviewEngines()` API
   - `meta.layout_engine` persistence with write-boundary guard
-  - Tests for contract and persistence (12 tests passing)
-- **Phase 2** (IN PROGRESS): Switcher UI and rerender path
-  - Build `buildPreviewEngineSwitcherModel()` and wire into `buildGridViewerHtml`
-  - Implement rerender through `resolvePreviewEngine()`
-  - Add UI tests for incompatible-engine hiding and round-trip validation
-- **Phase 3** (NOT STARTED): Docs, docs, closeout
+  - Structural gating now covers the first real non-kind rule: `elk-layered` requires authored arrows on `frame-diagram` docs
+  - Tests for contract and persistence are backed by focused registry coverage plus live preview-app HTTP rejects
+- **Phase 2** (COMPLETE): Switcher UI and rerender path
+  - `engine-switcher.js` renders the compatible engine dropdown from `__DG_CONFIG.compatible_engines`
+  - Switching persists `meta.layout_engine` through `/api/overrides/{slug}` and reloads through `resolvePreviewEngine()`
+  - Native v3 is now registered as the second compatible grid engine for `frame-diagram`, making the switcher visible on authored frame diagrams
+- **Phase 3** (COMPLETE): Docs and closeout
+  - Current and future compatibility matrices are documented in the spec package
+  - Repo tracking docs are updated to reflect the visible switcher and native-v3 default precedence
+  - Focused validation and browser verification completed before marking the spec complete
 
 **Input**: Authors should be able to take one canonical YAML/AST-backed diagram and try multiple compatible layout engines from a dropdown, then settle on the engine whose output works best. The switcher must only show engines that can validly render the authored document in question.
 
@@ -44,6 +48,15 @@ What is missing is a compatibility-aware engine switcher that sits above those c
 ## Mission
 
 Allow a user to open one canonical authored diagram, choose from the engines that are actually compatible with that authored shape, preview the alternatives, and then persist the chosen engine without introducing a second source of truth.
+
+## Current engine lanes
+
+- `frame-diagram`: `v3` and `elk-layered`. When `meta.layout_engine` is absent, the preview defaults to `v3` and still offers `elk-layered` in the switcher.
+  `elk-layered` is offered only when the authored frame diagram includes at least one arrow.
+- `sequence`: `sequence` only. The sequence lane remains a grid-shell engine with its own document kind.
+- `force-spec`: `force` only. Cross-shell switching (`grid` ↔ `force`) remains out of scope for this spec.
+
+Future direct-port lanes remain the next extension point for the same contract: state/lifecycle, tree/mindmap, swimlane workflow, and ER/class relationship layouts.
 
 ## User Scenarios & Testing
 

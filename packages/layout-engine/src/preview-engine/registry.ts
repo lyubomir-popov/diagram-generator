@@ -1,10 +1,37 @@
 import { elkLayeredPreviewControlSpecs } from './elk-controls.js';
 import { FORCE_PREVIEW_PARAM_SPECS } from './force-param-registry.js';
+import type { FrameDiagram } from '../frame-model.js';
 import type {
   CompatibilityResult,
+  FrameDiagramCompatibilitySummary,
   PreviewEngineContext,
   PreviewEngineManifest,
 } from './types.js';
+
+
+export const V3_PREVIEW_ENGINE: PreviewEngineManifest = {
+  id: 'v3',
+  label: 'Native v3 autolayout',
+  layoutEngineKey: 'v3',
+  shellMode: 'grid',
+  capabilities: {
+    layoutControls: false,
+    localRelayout: true,
+    serverRelayout: false,
+    engineBackedSave: false,
+    nodeInspector: true,
+    gridEditing: true,
+    referenceImage: true,
+    simulationControls: false,
+    rawDebugView: false,
+  },
+  controlSpecs: [],
+  scripts: [],
+  compatibility: {
+    documentKinds: ['frame-diagram'],
+    description: 'Canonical native v3 autolayout for authored frame diagrams',
+  },
+};
 
 
 export const ELK_LAYERED_PREVIEW_ENGINE: PreviewEngineManifest = {
@@ -86,6 +113,7 @@ export const SEQUENCE_PREVIEW_ENGINE: PreviewEngineManifest = {
 
 /** Registered preview engines — extend here when onboarding new packages. */
 export const PREVIEW_ENGINE_REGISTRY: readonly PreviewEngineManifest[] = [
+  V3_PREVIEW_ENGINE,
   ELK_LAYERED_PREVIEW_ENGINE,
   FORCE_PREVIEW_ENGINE,
   SEQUENCE_PREVIEW_ENGINE,
@@ -119,19 +147,33 @@ export function resolvePreviewEngine(
 ): PreviewEngineManifest | undefined {
   const layoutEngine = context.layoutEngine?.trim();
   if (layoutEngine) {
-    const byLayout = PREVIEW_ENGINE_REGISTRY.find(
+    const explicit = PREVIEW_ENGINE_REGISTRY.find(
       (entry) => entry.layoutEngineKey === layoutEngine,
     );
-    if (byLayout) return byLayout;
+    if (explicit) {
+      if (evaluatePreviewEngineCompatibility(explicit, context).compatible) {
+        return explicit;
+      }
+      return listCompatiblePreviewEngines(context)[0];
+    }
+    return undefined;
   }
 
-  const shellMode = context.shellMode;
-  if (shellMode) {
-    const byMode = PREVIEW_ENGINE_REGISTRY.find((entry) => entry.shellMode === shellMode);
-    if (byMode && !byMode.layoutEngineKey) return byMode;
+  if (!context.shellMode && !context.previewDocumentKind) {
+    return undefined;
   }
 
-  return undefined;
+  // With no explicit `layout_engine`, the first compatible manifest is the
+  // default lane. Registry order therefore defines default precedence.
+  return listCompatiblePreviewEngines(context)[0];
+}
+
+export function summarizeFrameDiagramCompatibility(
+  diagram: FrameDiagram,
+): FrameDiagramCompatibilitySummary {
+  return {
+    arrowCount: diagram.arrows.length,
+  };
 }
 
 export function listHostableLayoutEngineKeys(): string[] {
@@ -161,6 +203,18 @@ export function evaluatePreviewEngineCompatibility(
     return {
       compatible: false,
       reason: `Engine cannot render document kind '${previewDocumentKind}'`,
+    };
+  }
+
+  if (
+    engine.id === 'elk-layered' &&
+    previewDocumentKind === 'frame-diagram' &&
+    context.frameDiagramSummary &&
+    context.frameDiagramSummary.arrowCount < 1
+  ) {
+    return {
+      compatible: false,
+      reason: 'Engine requires at least one authored arrow',
     };
   }
 

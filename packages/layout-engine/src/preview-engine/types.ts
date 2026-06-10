@@ -61,6 +61,11 @@ export interface PreviewEngineCompatibility {
   description?: string;
 }
 
+export interface FrameDiagramCompatibilitySummary {
+  /** ELK layered is only meaningful when the authored frame diagram has connectors. */
+  arrowCount: number;
+}
+
 
 /** Serializable manifest consumed by the preview shell and preview server. */
 export interface PreviewEngineManifest {
@@ -81,6 +86,7 @@ export interface PreviewEngineContext {
   layoutEngine?: string | null;
   shellMode?: PreviewShellMode | null;
   previewDocumentKind?: PreviewDocumentKind | null;
+  frameDiagramSummary?: FrameDiagramCompatibilitySummary | null;
 }
 
 /**

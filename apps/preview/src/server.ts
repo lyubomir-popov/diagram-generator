@@ -20,13 +20,14 @@ import {
   evaluatePreviewEngineCompatibility,
   getPreviewEngineByLayoutKey,
   layoutFrameTree,
-  listPreviewEngines,
+  listCompatiblePreviewEngines,
   loadFrameYaml,
   preloadIconMarkup,
   renderFrameDiagramToSvg,
   resolvePreviewEngine,
   serializeFrameDiagram,
   serializePreviewEngineManifest,
+  summarizeFrameDiagramCompatibility,
   type PreviewDocumentKind,
   type PreviewEngineContext,
   type PreviewEngineManifest,
@@ -564,27 +565,34 @@ function buildGridViewerHtml(slug: string): string {
   const currentPath = `/view/v3:${slug}`;
   const template = readFileSync(VIEWER_TEMPLATE, "utf8");
   const diagram = loadFrameYaml(path.join(FRAMES_DIR, `${slug}.yaml`));
-  const layoutEngine = normalizeLayoutEngine(diagram.layoutEngine);
+  const frameDiagramSummary = summarizeFrameDiagramCompatibility(diagram);
+  const authoredLayoutEngine = normalizeLayoutEngine(diagram.layoutEngine);
   const baselineYaml = readFileSync(path.join(FRAMES_DIR, `${slug}.yaml`), "utf8");
   const documentKind = determineFrameYamlKind(baselineYaml);
-  const engineManifest = resolvePreviewEngine({ layoutEngine, shellMode: "grid", previewDocumentKind: documentKind });
-  
-  // Spec 035: list compatible engines for the switcher UI
-  const compatibleEngines = listPreviewEngines()
-    .filter((engine) => evaluatePreviewEngineCompatibility(engine, { 
-      shellMode: "grid",
-      previewDocumentKind: documentKind,
-    }).compatible)
+  const previewContext: PreviewEngineContext = {
+    layoutEngine: authoredLayoutEngine,
+    shellMode: "grid",
+    previewDocumentKind: documentKind,
+    frameDiagramSummary,
+  };
+  const engineManifest = resolvePreviewEngine(previewContext);
+  const activeLayoutEngine = engineManifest?.layoutEngineKey ?? authoredLayoutEngine;
+
+  const compatibleEngines = listCompatiblePreviewEngines({
+    shellMode: "grid",
+    previewDocumentKind: documentKind,
+    frameDiagramSummary,
+  })
     .map((e) => e.layoutEngineKey)
     .filter((k) => k !== null) as string[];
-  
-  const isElk = layoutEngine === "elk-layered";
+
+  const isElk = engineManifest?.id === "elk-layered";
   const hasReference = findReferenceImage(slug) !== null;
   const configScript = [
     "window.__DG_CONFIG = {",
     `"slug":"${slug}",`,
     '"engine":"v3",',
-    `"layout_engine":"${layoutEngine}",`,
+    `"layout_engine":"${activeLayoutEngine}",`,
     `"compatible_engines":${JSON.stringify(compatibleEngines)},`,
     '"grid":false,',
     `"inset":${INSET},`,
@@ -866,10 +874,15 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse, port: nu
           }
 
           // Evaluate compatibility with the actual document kind
+          const frameDiagramSummary =
+            documentKind === "frame-diagram"
+              ? summarizeFrameDiagramCompatibility(loadFrameYaml(framePath))
+              : undefined;
           const context: PreviewEngineContext = {
             layoutEngine: requested.trim(),
             shellMode: "grid",
             previewDocumentKind: documentKind,
+            frameDiagramSummary,
           };
           const compatibility = evaluatePreviewEngineCompatibility(engine, context);
           if (!compatibility.compatible) {

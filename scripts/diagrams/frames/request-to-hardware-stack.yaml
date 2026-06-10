@@ -1,135 +1,147 @@
 engine: v3
-title: "Request to hardware stack"
+title: Request to hardware stack
 grid:
   cols: 1
   col_gap: 16
 arrows:
-  - source: user
-    target: orch
-  - source: orch
-    target: runtime
-  - source: runtime
-    target: kernel
-  - source: kernel
-    target: driver
-  - source: driver
-    target: hardware
+- source: user
+  target: orch
+- source: orch
+  target: runtime
+- source: runtime
+  target: kernel
+- source: kernel
+  target: driver
+- source: driver
+  target: hardware
 root:
   id: page
   direction: vertical
   variant: annotation
   children:
-    - id: user
-      label: [User request]
-      icon: Cloud.svg
-
-    # Orchestration layer
-    - id: orch
-      level: 2
+  - id: user
+    label:
+    - User request
+    icon: Cloud.svg
+  - id: orch
+    level: 2
+    direction: horizontal
+    heading: Orchestration layer
+    icon: Snap.svg
+    children:
+    - id: orch_col
+      direction: vertical
+      variant: annotation
+      children:
+      - id: orch_row0
+        direction: horizontal
+        variant: annotation
+        children:
+        - id: orch_ollama
+          label:
+          - Ollama
+        - id: orch_lemonade
+          label:
+          - Lemonade
+          - Server
+      - id: orch_vllm
+        label:
+        - vLLM
+  - id: runtime
+    level: 2
+    direction: vertical
+    heading: Model runtime
+    icon: AI.svg
+    children:
+    - id: rt_row0
       direction: horizontal
-      heading: "Orchestration layer"
-      icon: Snap.svg
+      variant: annotation
       children:
-        - id: orch_col
-          direction: vertical
-          variant: annotation
-          children:
-            - id: orch_row0
-              direction: horizontal
-              variant: annotation
-              children:
-                - id: orch_ollama
-                  label: [Ollama]
-                - id: orch_lemonade
-                  label: [Lemonade, Server]
-            - id: orch_vllm
-              label: [vLLM]
-
-    # Model runtime
-    - id: runtime
-      level: 2
-      direction: vertical
-      heading: "Model runtime"
-      icon: AI.svg
-      children:
-        - id: rt_row0
-          direction: horizontal
-          variant: annotation
-          children:
-            - id: rt_llama
-              label: [llama.cpp]
-            - id: rt_openvino
-              label: [OpenVINO]
-        - id: rt_row1
-          direction: horizontal
-          variant: annotation
-          children:
-            - id: rt_vllm
-              label: [vLLM]
-            - id: rt_tensorrt
-              label: [TensorRT-, LLM]
-        - id: rt_onnx
-          label: [ONNX Runtime]
-
-    # Compute kernel
-    - id: kernel
-      level: 2
-      direction: vertical
-      heading: "Compute kernel"
-      icon: kernel.svg
-      children:
-        - id: k_row0
-          direction: horizontal
-          children:
-            - id: k_cuda
-              label: [CUDA]
-            - id: k_rocm
-              label: [ROCm]
-        - id: k_row1
-          direction: horizontal
-          variant: annotation
-          children:
-            - id: k_metal
-              label: [Metal]
-            - id: k_onednn
-              label: [oneDNN]
-
-    # Driver
-    - id: driver
-      level: 2
+      - id: rt_llama
+        label:
+        - llama.cpp
+      - id: rt_openvino
+        label:
+        - OpenVINO
+    - id: rt_row1
       direction: horizontal
-      heading: "Driver"
-      icon: Wrench 1.svg
+      variant: annotation
       children:
-        - id: drv_cuda
-          label: [CUDA]
-        - id: drv_rocm
-          label: [ROCm]
-
-    # Hardware
-    - id: hardware
-      level: 2
-      direction: vertical
-      heading: "Hardware"
-      icon: Chip 1.svg
+      - id: rt_vllm
+        label:
+        - vLLM
+      - id: rt_tensorrt
+        label:
+        - TensorRT-
+        - LLM
+    - id: rt_onnx
+      label:
+      - ONNX Runtime
+  - id: kernel
+    level: 2
+    direction: vertical
+    heading: Compute kernel
+    icon: kernel.svg
+    children:
+    - id: k_row0
+      direction: horizontal
       children:
-        - id: hw_row0
-          direction: horizontal
-          variant: annotation
-          children:
-            - id: hw_cpu
-              label: [CPU]
-              icon: CPU.svg
-            - id: hw_gpu
-              label: [GPU]
-              icon: RAM.svg
-        - id: hw_row1
-          direction: horizontal
-          variant: annotation
-          children:
-            - id: hw_npu
-              label: [NPU]
-              icon: Chip 2.svg
-            - id: hw_ram
-              label: [RAM &, VRAM]
-              icon: Memory.svg
+      - id: k_cuda
+        label:
+        - CUDA
+      - id: k_rocm
+        label:
+        - ROCm
+    - id: k_row1
+      direction: horizontal
+      variant: annotation
+      children:
+      - id: k_metal
+        label:
+        - Metal
+      - id: k_onednn
+        label:
+        - oneDNN
+  - id: driver
+    level: 2
+    direction: horizontal
+    heading: Driver
+    icon: Wrench 1.svg
+    children:
+    - id: drv_cuda
+      label:
+      - CUDA
+    - id: drv_rocm
+      label:
+      - ROCm
+  - id: hardware
+    level: 2
+    direction: vertical
+    heading: Hardware
+    icon: Chip 1.svg
+    children:
+    - id: hw_row0
+      direction: horizontal
+      variant: annotation
+      children:
+      - id: hw_cpu
+        label:
+        - CPU
+        icon: CPU.svg
+      - id: hw_gpu
+        label:
+        - GPU
+        icon: RAM.svg
+    - id: hw_row1
+      direction: horizontal
+      variant: annotation
+      children:
+      - id: hw_npu
+        label:
+        - NPU
+        icon: Chip 2.svg
+      - id: hw_ram
+        label:
+        - RAM &
+        - VRAM
+        icon: Memory.svg

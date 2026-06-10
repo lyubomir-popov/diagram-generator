@@ -6,7 +6,7 @@ import type { GraphLayoutInput, GraphLayoutResult, GraphNodeInput, LayeredCorpus
 import { layoutLayeredForFamily } from '@diagram-generator/graph-layout-elk';
 
 import { Frame, FrameDiagram, Border, createLine } from './frame-model.js';
-import { measure, type LayoutOutput } from './layout.js';
+import { measure, place, type LayoutOutput } from './layout.js';
 import { resolveStyles } from './resolve-styles.js';
 import { annotationTextToSpec } from './resolved-spec-typography.js';
 import type { TextMeasureAdapter } from './text-measure.js';
@@ -98,7 +98,7 @@ function buildElkGraphNodes(root: Frame, adapter: TextMeasureAdapter, endpoints:
       nodes.push(frameToGraphNode(frame, adapter, endpoints));
       return;
     }
-    if (frame.isLeaf && endpoints.has(frame.id)) {
+    if (endpoints.has(frame.id)) {
       nodes.push(frameToGraphNode(frame, adapter, endpoints));
       return;
     }
@@ -359,11 +359,26 @@ export async function layoutElkFrameDiagram(
   applyElkEdgeLabels(diagram, elk.edges, originX, originY);
 
   const placedFrames: Frame[] = [];
+  const standaloneContainers: Frame[] = [];
   for (const [id, placed] of placedById) {
     const frame = findFrame(diagram.root, id);
     if (!frame) continue;
     applyPlacedNode(frame, placed, originX, originY);
+    if (frame.children.length > 0 && (!placed.children || placed.children.length === 0)) {
+      standaloneContainers.push(frame);
+    }
     placedFrames.push(frame);
+  }
+
+  for (const frame of standaloneContainers) {
+    place(
+      frame,
+      frame._layout.placedX,
+      frame._layout.placedY,
+      frame._layout.placedW,
+      frame._layout.placedH,
+      adapter,
+    );
   }
 
   layoutAnnotationsBelow(diagram.root, adapter, elk.height, originX, originY, endpoints);

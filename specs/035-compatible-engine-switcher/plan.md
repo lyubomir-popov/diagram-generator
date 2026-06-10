@@ -24,6 +24,7 @@
 
 | Engine | Document Kinds | Required Layout Engine | Shell Mode | Description |
 |--------|---------------|----------------------|------------|-------------|
+| `v3` | `frame-diagram` | (none) | `grid` | Canonical native v3 autolayout for authored frame diagrams; default when `meta.layout_engine` is absent |
 | `elk-layered` | `frame-diagram` | `elk-layered` | `grid` | Hierarchical layered layout for directed graphs and flowcharts |
 | `force` | `force-spec` | (none) | `force` | Physics-based force-directed layout for organic graph structures |
 | `sequence` | `sequence` | `sequence` | `grid` | Timeline-based layout for sequence diagrams and message flows |
@@ -47,12 +48,13 @@
 
 ## Phase 2 - Preview switcher
 
-- [ ] add a manifest-driven engine switcher UI that reads compatible engines for the current document
-- [ ] rerender through existing preview-engine routing rather than bespoke shell paths
-- [ ] show disabled or hidden engines consistently with an explainable reason
+- [x] add a manifest-driven engine switcher UI that reads compatible engines for the current document
+- [x] rerender through existing preview-engine routing rather than bespoke shell paths
+- [x] show disabled or hidden engines consistently with an explainable reason
+- [x] register native v3 as the second grid-mode `frame-diagram` engine so the switcher is visible on authored frame diagrams
 
 ## Phase 3 - Validation and persistence
 
-- [ ] confirm engine changes round-trip through canonical persisted state
-- [ ] add focused preview tests for compatible filtering and rerender behavior
-- [ ] document how future engine lanes participate in compatibility declarations
+- [x] confirm engine changes round-trip through canonical persisted state
+- [x] add focused preview tests for compatible filtering and rerender behavior
+- [x] document how future engine lanes participate in compatibility declarations

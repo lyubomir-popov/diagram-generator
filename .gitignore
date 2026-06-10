@@ -3,6 +3,7 @@ __pycache__/
 _tail.txt
 diagram-generator.code-workspace
 tmp/
+scripts/diagrams/2.output/
 diagrams/2.output/png/
 node_modules/
 packages/*/dist/

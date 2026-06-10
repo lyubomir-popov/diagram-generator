@@ -51,9 +51,9 @@ Feature package: `specs/038-ts-authority-python-removal/`.
 Feature package: `specs/035-compatible-engine-switcher/`.
 
 - [x] `[H]` **Phase 1 complete: Contract + persistence.** Closed on `feat/035-compatible-engine-switcher`: `evaluatePreviewEngineCompatibility()` API implemented, `meta.layout_engine` persistence guard validates full document-kind compatibility (not just hostable-key), document kind is dynamically detected from YAML structure (`sequence:` vs `root:` key), compatible engines list wired into preview config, and 12 persistence + round-trip tests passing.
-- [x] `[M]` **Phase 2: Switcher UI + rerender consumer.** Built `scripts/preview/engine-switcher.js` (reads `__DG_CONFIG.compatible_engines`, renders the `#engine-switcher-section` `<select>`, POSTs `{layout_engine}` to `/api/overrides/{slug}`, reloads to re-render via `resolvePreviewEngine`). Round-trip test now genuinely reloads via `loadFrameYaml` + resolves via the registry. Latent `getPreviewEngine`-by-id bug fixed with `getPreviewEngineByLayoutKey`. See `adversarial-review-merge.md` → "Re-review #2 — resolution". **Dormant by design** until the next item lands.
-- [ ] `[H]` **Register a second grid-mode engine so the switcher becomes visible.** Today exactly one grid engine is compatible per document kind (`elk-layered`↔`frame-diagram`, `sequence`↔`sequence`), so `compatible_engines` has length 1 and the switcher stays hidden (correct per FR-003). To realize the headline feature, register the native v3 autolayout as a first-class `PreviewEngineManifest` (`shellMode: grid`, `documentKinds: ['frame-diagram']`). This is a **contract change** with blast radius across `resolvePreviewEngine` empty-`layoutEngine` default resolution, `normalizeLayoutEngine`, and the default render/script path — classify and stress-test all existing diagrams before landing.
-- [ ] `[L]` **Phase 3: Docs + closeout.** Add typed contract docs, cross-engine preview guide, note on future lanes (state, tree, swimlane, ER/class).
+- [x] `[M]` **Phase 2: Switcher UI + rerender consumer.** Built `scripts/preview/engine-switcher.js` (reads `__DG_CONFIG.compatible_engines`, renders the `#engine-switcher-section` `<select>`, POSTs `{layout_engine}` to `/api/overrides/{slug}`, reloads to re-render via `resolvePreviewEngine`). Round-trip test now genuinely reloads via `loadFrameYaml` + resolves via the registry. Latent `getPreviewEngine`-by-id bug fixed with `getPreviewEngineByLayoutKey`. See `adversarial-review-merge.md` → "Re-review #2 — resolution". The control is now live on frame-diagram docs after the native v3 registration below.
+- [x] `[H]` **Register a second grid-mode engine so the switcher becomes visible.** Native v3 autolayout is now a first-class `PreviewEngineManifest` (`id/layoutEngineKey: v3`, `shellMode: grid`, `documentKinds: ['frame-diagram']`). Blank frame-diagram docs resolve to native v3 by default precedence, and the switcher now offers `v3` + `elk-layered` on authored frame diagrams.
+- [x] `[L]` **Phase 3: Docs + closeout.** The spec package now documents the live compatibility matrix and future lanes, repo tracking docs are updated, and closeout validation includes registry tests, preview-app contract tests, and browser verification of the visible switcher.
 
 #### Preview shell decomposition + TS migration (spec 026)
 
@@ -90,7 +90,7 @@ Feature package: `specs/030-sequence-layout/`.
 
 #### Shared preview-shell chrome consistency (new spec needed)
 
-- [ ] `[M]` **Draft a spec-kit package for shell-chrome consistency across Input / Output / Both.** Shared preview UI chrome should not disappear per engine or per missing reference image; unavailable content should degrade with placeholders, not by trimming shell affordances.
+- [ ] `[M]` **Draft a spec-kit package for shell-chrome consistency across Input / Output / Both.** Shared preview UI chrome should not disappear per engine or per missing reference image; unavailable content should degrade with placeholders, not by trimming shell affordances. Preserve the existing editor demo structure and replace ad hoc preview-app CSS with Baseline Foundry-owned styling rather than inventing new UI.
 
 #### Cross-engine multi-select align/distribute + bulk pin actions (new spec needed)
 

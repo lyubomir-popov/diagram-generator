@@ -1,7 +1,7 @@
 # Status
 
-**Last updated:** 2026-06-08 (updated for spec 035 Phase 1 completion)
-**Branch:** `feat/035-compatible-engine-switcher` (Phase 1 complete, Phase 2 beginning)
+**Last updated:** 2026-06-10 (updated for spec 035 closeout)
+**Branch:** `feat/035-compatible-engine-switcher` (spec 035 complete)
 
 ## Stakeholder path
 
@@ -34,36 +34,15 @@ Making a diagram for a review or deck: **[`docs/stakeholder-guide.md`](docs/stak
 | **Preview APIs** | Node/TS-only: frame-tree, grid, component tree, preview document, icons, and save routes via `apps/preview/src/server.ts` |
 | **Live preview SVG** | TS-only Node export via `apps/preview/src/server.ts`; no Python SVG renderer (spec 012) |
 | **Batch SVG** | `export-frame-svg.mjs` — TS-only (`svg-render.ts`); golden harness `tests/svg-golden.test.ts` (3 canonical slugs after the first pruning pass) |
-| **Tests** | `npm --prefix packages/layout-engine test` green (`325/325`); `npm --prefix apps/preview test` green (`12/12`); full `python -m pytest scripts -q` green (`334 passed`, `65` subtests); focused Node-preview browser/Playwright lanes green for v3, force, and sequence; `node scripts/check_no_new_python.mjs` green |
+| **Tests** | `npm --prefix packages/layout-engine test` green (`333/333`); `npm --prefix apps/preview test` green (`13/13`); full `python -m pytest scripts -q` last known green (`334 passed`, `65` subtests); focused Node-preview browser/Playwright lanes green for v3, force, and sequence; `node scripts/check_no_new_python.mjs` green |
 
-### Current delta — spec 035 Phase 1 complete: compatible engine switcher (2026-06-08)
+### Current delta — spec 035 compatible engine switcher complete (2026-06-10)
 
-**Triggered by:** Adversarial review finding that draft spec 035 was merged to `main` in Phase-1-only state with incomplete persistence validation.
-
-**What was fixed:**
-- Deleted orphaned `dist/preview-engine-switcher.js` (no source file)
-- Implemented `determineFrameYamlKind()` helper to detect document type from YAML structure (`sequence:` vs `root:` key)
-- Replaced naive `normalizeLayoutEngine()` persistence guard with full `evaluatePreviewEngineCompatibility()` validation keyed on actual document kind
-- Exported `evaluatePreviewEngineCompatibility` and `PreviewDocumentKind` from `@diagram-generator/layout-engine` top-level index
-- Wired `listPreviewEngines()` into `buildGridViewerHtml()` to provide compatible-engines list for Phase 2 UI dropdown
-- Added persist→reload round-trip test verifying engine choice survives write and re-parse
-- Updated spec.md: Phase status, test count (11→12), explicit grid↔force boundary in Non-Goals
-
-**Phase 1 deliverables (COMPLETE):**
-- [x] Typed compatibility contract (`PreviewEngineManifest`, `CompatibilityResult`)
-- [x] Compatibility evaluation API (`evaluatePreviewEngineCompatibility()`, `listCompatiblePreviewEngines()`)
-- [x] Persistence guard validates full document-kind compatibility (not just hostable-key)
-- [x] Document kind detection from YAML structure
-- [x] 12 persistence and round-trip tests passing
-- [x] Grid↔force cross-shell boundary documented (non-goal: cross-shell switching out of scope)
-
-**Phase 2 todo (NEXT):**
-- Implement switcher UI wiring into `buildGridViewerHtml()` inspector
-- Handle incompatible-engine display (hide/disable with reason)
-- Test rerender through resolved-engine path
-- Add incompatible-engine rejection test
-
-**Validation:** `npm --prefix apps/preview test` passes all 12 tests (persistence, contracts, round-trip).
+- Native v3 autolayout is now a first-class preview-engine manifest (`id/layoutEngineKey: v3`) alongside ELK layered, force, and sequence.
+- Blank frame-diagram docs now resolve to the first compatible manifest in registry order, so existing authored YAML with no `meta.layout_engine` defaults to native v3 while still offering `elk-layered` as an alternative.
+- The grid preview server now injects the resolved active engine key plus the compatible engine list into `__DG_CONFIG`, so the switcher appears on authored frame diagrams and selects `v3` by default instead of rendering an empty current value.
+- ELK layered compatibility is no longer document-kind-only: arrowless frame diagrams now offer only `v3`, and the live `/api/overrides/{slug}` HTTP path rejects persisted `elk-layered` picks unless the authored frame diagram includes at least one arrow.
+- Focused validation for the closeout slice is green: `npm --prefix packages/layout-engine test -- tests/preview-engine-registry.test.ts`, `python -m pytest scripts/test_preview_engine_manifest.py -q`, and browser verification on a fresh preview-app instance confirmed the switcher is visible on `preview-smoke` with `v3` + `elk-layered`.
 
 ### Current delta — spec 038 complete (2026-06-08)
 

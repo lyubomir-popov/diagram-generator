@@ -8,9 +8,9 @@
   - Added `evaluatePreviewEngineCompatibility()` with detailed reasons
   - Added `listPreviewEnginesWithCompatibility()` for switcher UI
   - All engines now have human-readable descriptions
-  - AST-shape predicates prototyped then removed (YAGNI — no consumer); reintroduce
-    only when a real engine needs structural gating beyond document kind
-  - Tests: 11/11 pass in `preview-engine-registry.test.ts`
+  - Added the first real structural gate: `elk-layered` is only compatible with
+    `frame-diagram` docs that actually author at least one arrow
+  - Tests: 14/14 pass in `preview-engine-registry.test.ts`
 - [x] T002 Decide the canonical persistence path for the selected engine
   - Engine choice persists as `meta.layout_engine` in frame YAML
   - Added `layout_engine` field to `PersistOverridePayload`
@@ -18,7 +18,8 @@
   - Supports set, update, and clear (null) operations
   - Server `/api/overrides/{slug}` rejects a persisted `layout_engine` that is not a
     hostable grid engine (compatibility gate at the write boundary)
-  - Tests: 11/11 pass in `frame-diagram.test.ts` (4 new spec 035 tests)
+  - Live preview-app coverage now proves the HTTP reject path for arrowless frame diagrams
+  - Tests: 13/13 pass in `frame-diagram.test.ts` (spec 035 cases included)
 - [x] T003 Record example compatibility matrices for current and near-term engines
   - Current-engine matrix recorded in `plan.md`
   - Near-term matrix recorded as aspirational only: those document kinds are NOT yet
@@ -27,12 +28,12 @@
 
 ## Phase 2 - Preview switcher
 
-- [ ] T010 Add a manifest-driven engine switcher UI for compatible engines only
-- [ ] T011 Rerender the current document through the selected engine without duplicating authored state
-- [ ] T012 Add focused tests for hidden/disabled incompatible engines
+- [x] T010 Add a manifest-driven engine switcher UI for compatible engines only
+- [x] T011 Rerender the current document through the selected engine without duplicating authored state
+- [x] T012 Add focused tests for hidden/disabled incompatible engines
 
 ## Phase 3 - Closeout
 
-- [ ] T020 Document the contract for future engine lanes
-- [ ] T021 Update repo tracking docs after implementation lands
-- [ ] T022 Mark the spec complete only after compatibility filtering and persistence are validated
+- [x] T020 Document the contract for future engine lanes
+- [x] T021 Update repo tracking docs after implementation lands
+- [x] T022 Mark the spec complete only after compatibility filtering and persistence are validated

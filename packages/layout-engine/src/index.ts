@@ -277,6 +277,7 @@ export type {
 } from './operator-autolayout/facade.js';
 
 export {
+  V3_PREVIEW_ENGINE,
   ELK_LAYERED_PREVIEW_ENGINE,
   FORCE_PREVIEW_ENGINE,
   FORCE_PREVIEW_PARAM_SPECS,
@@ -285,12 +286,15 @@ export {
   evaluatePreviewEngineCompatibility,
   getPreviewEngine,
   getPreviewEngineByLayoutKey,
+  listCompatiblePreviewEngines,
   listPreviewEngines,
   resolvePreviewEngine,
   serializePreviewEngineManifest,
+  summarizeFrameDiagramCompatibility,
 } from './preview-engine/index.js';
 export type {
   CompatibilityResult,
+  FrameDiagramCompatibilitySummary,
   PreviewControlKind,
   PreviewControlSpec,
   PreviewDocumentKind,
