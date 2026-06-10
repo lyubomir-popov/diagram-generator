@@ -1,0 +1,97 @@
+engine: v3
+title: Secure Software Delivery Lifecycle (SSDLC)
+meta:
+  diagram_type: process_and_workflow
+  abstraction_level: container
+  layout_engine: elk-layered
+grid:
+  cols: 3
+  col_gap: 24
+  row_gap: 48
+arrows:
+- source: ssdlc
+  target: phase_a
+- source: ssdlc
+  target: phase_b
+- source: ssdlc
+  target: phase_c
+- source: phase_a
+  target: purpose_a
+- source: phase_b
+  target: purpose_b
+- source: phase_c
+  target: purpose_c
+root:
+  id: page
+  direction: vertical
+  width: 1440
+  sizing_w: fixed
+  sizing_h: hug
+  children:
+  - id: ssdlc
+    level: 2
+    heading: Secure Software Delivery Lifecycle (SSDLC)
+    sizing_w: fill
+    sizing_h: hug
+  - id: phases_row
+    direction: horizontal
+    sizing_w: fill
+    sizing_h: hug
+    children:
+    - id: col_a
+      direction: vertical
+      sizing_w: fill
+      sizing_h: hug
+      children:
+      - id: phase_a
+        level: 3
+        heading: Phase A
+        label:
+        - Build & Ship
+        sizing_w: fill
+        sizing_h: hug
+      - id: purpose_a
+        level: 3
+        heading: What is it for?
+        label:
+        - Upstream Integrity
+        sizing_w: fill
+        sizing_h: hug
+    - id: col_b
+      direction: vertical
+      sizing_w: fill
+      sizing_h: hug
+      children:
+      - id: phase_b
+        level: 3
+        heading: Phase B
+        label:
+        - Deploy & Run
+        sizing_w: fill
+        sizing_h: hug
+      - id: purpose_b
+        level: 3
+        heading: What is it for?
+        label:
+        - In-Use Live Protection
+        sizing_w: fill
+        sizing_h: hug
+    - id: col_c
+      direction: vertical
+      sizing_w: fill
+      sizing_h: hug
+      children:
+      - id: phase_c
+        level: 3
+        heading: Phase C
+        label:
+        - Patch & Prove
+        sizing_w: fill
+        sizing_h: hug
+      - id: purpose_c
+        level: 3
+        heading: What is it for?
+        label:
+        - Long-Term Maintenance
+        sizing_w: fill
+        sizing_h: hug
