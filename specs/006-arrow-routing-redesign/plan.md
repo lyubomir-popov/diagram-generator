@@ -79,12 +79,63 @@ python -m pytest test_autolayout.py test_layout_v3.py test_parity.py -q  # Pytho
 - evaluate lightweight crossing penalties or ordering heuristics
 - keep behind explicit phase gate
 
+### WS7 - Hierarchical bus routing for fan-out / fan-in across nested containers (P1)
+
+This is the follow-up required for diagrams like `tiered-network-architecture` and the
+spec addendum's `ssdlc-lifecycle`: a source box connects to multiple targets arranged in
+one row/column, sometimes across different nesting depths. The current router can emit a
+simple sibling fan, but it still reasons arrow-by-arrow and does not own a general
+"shared trunk + branch bus" model across hierarchy boundaries.
+
+Scope of this work:
+
+- keep the primary authority in the native TS router
+- do **not** hand-route per diagram
+- do **not** bolt ELK on as a partial edge-only helper while keeping current box layout
+- treat this as a larger routing architecture slice, not a bug patch
+
+Execution shape:
+
+1. Introduce an explicit intermediate routing plan for grouped arrows
+   - identify fan-out / fan-in cohorts before final polyline emission
+   - record shared source side, shared target side, branch axis, and owning corridor
+   - make the plan deterministic and independent of authored arrow order
+2. Make grouping hierarchy-aware
+   - compute cohorts relative to the lowest common routing context, not only raw source/target centres
+   - support targets that live in sibling containers, cousin containers, or parent/child levels
+   - reject ambiguous groups cleanly and fall back to per-arrow routing
+3. Add corridor ownership
+   - attach each bus plan to a concrete routing corridor between containers
+   - define when a trunk may run inside a container body, between siblings, or outside a shared ancestor
+   - keep corridor choice stable when root/container direction flips
+4. Emit bus geometry
+   - route `source -> trunk -> branch bus -> target`
+   - support both one-to-many fan-out and many-to-one fan-in as first-class shapes
+   - keep existing explicit sides, layout paths, and manual waypoints as higher-priority escapes
+5. Reserve space for buses
+   - integrate route-aware lane reservation with the gap-promotion work from the addendum
+   - ensure equivalent stacks widen consistently when the bus crosses them
+   - avoid per-diagram special cases
+6. Add diagnostics and fixtures
+   - representative fixtures for same-level fans, mixed-depth fans, and direction flips
+   - explicit diagnostics for unsupported cycles or ambiguous corridor ownership
+   - browser verification on live preview relayout, not only pure router tests
+
+Decision record:
+
+- **Chosen path**: own a repo-native hierarchical bus router in `packages/layout-engine`
+- **Not chosen**: use ELK only for edge routing while preserving current box-autolayout
+- Rationale: ELK is viable when ELK owns the whole graph layout lane, but this feature needs
+  route semantics that stay aligned with authored frame containers, preview relayout, and
+  box-layout spacing rules already owned by the TS engine
+
 ## Validation Gates
 
 1. parser tests for selector grammar and path resolution pass
 2. routing fixtures pass for nested and obstacle-heavy diagrams
 3. renderer path emission tests confirm no reroute logic
 4. corpus spot-check on known problematic diagrams passes
+5. hierarchical fan fixtures survive root/container direction flips in preview
 
 ## Deliverables
 

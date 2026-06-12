@@ -953,10 +953,22 @@ function _syncArrowOriginGeometry(g) {
   });
 }
 
+function _replaceArrowLabels(g, arrow, boundsMap) {
+  if (!g) return;
+  g.querySelectorAll(":scope > text").forEach((el) => el.remove());
+  const replacement = createArrowsSvg([arrow], boundsMap).firstChild;
+  if (!replacement) return;
+  Array.from(replacement.childNodes).forEach((child) => {
+    if (child.nodeName && child.nodeName.toLowerCase() === "text") {
+      g.appendChild(child);
+    }
+  });
+}
+
 /**
  * Update arrow SVG elements from routed arrow data.
  */
-function patchArrowsSvg(svgEl, routedArrows) {
+function patchArrowsSvg(svgEl, routedArrows, boundsMap) {
   if (!svgEl) return;
   for (const arrow of routedArrows) {
     const g = svgEl.querySelector(
@@ -971,9 +983,9 @@ function patchArrowsSvg(svgEl, routedArrows) {
     const points = [arrow.start, ...arrow.waypoints, arrow.end];
     const segmentCount = Math.max(0, points.length - 1);
     if (lines.length !== segmentCount || hitLines.length !== segmentCount) {
-      const replacement = createArrowsSvg([arrow]).firstChild;
+      const replacement = createArrowsSvg([arrow], boundsMap).firstChild;
       if (replacement) {
-        g.querySelectorAll("line, polygon").forEach((el) => el.remove());
+        g.querySelectorAll("line, polygon, text").forEach((el) => el.remove());
         Array.from(replacement.childNodes).forEach((child) => g.appendChild(child));
         _syncArrowOriginGeometry(g);
       }
@@ -1028,6 +1040,7 @@ function patchArrowsSvg(svgEl, routedArrows) {
         polygon.setAttribute("points", pts);
       }
     }
+    _replaceArrowLabels(g, arrow, boundsMap);
     _syncArrowOriginGeometry(g);
   }
 }
@@ -1690,7 +1703,7 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
     let routedArrows = [];
     if (diagram.arrows && diagram.arrows.length > 0) {
       routedArrows = routeArrows(diagram.arrows, newBounds);
-      patchArrowsSvg(svgEl, routedArrows);
+      patchArrowsSvg(svgEl, routedArrows, newBounds);
     }
 
     // Update component model (skip during live resize to keep snap stable)

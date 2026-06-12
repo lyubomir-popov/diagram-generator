@@ -15,6 +15,7 @@ Active execution queue for `diagram-generator`. All new work targets TypeScript 
 Feature package: `specs/035-compatible-engine-switcher/`.
 
 - [ ] `[H]` **ELK layered drops headings and icons on parent containers.** Headed panels (e.g. Planning / Implementation / Delivery in `complex-routing-usecase`) lose title + icon treatment under `elk-layered`; headers should remain in the container chrome ELK lays out. Investigate, draft spec-kit fix package, add tier-2 flow map. Reported via inbox 2026-06-12.
+- [ ] `[H]` **ELK layered ignores authored sizing semantics (`FILL` / `HUG` / `FIXED`) on switched frame diagrams.** Switching a valid frame diagram from `v3` to `elk-layered` can collapse equal-width stacks into uneven measured widths because `layoutElkFrameDiagram()` currently measures nodes and hands ELK concrete box sizes instead of preserving authored sizing behavior end-to-end. Investigate on the support-escalation example and `tiered-network-architecture`; decide the TS-owned contract for how ELK should honor or coerce sizing per axis. Reported via inbox 2026-06-13.
 
 #### Diagram typography token cleanup (spec 039)
 
