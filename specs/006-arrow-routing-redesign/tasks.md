@@ -87,6 +87,46 @@ Maps to spec.md addendum FR-007–FR-020 and SC-004–SC-006.
 - [ ] T095 Emit tracked junction geometry + renderer junction dot; junction follows host reroute (SC-006)
 - [ ] T096 Contract test: renderer re-infers none of sides/waypoints/attachment (consistent with T052)
 
+## Phase 10: Hierarchical bus routing architecture (nested containers, mixed-depth arrows)
+
+This phase turns the addendum's "shared stem + fork" into a general routing primitive for
+live authored frame diagrams. It is intentionally larger than the current fan heuristic.
+
+### 10a. Routing cohort model
+
+- [ ] T100 Define a `RouteCohort` / `BusPlan` intermediate model in the TS router: cohort members, routing owner, dominant direction, trunk axis, branch axis, and fallback reason
+- [ ] T101 Group arrows into cohorts before point emission; make grouping deterministic and independent of authored arrow order
+- [ ] T102 Compute grouping relative to the lowest common routing context (shared ancestor / corridor owner), not raw source-target centre angles only
+- [ ] T103 Add explicit fallback rules: if a cohort is ambiguous, cyclic, or corridor ownership cannot be assigned, route members independently and emit a diagnostic
+
+### 10b. Hierarchy-aware corridor ownership
+
+- [ ] T104 Define corridor ownership rules for bus trunks: inside source container, between sibling containers, or outside a shared ancestor body
+- [ ] T105 Add lowest-common-ancestor routing support for arrows whose targets live at different nesting depths
+- [ ] T106 Prevent bus plans from claiming corridors blocked by non-member containers unless an explicit manual route override exists
+- [ ] T107 Keep corridor selection stable across root/container direction flips (`VERTICAL` ↔ `HORIZONTAL`)
+
+### 10c. Bus geometry emission
+
+- [ ] T108 Emit one-to-many fan-out as `source -> shared trunk -> branch bus -> targets` using the cohort model rather than per-arrow midpoint inference
+- [ ] T109 Emit many-to-one fan-in using the same primitive (mirrored merge case), not a separate ad hoc code path
+- [ ] T110 Preserve higher-priority escapes in order: explicit `layoutPath` > explicit manual waypoint/attachment form > cohort bus routing > plain per-arrow routing
+- [ ] T111 Add deterministic target ordering within the bus so branch order follows stable visual order (top-to-bottom or left-to-right in corridor space)
+
+### 10d. Layout-owned lane reservation
+
+- [ ] T112 Extend route-aware gap promotion to reserve space for shared trunks and shared branch buses, not only independent arrow lanes
+- [ ] T113 When one stack in a gap class needs bus clearance, promote the whole class consistently (no one-off widened sibling)
+- [ ] T114 Ensure lane reservation is derived at layout time only and never serialized into YAML
+
+### 10e. Live preview and regression coverage
+
+- [ ] T115 Fixture: `tiered-network-architecture` root `VERTICAL` and root `HORIZONTAL` both produce clean fan-out from `global_server` to the three tier-2 boxes
+- [ ] T116 Fixture: mixed-depth nested case where one source connects to sibling and cousin targets through a shared ancestor corridor
+- [ ] T117 Preview relayout browser check: changing a container/root `direction` does not change the chosen cohort shape except for axis rotation
+- [ ] T118 Add debug/diagnostic output for rejected cohorts and unsupported routing cycles so failures are inspectable without DOM archaeology
+- [ ] T119 Update TODO/spec status once the bus-router architecture replaces the current narrow fan heuristic
+
 ## Parallelization Notes
 
 - Parser work (T010-T013) can proceed in parallel with baseline fixture curation after T001.
