@@ -332,7 +332,7 @@ describe('arrow rendering parity', () => {
       expect(card.heading?.content).toBe('The problem');
       expect(svg).toContain('>The problem</tspan>');
       expect(svg).toContain('>Databases have crawled to a halt.</tspan>');
-      expect(svg).toContain('font-weight="700" fill="#000000" font-variant-caps="small-caps">The problem</tspan>');
+      expect(svg).toContain('font-weight="700" fill="#000000">The problem</tspan>');
       expect(svg).toContain('font-weight="400" fill="#000000">Databases have crawled to a halt.</tspan>');
       expect(svg).not.toContain('font-weight="700" fill="#000000">Databases have crawled to a halt.</tspan>');
       expect(svg).toMatch(/<text[^>]*><tspan x="8" y="24\.92"[^>]*>The problem<\/tspan><\/text><text[^>]*><tspan x="8" y="72\.92"[^>]*>Databases have crawled to a halt\.<\/tspan><\/text>/);

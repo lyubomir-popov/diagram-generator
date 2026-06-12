@@ -49,7 +49,7 @@ Rows marked ⚠ reference assets excluded by `.gitignore`. Run the build or obta
 |--------|------|------|
 | Stakeholder how-to | `docs/stakeholder-guide.md` | Copy YAML → preview → save → export SVG (non-engineering) |
 | Workflow rules | `.github/copilot-instructions.md` | Canonical workflow and diagram-rule source for this repo |
-| Diagram language spec | `DIAGRAM.md` | Canonical diagram tokens, prose rules, and output constraints (Layer 3 — Style) |
+| Diagram language spec | `DIAGRAM.md` | Authoring rules and output constraints (Layer 3 — Style); runtime constants in `tokens.ts` / `frame-classes.ts` |
 | Current state | `STATUS.md` | Cold-start orientation and resume guidance |
 | Starter block reference | `diagrams/0.reference/sample.svg` | Canonical single-block geometry and arrow treatment |
 | Visual preview of starter block | `diagrams/0.reference/sample.png` | Clearer `3x` raster preview of the same canonical block |
@@ -71,7 +71,7 @@ The specs are living documents maintained in the sibling `canonical-spacing-spec
 | Spacing | `../canonical-spacing-spec/specs/spacing/draft.md` | Vertical spacing architecture (element-owned vs container-owned), baseline grid and nudge tokens, intra-component padding. Diagram tier will define its own spacing mode and density. |
 | Grid | `../canonical-spacing-spec/specs/grid/draft.md` | Column counts, gutter widths, outer margins, bisection rule, nested grid alignment. Diagram tier will define its own grid presets (column counts, baseline unit enforcement). |
 
-**How they flow into this repo:** DIAGRAM.md imports tokens from these specs and adapts them for diagram use (e.g., selecting 18px body from the modular scale, 8px baseline unit from the spacing architecture, 24px gutter from the grid spec). When the upstream specs change, DIAGRAM.md and `diagram_shared.py` must be reviewed and updated to stay aligned.
+**How they flow into this repo:** `packages/layout-engine/src/tokens.ts` and `frame-classes.ts` implement diagram-tier selections from these specs (e.g., 18px body, 8px baseline, 24px gutter). `DIAGRAM.md` documents the resulting contract. When upstream specs change, update the TS constants first, then the DIAGRAM.md summary table.
 
 ## External tool references
 
@@ -97,7 +97,7 @@ The specs are living documents maintained in the sibling `canonical-spacing-spec
 ## Notes
 
 - Local reference assets in this repo are the primary source of truth for diagram visuals.
-- `DIAGRAM.md` is the Layer 3 (Style) authority, importing tokens from the canonical type scale, spacing, and grid specs. See "Design compass" section for paths and the 4th-tier direction.
+- `DIAGRAM.md` is the Layer 3 (Style) authoring authority; code constants in `tokens.ts` / `frame-classes.ts` are the runtime source of truth. See "Design compass" for upstream spec paths.
 - draw.io libraries improve reuse for future insertions but do not live-update shapes already placed in diagrams; repo-wide style changes still require a batch XML update strategy.
 - `scripts/export_drawio_library.py` regenerates the tracked draw.io library, `scripts/drawio_style_presets.py` defines the canonical shared draw.io style-field presets, and `scripts/drawio_style_sync.py` is the batch rewrite path for applying those presets or other token-targeted draw.io style changes.
 - Sibling repos can inform workflow or style, but they do not outrank an explicitly referenced local sketch or reference asset.

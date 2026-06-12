@@ -133,7 +133,7 @@ After assigning levels:
 1. Run `python -m pytest test_frame_loader.py test_layout_v3.py -q` from `scripts/`.
 2. Run `node scripts/check_no_new_python.mjs` from the repo root.
 3. Open the diagram in the preview server and verify:
-   - Sections have ALL-CAPS headings with black borders.
+   - Sections have bold headings with black borders.
    - Panels have bold headings with grey fill.
    - Leaves have regular-weight headings with black borders.
    - No sibling group mixes classes.

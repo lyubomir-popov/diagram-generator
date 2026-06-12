@@ -23,21 +23,21 @@ describe('HarfBuzzTextAdapter', () => {
     expect(adapter.measurementBackend).toBe('harfbuzz');
   });
 
-  it('matches canonical Ubuntu Sans advances for plain and small-caps text', () => {
+  it('ignores unsupported smallCaps requests', () => {
     const plain = adapter.measureTextWidth({
       text: 'Infrastructure',
       fontSize: 18,
       weight: 400,
     });
-    const smallCaps = adapter.measureTextWidth({
+    const flagged = adapter.measureTextWidth({
       text: 'Infrastructure',
-      fontSize: 15,
-      weight: 700,
+      fontSize: 18,
+      weight: 400,
       smallCaps: true,
     });
 
     expect(plain).toBeCloseTo(112.248, 3);
-    expect(smallCaps).toBeCloseTo(118.545, 3);
+    expect(flagged).toBeCloseTo(plain, 6);
   });
 
   it('treats explicit letter spacing as a real layout input', () => {
@@ -45,18 +45,15 @@ describe('HarfBuzzTextAdapter', () => {
       text: 'INFRASTRUCTURE',
       fontSize: 15,
       weight: 700,
-      smallCaps: true,
     });
     const spaced = adapter.measureTextWidth({
       text: 'INFRASTRUCTURE',
       fontSize: 15,
       weight: 700,
-      smallCaps: true,
       letterSpacing: '0.05em',
     });
 
-    expect(base).toBeCloseTo(118.545, 3);
-    expect(spaced).toBeCloseTo(128.295, 3);
+    expect(spaced).toBeGreaterThan(base);
     expect(spaced - base).toBeCloseTo(9.75, 6);
   });
 });

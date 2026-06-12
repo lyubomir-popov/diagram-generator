@@ -84,20 +84,12 @@ ICON_SIZE = 48
 INSET = 8
 BOX_MIN_HEIGHT = ICON_SIZE + (INSET * 2)
 
-# Frame-class stroke width — keep in sync with DIAGRAM.md spacing.frame-stroke-width
+# Frame-class stroke width — keep in sync with tokens.ts DEFAULT_FRAME_STROKE_WIDTH
 DEFAULT_FRAME_STROKE_WIDTH = 1
 
 BODY_SIZE = "18"
-HEADING_SIZE = "18"
-TITLE_SIZE = "24"
-
-# Legacy alias – kept so existing call sites that reference the pilot name still work.
-DIAGRAM_TIER_BODY_SIZE = BODY_SIZE
 
 BODY_LINE_STEP = 24
-HEADING_LINE_STEP = 24
-TITLE_LINE_STEP = 32
-DIAGRAM_TIER_BODY_LINE_STEP = BODY_LINE_STEP
 
 LINE_HEIGHTS_BY_SIZE = {
     6: 8,

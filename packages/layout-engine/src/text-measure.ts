@@ -74,7 +74,7 @@ export function lineSpecToMeasureRequest(spec: LineSpec): TextMeasureRequest {
     text: spec.content,
     fontSize: sizeToPx(spec.size ?? BODY_SIZE),
     weight: Number(spec.weight ?? 400),
-    smallCaps: spec.smallCaps ?? false,
+    smallCaps: false,
     letterSpacing: spec.letterSpacing ?? null,
   };
 }
@@ -143,7 +143,7 @@ export function lineToSpec(line: Line): LineSpec {
     size: line.size ?? String(BODY_SIZE),
     weight: line.weight ?? '400',
     fill: line.fill ?? '#000000',
-    smallCaps: line.smallCaps ?? false,
+    smallCaps: false,
     letterSpacing: line.letterSpacing ?? null,
     lineStep: line.lineStep != null ? String(line.lineStep) : String(BODY_LINE_STEP),
     fontFamily: line.fontFamily ?? null,

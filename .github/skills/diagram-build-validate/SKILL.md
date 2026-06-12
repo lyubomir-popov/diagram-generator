@@ -26,7 +26,7 @@ argument-hint: "Describe which diagram slugs or files changed"
 
 ## Guardrails
 
-All visual rules (gutter consistency, arrow clearance, equal-height equalization, typography hierarchy, box height formulas, annotations vs helpers, separator sizing) are defined in `DIAGRAM.md`. Read it before running this procedure.
+Visual rules (gutter consistency, arrow clearance, typography hierarchy, box height floor, frame classes, separator sizing) are in `DIAGRAM.md`; runtime constants are in `packages/layout-engine/src/tokens.ts` and `frame-classes.ts`. Read both before running this procedure.
 
 Key constraints to verify during build:
 

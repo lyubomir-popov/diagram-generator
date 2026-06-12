@@ -45,9 +45,7 @@ export function resolvedSpecTypography(
     weight: headingRow
       ? (frame.resolvedHeadingWeight ?? DEFAULT_WEIGHT)
       : (leadRow ? (frame.resolvedLeafLeadWeight ?? DEFAULT_WEIGHT) : DEFAULT_WEIGHT),
-    smallCaps: headingRow
-      ? (frame.resolvedHeadingSmallCaps ?? false)
-      : (leadRow ? (frame.resolvedLeafLeadSmallCaps ?? false) : false),
+    smallCaps: false,
     fill: headingRow
       ? (frame.resolvedTextFill ?? DEFAULT_TEXT_FILL)
       : (frame.resolvedTextFill ?? DEFAULT_TEXT_FILL),
@@ -63,7 +61,7 @@ function resolvedFrameOwnedTypography(
   if (isHeading) {
     return {
       weight: frame.resolvedHeadingWeight ?? DEFAULT_WEIGHT,
-      smallCaps: frame.resolvedHeadingSmallCaps ?? false,
+      smallCaps: false,
       fill: frame.resolvedTextFill ?? DEFAULT_TEXT_FILL,
       letterSpacing: frame.resolvedHeadingLetterSpacing ?? null,
       fontFamily: null,
@@ -72,7 +70,7 @@ function resolvedFrameOwnedTypography(
   if (frame.isLeaf && frame.heading == null && labelIndex === 0) {
     return {
       weight: frame.resolvedLeafLeadWeight ?? DEFAULT_WEIGHT,
-      smallCaps: frame.resolvedLeafLeadSmallCaps ?? false,
+      smallCaps: false,
       fill: frame.resolvedTextFill ?? DEFAULT_TEXT_FILL,
       letterSpacing: frame.resolvedLeafLeadLetterSpacing ?? null,
       fontFamily: null,
@@ -145,7 +143,7 @@ export function annotationTextToSpec(line: Line): LineSpec {
     size: line.size,
     weight: annotation.leafLeadText?.weight ?? DEFAULT_WEIGHT,
     fill: annotation.textFill ?? DEFAULT_TEXT_FILL,
-    smallCaps: annotation.leafLeadText?.smallCaps ?? false,
+    smallCaps: false,
     letterSpacing: annotation.leafLeadText?.letterSpacing ?? null,
     lineStep: line.lineStep != null ? String(line.lineStep) : String(BODY_LINE_STEP),
     fontFamily: null,

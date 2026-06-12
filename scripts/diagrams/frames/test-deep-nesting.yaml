@@ -1,43 +1,59 @@
 engine: v3
-title: "Deep nesting — page → panel → columns → boxes"
+title: Deep nesting — page → panel → columns → boxes
 root:
   id: page
   direction: vertical
   children:
-    - id: header
-      label: [Platform Architecture]
-      icon: Cloud.svg
-
-    - id: main_panel
-      direction: horizontal
+  - id: header
+    label:
+    - Platform Architecture
+    icon: Cloud.svg
+    level: 3
+    fill: white
+    border: solid
+  - id: main_panel
+    direction: horizontal
+    border: solid
+    heading: Infrastructure
+    children:
+    - id: col_left
+      direction: vertical
       border: solid
-      heading: Infrastructure
+      heading: Compute
       children:
-        - id: col_left
-          direction: vertical
-          border: solid
-          heading: Compute
-          children:
-            - id: vm_1
-              label: [VM Instance A]
-              icon: Server.svg
-            - id: vm_2
-              label: [VM Instance B]
-              icon: Server.svg
-            - id: vm_3
-              label: [VM Instance C]
-
-        - id: col_right
-          direction: vertical
-          border: solid
-          heading: Storage
-          children:
-            - id: disk_1
-              label: [Block Storage]
-              icon: Storage node.svg
-            - id: disk_2
-              label: [Object Store]
-              icon: Storage node.svg
-
-    - id: footer
-      label: [Networking layer]
+      - id: vm_1
+        label:
+        - VM Instance A
+        icon: Server.svg
+      - id: vm_2
+        label:
+        - VM Instance B
+        icon: Server.svg
+      - id: vm_3
+        label:
+        - VM Instance C
+      level: 2
+      fill: grey
+    - id: col_right
+      direction: vertical
+      border: solid
+      heading: Storage
+      children:
+      - id: disk_1
+        label:
+        - Block Storage
+        icon: Storage node.svg
+      - id: disk_2
+        label:
+        - Object Store
+        icon: Storage node.svg
+      level: 2
+      fill: grey
+    level: 3
+    fill: white
+  - id: footer
+    label:
+    - Networking layer
+    level: 3
+    fill: white
+    border: solid

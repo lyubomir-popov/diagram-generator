@@ -110,7 +110,6 @@ function renderFrameText(frame: Frame, rs: FrameRenderState): string {
     for (const spec of block) {
       const size = String(spec.size ?? BODY_SIZE);
       const weight = spec.weight ?? '400';
-      const smallCaps = spec.smallCaps ?? false;
       const fill = spec.fill ?? '#000000';
       const lineStep = sizeToPx(spec.lineStep ?? BODY_LINE_STEP);
       const attrs = [
@@ -121,7 +120,6 @@ function renderFrameText(frame: Frame, rs: FrameRenderState): string {
         `fill="${esc(fill)}"`,
       ];
       if (spec.letterSpacing) attrs.push(`letter-spacing="${esc(String(spec.letterSpacing))}"`);
-      if (smallCaps) attrs.push('font-variant-caps="small-caps"');
       blockParts.push(`<tspan ${attrs.join(' ')}>${esc(spec.content)}</tspan>`);
       top += lineStep;
     }
@@ -300,7 +298,6 @@ function renderArrows(routed: RoutedArrow[], adapter: TextMeasureAdapter): strin
             `fill="${esc(fill)}"`,
           ];
           if (spec.letterSpacing) attrs.push(`letter-spacing="${esc(String(spec.letterSpacing))}"`);
-          if (spec.smallCaps) attrs.push('font-variant-caps="small-caps"');
           tspans.push(`<tspan ${attrs.join(' ')}>${esc(spec.content)}</tspan>`);
           top += lineStep;
         }

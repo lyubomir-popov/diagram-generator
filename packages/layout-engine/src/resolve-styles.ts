@@ -111,7 +111,7 @@ export function resolveStyles(root: Frame, ctx?: Partial<ResolveStylesContext>):
       // Annotation: borderless leaf — no fill, no stroke
       applyFrameClass(root, FRAME_CLASS_DEFS.annotation);
     } else if (level >= 3) {
-      // Section: small-caps bold heading, transparent fill, black border
+      // Section: bold heading, transparent fill, black border
       applyFrameClass(root, FRAME_CLASS_DEFS.section);
       thisIsSection = true;
     } else if (level >= 2) {

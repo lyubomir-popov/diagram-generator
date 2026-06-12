@@ -1,255 +1,48 @@
 # Workspace Instructions
 
-## DESIGN-FOUNDRY PIVOT and TypeScript-first rule — read this first
+## TS-first
 
-### The bigger picture
+- Product path is Node + TypeScript.
+- New layout, measure, render, save, and preview behavior belongs in `packages/layout-engine/` or `apps/preview/`.
+- Do not add new Python product-path logic.
 
-`design-foundry` (at `../design-foundry/`) is the ultimate home for all procedural graphic design code in this workspace — a Houdini-in-spirit kernel with a typed data graph, DAG runtime, operator libraries, and multi-backend renderers. The full cross-repo architecture is documented in `../design-foundry/PIVOT.md`.
+## Preview shell
 
-This repo (`diagram-generator`) owns the single autolayout codebase in the workspace: `packages/layout-engine/` (TypeScript). The design-foundry kernel contracts are ready; the remaining blocker is this repo's Python preview front door. Spec 038 resolves that blocker here first, then the TS layout engine relocates there as `@design-foundry/operator-autolayout` behind a thin adapter.
+`scripts/preview/*.js` is shell and glue, not engine authority.
 
-### TypeScript is the agreed implementation language
+- Allowed: DOM wiring, selection, inspector UX, save wiring, small shell fixes.
+- Not allowed: new layout semantics, style resolution, renderer truth, duplicated engine logic.
 
-TypeScript is the standard for all new feature work. The rationale (from the design-foundry pivot) is **agent productivity** — agents produce better TS than Python, and the entire design-foundry kernel is TS. WASM (Rust/Zig) is the escape hatch for profiled hot paths, not Python.
+If a change needs real diagram semantics, put it in TypeScript first.
 
-**All new features, bug fixes, and refactors target the TypeScript engine first.** Existing product-path Python is migration debt under spec 038 and must be deleted or retired, not expanded.
+## Frame YAML
 
-### Preview shell policy (`scripts/preview/*.js`)
+- `scripts/diagrams/frames/*.yaml` is the authored source of truth.
+- Read the current file from disk before editing it.
+- Make minimal diffs. Do not reconstruct YAML from memory or old output.
 
-The browser preview (`editor.js`, `editor-base.js`, `layout-bridge.js`, etc.) is **legacy DOM shell + glue**, not a second engine. Do **not** grow diagram semantics there.
+## Cold-start path
 
-| Layer | Location | Rule |
-|-------|----------|------|
-| Engine | `packages/layout-engine/` | TS only — layout, measure, styles, SVG truth |
-| Bridge | `layout-bridge.js` | Thin glue — deserialize, call `LayoutEngine`, patch SVG; no new semantics |
-| Shell | `editor.js`, `editor-base.js` | Maintain + small fixes — selection, inspector, drag, save UX |
+Read these first:
 
-**Allowed in JS:** bug fixes; DOM/interaction plumbing; wiring to `LayoutEngine` APIs; export sanitization; deleting code as TS absorbs behavior.
-
-**Not allowed in JS:** new layout/measure/style-resolution/SVG-generation logic; renderer-side reinterpretation of frame classes; inspector fields that encode engine rules instead of YAML/TS DTO fields; large new subsystems inside `editor.js`.
-
-**Escalation rule:** if a feature needs more than ~50 lines of non-DOM logic in `scripts/preview/`, implement it in `packages/layout-engine/` (or frame YAML + TS loader) first, then wire the shell. Do not schedule a full `editor.js` → TypeScript rewrite unless a dedicated migration spec exists — freeze scope, not the files.
-
-### No Python in the diagram product path
-
-Hard rule: preview, layout, render, export, save, and runtime feature work belong on the Node / TypeScript product path. Python product-path files that still exist today are migration debt under spec 038 and must not gain new behavior.
-
-Allowed Python is limited to:
-
-1. **Dated parity oracle** — `scripts/layout_v3.py` and `scripts/frame_loader.py` for cross-language parity tests only.
-2. **Draw.io batch tooling** — existing draw.io export / review helpers.
-3. **Token bridge** — `scripts/design_tokens.py` until `tokens.ts` becomes the sole source.
-
-Do not add new Python preview endpoints, YAML-save helpers, layout/render/export helpers, or other diagram logic.
-
-### Frame YAML editing rule
-
-Before editing any file under `scripts/diagrams/frames/`, **read the current file from disk**. Apply minimal diffs for the requested change. Do not revert `direction`, `gap`, `padding`, or other layout fields the user may have saved via the preview editor. If the user may have unsaved UI edits, say so and ask them to Save first. Do not reconstruct a YAML from memory, git history, or assumptions — always start from the on-disk file.
-
-### Figma autolayout fidelity (north star)
-
-The TS layout engine targets a **faithful port of Figma autolayout semantics**. Spec: `specs/011-figma-autolayout-fidelity/`. Text-bearing frames default to `max_width_chars: 66` (Bringhurst measure); HUG boxes wrap at that measure and hug the resulting block. Deviations require an documented exception in spec 011 or `DIAGRAM.md`.
-
-### Rules for ongoing work
-
-- **TS-only for layout/measure features**: implement in `packages/layout-engine/` only. Python gets YAML field passthrough at most — no new measure logic.
-- **Preview shell maintain-only**: see Preview shell policy above — no new diagram semantics in `scripts/preview/*.js`.
-- **TS-first**: legacy parity port to Python is optional and fading; do not block TS work on Python parity.
-- **No speculative compatibility shims**: this is a single-user, single-developer repo. If a contract, field, or path is being retired and nothing real depends on it, delete it instead of carrying dual support "for now".
-- Continue shipping features here — do NOT block on the design-foundry port.
-- The design-foundry kernel contracts are ready (`operator-kernel` K4, `render-ir` K1, `text-shape` K3). The blocker is this repo's Python preview front door, which spec 038 removes before physical relocation.
-- **No-double-work guarantee:** design-foundry will not build a parallel autolayout.
-- Keep public function signatures of `packages/layout-engine/` stable when convenient — they are the de-facto port interface.
-- Do NOT introduce persisted format identifiers that embed the package/repo name. Use short stable acronyms (e.g. `dg`).
-- Cross-repo structural decisions belong in `AGENT-INBOX.md` for user review.
-
-Everything below this section is the existing workflow contract for this repo.
-
----
-
-## Source-of-truth precedence
-
-1. Source sketches, reference assets, or explicitly referenced source material in `docs/specs.md`
+1. `docs/agent-index.md`
 2. `DIAGRAM.md`
-3. `.github/copilot-instructions.md`
-4. `STATUS.md` and `HISTORY.md`
-5. `README.md` and `docs/specs.md`
-6. `INBOX.md` and `AGENT-INBOX.md`
-7. Local implementation details that are not clearly intentional or documented
+3. Only the source files relevant to the task
 
-## Repo-specific session additions
-
-In addition to the standard agent-workflow-kit session protocol:
-
-- Read `DIAGRAM.md` before any diagram or layout work.
-- **Classify every request** through the anti-patch protocol below before starting implementation.
-- Run the patch smell test before every implementation.
-- After implementing, run ALL existing diagrams through the engine, not just the triggering one.
-- Browser-verify UI work before claiming it works.
-
----
-
-## Anti-Patch Protocol
-
-This is the most important section. Every change must pass through this protocol. No exceptions. We are not under time pressure. We only make progress if we work with discipline.
-
-### Classify before coding
-
-Every request gets classified into exactly one of these before any file is touched:
-
-| Classification | Where the fix lands | Example |
-|---|---|---|
-| **Contract change** | New primitive/default/invariant in the engine | "Boxes should have per-side padding" |
-| **Configuration** | New YAML field or token value — no logic changes | "This diagram needs 5 columns" |
-| **Bug** | Existing contract is violated — fix at the owning layer | "Text wraps too early" |
-| **Feature** | New capability that composes with existing primitives | "Add min/max constraints" |
-| **One-off** | Only acceptable for final deliverable customization | "This specific box should be 300px" |
-
-If the request can't be cleanly classified, ask for clarification. Do not start coding.
-
-### Patch smell test (5 questions — any "yes" means stop)
-
-Before writing code, ask:
-
-1. **Am I adding a special case for one specific diagram?** → Generalize or refuse.
-2. **Am I touching a file that already has a workaround for this category?** → Fix the root, don't stack.
-3. **Am I duplicating logic that exists in another layer?** → Route through the owning layer.
-4. **Would this break if I changed the diagram that triggered it?** → It's a patch, not a rule.
-5. **Is this fix at the layer that owns the concept?** → If no, find the right layer.
-
-### Layer ownership map
-
-```
-┌─────────────────────────────────────────────────┐
-│ Frame YAML (source of truth for structure)       │
-├─────────────────────────────────────────────────┤
-│ frame_loader.py (parse + defaults contract)      │
-├─────────────────────────────────────────────────┤
-│ TS layout engine (measure + place — spatial truth)│
-│   packages/layout-engine/src/layout.ts             │
-│   Python parity: layout_v3.py (batch export only)  │
-├─────────────────────────────────────────────────┤
-│ layout-bridge.js (client-side relayout + patching)│
-├─────────────────────────────────────────────────┤
-│ svg-render.ts + export-frame-svg.mjs (batch SVG)  │
-│   TS-only; converts layout to Illustrator-safe SVG │
-├─────────────────────────────────────────────────┤
-│ preview_server.py (serve + frame tree API)        │
-│   ONLY relays engine results to browser            │
-├─────────────────────────────────────────────────┤
-│ editor.js (interaction + display)                 │
-│   NEVER invents layout facts                      │
-└─────────────────────────────────────────────────┘
-```
-
-If a fix touches a layer that doesn't own the concept, it's a patch. Stop and redirect.
-
-### Flag mechanism
-
-When a request would cause patching, report:
-
-> **Patch risk detected.**
-> - Request: [what was asked]
-> - Naive fix: [the quick local change]
-> - Why it's a patch: [which rule it violates]
-> - Correct fix: [what to do instead, at which layer]
-> - Stress test: [what must still pass after the fix]
-
-The user can override with "proceed anyway" but the flag must be recorded in TODO.md as technical debt.
-
-### After implementing
-
-- Run ALL existing diagrams through the engine, not just the triggering one.
-- If any regresses, the change is wrong — revert and redesign.
-- One feature at a time. Do not stack unverified changes.
-- Browser-verify UI work before claiming it works.
+Use `STATUS.md` for a short handover only. Do not trawl large history docs unless the task explicitly needs them.
 
 ## Validation
 
 ```bash
-npm --prefix packages/layout-engine test                                          # TS (primary)
-python -m pytest test_frame_loader.py test_autolayout.py test_layout_v3.py test_parity.py -q  # Python parity
-node scripts/check_no_new_python.mjs                                              # Python product-path ratchet
+npm --prefix packages/layout-engine test
+npm --prefix apps/preview test
+node scripts/check_no_new_python.mjs
 ```
 
-After any layout, render, or preview change, browser-verify the affected diagram at `http://127.0.0.1:8100/view/v3:<slug>`.
+Use targeted preview tests when changing preview routes, shell behavior, or save flows.
 
-### Adding a new diagram
+## Doc policy
 
-When a new frame YAML is added to `scripts/diagrams/frames/`:
-
-1. The preview server sidenav auto-populates from the filesystem — no manual registration is needed. The new slug appears in the **Autolayout** group on the next page load.
-2. After creating or modifying the YAML, **always open the diagram in the browser** at `http://127.0.0.1:8100/view/v3:<slug>` and take a screenshot to verify the output before treating the task as done.
-3. Run the focused v3 test suite to confirm no regressions.
-4. Render all diagrams (`glob diagrams/frames/*.yaml`) to confirm no existing diagram broke.
-
-### v2 declarative pipeline (Pipeline 2)
-
-Deleted. The repo uses a single render engine: v3 autolayout.
-
-### Deliverable SVGs
-
-```bash
-python scripts/svg_illustrator_sanitize.py --write <svg>
-```
-
-### Draw.io safety
-
-When modifying manually edited draw.io files, use the review-copy workflow. See the `drawio-review-promote` skill.
-
-## Agent environment rules
-
-- Use VS Code integrated terminals the user can monitor.
-- Prefer reusing a small number of foreground terminals.
-- Close terminals that hang or are no longer needed.
-- When using Playwright or browser automation, use Chrome, not Edge.
-
-## Repo boundary
-
-- Work in this repo unless the user explicitly redirects elsewhere.
-- Sibling repos are read-only references unless the user redirects.
-
-## Commit message discipline
-
-Prefix with the area touched: `engine:`, `svg:`, `drawio:`, `workflow:`, `docs:`, `scripts:`, `icons:`, or `assets:`. Keep the first line under 72 characters.
-
-## Autonomous continuation rule
-
-If the user explicitly says to proceed autonomously, treat that as standing approval to keep executing without pausing for small confirmations.
-
-In that mode:
-
-1. Work through the current plan until you hit a real blocker.
-2. Make small validated checkpoint commits after substantive chunks.
-3. Re-read `TODO.md` after major chunks.
-4. Update the canonical docs as work lands.
-5. Do not stop just to ask whether to continue.
-
-### Maximising autonomous run length
-
-- Narrow the scope per burst.
-- Checkpoint and resume after each substantive chunk.
-- Keep TODO items small enough to complete in one focused burst.
-- Prefer sequential single-repo sessions over multi-repo autonomous runs.
-
-## Cross-repo coordination
-
-When work in this repo creates a dependency or follow-up in another repo:
-
-1. Drop a note in the target repo's `AGENT-INBOX.md`.
-2. Do not attempt the cross-repo change in the same session unless explicitly redirected.
-3. Prefer sequential single-repo sessions with inbox handoffs.
-
-## Agent file roles
-
-- `.github/copilot-instructions.md` — workflow discipline (this file).
-- `.github/agents/agent.md` — resume guidance only.
-- `DIAGRAM.md` — the canonical diagram-language contract. ALL visual rules live here.
-- `.github/skills/` — repeatable procedures that reference `DIAGRAM.md` for rules.
-- Do not duplicate visual rules across these files. If you find the same rule in two places, delete one.
-
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-at specs/038-ts-authority-python-removal/plan.md
-<!-- SPECKIT END -->
+- Keep repo instructions short.
+- Put durable behavior in code and a few small docs.
+- Delete stale prose instead of preserving multiple conflicting explanations.

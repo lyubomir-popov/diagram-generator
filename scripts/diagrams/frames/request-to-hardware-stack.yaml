@@ -145,3 +145,5 @@ root:
         - RAM &
         - VRAM
         icon: Memory.svg
+meta:
+  layout_engine: v3

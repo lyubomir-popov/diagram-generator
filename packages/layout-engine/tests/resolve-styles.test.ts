@@ -96,7 +96,7 @@ describe('resolveStyles', () => {
     expect(section.resolvedStroke).toBe('#000000');
     expect(section.resolvedStrokeWidth).toBe(DEFAULT_FRAME_STROKE_WIDTH);
     expect(heading.resolvedHeadingWeight).toBe('700');
-    expect(heading.resolvedHeadingSmallCaps).toBe(true);
+    expect(heading.resolvedHeadingSmallCaps).toBe(false);
     expect(heading.resolvedHeadingLetterSpacing).toBeUndefined();
   });
 
@@ -201,13 +201,13 @@ describe('resolveStyles', () => {
     expect(heading.resolvedHeadingSmallCaps).toBe(false);
   });
 
-  it('populates section heading small-caps snapshot', () => {
+  it('populates section heading snapshot without small caps', () => {
     const heading = new Frame({ id: '__heading', role: 'heading', label: [createLine('Section')] });
     const body = new Frame({ id: '__body' });
     const section = new Frame({ id: 's', level: 3, children: [heading, body] });
     const root = new Frame({ id: 'root', children: [section] });
     resolveStyles(root);
-    expect(heading.resolvedHeadingSmallCaps).toBe(true);
+    expect(heading.resolvedHeadingSmallCaps).toBe(false);
     expect(heading.resolvedHeadingWeight).toBe('700');
   });
 

@@ -39,6 +39,6 @@ export function shapeLineSpec(adapter: TextMeasureAdapter, spec: LineSpec): Shap
     fontFamily: request.fontFamily ?? "Ubuntu Sans",
     fontWeight: request.weight ?? 400,
     letterSpacing: request.letterSpacing ?? null,
-    smallCaps: request.smallCaps ?? false,
+    smallCaps: false,
   };
 }

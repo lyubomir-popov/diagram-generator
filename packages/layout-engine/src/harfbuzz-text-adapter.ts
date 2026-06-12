@@ -66,11 +66,7 @@ export class HarfBuzzTextAdapter implements TextMeasureAdapter {
     buffer.addText(request.text);
     buffer.guessSegmentProperties();
 
-    const features = request.smallCaps
-      ? [new hb.Feature('smcp', 1), new hb.Feature('c2sc', 1)]
-      : undefined;
-
-    hb.shape(font, buffer, features);
+    hb.shape(font, buffer);
     const positions = buffer.getGlyphInfosAndPositions();
     let width = positions.reduce((sum, glyph) => sum + (glyph.xAdvance ?? 0), 0);
     width = (width * request.fontSize) / this.upem;
@@ -87,11 +83,7 @@ export class HarfBuzzTextAdapter implements TextMeasureAdapter {
     buffer.addText(request.text);
     buffer.guessSegmentProperties();
 
-    const features = request.smallCaps
-      ? [new hb.Feature('smcp', 1), new hb.Feature('c2sc', 1)]
-      : undefined;
-
-    hb.shape(font, buffer, features);
+    hb.shape(font, buffer);
     const positions = buffer.getGlyphInfosAndPositions();
     const glyphs: ShapedGlyph[] = positions.map((glyph) => ({
       glyphId: glyph.codepoint,
@@ -112,7 +104,7 @@ export class HarfBuzzTextAdapter implements TextMeasureAdapter {
       fontFamily: request.fontFamily ?? 'Ubuntu Sans',
       fontWeight: weight,
       letterSpacing: request.letterSpacing ?? null,
-      smallCaps: request.smallCaps ?? false,
+      smallCaps: false,
     };
   }
 }

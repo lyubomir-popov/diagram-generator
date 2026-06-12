@@ -21,7 +21,7 @@ describe('resolvedSpecTypography', () => {
     expect(usesHeadingStyleSnapshot(heading, 0)).toBe(true);
     const ty = resolvedSpecTypography(heading, spec, 0);
     expect(ty.weight).toBe('700');
-    expect(ty.smallCaps).toBe(true);
+    expect(ty.smallCaps).toBe(false);
     expect(ty.fill).toBe('#666666');
   });
 

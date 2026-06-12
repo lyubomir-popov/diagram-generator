@@ -81,7 +81,7 @@ export const FRAME_CLASS_DEFS: Record<FrameClassKey, FrameClassDefinition> = {
     iconFill: '#000000',
     headingText: {
       weight: '700',
-      smallCaps: true,
+      smallCaps: false,
     },
     leafLeadText: {
       weight: '700',

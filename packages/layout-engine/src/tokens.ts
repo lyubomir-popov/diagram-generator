@@ -44,16 +44,16 @@ export const INSET = 8;
 /** Canonical gutter between layout columns and rows. */
 export const GRID_GUTTER = 24;
 
-/** Arrow head length in pixels. Frozen-sample — measured from initial SVG arrowhead. DIAGRAM.md: arrowHeadLength */
+/** Arrow head length in pixels. Frozen-sample — measured from initial SVG arrowhead. */
 export const ARROW_HEAD_LENGTH = 10.8408;
 
-/** Arrow head half-width in pixels. Frozen-sample — measured from initial SVG arrowhead. DIAGRAM.md: arrowHeadHalfWidth */
+/** Arrow head half-width in pixels. Frozen-sample — measured from initial SVG arrowhead. */
 export const ARROW_HEAD_HALF_WIDTH = 2.9053;
 
 /** Default arrow shaft and head color. */
 export const ARROW_COLOR = '#E95420';
 
-/** Frame border stroke width (leaf/panel/section/highlight). DIAGRAM.md: spacing.frame-stroke-width */
+/** Frame border stroke width (leaf/panel/section/highlight). */
 export const DEFAULT_FRAME_STROKE_WIDTH = 1;
 
 /** Minimum box height = ICON_SIZE + 2 * INSET. */

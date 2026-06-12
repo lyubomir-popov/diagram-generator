@@ -122,9 +122,6 @@ function renderGlyphRun(item: GlyphRunItem): string {
   if (item.run.letterSpacing) {
     attrs.push(`letter-spacing="${esc(item.run.letterSpacing)}"`);
   }
-  if (item.run.smallCaps) {
-    attrs.push(`font-variant-caps="small-caps"`);
-  }
   const family = item.run.fontFamily ?? "Ubuntu Sans";
   return `<text font-family="${esc(family)}"><tspan ${attrs.join(" ")}>${esc(item.run.text)}</tspan></text>`;
 }

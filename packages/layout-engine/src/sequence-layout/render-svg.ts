@@ -20,7 +20,6 @@ interface SequenceTextStyle {
   weight: string;
   size: number;
   lineStep: number;
-  smallCaps?: boolean;
   letterSpacing?: string | null;
   textAnchor?: 'start' | 'middle' | 'end';
 }
@@ -34,7 +33,6 @@ const participantTextStyle: SequenceTextStyle = {
   weight: participantFrameClass.headingText?.weight ?? '400',
   size: BODY_SIZE,
   lineStep: BODY_LINE_STEP,
-  smallCaps: participantFrameClass.headingText?.smallCaps ?? false,
   letterSpacing: participantFrameClass.headingText?.letterSpacing ?? null,
   textAnchor: 'start',
 };
@@ -44,7 +42,6 @@ const annotationTextStyle: SequenceTextStyle = {
   weight: annotationFrameClass.leafLeadText?.weight ?? '400',
   size: 14,
   lineStep: defaultLineStep(14),
-  smallCaps: annotationFrameClass.leafLeadText?.smallCaps ?? false,
   letterSpacing: annotationFrameClass.leafLeadText?.letterSpacing ?? null,
   textAnchor: 'start',
 };
@@ -75,7 +72,6 @@ function renderTextLines(lines: { text: string }[], x: number, top: number, styl
     `fill="${escapeXml(style.fill)}"`,
     `text-anchor="${style.textAnchor ?? 'start'}"`,
   ];
-  if (style.smallCaps) attrs.push('font-variant-caps="small-caps"');
   if (style.letterSpacing) attrs.push(`letter-spacing="${escapeXml(style.letterSpacing)}"`);
   return (
     `<text font-family="Ubuntu Sans" ${attrs.join(' ')}>` +

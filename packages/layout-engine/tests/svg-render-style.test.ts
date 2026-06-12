@@ -24,7 +24,7 @@ describe('renderFrameDiagramToSvg resolved style snapshot', () => {
     const root = new Frame({ id: 'page', children: [section] });
     resolveStyles(root);
     // Simulate resolver/author drift: line spec no longer matches snapshot.
-    expect(heading.resolvedHeadingSmallCaps).toBe(true);
+    expect(heading.resolvedHeadingSmallCaps).toBe(false);
     expect(heading.resolvedTextFill).toBe('#000000');
     heading.label[0]!.smallCaps = false;
     heading.label[0]!.weight = '400';
@@ -35,10 +35,10 @@ describe('renderFrameDiagramToSvg resolved style snapshot', () => {
     const result = layoutFrameTree(root, adapter);
     const svg = renderFrameDiagramToSvg(diagram, result, adapter);
 
-    expect(svg).toContain('font-variant-caps="small-caps"');
     expect(svg).toContain('font-weight="700"');
     expect(svg).toContain('fill="#000000"');
     expect(svg).not.toContain('fill="#FF00FF"');
+    expect(svg).not.toContain('font-variant-caps="small-caps"');
   });
 
   it('renders leaf lead typography from snapshot not stale line spec', () => {

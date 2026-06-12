@@ -31,15 +31,8 @@ BOX_MIN_HEIGHT = ICON_SIZE + (INSET * 2)
 # ── Typography ────────────────────────────────────────────────────────
 
 BODY_SIZE = "18"
-HEADING_SIZE = "18"
-TITLE_SIZE = "24"
-
-DIAGRAM_TIER_BODY_SIZE = BODY_SIZE  # legacy alias
 
 BODY_LINE_STEP = 24
-HEADING_LINE_STEP = 24
-TITLE_LINE_STEP = 32
-DIAGRAM_TIER_BODY_LINE_STEP = BODY_LINE_STEP
 
 LINE_HEIGHTS_BY_SIZE = {
     6: 8,

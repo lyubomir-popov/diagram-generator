@@ -270,16 +270,6 @@ describe('style parity fixtures', () => {
       for (const [frameId, expected] of Object.entries(fixture.expected.styles)) {
         const actualSnap = { ...actual[frameId] };
         const expectedSnap = { ...expected };
-        // smallCaps is intentionally divergent: TS uses true for section headings,
-        // Python stays false. Each runtime has its own dedicated test for this.
-        if (actualSnap.firstLine) {
-          actualSnap.firstLine = { ...actualSnap.firstLine };
-          delete (actualSnap.firstLine as Record<string, unknown>).smallCaps;
-        }
-        if (expectedSnap.firstLine) {
-          expectedSnap.firstLine = { ...expectedSnap.firstLine };
-          delete (expectedSnap.firstLine as Record<string, unknown>).smallCaps;
-        }
         expect(actualSnap, `style snapshot mismatch for ${frameId}`).toEqual(expectedSnap);
       }
     });
