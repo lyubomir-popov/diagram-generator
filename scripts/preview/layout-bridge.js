@@ -12,76 +12,18 @@
  * The JSON comes from the server's /api/frame-tree/<slug> endpoint.
  */
 function deserializeFrame(json) {
-  const children = (json.children || []).map(deserializeFrame);
-  const headingJson = json.heading;
-  const headingLine = headingJson
-    ? LayoutEngine.createLine(headingJson.content)
-    : undefined;
-  const frame = new LayoutEngine.Frame({
-    id: json.id || "",
-    direction: json.direction || "VERTICAL",
-    gap: json.gap ?? 24,
-    gapDelta: json.gapDelta ?? undefined,
-    padding: json.padding ?? 8,
-    paddingTop: json.paddingTop,
-    paddingRight: json.paddingRight,
-    paddingBottom: json.paddingBottom,
-    paddingLeft: json.paddingLeft,
-    align: json.align || "TOP_LEFT",
-    wrap: json.wrap ?? false,
-    sizingW: json.sizingW || "HUG",
-    sizingH: json.sizingH || "HUG",
-    fillWeight: json.fillWeight ?? 1,
-    width: json.width ?? undefined,
-    height: json.height ?? undefined,
-    minWidth: json.minWidth ?? undefined,
-    maxWidth: json.maxWidth ?? undefined,
-    maxWidthChars: json.maxWidthChars ?? json.max_width_chars ?? undefined,
-    minHeight: json.minHeight ?? undefined,
-    maxHeight: json.maxHeight ?? undefined,
-    fill: json.fill || "#FFFFFF",
-    border: json.border || "SOLID",
-    heading: headingLine && children.length === 0 ? headingLine : undefined,
-    icon: headingLine && children.length > 0 ? undefined : (json.icon || undefined),
-    iconFill: json.iconFill || undefined,
-    level: json.level ?? undefined,
-    colSpan: json.colSpan ?? json.col_span ?? undefined,
-    label: (json.label || []).map(ln => LayoutEngine.createLine(ln.content)),
-    role: json.role || "",
-    children,
-    positionType: json.positionType || "AUTO",
-    x: json.x ?? 0,
-    y: json.y ?? 0,
-  });
-  if (headingLine && frame.isContainer) {
-    LayoutEngine.applyHeadingAsChild(frame, headingLine, {
-      icon: json.icon || undefined,
-      iconFill: json.iconFill || undefined,
-    });
-  }
-  return frame;
+  return LayoutEngine.deserializeFrameWire(json);
 }
 
 /**
  * Reconstruct a LayoutEngine.FrameDiagram from serialized JSON.
  */
 function deserializeFrameDiagram(json) {
-  const root = deserializeFrame(json.root);
-  const arrows = (json.arrows || []).map(a => LayoutEngine.createArrow(a.source, a.target, a));
-  return new LayoutEngine.FrameDiagram({
-    title: json.title || "",
-    root,
-    arrows,
-    gridCols: json.gridCols ?? 2,
-    gridColGap: json.gridColGap ?? undefined,
-    gridRowGap: json.gridRowGap ?? undefined,
-    gridOuterMargin: json.gridOuterMargin ?? undefined,
-    layoutEngine: json.layoutEngine
-      ?? ((window.__DG_CONFIG && window.__DG_CONFIG.layout_engine) || undefined),
-    diagramType: json.diagramType ?? undefined,
-    sourceImage: json.sourceImage ?? undefined,
-    elkLayout: json.elkLayout ?? undefined,
-  });
+  const diagram = LayoutEngine.deserializeFrameDiagramWire(json);
+  if (!diagram.layoutEngine && window.__DG_CONFIG && window.__DG_CONFIG.layout_engine) {
+    diagram.layoutEngine = window.__DG_CONFIG.layout_engine;
+  }
+  return diagram;
 }
 
 // ---------------------------------------------------------------------------
@@ -1689,19 +1631,9 @@ function performLocalRelayout(model, overrides, gridOverrides, opts) {
     const diagram = deserializeFrameDiagram(diagramJson);
 
     // Build override map (same format as requestV3Relayout sends)
-    const FRAME_KEYS = [
-      "direction", "gap", "gap_delta", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
-      "sizing", "sizing_w", "sizing_h",
-      "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "max_width_chars", "min_height",
-      "max_height", "children_order", "fill", "border", "level", "text",
-      "position", "x", "y",
-    ];
     const allFrameOverrides = {};
     for (const [fid, ovr] of Object.entries(overrides)) {
-      const entry = {};
-      for (const key of FRAME_KEYS) {
-        if (ovr[key] !== undefined) entry[key] = ovr[key];
-      }
+      const entry = LayoutEngine.filterRelayoutOverrideEntry(ovr || {});
       if (Object.keys(entry).length > 0) allFrameOverrides[fid] = entry;
     }
 
@@ -2076,19 +2008,9 @@ async function renderFreshSvg(overrides, gridOverrides, model) {
   const diagram = deserializeFrameDiagram(diagramJson);
 
   // Build override map (same format as performLocalRelayout)
-  const FRAME_KEYS = [
-    "direction", "gap", "gap_delta", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
-    "sizing", "sizing_w", "sizing_h",
-    "fill_weight", "align", "wrap", "width", "height", "min_width", "max_width", "max_width_chars", "min_height",
-    "max_height", "children_order", "fill", "border", "level", "text",
-    "position", "x", "y",
-  ];
   const allFrameOverrides = {};
   for (const [fid, ovr] of Object.entries(overrides)) {
-    const entry = {};
-    for (const key of FRAME_KEYS) {
-      if (ovr[key] !== undefined) entry[key] = ovr[key];
-    }
+    const entry = LayoutEngine.filterRelayoutOverrideEntry(ovr || {});
     if (Object.keys(entry).length > 0) allFrameOverrides[fid] = entry;
   }
 

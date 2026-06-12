@@ -2,6 +2,13 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { EOL } from "node:os";
 
+import {
+  PERSIST_FRAME_KEYS,
+  PERSIST_INT_FRAME_KEYS,
+  PERSIST_LOWER_FRAME_KEYS,
+  UNSUPPORTED_PERSIST_FRAME_KEYS,
+} from "@diagram-generator/layout-engine";
+
 const require = createRequire(import.meta.url);
 const yaml = require("yaml") as {
   parse: (raw: string) => unknown;
@@ -16,63 +23,13 @@ const STYLE_SEMANTICS: Record<string, { level: number | null; fill: string; bord
   highlight: { level: null, fill: "black", border: "none" },
 };
 
-const SUPPORTED_FRAME_KEYS = new Set([
-  "direction",
-  "gap",
-  "gap_delta",
-  "padding",
-  "padding_top",
-  "padding_right",
-  "padding_bottom",
-  "padding_left",
-  "sizing",
-  "sizing_w",
-  "sizing_h",
-  "fill_weight",
-  "align",
-  "wrap",
-  "width",
-  "height",
-  "min_width",
-  "max_width",
-  "max_width_chars",
-  "min_height",
-  "max_height",
-  "fill",
-  "border",
-  "level",
-  "position",
-  "x",
-  "y",
-  "children_order",
-  "text",
-  "style",
-]);
-
-const UNSUPPORTED_FRAME_KEYS = new Set(["dx", "dy", "dw", "dh", "waypoints"]);
+const SUPPORTED_FRAME_KEYS = new Set<string>(PERSIST_FRAME_KEYS);
+const UNSUPPORTED_FRAME_KEYS = new Set<string>(UNSUPPORTED_PERSIST_FRAME_KEYS);
 const SUPPORTED_GRID_KEYS = new Set(["cols", "col_gap", "row_gap", "outer_margin"]);
 const IGNORED_GRID_KEYS = new Set(["link_to_root"]);
 const UNSUPPORTED_GRID_KEYS = new Set(["rows", "slack_absorption"]);
-const LOWER_KEYS = new Set(["direction", "sizing", "sizing_w", "sizing_h", "fill", "border", "position"]);
-const INT_KEYS = new Set([
-  "gap",
-  "gap_delta",
-  "padding",
-  "padding_top",
-  "padding_right",
-  "padding_bottom",
-  "padding_left",
-  "width",
-  "height",
-  "min_width",
-  "max_width",
-  "max_width_chars",
-  "min_height",
-  "max_height",
-  "level",
-  "x",
-  "y",
-]);
+const LOWER_KEYS = new Set<string>(PERSIST_LOWER_FRAME_KEYS);
+const INT_KEYS = new Set<string>(PERSIST_INT_FRAME_KEYS);
 
 export interface PersistOverridePayload {
   overrides?: Record<string, unknown>;

@@ -113,7 +113,7 @@ export {
 
 export { applyHeadingAsChild } from './heading-synthesis.js';
 export { loadFrameYaml } from './frame-yaml-loader.js';
-export { serializeFrameDiagram, serializeFrame } from './frame-serialize.js';
+export { serializeFrameDiagram, serializeFrame, deserializeFrameWire, deserializeFrameDiagramWire } from './frame-serialize.js';
 export { buildGridInfo, type GridInfo } from './grid-info.js';
 export { buildComponentTree, type ComponentInfo } from './component-tree.js';
 export { renderFrameDiagramToSvg, type SvgRenderOptions } from './svg-render.js';
@@ -240,6 +240,14 @@ export {
   EditorStateStore,
   captureOverrideEntries,
   createEditorStateStore,
+  PERSIST_FRAME_KEYS,
+  UNSUPPORTED_PERSIST_FRAME_KEYS,
+  PERSIST_INT_FRAME_KEYS,
+  PERSIST_LOWER_FRAME_KEYS,
+  RELAYOUT_FRAME_KEYS,
+  UNDO_RELAYOUT_FRAME_KEYS,
+  hasV3FrameOverride,
+  filterRelayoutOverrideEntry,
 } from './preview-shell/index.js';
 export type {
   EditorSnapshot,
@@ -251,6 +259,8 @@ export type {
   PendingUndoableAction,
   EditorStateStoreDeps,
   EditorStateStoreOptions,
+  PersistFrameKey,
+  RelayoutFrameKey,
 } from './preview-shell/index.js';
 
 export {

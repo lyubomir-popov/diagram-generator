@@ -4,6 +4,7 @@
   "scripts": {
     "preview": "npm --prefix apps/preview run start",
     "preview:dev": "npm --prefix apps/preview run dev",
-    "preview:build": "npm --prefix apps/preview run build"
+    "preview:build": "npm --prefix apps/preview run build",
+    "clean:src-artifacts": "node scripts/clean-src-artifacts.mjs"
   }
 }

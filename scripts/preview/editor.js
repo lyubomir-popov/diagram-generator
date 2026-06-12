@@ -432,14 +432,9 @@ async function _applyUndoCommand(command, direction) {
 }
 
 function _hasV3FrameOverride(ovr) {
-  if (!ovr) return false;
-  const keys = [
-    "text", "direction", "gap", "gap_delta", "padding", "padding_top", "padding_right", "padding_bottom", "padding_left",
-    "sizing", "sizing_w", "sizing_h", "fill_weight", "align", "wrap",
-    "width", "height", "min_width", "max_width", "max_width_chars", "min_height", "max_height",
-    "fill", "border", "level", "position", "x", "y", "children_order",
-  ];
-  return keys.some(key => ovr[key] !== undefined && ovr[key] !== null);
+  return typeof LayoutEngine !== "undefined"
+    && typeof LayoutEngine.hasV3FrameOverride === "function"
+    && LayoutEngine.hasV3FrameOverride(ovr);
 }
 
 async function loadSVG(options = {}) {

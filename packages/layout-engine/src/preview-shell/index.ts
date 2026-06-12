@@ -36,3 +36,16 @@ export {
   captureOverrideEntries,
   createEditorStateStore,
 } from './editor-state-store.js';
+
+export {
+  PERSIST_FRAME_KEYS,
+  UNSUPPORTED_PERSIST_FRAME_KEYS,
+  PERSIST_INT_FRAME_KEYS,
+  PERSIST_LOWER_FRAME_KEYS,
+  RELAYOUT_FRAME_KEYS,
+  UNDO_RELAYOUT_FRAME_KEYS,
+  hasV3FrameOverride,
+  filterRelayoutOverrideEntry,
+  type PersistFrameKey,
+  type RelayoutFrameKey,
+} from './frame-override-manifest.js';

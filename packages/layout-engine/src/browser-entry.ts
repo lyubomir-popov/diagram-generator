@@ -186,6 +186,14 @@ export {
   EditorStateStore,
   captureOverrideEntries,
   createEditorStateStore,
+  PERSIST_FRAME_KEYS,
+  UNSUPPORTED_PERSIST_FRAME_KEYS,
+  PERSIST_INT_FRAME_KEYS,
+  PERSIST_LOWER_FRAME_KEYS,
+  RELAYOUT_FRAME_KEYS,
+  UNDO_RELAYOUT_FRAME_KEYS,
+  hasV3FrameOverride,
+  filterRelayoutOverrideEntry,
 } from './preview-shell/index.js';
 export type {
   EditorSnapshot,
@@ -197,7 +205,16 @@ export type {
   PendingUndoableAction,
   EditorStateStoreDeps,
   EditorStateStoreOptions,
+  PersistFrameKey,
+  RelayoutFrameKey,
 } from './preview-shell/index.js';
+
+export {
+  serializeFrameDiagram,
+  serializeFrame,
+  deserializeFrameWire,
+  deserializeFrameDiagramWire,
+} from './frame-serialize.js';
 
 export {
   ELK_LAYERED_PREVIEW_ENGINE,
