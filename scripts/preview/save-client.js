@@ -80,6 +80,14 @@
     return baseSlug + "-onbrand-v3.svg";
   }
 
+  function _commitFocusedControl() {
+    const active = document.activeElement;
+    if (!active || active === document.body || typeof active.blur !== "function") {
+      return;
+    }
+    active.blur();
+  }
+
   function saveCurrentSvg() {
     const deps = _requireDeps();
     const svg = document.querySelector("#stage svg");
@@ -108,6 +116,9 @@
 
   async function saveOverrides() {
     const deps = _requireDeps();
+    // Inspector size fields and some ELK controls commit on blur/change.
+    // Flush the focused control before validating or serializing payload.
+    _commitFocusedControl();
     const summary = typeof deps.getConstraintSummary === "function"
       ? deps.getConstraintSummary()
       : { errors: 0 };
@@ -127,10 +138,6 @@
     if (isElk && window.ElkLayoutControls && typeof ElkLayoutControls.collectOverrides === "function") {
       if (typeof deps.wireElkLayoutPanel === "function") {
         deps.wireElkLayoutPanel();
-      }
-      const active = document.activeElement;
-      if (active && typeof active.blur === "function") {
-        active.blur();
       }
       const domElk = ElkLayoutControls.collectOverrides();
       const elkOverrides = { ...(model.elkLayoutOverrides || {}), ...domElk };

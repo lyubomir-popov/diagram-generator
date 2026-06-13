@@ -227,6 +227,43 @@ test("persist gap_delta null clears authored gap_delta from yaml", () => {
   assert.doesNotMatch(persistent, /gap_delta:/);
 });
 
+test("persist fixed sizing overrides canonically for multiple frames", () => {
+  const baselineText = fs.readFileSync(FRAME_FIXTURE, "utf8");
+  const persistent = persistToYaml("support-engineering-flow.yaml", baselineText, {
+    overrides: {
+      step_problem: {
+        sizing_w: "FIXED",
+        sizing_h: "FIXED",
+        width: 480,
+        height: 160,
+      },
+      step_result: {
+        sizing_w: "FIXED",
+        sizing_h: "FIXED",
+        width: 480,
+        height: 160,
+      },
+    },
+  });
+
+  const reloaded = loadFrameYaml(writeTempFrame("support-engineering-flow-fixed.yaml", persistent));
+  const rootChildren = Array.isArray(reloaded.root.children) ? reloaded.root.children : [];
+  const byId = new Map(rootChildren.map((child) => [child.id, child]));
+  const problem = byId.get("step_problem");
+  const result = byId.get("step_result");
+
+  assert.match(persistent, /id: step_problem[\s\S]*sizing_w: fixed[\s\S]*sizing_h: fixed[\s\S]*width: 480[\s\S]*height: 160/);
+  assert.match(persistent, /id: step_result[\s\S]*sizing_w: fixed[\s\S]*sizing_h: fixed[\s\S]*width: 480[\s\S]*height: 160/);
+  assert.equal(problem?.sizingW, "FIXED");
+  assert.equal(problem?.sizingH, "FIXED");
+  assert.equal(problem?.width, 480);
+  assert.equal(problem?.height, 160);
+  assert.equal(result?.sizingW, "FIXED");
+  assert.equal(result?.sizingH, "FIXED");
+  assert.equal(result?.width, 480);
+  assert.equal(result?.height, 160);
+});
+
 test("persist→reload round-trip: page gap_delta survives write without emitting absolute gap", () => {
   const baselineText = [
     "engine: v3",

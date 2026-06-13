@@ -36,4 +36,43 @@ describe('layoutElkFrameDiagram', () => {
     expect(orch?._layout.placedH).toBeGreaterThan(0);
     expect(diagram.arrows[0]?.layoutPath?.length ?? 0).toBeGreaterThanOrEqual(2);
   });
+
+  it('respects explicit fixed sizes in the ELK lane', async () => {
+    const diagram = loadFrameYaml(join(FRAMES_DIR, 'support-engineering-flow.yaml'));
+    const adapter = new MockTextAdapter();
+    const ids = [
+      'step_problem',
+      'step_investigation',
+      'step_analysis',
+      'step_fix',
+      'step_result',
+    ];
+
+    for (const id of ids) {
+      const frame = findFrameById(
+        diagram.root as unknown as { id: string; children: Array<{ id: string; children: unknown[] }> },
+        id,
+      );
+      expect(frame).not.toBeNull();
+      const target = frame as typeof frame & {
+        sizingW: string;
+        width: number | undefined;
+      };
+      target.sizingW = 'FIXED';
+      target.sizingH = 'FIXED';
+      target.width = 480;
+      target.height = 160;
+    }
+
+    await layoutElkFrameDiagram(diagram, adapter);
+
+    for (const id of ids) {
+      const frame = findFrameById(
+        diagram.root as unknown as { id: string; children: Array<{ id: string; children: unknown[] }> },
+        id,
+      );
+      expect(frame?._layout.placedW).toBe(480);
+      expect(frame?._layout.placedH).toBe(160);
+    }
+  });
 });
