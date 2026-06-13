@@ -4437,6 +4437,30 @@ function _findEditableTextTarget(target, clientX, clientY) {
   return _findTextBlockAtPoint(directTextEls, clientX, clientY);
 }
 
+function _textEditingGroupsForComponent(svg, cid) {
+  if (!svg || !cid) return [];
+  const selectors = [
+    '[data-component-id="' + cid + '"]',
+    '[data-component-id="' + cid + '__heading"]',
+  ];
+  const seen = new Set();
+  const groups = [];
+  selectors.forEach((selector) => {
+    svg.querySelectorAll(selector).forEach((group) => {
+      if (seen.has(group)) return;
+      seen.add(group);
+      groups.push(group);
+    });
+  });
+  return groups;
+}
+
+function _suspendSelectionChromeForTextEdit(svg) {
+  if (!svg) return;
+  svg.querySelectorAll(".dg-selected").forEach(el => el.classList.remove("dg-selected"));
+  removeResizeHandles();
+}
+
 function _editableComponentIdForTextElement(textEl) {
   if (!textEl || typeof textEl.closest !== "function") return "";
   const owner = textEl.closest("[data-component-id]");
@@ -4472,7 +4496,7 @@ function startTextEdit(cid, e, opts) {
   if (!svg) return;
 
   // Only edit this frame's own text blocks. Descendant labels belong to child frames.
-  const groups = svg.querySelectorAll('[data-component-id="' + cid + '"]');
+  const groups = _textEditingGroupsForComponent(svg, cid);
   const textEls = [];
   groups.forEach(g => {
     g.querySelectorAll(":scope > text").forEach(t => textEls.push(t));
@@ -4539,6 +4563,7 @@ function startTextEdit(cid, e, opts) {
 
   // Hide only the targeted rendered text block while editing.
   targetedTextEl.style.opacity = "0";
+  _suspendSelectionChromeForTextEdit(svg);
 
   mgr.startTextEdit({
     cid,
@@ -4593,6 +4618,7 @@ function commitTextEdit() {
   if (textEl) textEl.style.opacity = "";
 
   mgr.endInteraction();
+  reapplySelection();
 
   // Trigger server relayout to re-wrap text at the correct frame width
   // and resize the box if needed (HUG height).
@@ -4607,6 +4633,7 @@ function cancelTextEdit() {
   if (mgr.state.textEl) mgr.state.textEl.style.opacity = "";
   if (mgr.state.editor) mgr.state.editor.ta.remove();
   mgr.endInteraction();
+  reapplySelection();
 }
 
 function startResize(e) {
