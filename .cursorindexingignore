@@ -1,0 +1,29 @@
+# Codebase indexing exclusions — diagram-generator
+# Files remain readable when opened; they are omitted from semantic index.
+# See specs/040-agent-token-slimming/
+
+node_modules/
+**/node_modules/
+packages/*/dist/
+apps/*/dist/
+.venv/
+diagrams/
+scripts/diagrams/2.output/
+rtd_images/
+tmp/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.zip
+*.drawio
+assets/**/*.ttf
+assets/**/*.woff
+assets/**/*.woff2
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+test-results/
+playwright-report/
+.github/agents/speckit.*
+.github/prompts/speckit.*

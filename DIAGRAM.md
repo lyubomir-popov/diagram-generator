@@ -58,3 +58,5 @@ Hierarchy is by weight, not extra token families:
 npm --prefix packages/layout-engine test
 npm run preview
 ```
+
+Default: tests + preview URL. **Do not take Playwright or browser screenshots unless the user explicitly asks.** If they ask, crop to the diagram region (not full viewport).

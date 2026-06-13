@@ -10,6 +10,12 @@ Active execution queue for `diagram-generator`. All new work targets TypeScript 
 
 ### Priority 1 — Spec-kit tracked work
 
+#### Agent token slimming (spec 040)
+
+Feature package: `specs/040-agent-token-slimming/`.
+
+- [ ] `[M]` **Execute spec 040 closeout.** Verify two-folder workspace in a fresh chat, drain `AGENT-INBOX.md`, add planning-repo ignore files if not landed. Reported via inbox 2026-06-13.
+
 #### Compatible engine switcher (spec 035)
 
 Feature package: `specs/035-compatible-engine-switcher/`.

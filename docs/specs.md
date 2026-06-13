@@ -32,6 +32,7 @@ Use this file to answer two questions quickly:
 | 036 Headingless wrapper contract | `specs/036-headingless-wrapper-contract/` | Complete | Implicit headingless containers stay structural-only by default; explicitly authored visible non-headed groups are the bounded supported path, with save/reload coverage locking both behaviors. |
 | 037 Preview engine drift closeout | `specs/037-preview-engine-drift-closeout/` | Complete | Hostable frame-engine ids now come from the TS manifest/runtime surface, force save rehydrates from canonical persisted state, and forbidden preview-shell localStorage writes are removed. |
 | 038 TS authority + Python removal | `specs/038-ts-authority-python-removal/` | Complete | Node preview app is now the front door, product-path Python preview files are deleted, the no-new-Python ratchet is active, and `packages/layout-engine/` exposes the design-foundry-aligned seams (`document-model`, `operator-autolayout`, `render-ir`, `text-shape`). |
+| 040 Agent token slimming | `specs/040-agent-token-slimming/` | Draft | `.cursorignore`, two-folder workspace, retire `STATUS.md` handover, trap-file index, spec-kit on demand only. |
 | 023 Force-layout restoration | `specs/023-force-layout-restoration/` | Complete | TS-owned force runtime restored and closed out for the three canonical demos, including drag/pin/unpin/export/save behavior, focused route/save/export coverage, and a TypeScript runtime benchmark path. |
 | 024 ELK interactive node alignment | `specs/024-elk-interactive-node-alignment/` | Draft (summary only on main) | Mainline conclusion: do not ship interactive nudging on the current plain-`elkjs` path. The spec summary is retained on `main`; exploratory code remains off-main until a stronger result, likely via upstream Java ELK parity, exists. |
 | 025 Multi-engine preview architecture | `specs/025-multi-engine-preview-architecture/` | Complete | Preview-engine manifest/capability contract is landed: manifest-owned script bootstrap, canonical save responses from `/api/overrides`, TS-owned engine metadata, runtime identity, and documented onboarding for future engines so additional engines stop accumulating in `editor.js`. |
@@ -48,9 +49,10 @@ Rows marked ⚠ reference assets excluded by `.gitignore`. Run the build or obta
 | Source | Path | Role |
 |--------|------|------|
 | Stakeholder how-to | `docs/stakeholder-guide.md` | Copy YAML → preview → save → export SVG (non-engineering) |
-| Workflow rules | `AGENTS.md` | Canonical repo workflow, shell, validation, and cold-start guidance |
+| Workflow rules | `AGENTS.md` | Canonical repo workflow, shell, validation, cold-start, and handover |
+| Agent index | `docs/agent-index.md` | Trap files, tier-2 flow maps, scoped search |
 | Diagram language spec | `DIAGRAM.md` | Authoring rules and output constraints (Layer 3 — Style); runtime constants in `tokens.ts` / `frame-classes.ts` |
-| Current state | `STATUS.md` | Cold-start orientation and resume guidance |
+| Status (retired) | `STATUS.md` | Pointer stub → `AGENTS.md#handover` |
 | Starter block reference | `diagrams/0.reference/sample.svg` | Canonical single-block geometry and arrow treatment |
 | Visual preview of starter block | `diagrams/0.reference/sample.png` | Clearer `3x` raster preview of the same canonical block |
 | Reusable style copy source | `diagrams/0.reference/onbrand-svg-starter.svg` | Canonical inset rhythm, box proportions, and literal arrow geometry |

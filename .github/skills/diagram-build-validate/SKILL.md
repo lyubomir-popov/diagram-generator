@@ -18,9 +18,9 @@ argument-hint: "Describe which diagram slugs or files changed"
 1. Run `npm --prefix packages/layout-engine test` (TS — primary).
 2. Run `npm --prefix apps/preview test` when preview routes, save flows, or shell behavior changed.
 3. Run `node scripts/check_no_new_python.mjs` (spec 038 ratchet).
-4. Start the preview server and browser-verify changed diagrams at `http://127.0.0.1:8100/view/v3:<slug>`.
+4. Start the preview server and confirm changed diagrams load at `http://127.0.0.1:8100/view/v3:<slug>` (manual look or tests — **no agent screenshots unless the user asks**).
 5. Sanitize changed deliverable SVGs with `python scripts/svg_illustrator_sanitize.py --write <svg>`.
-6. Update `STATUS.md`, `TODO.md`, or `AGENT-INBOX.md` only if the change altered current state or left durable follow-up.
+6. Update `AGENTS.md` (Handover section), `TODO.md`, or `AGENT-INBOX.md` only if the change altered current state or left durable follow-up.
 7. Check the touched Markdown files for errors if the editor reports any.
 8. Spot-check the changed SVG for syntax or portability issues.
 
@@ -34,5 +34,5 @@ Key constraints to verify during build:
 - Do not add new Python product-path files; the ratchet must stay green.
 - Do not skip the sanitizer for changed deliverable SVGs.
 - Text must not overlap arrows, borders, icons, or other text.
-- Browser-verify the changed diagram in the v3 preview before treating the work as done.
+- Browser-verify the changed diagram in the v3 preview before treating the work as done (tests or user-confirmed load — not automatic screenshots).
 - When an arrow crosses helper text, change anchor sides or add waypoints — do not accept crossings.

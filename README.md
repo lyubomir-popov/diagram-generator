@@ -21,7 +21,7 @@ Read these in order:
 2. [`DIAGRAM.md`](DIAGRAM.md)
 3. Targeted source files for the area you are changing
 
-Use [`STATUS.md`](STATUS.md) only for a short handover snapshot. Use [`docs/specs.md`](docs/specs.md) only when you need governing references.
+Handover lives in [`AGENTS.md`](AGENTS.md#handover). Use [`docs/specs.md`](docs/specs.md) only when you need governing references. Workspace: [`diagram-generator.code-workspace`](diagram-generator.code-workspace) (two roots only).
 
 ## Key Paths
 

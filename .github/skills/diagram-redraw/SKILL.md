@@ -15,7 +15,7 @@ argument-hint: "Describe the source asset, target slug, and any special constrai
 
 ## Procedure
 
-1. Read `STATUS.md`, `DIAGRAM.md`, and `docs/specs.md` before making any layout decisions.
+1. Read `AGENTS.md`, `DIAGRAM.md`, and `docs/specs.md` before making layout decisions (skip bulk `specs/**` unless the task is spec work).
 2. Inspect the source sketch plus the governing local references in `diagrams/0.reference/`.
 3. Audit `assets/icons/` early and decide which nodes get icons and which intentionally stay text-only.
 4. **Identify the content tree.** List every panel, heading, and child box. Note icons and line counts — this determines box model math.
@@ -45,7 +45,7 @@ argument-hint: "Describe the source asset, target slug, and any special constrai
     - Arrow labels free-positioned, not grid cells
     - Separators thin, not box-height rows
     If any check fails, fix the grid parameters or anchor model — not individual coordinates.
-15. Open the changed diagram in the browser and take a Playwright screenshot before treating the task as done.
+15. **Do not capture screenshots by default.** Use tests + preview URL confirmation unless the user explicitly asks for a visual check. If they ask, prefer a **tight crop** (diagram region only, not full viewport) and describe the issue in text first.
 16. If the change adds a reusable rule, record it in `DIAGRAM.md`.
 
 ## Guardrails
@@ -63,4 +63,4 @@ Key constraints during redraw:
 - No ad-hoc coordinates. Every position must derive from the frame autolayout model.
 - Inside-out box model. Never size containers first and fit content inside.
 - Sentence case for all diagram text (capitalize first word and proper nouns only).
-- Open the changed diagram in the browser and take a Playwright screenshot before reporting done.
+- **No Playwright/browser screenshots unless the user explicitly requests one.** Tests and `npm run preview` are the default verification path.

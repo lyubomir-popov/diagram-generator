@@ -1,5 +1,5 @@
-# Agent Inbox
+# Agent inbox
 
 Machine-generated handoffs and diagnostics go here.
 
-Durable follow-up belongs in `TODO.md`, `STATUS.md`, or `docs/specs.md`.
+Durable follow-up belongs in `TODO.md`, [`AGENTS.md`](AGENTS.md#handover) (handover section), or [`docs/specs.md`](docs/specs.md).

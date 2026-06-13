@@ -4,9 +4,15 @@ Guidance for AI agents working in this repo. Goal: correct fixes with minimal to
 
 ## Start here
 
-1. **Read the project index:** [`docs/agent-index.md`](docs/agent-index.md) — packages, pipelines, tests, links to deep flow maps.
+1. **Read the project index:** [`docs/agent-index.md`](docs/agent-index.md) — packages, pipelines, trap files, tier-2 flow maps.
 2. **Keep the working tree focused.** Stash or commit unrelated edits (especially formatted frame YAML under `scripts/diagrams/frames/`) before asking an agent to review or diff. Large cosmetic YAML diffs waste context on every `git diff`.
 3. **Run `npm run clean:src-artifacts`** if vitest or tsx seems to execute stale code from `packages/*/src/**/*.js` (accidental tsc emit shadows `.ts`).
+
+## Workspace
+
+- **Open only two roots when using the saved workspace:** `diagram-generator` + `diagram-generator-planning`. Drop every other sibling repo from the Cursor window — their `AGENTS.md` / rules inject **every turn**.
+- Reopen [`diagram-generator.code-workspace`](diagram-generator.code-workspace) after changing roots. Old chats keep the workspace snapshot from when they started; start a **new chat** after trimming roots.
+- `.cursorignore` and `.cursorindexingignore` exclude `diagrams/`, `node_modules/`, `dist/`, binaries, and spec-kit command files. Do not `@`-reference ignored paths unless the task requires them.
 
 ## Core rules
 
@@ -20,9 +26,9 @@ Guidance for AI agents working in this repo. Goal: correct fixes with minimal to
 
 ## Spec workflow
 
-- Spec authoring in this repo uses the local Speckit workflow under `.github/agents/` and `.github/prompts/`.
+- **Do not load spec-kit unless the user explicitly asks** (e.g. "/speckit", "write a spec", "run spec-kit"). Normal bugfixes skip `.github/agents/speckit.*`, `.github/prompts/speckit.*`, and bulk `specs/**` reads.
+- When spec work *is* requested, open **one** package under `specs/<id>-<slug>/` named in the task; see [`docs/specs.md`](docs/specs.md) for the index.
 - Keep repo operating rules in this file. Do not duplicate them into Speckit prompts or agents.
-- Use spec packages under `specs/<id>-<slug>/` for feature/fix planning; keep cold-start repo guidance here.
 
 ## Cold-start path
 
@@ -32,7 +38,16 @@ Read these first:
 2. [`DIAGRAM.md`](DIAGRAM.md)
 3. Only the source files relevant to the task
 
-Use [`STATUS.md`](STATUS.md) for a short handover only. Do not trawl large history docs unless the task explicitly needs them.
+Use [`TODO.md`](TODO.md) for the execution queue and [`INBOX.md`](INBOX.md) for user async notes. Do not trawl large history docs unless the task explicitly needs them.
+
+## Handover
+
+*Agents: update this section when session state changes. Do not create parallel status docs.*
+
+- **Product path:** Node preview app + TypeScript layout engine.
+- **Source of truth:** frame YAML in `scripts/diagrams/frames/`.
+- **Active spec (when relevant):** see `TODO.md` / `docs/specs.md` — token slimming: `specs/040-agent-token-slimming/`.
+- **Trap files (search, then partial read):** `scripts/preview/editor.js`, `scripts/preview/layout-bridge.js`, `packages/layout-engine/dist/layout-engine.iife.js`.
 
 ## Flow maps (tier 2 — add on demand)
 
@@ -63,11 +78,25 @@ Prefer **narrow, scoped searches** over repo-wide scans.
 | `rg pattern apps/preview/src` | `rg pattern` from repo root (slow on large trees) |
 | `rg pattern scripts/preview/editor.js` | Chain `find … \| head` — use PowerShell-native limits (`Select-Object -First N`) on Windows |
 | One targeted read after rg | Re-read the same 6k-line file in every sub-agent |
-| Run the tests listed in the flow map | Launch 5 parallel “sweep” agents for a single-file bug |
+| Run the tests listed in the flow map | Launch 5 parallel "sweep" agents for a single-file bug |
 
-**Windows note:** Agents often run in PowerShell, not bash. Commands like `head`, `cat <<'EOF'`, and `find` fail or behave differently. That causes retries, background timeouts, and extra terminal polling — which inflates token usage even though the OS does not charge “more per token.”
+**Windows note:** Agents often run in PowerShell, not bash. Commands like `head`, `cat <<'EOF'`, and `find` fail or behave differently. That causes retries, background timeouts, and extra terminal polling — which inflates token usage even though the OS does not charge "more per token."
 
 **WSL note:** If you want lower agent friction, WSL is usually more reliable than PowerShell for generated shell commands. Best case: keep the repo in the WSL filesystem and run the toolchain there. Mixed Windows-mounted paths (`H:\...` or `/mnt/h/...`) work, but they can add quoting, path, and search-performance quirks. If you stay on Windows, prefer direct interpreter calls like `.venv\Scripts\python.exe` over shell activation commands.
+
+## Token budget
+
+### Screenshots and pasted images
+
+- **Do not capture or analyze browser/Playwright screenshots unless the user explicitly asks.**
+- Default verification: tests, preview URL, text description of the layout issue.
+- If the user requests a visual check: crop to the affected region; avoid full-viewport captures.
+- Pasted chat images are billed as vision input — often **hundreds to low thousands of tokens per image**, and they stay in session history on every follow-up turn.
+
+### Workspace and agents
+
+- Trap files: `scripts/preview/editor.js`, `packages/layout-engine/dist/*.iife.js`, bulk `specs/**` reads.
+- **0 subagents** for single-file fixes; avoid parallel multi-agent reviews on small diffs.
 
 ## Test economy
 

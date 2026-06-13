@@ -1,0 +1,53 @@
+# Cursor AI context exclusions — diagram-generator
+# See specs/040-agent-token-slimming/ and AGENTS.md
+
+# Dependencies and build output
+node_modules/
+**/node_modules/
+packages/*/dist/
+apps/*/dist/
+.venv/
+
+# Reference / corpus assets (not product code)
+diagrams/
+scripts/diagrams/2.output/
+
+# Large binaries and draw.io sources
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.zip
+*.drawio
+
+# Fonts and wasm (engine ships its own paths when needed)
+assets/**/*.ttf
+assets/**/*.woff
+assets/**/*.woff2
+
+# Scratch, logs, env
+tmp/
+*.log
+.env.local
+.preview_server_test.*
+
+# Accidental tsc emit in source trees (authority is .ts)
+packages/*/src/**/*.js
+packages/*/src/**/*.js.map
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
+apps/*/src/**/*.js
+apps/*/src/**/*.js.map
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Test / browser artifacts
+test-results/
+playwright-report/
+
+# Spec-kit command surfaces — load only when user asks for spec work
+.github/agents/speckit.*
+.github/prompts/speckit.*
