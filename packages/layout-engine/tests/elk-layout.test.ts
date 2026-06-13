@@ -344,4 +344,14 @@ describe('layoutElkFrameDiagram', () => {
     expect(clientL1?._layout.placedX).toBeGreaterThanOrEqual(clientsLeftTop?._layout.placedX ?? -Infinity);
     expect(clientL2?._layout.placedX).toBeGreaterThanOrEqual(clientsLeftTop?._layout.placedX ?? -Infinity);
   });
+
+  it('expands the root width to include ELK edge geometry beyond authored fixed width', async () => {
+    const diagram = loadFrameYaml(join(FRAMES_DIR, 'juju-bootstrap-machines-process.yaml'));
+    const adapter = new MockTextAdapter();
+
+    await layoutElkFrameDiagram(diagram, adapter);
+
+    expect(diagram.root.width).toBe(1200);
+    expect(diagram.root._layout.placedW).toBeGreaterThan(1200);
+  });
 });

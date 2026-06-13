@@ -230,6 +230,42 @@ function bboxOfFrames(frames: Frame[]): { minX: number; minY: number; maxX: numb
   return { minX, minY, maxX, maxY };
 }
 
+function bboxOfElkEdges(
+  edges: PlacedEdge[],
+  originX: number,
+  originY: number,
+): { minX: number; minY: number; maxX: number; maxY: number } | null {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let hasGeometry = false;
+
+  const includePoint = (x: number, y: number): void => {
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+    hasGeometry = true;
+  };
+
+  for (const edge of edges) {
+    for (const section of edge.sections) {
+      includePoint(section.startPoint.x + originX, section.startPoint.y + originY);
+      for (const bp of section.bendPoints ?? []) {
+        includePoint(bp.x + originX, bp.y + originY);
+      }
+      includePoint(section.endPoint.x + originX, section.endPoint.y + originY);
+    }
+    for (const label of edge.labels ?? []) {
+      includePoint(label.x + originX, label.y + originY);
+      includePoint(label.x + originX + label.width, label.y + originY + label.height);
+    }
+  }
+
+  return hasGeometry ? { minX, minY, maxX, maxY } : null;
+}
+
 function isAnnotationFrame(frame: Frame, endpoints: Set<string>): boolean {
   return frame.isLeaf &&
     frame.border === Border.NONE &&
@@ -440,6 +476,7 @@ export async function layoutElkFrameDiagram(
     Object.keys(elkOverrides).length > 0 ? elkOverrides : undefined,
   );
   const placedById = indexPlaced(elk.nodes);
+  const edgeBox = bboxOfElkEdges(elk.edges, originX, originY);
   applyElkEdgeRoutes(diagram, elk.edges, originX, originY);
   applyElkEdgeLabels(diagram, elk.edges, originX, originY);
 
@@ -469,8 +506,18 @@ export async function layoutElkFrameDiagram(
   layoutAnnotationsBelow(diagram.root, adapter, elk.height, originX, originY, endpoints);
 
   const entityBox = bboxOfFrames(placedFrames);
-  const rootW = diagram.root.width ?? Math.max(elk.width + originX * 2, entityBox?.maxX ?? elk.width);
-  let rootH = elk.height + originY * 2;
+  const rootW = Math.max(
+    diagram.root.width ?? 0,
+    elk.width + originX * 2,
+    entityBox?.maxX ?? 0,
+    edgeBox?.maxX ?? 0,
+  );
+  let rootH = Math.max(
+    diagram.root.height ?? 0,
+    elk.height + originY * 2,
+    entityBox?.maxY ?? 0,
+    edgeBox?.maxY ?? 0,
+  );
   walkFrames(diagram.root, (f) => {
     if (isAnnotationFrame(f, endpoints)) {
       rootH = Math.max(rootH, f._layout.placedY + f._layout.placedH + INSET);

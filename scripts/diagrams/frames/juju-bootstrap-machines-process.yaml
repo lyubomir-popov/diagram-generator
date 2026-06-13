@@ -77,7 +77,7 @@ root:
     sizing_w: fill
     children:
     - id: juju_system
-      level: 3
+      level: 0
       heading: Juju
       direction: vertical
       gap: 24
