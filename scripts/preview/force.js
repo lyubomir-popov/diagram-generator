@@ -52,6 +52,7 @@ let currentSnapshot = null;
 let committedSnapshot = null;
 let running = false;
 let inFlight = false;
+let runningPersists = true;
 let selectedIds = new Set();
 let dragCandidate = null;
 let dragState = null;
@@ -1010,13 +1011,14 @@ async function loadSnapshot(reset = true) {
   updateLocalRuntimeControls();
 }
 
-async function tickSimulation(iterations) {
+async function tickSimulation(iterations, options = {}) {
+  const { persist = true } = options;
   if (!committedSnapshot) {
     throw new Error("Force snapshot is not loaded");
   }
   const tickForceSimulation = requireForceRuntimeMethod("tickForceSimulation");
   const snapshot = tickForceSimulation(committedSnapshot, iterations);
-  render(snapshot);
+  render(snapshot, { previewOnly: !persist });
   return snapshot;
 }
 
@@ -1108,7 +1110,7 @@ async function runLoop() {
 
   inFlight = true;
   try {
-    const snapshot = await tickSimulation(currentTicksPerFrame());
+    const snapshot = await tickSimulation(currentTicksPerFrame(), { persist: runningPersists });
     if (snapshot.simulation.settled) {
       running = false;
       updateRunButton();
@@ -1129,11 +1131,13 @@ async function runLoop() {
   }
 }
 
-function startRunning() {
+function startRunning(options = {}) {
+  const { persist = true } = options;
   if (running || !currentSnapshot || currentSnapshot.simulation.settled) {
     return;
   }
   running = true;
+  runningPersists = persist;
   updateRunButton();
   setStatus("Running…", "ok");
   requestAnimationFrame(runLoop);
@@ -1580,7 +1584,7 @@ document.getElementById("force-params").addEventListener("change", async (event)
 applyForceParamMetadata();
 loadSnapshot(true)
   .then(() => {
-    startRunning();
+    startRunning({ persist: false });
   })
   .catch((error) => {
     setStatus(error.message || "Initial load failed", "error");
@@ -1605,7 +1609,7 @@ window.addEventListener("pageshow", (event) => {
   void loadSnapshot(true)
     .then(() => {
       forceUndoManager.clear();
-      startRunning();
+      startRunning({ persist: false });
     })
     .catch((error) => {
       setStatus(error.message || "Reload failed", "error");
