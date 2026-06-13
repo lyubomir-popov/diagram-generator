@@ -1745,6 +1745,10 @@ async function performElkRelayout(model, overrides, gridOverrides) {
     const stage = document.getElementById("stage");
     if (!stage) return null;
     stage.replaceChildren(renderResult.svg);
+    fitSvgToRenderedContent(renderResult.svg, {
+      minWidth: renderResult.width,
+      minHeight: renderResult.height,
+    });
     return {
       coerced: renderResult.coerced,
       width: renderResult.width,
